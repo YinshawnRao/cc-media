@@ -1,0 +1,33 @@
+#!/usr/bin/env python3
+"""女声旁白 (zf_xiaoyi)，逐字稿原样。输出 audio/<key>.wav + narration.json。
+窦唯最难的5首歌 / 倒数 5→1。"""
+import json
+from pathlib import Path
+import numpy as np
+import soundfile as sf
+from kokoro import KPipeline
+
+VOICE = "zf_xiaoyi"
+SR = 24000
+
+BLOCKS = {
+    "intro": "提到窦唯，现在很多人想到的，是神隐、飘渺、不食人间烟火的音乐隐士。但你可能忘了，早年的窦唯，是华语摇滚里嗓子最锋利、也最恐怖的男声之一。今天这五首，是公认窦唯最难唱的歌，几乎谁唱谁翻车。我们从第五名开始。",
+    "p5_beishang": "第五，《悲伤的梦》。这首难，不在飙多高，而在气质。它来自《黑梦》时期，迷幻、阴冷，带着后朋克的影子。窦唯把声音收得很冷、很空，唱得太满就俗，太轻又撑不住。最难的，是把压抑和爆发，控制在一条很窄的缝里。",
+    "p4_kaojin": "第四，《靠近我》。它不是黑豹里最炸的，但难点很阴。前面要唱得清亮、放松，不能一上来就硬顶；到关键的那一下，又要突然拉出极高的尖峰。大家讨论窦唯的海豚音，常常绕不开这一首。它难在轻盈地危险，而不是蛮力冲刺。",
+    "p3_wudi": "第三，《无地自容》。它的最高音未必最夸张，但难在整首长期压在中高音，几乎不给嗓子真正休息的机会。副歌要冲，主歌也不能塌，节奏和咬字还特别密。你以为是在唱歌，其实是肺活量和声带在跑马拉松。",
+    "p2_dontbreak": "第二，《Don't Break My Heart》。这首表面好听，其实最容易翻车。它的高音不是嘶吼，而是要在明亮、干净、带点甜的音色里完成咬字。唱太硬会油，唱太轻会虚。最难的，是在摇滚的骨架里，还保留那股少年感。",
+    "p1_bielai": "第一，《别来纠缠我》。这首几乎是公认的天花板。民间测量里提到，近九十个高音A4，最高冲到A5，被叫做海豚音，原版几乎无人能复刻。真正的难，不是喊上去，而是在高速硬摇滚里持续顶住高音，还要保持窦唯那种锋利、冷硬、带金属边缘的质感。谁唱谁翻车，说的就是它。",
+    "outro": "所以窦唯，从来不是只有飘渺和神隐。在他最锋利的那几年，他的嗓子能炸、能冷、能撕裂，也能收在最窄的缝里。这五首，你觉得哪一首才是真正的天花板？评论区告诉我。",
+}
+
+pipeline = KPipeline(lang_code="z")
+meta = {}
+for key, text in BLOCKS.items():
+    chunks = [a for _, _, a in pipeline(text, voice=VOICE, speed=1.0)]
+    audio = chunks[0] if len(chunks) == 1 else np.concatenate(chunks)
+    sf.write(f"audio/{key}.wav", audio, SR)
+    meta[key] = {"text": text, "dur": round(len(audio) / SR, 3)}
+    print(f"{key:14s} {meta[key]['dur']:6.2f}s")
+
+Path("narration.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+print("TOTAL narration", round(sum(m["dur"] for m in meta.values()), 2), "s")

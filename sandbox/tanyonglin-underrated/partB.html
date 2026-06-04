@@ -1,0 +1,146 @@
+<!doctype html><html lang="zh"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=1080, height=1920"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@700;800&family=Cormorant+Garamond:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#120e18;
+  font-family:"Noto Sans SC",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(12,9,18,.82) 0%,rgba(14,10,20,.18) 32%,rgba(12,9,18,.32) 58%,rgba(8,6,12,.94) 100%)}
+#vig{position:absolute;inset:0;z-index:1;background:radial-gradient(118% 80% at 50% 36%,rgba(0,0,0,0) 38%,rgba(0,0,0,.66) 100%)}
+#dusk{position:absolute;inset:0;z-index:1;background:radial-gradient(120% 56% at 50% 104%,rgba(224,147,108,.20) 0%,rgba(0,0,0,0) 60%);mix-blend-mode:screen}
+#grain{position:absolute;inset:0;z-index:9;opacity:.05;mix-blend-mode:soft-light;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch' seed='11'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:280px 280px}
+
+/* ---- 封面（首帧缩略图，不做 fade-in；不剧透排名） ---- */
+#cover{position:absolute;left:84px;right:84px;bottom:286px;z-index:6;color:#f0e8df}
+#cover .cv-kick{display:inline-flex;align-items:center;gap:13px;padding:11px 26px;border:2px solid rgba(216,168,106,.55);border-radius:999px;font-size:26px;font-weight:800;color:#d8a86a;letter-spacing:.18em}
+#cover .cv-kick::before{content:"";width:12px;height:12px;border-radius:50%;background:#e0936c;box-shadow:0 0 16px #e0936c}
+#cover .cv-name{margin-top:28px;font-size:64px;font-weight:900;color:#f0e8df;letter-spacing:.12em;font-family:"Noto Sans SC",sans-serif}
+#cover .cv-title{margin-top:-2px;font-size:156px;font-weight:900;line-height:.92;letter-spacing:-3px;font-family:"Noto Serif SC",serif;
+  background:linear-gradient(104deg,#f7e6cf 4%,#e6a878 48%,#c47a52 98%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 10px 40px rgba(196,122,82,.42))}
+#cover .cv-en{margin-top:14px;font-family:"Cormorant Garamond",serif;font-style:italic;font-weight:600;font-size:44px;color:#cdb08c;letter-spacing:.04em}
+#cover .cv-sub{margin-top:22px;font-size:36px;font-weight:700;color:#dccdbb}
+#cover .cv-sub b{color:#e8a486}
+
+/* ---- intro: 大众印象 钩子 ---- */
+.k{display:inline-flex;align-items:center;gap:16px;font-size:30px;font-weight:800;color:#d8a86a;letter-spacing:.32em}
+.k::before{content:"";width:50px;height:4px;background:linear-gradient(90deg,#d8a86a,#e0936c);border-radius:2px;box-shadow:0 0 16px rgba(216,168,106,.6)}
+#chips{position:absolute;top:300px;left:84px;right:84px;z-index:5;color:#f0e8df}
+.imp-list{list-style:none;margin:44px 0 0}
+.imp-list li{font-size:78px;font-weight:900;line-height:1.3;color:rgba(240,232,223,.96);padding-left:40px;position:relative}
+.imp-list li .strike{position:relative;display:inline-block}
+.imp-list li .xln{position:absolute;left:-8px;right:-8px;top:52%;height:8px;background:linear-gradient(90deg,#d8a86a,#e0936c);border-radius:4px;box-shadow:0 0 16px rgba(224,147,108,.7);transform:scaleX(0);transform-origin:left}
+.imp-list li::before{content:"";position:absolute;left:0;top:.30em;width:8px;height:.72em;background:linear-gradient(180deg,#d8a86a,#e0936c);border-radius:3px;box-shadow:0 0 12px rgba(216,168,106,.55)}
+.imp-note{margin-top:34px;font-size:34px;font-weight:600;color:#9b8fa0;letter-spacing:.05em}
+.imp-note b{color:#ecc79a;font-weight:700}
+
+/* ---- intro: 被低估 bridge ---- */
+#bridge{position:absolute;left:84px;right:84px;top:50%;transform:translateY(-50%);z-index:5;color:#f0e8df;text-align:center}
+#bridge .big{font-size:232px;font-weight:900;line-height:.9;font-family:"JetBrains Mono",monospace;
+  background:linear-gradient(180deg,#f7e6cf,#d8a86a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 46px rgba(216,168,106,.45))}
+#bridge .big small{font-size:56px;font-weight:800;color:#d8a86a;letter-spacing:.22em;display:block;margin-bottom:8px;font-family:"Noto Sans SC",sans-serif;-webkit-text-fill-color:#d8a86a}
+#bridge .line{margin-top:28px;font-size:46px;font-weight:900;color:#f0e8df;letter-spacing:.02em}
+#bridge .line b{color:#e8a486}
+
+/* ---- 排名大卡 ---- */
+.labelFull{position:absolute;left:84px;right:84px;bottom:300px;z-index:5;color:#f0e8df}
+.labelFull .rank{display:flex;align-items:flex-end;gap:24px}
+.labelFull .rank .lab{font-size:31px;font-weight:800;color:#d8a86a;letter-spacing:.24em;padding-bottom:32px;font-family:"Noto Sans SC",sans-serif}
+.labelFull .rank .crown{font-size:33px;font-weight:900;color:#1a0e08;background:linear-gradient(180deg,#f6dd9f,#d8a86a);border-radius:9px;padding:9px 22px;margin-bottom:36px;letter-spacing:.08em;box-shadow:0 0 34px rgba(216,168,106,.55)}
+.labelFull .no{font-size:198px;font-weight:800;line-height:.78;font-family:"JetBrains Mono",monospace;
+  background:linear-gradient(180deg,#f7e6cf,#d8a86a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 38px rgba(216,168,106,.4))}
+.labelFull.climax .no{background:linear-gradient(180deg,#fff0d8,#f0b48c 55%,#e0795a);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 46px rgba(240,160,120,.55))}
+.labelFull .meta{margin-top:14px;font-size:29px;font-weight:700;color:#a89b92;letter-spacing:.14em;font-family:"JetBrains Mono",monospace}
+.labelFull .song{font-size:84px;font-weight:900;margin-top:6px;color:#fff;font-family:"Noto Serif SC",serif;line-height:1.05}
+.labelFull.climax .song{font-size:74px}
+.labelFull .tags{margin-top:24px;display:flex;flex-wrap:wrap;gap:14px}
+.labelFull .tags span{font-size:29px;font-weight:700;color:#ecd4a8;border:1.5px solid rgba(216,168,106,.5);border-radius:999px;padding:9px 22px;background:rgba(216,168,106,.07)}
+.labelFull.climax .tags span{color:#f3c7b0;border-color:rgba(240,160,120,.55);background:rgba(240,160,120,.08)}
+.labelFull .tag{font-size:43px;font-weight:700;color:#e9dccb;margin-top:26px;line-height:1.32}
+.labelFull .tag b{color:#d8a86a;font-weight:800}
+.labelFull.climax .tag b{color:#e8a486}
+
+/* ---- 展示期角标 ---- */
+.labelMin{position:absolute;top:118px;left:74px;z-index:5;color:#f0e8df;display:flex;align-items:center;gap:18px}
+.labelMin .no{font-size:60px;font-weight:800;color:#d8a86a;font-family:"JetBrains Mono",monospace}
+.labelMin.climax .no{color:#e8a486}
+.labelMin .song{font-size:46px;font-weight:800;font-family:"Noto Serif SC",serif}
+
+/* ---- 片尾 + 完整榜单回顾 ---- */
+#outro{position:absolute;left:72px;right:72px;top:268px;z-index:5;color:#f0e8df;
+  padding:46px 48px;border-radius:28px;border:1px solid rgba(216,168,106,.16);
+  background:linear-gradient(180deg,rgba(14,10,20,.5) 0%,rgba(10,7,15,.82) 26%,rgba(10,7,15,.86) 100%);
+  box-shadow:0 24px 80px rgba(0,0,0,.5)}
+#outro .o2{font-size:68px;font-weight:900;line-height:1.1;font-family:"Noto Serif SC",serif;
+  background:linear-gradient(104deg,#f7e6cf,#e6a878 52%,#c47a52);-webkit-background-clip:text;background-clip:text;color:transparent}
+#outro .recap-t{margin-top:40px;font-size:29px;font-weight:800;color:#a89b92;letter-spacing:.26em}
+#outro .recap{list-style:none;margin:22px 0 0}
+#outro .recap li{display:flex;align-items:baseline;gap:22px;padding:12px 0;border-bottom:1px solid rgba(216,168,106,.14)}
+#outro .recap li .rn{font-size:46px;font-weight:800;font-family:"JetBrains Mono",monospace;color:#d8a86a;min-width:74px}
+#outro .recap li .rs{font-size:46px;font-weight:800;font-family:"Noto Serif SC",serif;color:#ede1d3}
+#outro .recap li.top{border-bottom:none}
+#outro .recap li.top .rn{color:#e8a486}
+#outro .recap li.top .rs{background:linear-gradient(100deg,#fff0d8,#f0b48c 60%,#e0795a);-webkit-background-clip:text;background-clip:text;color:transparent}
+#outro .q{margin-top:32px;font-size:40px;font-weight:700;color:#f0e8df}
+#outro .q b{color:#d8a86a}
+#outro .bar{width:140px;height:8px;background:linear-gradient(90deg,#d8a86a,#e0936c);margin-top:24px;border-radius:4px}
+</style></head><body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="126.8" data-width="1080" data-height="1920">
+<video id="v0" class="fv" data-start="0.0" data-duration="50.175" data-track-index="0" src="clips/vert_p2_qsdxx.mp4" muted playsinline></video>
+<video id="v1" class="fv" data-start="50.175" data-duration="54.0" data-track-index="6" src="clips/vert_p1_hsndd.mp4" muted playsinline></video>
+<video id="v2" class="fv" data-start="104.175" data-duration="22.225" data-track-index="0" src="clips/vert_intro.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="126.8" data-track-index="1"></div>
+<div id="dusk" class="clip" data-start="0" data-duration="126.8" data-track-index="8"></div>
+<div id="vig" class="clip" data-start="0" data-duration="126.8" data-track-index="7"></div>
+<div id="grain" class="clip" data-start="0" data-duration="126.8" data-track-index="9"></div>
+
+<div id="lf02" class="clip labelFull" data-start="0.2" data-duration="22.975" data-track-index="2"><div class="rank"><div class="no">02</div><div class="lab">被低估 · 遗珠</div></div><div class="meta">墙上的肖像 · 1987</div><div class="song">《墙上的肖像》</div><div class="tags"><span>老歌迷私藏</span><span>阴郁都市感</span><span>点题之作</span></div><div class="tag">藏在专辑深处的<b>一幅暗色画</b></div></div>
+<div id="lm02" class="clip labelMin" data-start="23.175" data-duration="27.0" data-track-index="4"><span class="no">02</span><span class="song">《墙上的肖像》</span></div>
+<div id="lf01" class="clip labelFull climax" data-start="50.375" data-duration="20.8" data-track-index="2"><div class="rank"><div class="no">01</div><div class="crown">遗珠之首</div></div><div class="meta">笑看人生 · 1991</div><div class="song">《还是你懂得爱我》</div><div class="tags"><span>慢歌首选佳作</span><span>越听越有厚度</span><span>乐评点名</span></div><div class="tag">最深的情，<b>从来不是喊出来的</b></div></div>
+<div id="lm01" class="clip labelMin climax" data-start="71.175" data-duration="32.95" data-track-index="4"><span class="no">01</span><span class="song">《还是你懂得爱我》</span></div>
+<div id="outro" class="clip" data-start="104.475" data-duration="22.325" data-track-index="4">
+<div class="o2">最好的谭咏麟，<br>一直安静地躺在专辑最深处</div>
+<div class="recap-t">被低估 · 完整榜单</div>
+<ul class="recap"><li class=""><span class="rn">05</span><span class="rs">《黄昏的声音》</span></li><li class=""><span class="rn">04</span><span class="rs">《此刻你在何处》</span></li><li class=""><span class="rn">03</span><span class="rs">《永不想你》</span></li><li class=""><span class="rn">02</span><span class="rs">《墙上的肖像》</span></li><li class="top"><span class="rn">01</span><span class="rs">《还是你懂得爱我》</span></li></ul>
+<div class="q">这五首里，<b>哪一首最舍不得被埋没？</b></div>
+<div class="bar"></div></div>
+<audio id="master" data-start="0" data-duration="126.8" data-track-index="3" src="master.wav" data-volume="1"></audio>
+</div>
+<script>
+window.__timelines=window.__timelines||{};
+const tl=gsap.timeline({paused:true});
+
+tl.from("#lf02 .no",{y:60,opacity:0,duration:.7,ease:"power3.out"},0.3);
+tl.from("#lf02 .rank>div:last-child",{x:-24,opacity:0,duration:.5,ease:"power2.out"},0.58);
+tl.from("#lf02 .meta",{x:-18,opacity:0,duration:.45,ease:"power2.out"},0.7);
+tl.from("#lf02 .song",{y:44,opacity:0,duration:.62,ease:"power3.out"},0.82);
+tl.from("#lf02 .tags span",{y:18,opacity:0,duration:.45,ease:"power2.out",stagger:.1},1.15);
+tl.from("#lf02 .tag",{y:22,opacity:0,duration:.5,ease:"power2.out"},1.55);
+tl.to("#lf02",{opacity:0,duration:.4,ease:"power1.in"},22.775);
+tl.set("#lf02",{opacity:0},23.175);
+tl.from("#lm02",{x:-30,opacity:0,duration:.5,ease:"power2.out"},23.275);
+tl.to("#lm02",{opacity:0,duration:.4,ease:"power1.in"},49.825);
+tl.set("#lm02",{opacity:0},50.175);
+tl.from("#lf01 .no",{y:60,opacity:0,duration:.7,ease:"power3.out"},50.475);
+tl.from("#lf01 .rank>div:last-child",{x:-24,opacity:0,duration:.5,ease:"power2.out"},50.755);
+tl.from("#lf01 .meta",{x:-18,opacity:0,duration:.45,ease:"power2.out"},50.875);
+tl.from("#lf01 .song",{y:44,opacity:0,duration:.62,ease:"power3.out"},50.995);
+tl.from("#lf01 .tags span",{y:18,opacity:0,duration:.45,ease:"power2.out",stagger:.1},51.325);
+tl.from("#lf01 .tag",{y:22,opacity:0,duration:.5,ease:"power2.out"},51.725);
+tl.to("#lf01",{opacity:0,duration:.4,ease:"power1.in"},70.775);
+tl.set("#lf01",{opacity:0},71.175);
+tl.from("#lm01",{x:-30,opacity:0,duration:.5,ease:"power2.out"},71.275);
+tl.to("#lm01",{opacity:0,duration:.4,ease:"power1.in"},103.825);
+tl.set("#lm01",{opacity:0},104.175);
+
+tl.from("#outro .o2",{y:50,opacity:0,scale:1.04,duration:.8,ease:"power4.out"},104.875);
+tl.from("#outro .recap-t",{y:18,opacity:0,duration:.5},110.075);
+tl.from("#outro .recap li:nth-child(1)",{x:-26,opacity:0,duration:.5,ease:"power2.out"},111.075);tl.from("#outro .recap li:nth-child(2)",{x:-26,opacity:0,duration:.5,ease:"power2.out"},112.255);tl.from("#outro .recap li:nth-child(3)",{x:-26,opacity:0,duration:.5,ease:"power2.out"},113.435);tl.from("#outro .recap li:nth-child(4)",{x:-26,opacity:0,duration:.5,ease:"power2.out"},114.615);tl.from("#outro .recap li:nth-child(5)",{x:-26,opacity:0,duration:.5,ease:"power2.out"},115.795);
+tl.from("#outro .q",{y:20,opacity:0,duration:.5,ease:"power2.out"},117.375);
+tl.from("#outro .bar",{scaleX:0,transformOrigin:"left",duration:.5},117.825);
+
+window.__timelines["main"]=tl;
+</script></body></html>

@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:1080px; height:1920px; overflow:hidden; background:#06070d;
+  font-family:"Noto Sans SC",sans-serif; color:#e8edf5; -webkit-font-smoothing:antialiased; }
+
+/* ===== footage / 静帧 letterbox 带 ===== */
+.band { position:absolute; left:0; width:1080px; opacity:0; will-change:opacity,transform; }
+.still { height:500px; top:712px; background-size:cover; background-position:50% 42%;
+  filter:saturate(.82) brightness(.92) contrast(1.12); }
+.lb { top:0; height:1920px; }   /* vfill 已是 1080x1920 全幅(带内 letterbox+模糊填充) → 全屏铺底 */
+#rshow { position:absolute; inset:0; width:1080px; height:1920px; object-fit:cover; filter:saturate(.9) brightness(1.04) contrast(1.08); }
+/* footage 带上叠冷蓝薄层，统一 Y2K 都市冷调 */
+.band::after { content:""; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(180deg, rgba(40,70,120,.10), rgba(20,30,60,.18)); mix-blend-mode:soft-light; }
+
+/* ===== cinematic 框 + 暗角 + 颗粒 + 扫描线 + 霓虹 ===== */
+.cinetop { position:absolute; top:0; left:0; right:0; height:640px; z-index:6; pointer-events:none;
+  background:linear-gradient(180deg, rgba(6,7,13,.94) 0%, rgba(6,7,13,.5) 54%, rgba(6,7,13,0) 100%); }
+.cinebot { position:absolute; bottom:0; left:0; right:0; height:760px; z-index:6; pointer-events:none;
+  background:linear-gradient(0deg, rgba(6,7,13,.97) 0%, rgba(6,7,13,.6) 46%, rgba(6,7,13,0) 100%); }
+.neonglow { position:absolute; inset:0; z-index:5; pointer-events:none;
+  background:
+    radial-gradient(ellipse 50% 36% at 84% 16%, rgba(123,92,255,.20) 0%, rgba(123,92,255,0) 60%),
+    radial-gradient(ellipse 56% 40% at 12% 88%, rgba(47,214,232,.16) 0%, rgba(47,214,232,0) 62%); }
+.scan { position:absolute; inset:0; z-index:8; pointer-events:none; opacity:.5;
+  background-image:repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 1px, rgba(0,0,0,0) 1px 4px); mix-blend-mode:overlay; }
+.vignette { position:absolute; inset:0; z-index:7; pointer-events:none;
+  background:radial-gradient(ellipse 80% 64% at 50% 46%, rgba(0,0,0,0) 40%, rgba(0,0,0,.55) 100%); }
+.grain { position:absolute; inset:0; z-index:9; pointer-events:none; opacity:.10; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E"); background-size:220px 220px; }
+
+/* ===== 复古字幕条 ===== */
+.sub { position:absolute; left:70px; right:70px; bottom:286px; z-index:13; text-align:center; opacity:0; }
+.sub-in { display:inline-block; padding:20px 34px; border-radius:4px;
+  font-family:"Noto Sans SC",sans-serif; font-weight:500; font-size:44px; line-height:1.46; letter-spacing:.01em;
+  color:#eef2f8; background:linear-gradient(180deg, rgba(12,16,28,.66), rgba(8,11,20,.82));
+  border:1px solid rgba(150,170,210,.28); box-shadow:0 0 0 1px rgba(0,0,0,.5), 0 14px 40px rgba(0,0,0,.55), inset 0 1px 0 rgba(180,200,240,.16);
+  text-shadow:0 2px 14px rgba(0,0,0,.85); }
+
+/* ===== 开头屏幕文字 ===== */
+.screen { position:absolute; left:80px; right:80px; top:556px; z-index:14; text-align:center; opacity:0; }
+.sa-1 { font-family:"Noto Sans SC",sans-serif; font-weight:500; font-size:40px; letter-spacing:.05em;
+  color:rgba(180,192,214,.55); margin-bottom:26px; text-decoration:line-through; text-decoration-color:rgba(47,214,232,.55); text-decoration-thickness:2px; }
+.sa-2 { font-family:"Noto Sans SC",sans-serif; font-weight:900; font-size:66px; line-height:1.3; color:#eef2f8; letter-spacing:.005em; }
+.neon { color:#5fe4f5; text-shadow:0 0 18px rgba(47,214,232,.55), 0 0 40px rgba(47,214,232,.3); }
+.warm { color:#e06b6b; text-shadow:0 0 18px rgba(192,65,63,.5); }
+
+/* ===== 番号歌名卡 ===== */
+.songcard { position:absolute; left:0; right:0; top:268px; z-index:15; text-align:center; opacity:0; }
+.sc-no { font-family:"Chakra Petch",monospace; font-weight:700; font-size:128px; line-height:.82; letter-spacing:.02em; }
+.sc-name { font-family:"Noto Sans SC",sans-serif; font-weight:900; font-size:140px; line-height:1.0; color:#eef2f8;
+  letter-spacing:.08em; margin:6px 0 26px; text-shadow:0 6px 50px rgba(0,0,0,.6); }
+.sc-credit { font-family:"Chakra Petch",monospace; font-weight:500; font-size:32px; letter-spacing:.12em;
+  color:rgba(95,228,245,.92); margin-bottom:14px; }
+.sc-album { font-family:"Chakra Petch",monospace; font-weight:400; font-size:25px; letter-spacing:.18em;
+  color:rgba(150,164,190,.92); }
+
+/* chrome 金属字（银色渐变） */
+.chrome { background:linear-gradient(180deg,#f4f8ff 0%,#cdd6e6 28%,#8c97ad 52%,#e6ecf7 60%,#9aa6bd 76%,#c3cdde 100%);
+  -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; color:transparent;
+  filter:drop-shadow(0 2px 1px rgba(0,0,0,.45)); }
+
+/* ===== 常驻角标 ===== */
+.corner { position:absolute; top:92px; left:60px; z-index:16; display:flex; align-items:center; gap:18px; opacity:0; }
+.cn-no { font-family:"Chakra Petch",monospace; font-weight:700; font-size:48px; color:#5fe4f5; text-shadow:0 0 14px rgba(47,214,232,.5); }
+.cn-line { width:42px; height:2px; background:rgba(150,170,210,.5); }
+.cn-tag { font-family:"Noto Sans SC",sans-serif; font-weight:700; font-size:38px; color:rgba(232,237,245,.92); letter-spacing:.14em; }
+
+/* ===== 副歌主题文字 ===== */
+.screen2 { position:absolute; left:80px; right:80px; top:404px; z-index:17; text-align:center; opacity:0; }
+.sb-1 { font-family:"Chakra Petch",monospace; font-weight:600; font-size:46px; color:rgba(180,192,214,.85); margin-bottom:18px; letter-spacing:.1em; }
+.sb-2 { font-family:"Noto Sans SC",sans-serif; font-weight:900; font-size:84px; line-height:1.2; color:#eef2f8; letter-spacing:.04em; }
+
+/* ===== 开头 CD（chrome 转动）===== */
+.opcd { position:absolute; left:0; right:0; top:300px; z-index:4; pointer-events:none; opacity:0;
+  display:flex; align-items:center; justify-content:center; }
+.ov-cd { position:relative; width:540px; height:540px; border-radius:50%;
+  background:
+    conic-gradient(from 0deg, #c9d2e2,#8ea0c4,#e9eef8,#9fb4d8,#c0a6d8,#e6c8e0,#9fc8d8,#c9d2e2),
+    radial-gradient(circle at 50% 50%, #0a0c14 0 16%, rgba(0,0,0,0) 17%);
+  box-shadow:0 0 0 2px rgba(180,200,240,.18), inset 0 0 60px rgba(0,0,0,.5), 0 30px 90px rgba(0,0,0,.6);
+  opacity:.34; filter:brightness(.9) saturate(.8); }
+.ov-cd::before { content:""; position:absolute; inset:0; border-radius:50%;
+  background:repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.05) 0 1.2px, rgba(0,0,0,.10) 1.2px 5px); }
+.ov-hole { position:absolute; left:50%; top:50%; width:96px; height:96px; transform:translate(-50%,-50%); border-radius:50%;
+  background:#06070d; box-shadow:0 0 0 18px rgba(180,200,240,.10), inset 0 0 0 2px rgba(180,200,240,.25); }
+
+/* ===== 转场卡 ===== */
+.transcard { position:absolute; left:0; right:0; top:0; bottom:0; z-index:18; opacity:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.tc-bg { position:absolute; inset:0; z-index:-1;
+  background:radial-gradient(ellipse 70% 50% at 50% 50%, rgba(47,214,232,.16) 0%, rgba(6,7,13,0) 60%); }
+.tc-rule { width:60px; height:2px; background:#5fe4f5; margin:0 0 40px; box-shadow:0 0 16px rgba(47,214,232,.6); }
+.tc-text { font-family:"Noto Sans SC",sans-serif; font-weight:800; font-size:80px; line-height:1.34; text-align:center; color:#eef2f8; letter-spacing:.03em; padding:0 70px; }
+
+/* ============ 封面 ============ */
+.cover { position:absolute; inset:0; z-index:50; background:#06070d; overflow:hidden; }
+.cv-bg { position:absolute; inset:-40px; z-index:1; background-size:cover; background-position:50% 40%;
+  filter:blur(14px) brightness(.42) saturate(.7) contrast(1.1); transform:scale(1.15); }
+.cv-grade { position:absolute; inset:0; z-index:2;
+  background:
+    radial-gradient(ellipse 70% 44% at 80% 14%, rgba(123,92,255,.30) 0%, rgba(123,92,255,0) 60%),
+    radial-gradient(ellipse 70% 44% at 16% 92%, rgba(47,214,232,.22) 0%, rgba(47,214,232,0) 60%),
+    linear-gradient(180deg, rgba(6,7,13,.55) 0%, rgba(6,7,13,.2) 38%, rgba(6,7,13,.72) 78%, #06070d 100%); }
+.cv-scan { position:absolute; inset:0; z-index:7; pointer-events:none; opacity:.5;
+  background-image:repeating-linear-gradient(0deg, rgba(255,255,255,.04) 0 1px, rgba(0,0,0,0) 1px 4px); mix-blend-mode:overlay; }
+.cv-cd { position:absolute; right:-150px; top:120px; width:430px; height:430px; z-index:3; border-radius:50%;
+  background:conic-gradient(from 20deg, #c9d2e2,#8ea0c4,#e9eef8,#9fb4d8,#c0a6d8,#e6c8e0,#9fc8d8,#c9d2e2);
+  box-shadow:inset 0 0 50px rgba(0,0,0,.5), 0 20px 70px rgba(0,0,0,.5); opacity:.30; filter:brightness(.92) saturate(.8); }
+.cd-hole { position:absolute; left:50%; top:50%; width:78px; height:78px; transform:translate(-50%,-50%); border-radius:50%; background:#06070d; box-shadow:0 0 0 16px rgba(180,200,240,.1); }
+.cv-col { position:absolute; left:0; right:0; top:50%; transform:translateY(-50%); z-index:5;
+  display:flex; flex-direction:column; align-items:center; padding:0 64px; }
+.cv-eyebrow { display:flex; align-items:center; gap:16px; font-family:"Chakra Petch",monospace; font-weight:600; font-size:30px; letter-spacing:.3em;
+  color:rgba(95,228,245,.92); margin-bottom:34px; text-shadow:0 0 16px rgba(47,214,232,.4); }
+.ey-dot { width:12px; height:12px; border-radius:50%; background:#5fe4f5; box-shadow:0 0 14px rgba(47,214,232,.8); }
+.cv-frame { position:relative; width:454px; height:556px; margin-bottom:44px; }
+.cv-portrait { position:absolute; inset:0; z-index:2; background-size:cover; background-position:50% 26%;
+  filter:saturate(.74) contrast(1.16) brightness(1.0); border:1px solid rgba(150,170,210,.3); box-shadow:0 40px 90px rgba(0,0,0,.6); }
+.cv-ptint { position:absolute; inset:0; z-index:3; mix-blend-mode:soft-light;
+  background:linear-gradient(150deg, rgba(123,92,255,.42) 0%, rgba(6,7,13,0) 48%, rgba(47,214,232,.34) 100%); }
+.cv-corner { position:absolute; width:34px; height:34px; z-index:4; border:2px solid rgba(150,170,210,.85); }
+.cv-corner.tl { left:-8px; top:-8px; border-right:0; border-bottom:0; }
+.cv-corner.tr { right:-8px; top:-8px; border-left:0; border-bottom:0; }
+.cv-corner.bl { left:-8px; bottom:-8px; border-right:0; border-top:0; }
+.cv-corner.br { right:-8px; bottom:-8px; border-left:0; border-top:0; }
+.cv-title { font-family:"Noto Sans SC",sans-serif; font-weight:900; font-size:108px; line-height:1.1; text-align:center;
+  color:#eef2f8; letter-spacing:.02em; text-shadow:0 8px 50px rgba(0,0,0,.55); }
+.cv-title .chrome { font-family:"Chakra Petch",monospace; font-weight:700; letter-spacing:.06em; }
+.cv-eq { display:flex; align-items:flex-end; gap:8px; height:42px; margin:30px 0 26px; }
+.cv-eq i { width:9px; border-radius:2px; background:linear-gradient(180deg,#5fe4f5,#7b5cff); box-shadow:0 0 10px rgba(47,214,232,.5); }
+.cv-eq i:nth-child(1){height:18px}.cv-eq i:nth-child(2){height:34px}.cv-eq i:nth-child(3){height:24px}
+.cv-eq i:nth-child(4){height:40px}.cv-eq i:nth-child(5){height:14px}.cv-eq i:nth-child(6){height:30px}
+.cv-eq i:nth-child(7){height:22px}.cv-eq i:nth-child(8){height:38px}.cv-eq i:nth-child(9){height:16px}
+.cv-sub { font-family:"Noto Sans SC",sans-serif; font-weight:500; font-size:40px; letter-spacing:.16em;
+  color:rgba(220,228,240,.9); padding-top:26px; border-top:1px solid rgba(150,170,210,.26); }
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="110.7" data-width="1080" data-height="1920">
+    <div id="m1" class="band still clip" data-start="5.2" data-duration="15.5" data-track-index="0" style="background-image:url('cover_assets/still_126.jpg')"></div>
+    <div id="m2" class="band still clip" data-start="18.5" data-duration="15.0" data-track-index="1" style="background-image:url('cover_assets/still_224.jpg')"></div>
+    <div id="m3" class="band still clip" data-start="31.0" data-duration="13.5" data-track-index="2" style="background-image:url('cover_assets/still_200.jpg')"></div>
+    <div id="estill" class="band still clip" data-start="43.1" data-duration="29.5" data-track-index="4" style="background-image:url('cover_assets/still_132.jpg')"></div>
+    <video id="rshow" class="band lb clip" data-start="71.9" data-duration="30.0" data-track-index="5" src="clips_seg/meiyouren_show.mp4" muted playsinline preload="auto"></video>
+    <div id="sub_op1" class="sub clip" data-start="5.6" data-duration="5.5" data-track-index="12"><span class="sub-in">很多人记得萧亚轩，<br>是因为她会跳、会唱、会时髦。</span></div>
+    <div id="sub_op2" class="sub clip" data-start="11.3" data-duration="5.7" data-track-index="12"><span class="sub-in">但只用"唱跳女歌手"概括她，<br>其实太浅了。</span></div>
+    <div id="sub_op3" class="sub clip" data-start="17.2" data-duration="4.875" data-track-index="12"><span class="sub-in">真正把 Elva 做出来的人之一，<br>是陈伟。</span></div>
+    <div id="sub_op4" class="sub clip" data-start="22.175" data-duration="6.6" data-track-index="12"><span class="sub-in">他写旋律、做节奏、抓声线，<br>也抓住了那年代最摩登的都市感。</span></div>
+    <div id="sub_op5" class="sub clip" data-start="28.975" data-duration="4.55" data-track-index="12"><span class="sub-in">所以这期，不聊普通热门歌单。</span></div>
+    <div id="sub_op6" class="sub clip" data-start="34.025" data-duration="8.575" data-track-index="12"><span class="sub-in">我们聊 8 首歌，<br>看陈伟怎么把萧亚轩做成都市女声。</span></div>
+    <div id="sub_rj1" class="sub clip" data-start="44.2" data-duration="2.975" data-track-index="12"><span class="sub-in">第 8 首 ·《没有人》</span></div>
+    <div id="sub_rj2" class="sub clip" data-start="47.475" data-duration="9.5" data-track-index="12"><span class="sub-in">不是讨好市场的甜歌，<br>而是直接推出她的中低音和 R&B 底色。</span></div>
+    <div id="sub_rj3" class="sub clip" data-start="57.125" data-duration="6.125" data-track-index="12"><span class="sub-in">陈伟做的不只是写一首歌，<br>是帮她确认了一个方向。</span></div>
+    <div id="sub_rj4" class="sub clip" data-start="63.4" data-duration="6.3" data-track-index="12"><span class="sub-in">她不是邻家女孩，<br>是带着距离感的都市女声。</span></div>
+    <div id="sub_tr1" class="sub clip" data-start="101.6" data-duration="8.6" data-track-index="12"><span class="sub-in">想念不再是哭哭啼啼，<br>是城市夜里的突然失神。</span></div>
+    <div id="cinetop" class="cinetop"></div>
+    <div id="cinebot" class="cinebot"></div>
+    <div id="neonglow" class="neonglow"></div>
+    <div id="scan" class="scan"></div>
+    <div id="vignette" class="vignette"></div>
+    <div id="grain" class="grain"></div>
+    <div id="opcd" class="opcd clip" data-start="6.0" data-duration="34.0" data-track-index="8">
+  <div class="ov-cd"><span class="ov-hole"></span></div>
+</div>
+    <div id="screenA" class="screen clip" data-start="34.6" data-duration="6.4" data-track-index="14">
+  <div class="sa-1">不是普通萧亚轩歌单</div>
+  <div class="sa-2">是陈伟做出来的<br><span class="neon">Elva 声音系统</span></div>
+</div>
+    <div id="title_rj" class="songcard clip" data-start="43.9" data-duration="9.0" data-track-index="15">
+  <div class="sc-no"><span class="chrome">08</span></div>
+  <div class="sc-name">没有人</div>
+  <div class="sc-credit">曲 · 陈伟　词 · 姚谦　制作 · 陈伟</div>
+  <div class="sc-album">1999 ·《萧亚轩》同名首张专辑</div>
+</div>
+    <div id="tag_rj" class="corner clip" data-start="52.0" data-duration="49.6" data-track-index="16">
+  <span class="cn-no">08</span><span class="cn-line"></span><span class="cn-tag">出道冷感</span>
+</div>
+    <div id="screenB" class="screen2 clip" data-start="74.9" data-duration="8.5" data-track-index="17">
+  <div class="sb-1">Elva 的起点</div>
+  <div class="sb-2">不是甜，<span class="warm">是冷</span></div>
+</div>
+    <div id="trans" class="transcard clip" data-start="101.6" data-duration="9.1" data-track-index="18">
+  <div class="tc-bg"></div>
+  <div class="tc-rule"></div>
+  <div class="tc-text">城市夜里的<br><span class="neon">突然失神</span></div>
+</div>
+    <div id="cover" class="cover clip" data-start="0" data-duration="5.0" data-track-index="40">
+  <div class="cv-bg" style="background-image:url('cover_assets/still_132.jpg')"></div>
+  <div class="cv-grade"></div>
+  <div class="cv-scan"></div>
+  <div class="cv-cd"><span class="cd-hole"></span></div>
+  <div class="cv-col">
+    <div class="cv-eyebrow"><span class="ey-dot"></span>制作人 · 陈伟　×　萧亚轩</div>
+    <div class="cv-frame">
+      <div class="cv-portrait" style="background-image:url('cover_assets/still_132.jpg')"></div>
+      <div class="cv-ptint"></div>
+      <div class="cv-corner tl"></div><div class="cv-corner tr"></div>
+      <div class="cv-corner bl"></div><div class="cv-corner br"></div>
+    </div>
+    <h1 class="cv-title">陈伟把萧亚轩<br>做成了 <span class="chrome">ELVA</span></h1>
+    <div class="cv-eq"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="cv-sub">8 首歌 · 听懂千禧年都市女声</div>
+  </div>
+</div>
+    <audio id="master" data-start="0" data-duration="110.7" data-track-index="3" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused:true });
+    tl.set("#cover",{opacity:1},0);
+tl.set(".cv-col,.cv-portrait,.cv-title,.cv-sub,.cv-eyebrow,.cv-cd,.cv-bg,.cv-eq",{opacity:1},0);
+tl.fromTo(".cv-portrait",{scale:1.0},{scale:1.03,duration:4.2,ease:"sine.inOut"},0.4);
+tl.fromTo(".cv-cd",{rotation:0},{rotation:40,duration:5,ease:"none"},0);
+tl.fromTo(".cv-eq i",{scaleY:.7},{scaleY:1.15,duration:.5,yoyo:true,repeat:9,ease:"sine.inOut",stagger:{each:.08,from:"center"}},0);
+tl.to("#cover",{opacity:0,duration:0.7,ease:"power2.in"},4.3);
+tl.set("#cover",{opacity:0},5.0);
+tl.fromTo("#m1",{opacity:0},{opacity:1.0,duration:1.4,ease:"power1.inOut"},5.2);
+tl.to("#m1",{opacity:0,duration:2.0,ease:"power1.in"},18.7);
+tl.set("#m1",{opacity:0},20.7);
+
+tl.fromTo("#m1",{scale:1.06},{scale:1.0,duration:15.5,ease:"none"},5.2);
+tl.fromTo("#m2",{opacity:0},{opacity:1.0,duration:2.0,ease:"power1.inOut"},18.5);
+tl.to("#m2",{opacity:0,duration:2.0,ease:"power1.in"},31.5);
+tl.set("#m2",{opacity:0},33.5);
+
+tl.fromTo("#m2",{scale:1.06},{scale:1.0,duration:15.0,ease:"none"},18.5);
+tl.fromTo("#m3",{opacity:0},{opacity:1.0,duration:2.0,ease:"power1.inOut"},31.0);
+tl.to("#m3",{opacity:0,duration:1.6,ease:"power1.in"},42.9);
+tl.set("#m3",{opacity:0},44.5);
+
+tl.fromTo("#m3",{scale:1.06},{scale:1.0,duration:13.5,ease:"none"},31.0);
+tl.fromTo("#estill",{opacity:0},{opacity:1.0,duration:1.4,ease:"power1.inOut"},43.1);
+tl.to("#estill",{opacity:0,duration:1.4,ease:"power1.in"},71.2);
+tl.set("#estill",{opacity:0},72.6);
+
+tl.fromTo("#estill",{scale:1.06},{scale:1.0,duration:29.5,ease:"none"},43.1);
+tl.fromTo("#rshow",{opacity:0},{opacity:1.0,duration:0.9,ease:"power1.inOut"},71.9);
+tl.to("#rshow",{opacity:0,duration:1.6,ease:"power1.in"},100.3);
+tl.set("#rshow",{opacity:0},101.9);
+
+tl.fromTo("#rshow",{scale:1.05},{scale:1.0,duration:30.0,ease:"none"},71.9);
+tl.fromTo("#sub_op1",{opacity:0,y:16},{opacity:1,y:0,duration:0.42,ease:"power2.out"},5.6);
+tl.to("#sub_op1",{opacity:0,y:-8,duration:0.42,ease:"power1.in"},10.68);
+tl.set("#sub_op1",{opacity:0},11.1);
+tl.fromTo("#sub_op2",{opacity:0,y:16},{opacity:1,y:0,duration:0.42,ease:"power2.out"},11.3);
+tl.to("#sub_op2",{opacity:0,y:-8,duration:0.42,ease:"power1.in"},16.58);
+tl.set("#sub_op2",{opacity:0},17.0);
+tl.fromTo("#sub_op3",{opacity:0,y:16},{opacity:1,y:0,duration:0.42,ease:"power2.out"},17.2);
+tl.to("#sub_op3",{opacity:0,y:-8,duration:0.42,ease:"power1.in"},21.655);
+tl.set("#sub_op3",{opacity:0},22.075);
+tl.fromTo("#sub_op4",{opacity:0,y:16},{opacity:1,y:0,duration:0.42,ease:"power2.out"},22.175);
+tl.to("#sub_op4",{opacity:0,y:-8,duration:0.42,ease:"power1.in"},28.355);
+tl.set("#sub_op4",{opacity:0},28.775);
+tl.fromTo("#sub_op5",{opacity:0,y:16},{opacity:1,y:0,duration:0.42,ease:"power2.out"},28.975);
+tl.to("#sub_op5",{opacity:0,y:-8,duration:0.42,ease:"power1.in"},33.105);
+tl.set("#sub_op5",{opacity:0},33.525);
+tl.fromTo("#sub_op6",{opacity:0,y:16},{opacity:1,y:0,duration:0.42,ease:"power2.out"},34.025);
+tl.to("#sub_op6",{opacity:0,y:-8,duration:0.42,ease:"power1.in"},42.18);
+tl.set("#sub_op6",{opacity:0},42.6);
+tl.fromTo("#sub_rj1",{opacity:0,y:16},{opacity:1,y:0,duration:0.42,ease:"power2.out"},44.2);
+tl.to("#sub_rj1",{opacity:0,y:-8,duration:0.42,ease:"power1.in"},46.755);
+tl.set("#sub_rj1",{opacity:0},47.175);
+tl.fromTo("#sub_rj2",{opacity:0,y:16},{opacity:1,y:0,duration:0.42,ease:"power2.out"},47.475);
+tl.to("#sub_rj2",{opacity:0,y:-8,duration:0.42,ease:"power1.in"},56.555);
+tl.set("#sub_rj2",{opacity:0},56.975);
+tl.fromTo("#sub_rj3",{opacity:0,y:16},{opacity:1,y:0,duration:0.42,ease:"power2.out"},57.125);
+tl.to("#sub_rj3",{opacity:0,y:-8,duration:0.42,ease:"power1.in"},62.83);
+tl.set("#sub_rj3",{opacity:0},63.25);
+tl.fromTo("#sub_rj4",{opacity:0,y:16},{opacity:1,y:0,duration:0.42,ease:"power2.out"},63.4);
+tl.to("#sub_rj4",{opacity:0,y:-8,duration:0.42,ease:"power1.in"},69.28);
+tl.set("#sub_rj4",{opacity:0},69.7);
+tl.fromTo("#sub_tr1",{opacity:0,y:16},{opacity:1,y:0,duration:0.42,ease:"power2.out"},101.6);
+tl.to("#sub_tr1",{opacity:0,y:-8,duration:0.42,ease:"power1.in"},109.78);
+tl.set("#sub_tr1",{opacity:0},110.2);
+tl.fromTo("#opcd",{opacity:0},{opacity:1,duration:1.6,ease:"power1.inOut"},6.0);
+tl.to("#opcd",{opacity:0,duration:1.8,ease:"power1.in"},41.6);
+tl.set("#opcd",{opacity:0},43.6);
+tl.fromTo(".ov-cd",{rotation:0},{rotation:300,duration:34.0,ease:"none"},6.0);
+tl.fromTo("#screenA",{opacity:0,y:14},{opacity:1,y:0,duration:0.6,ease:"power2.out"},34.6);
+tl.to("#screenA",{opacity:0,y:-10,duration:0.7,ease:"power1.in"},39.6);
+tl.set("#screenA",{opacity:0},41.0);
+tl.fromTo("#title_rj",{opacity:0},{opacity:1.0,duration:0.7,ease:"power2.out"},43.9);
+tl.to("#title_rj",{opacity:0,duration:1.0,ease:"power1.in"},51.9);
+tl.set("#title_rj",{opacity:0},52.9);
+
+tl.fromTo("#title_rj .sc-name",{letterSpacing:"0.26em",opacity:0},{letterSpacing:"0.08em",opacity:1,duration:1.0,ease:"power3.out"},44.1);
+tl.fromTo("#title_rj .sc-no",{opacity:0,y:12},{opacity:1,y:0,duration:0.7,ease:"power2.out"},43.95);
+tl.fromTo("#tag_rj",{opacity:0,x:-14},{opacity:1,x:0,duration:0.7,ease:"power2.out"},52.0);
+tl.to("#tag_rj",{opacity:0,duration:0.8,ease:"power1.in"},101.2);
+tl.set("#tag_rj",{opacity:0},101.6);
+tl.fromTo("#screenB",{opacity:0,y:16},{opacity:1,y:0,duration:0.8,ease:"power2.out"},74.9);
+tl.to("#screenB",{opacity:0,y:-10,duration:0.9,ease:"power1.in"},81.9);
+tl.set("#screenB",{opacity:0},83.4);
+tl.fromTo("#trans",{opacity:0,y:18},{opacity:1,y:0,duration:0.7,ease:"power2.out"},101.8);
+tl.to("#trans",{opacity:1,duration:0.1},110.4);
+tl.fromTo("#grain",{opacity:.08},{opacity:.13,duration:2.2,yoyo:true,repeat:48,ease:"sine.inOut"},0);
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

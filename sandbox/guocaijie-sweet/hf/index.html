@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=1080, height=1920"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700;800;900&family=Noto+Sans+SC:wght@500;700;800;900&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:1080px; height:1920px; overflow:hidden; background:#160E08;
+  font-family:"Noto Serif SC",serif; color:#FFF6EC; -webkit-font-smoothing:antialiased; }
+.fv,.kb { position:absolute; inset:0; width:1080px; height:1920px; z-index:1; opacity:0; }
+.fv { object-fit:cover; } .kb { background-size:cover; background-repeat:no-repeat; transform-origin:center; }
+.tint { position:absolute; inset:0; z-index:2; opacity:0; }
+#grain { position:absolute; inset:0; z-index:3; pointer-events:none; opacity:0;
+  background:radial-gradient(ellipse at 50% 42%, transparent 54%, rgba(18,10,6,.5) 100%); }
+#grain::after { content:""; position:absolute; inset:0; mix-blend-mode:overlay; opacity:.42;
+  background-image:radial-gradient(circle at 12% 22%, rgba(255,255,255,.05) 0 .6px, transparent 1px),
+    radial-gradient(circle at 72% 64%, rgba(255,255,255,.045) 0 .6px, transparent 1px);
+  background-size:190px 190px,230px 230px; }
+
+/* Cover */
+#cover { position:absolute; inset:0; z-index:200; overflow:hidden;
+  background:linear-gradient(108deg, #181B23 0%, #2A2E38 33%, #2E2620 49%, #4A3328 64%, #6E4631 100%); }
+.cv-glow-l { position:absolute; left:-8%; top:6%; width:58%; height:56%; background:radial-gradient(ellipse at 42% 42%, rgba(120,140,175,.22), transparent 70%); }
+.cv-glow-r { position:absolute; right:-8%; top:5%; width:60%; height:58%; background:radial-gradient(ellipse at 58% 42%, rgba(255,193,120,.26), transparent 70%); }
+.cv-seam { position:absolute; top:-60px; bottom:-60px; left:50%; width:4px; z-index:2;
+  background:linear-gradient(180deg, rgba(255,231,182,0), rgba(255,231,182,.8) 35%, rgba(255,231,182,.8) 65%, rgba(255,231,182,0));
+  transform:translateX(-50%) rotate(7deg); box-shadow:0 0 30px rgba(255,220,150,.55); }
+.cv-grain { position:absolute; inset:0; z-index:2; opacity:.4; mix-blend-mode:overlay;
+  background-image:radial-gradient(circle at 20% 30%, rgba(255,255,255,.05) 0 .6px, transparent 1px); background-size:200px 200px; }
+.cv-card { position:absolute; top:236px; width:468px; height:614px; border-radius:26px; z-index:3; background-size:cover; transform-origin:center; box-shadow:0 30px 72px rgba(0,0,0,.55); }
+.cv-card-l { left:54px; background-image:url("cover_assets/cover_guli.jpg"); background-position:50% 22%; border:3px solid rgba(214,67,90,.55); }
+.cv-card-r { right:54px; background-image:url("cover_assets/cover_sweet.jpg"); background-position:50% 18%; border:3px solid rgba(255,201,60,.72); }
+.cv-card::after { content:""; position:absolute; inset:0; border-radius:23px; }
+.cv-card-l::after { background:linear-gradient(180deg, rgba(28,32,42,.12), rgba(18,20,28,.5)); }
+.cv-card-r::after { background:linear-gradient(180deg, rgba(255,205,130,.08), rgba(42,26,14,.4)); }
+.cv-clabel { position:absolute; top:872px; width:468px; text-align:center; z-index:4; font-family:"Noto Sans SC",sans-serif; font-size:31px; font-weight:800; letter-spacing:.14em; }
+.cv-clabel-l { left:54px; color:#EDB9C3; text-shadow:0 2px 12px rgba(0,0,0,.6); }
+.cv-clabel-r { right:54px; color:#FFE2A4; text-shadow:0 2px 12px rgba(0,0,0,.6); }
+.cv-eyebrow { position:absolute; top:104px; left:0; right:0; text-align:center; z-index:6; font-family:"Noto Sans SC",sans-serif; font-size:30px; font-weight:800; letter-spacing:.42em; color:#FFE6A6; text-shadow:0 2px 14px rgba(0,0,0,.6); }
+.cv-hook { position:absolute; top:948px; left:60px; right:60px; z-index:6; text-align:center; }
+.cv-hook .hk-pill { display:inline-block; padding:18px 44px; border-radius:999px; background:rgba(20,14,10,.46); border:2px solid rgba(255,225,170,.6); backdrop-filter:blur(6px); font-family:"Ma Shan Zheng",cursive; font-size:64px; color:#FFF1D6; letter-spacing:.04em; text-shadow:0 3px 20px rgba(0,0,0,.7); }
+.cv-title { position:absolute; bottom:148px; left:64px; right:64px; z-index:6; text-align:center; }
+.cv-title h1 { font-family:"Noto Serif SC",serif; font-size:120px; font-weight:900; line-height:1.1; color:#FFF6EC; letter-spacing:-1px; text-shadow:0 4px 30px rgba(0,0,0,.78); }
+.cv-title .ti-acc { color:#FFC93C; }
+.cv-title .ti-sub { margin-top:26px; font-family:"Noto Sans SC",sans-serif; font-size:34px; font-weight:700; letter-spacing:.1em; color:rgba(255,246,236,.88); text-shadow:0 2px 16px rgba(0,0,0,.7); }
+
+/* 开头标签 */
+.ollab { position:absolute; left:64px; top:120px; z-index:5; opacity:0; }
+.ollab .ol-tag { display:inline-block; padding:12px 26px; border-radius:999px; font-family:"Noto Sans SC",sans-serif; font-size:32px; font-weight:800; letter-spacing:.14em; }
+.ol-cold { background:rgba(28,32,42,.62); border:2px solid rgba(214,67,90,.7); color:#FAD7DE; }
+.ol-warm { background:rgba(255,201,60,.18); border:2px solid rgba(255,201,60,.8); color:#FFEFC2; }
+
+/* 倒数轨 */
+.rail { position:absolute; left:44px; top:556px; width:64px; z-index:5; opacity:0; }
+.rail .rd { position:relative; width:60px; height:60px; margin:13px 0; border-radius:50%; background:rgba(20,16,12,.66); border:2px solid rgba(255,255,255,.22); display:flex; align-items:center; justify-content:center; }
+.rail .rd span { font-family:"Noto Sans SC",sans-serif; font-size:26px; font-weight:800; color:rgba(255,255,255,.7); }
+.rail .rd.past { background:rgba(86,80,72,.55); }
+.rail .rd.act { background:var(--pri); border-color:var(--pri); box-shadow:0 0 30px var(--pri); transform:scale(1.16); }
+.rail .rd.act span { color:#1A130E; }
+
+/* 持久 No+歌名 徽标 */
+.badge { position:absolute; left:60px; top:150px; z-index:5; opacity:0; display:flex; align-items:baseline; gap:18px; }
+.badge .b-no { font-family:"Noto Serif SC",serif; font-weight:900; font-size:74px; color:var(--pri); line-height:.9; letter-spacing:.02em; text-shadow:0 4px 22px rgba(0,0,0,.55); }
+.badge .b-no b { font-size:104px; }
+.badge .b-nm { font-family:"Noto Serif SC",serif; font-weight:700; font-size:42px; color:#FFF6EC; text-shadow:0 2px 16px rgba(0,0,0,.75); }
+
+/* 信息卡 */
+.card { position:absolute; left:56px; right:56px; bottom:432px; z-index:5; opacity:0; padding:32px 40px; border-radius:24px;
+  background:linear-gradient(160deg, rgba(255,247,232,.15), rgba(255,247,232,.04)); backdrop-filter:blur(24px); border:1.5px solid rgba(255,225,170,.3); box-shadow:0 28px 70px rgba(0,0,0,.5); }
+.card .c-nm { font-family:"Noto Serif SC",serif; font-size:74px; font-weight:800; color:#FFF6EC; letter-spacing:.5px; }
+.card .c-al { font-family:"Noto Sans SC",sans-serif; font-size:30px; font-weight:500; color:rgba(255,246,236,.82); margin-top:14px; letter-spacing:.02em; }
+.card .c-tag { display:inline-flex; align-items:center; gap:12px; margin-top:18px; font-family:"Noto Sans SC",sans-serif; font-size:31px; font-weight:700; color:var(--acc); }
+.card .c-tag .dot { width:12px; height:12px; border-radius:50%; background:var(--pri); box-shadow:0 0 14px var(--pri); }
+
+/* 大关键词 / 金句 */
+.kw { position:absolute; left:0; right:0; bottom:300px; z-index:4; text-align:center; opacity:0; font-family:"Noto Serif SC",serif; font-size:300px; font-weight:900; line-height:.82; letter-spacing:-6px; mix-blend-mode:screen; filter:drop-shadow(0 10px 70px rgba(255,200,90,.22)); }
+.midq { position:absolute; left:76px; right:76px; bottom:206px; z-index:5; text-align:center; opacity:0; font-family:"Noto Serif SC",serif; font-size:50px; font-weight:600; line-height:1.42; color:#FFF6EC; text-shadow:0 3px 22px rgba(0,0,0,.72); }
+
+/* 反差转场卡 */
+.transcard { position:absolute; inset:0; z-index:6; opacity:0; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(16,10,6,.5), rgba(16,10,6,.74)); }
+.transcard .tc-line { font-family:"Noto Serif SC",serif; font-size:64px; font-weight:700; line-height:1.46; text-align:center; color:#FFF1D6; padding:0 84px; text-shadow:0 4px 24px rgba(0,0,0,.75); }
+
+/* 结尾 */
+.outroblk { position:absolute; inset:0; z-index:8; opacity:0; background:radial-gradient(ellipse at 50% 38%, #2A1E14 0%, #160E08 72%); }
+.ot-rail { position:absolute; top:430px; left:104px; right:104px; }
+.ot-li { display:flex; align-items:baseline; gap:24px; padding:9px 0; opacity:0; border-bottom:1px solid rgba(255,255,255,.08); }
+.ot-n { font-family:"Noto Sans SC",sans-serif; font-size:30px; font-weight:800; color:#FFC93C; min-width:92px; }
+.ot-m { font-family:"Noto Serif SC",serif; font-size:44px; font-weight:700; color:#FFF6EC; }
+.ot-h { position:absolute; top:1000px; left:100px; right:100px; font-family:"Noto Serif SC",serif; font-size:96px; font-weight:900; line-height:1.1; color:#FFF6EC; letter-spacing:-1px; opacity:0; }
+.ot-q { position:absolute; top:1320px; left:100px; right:100px; font-family:"Noto Sans SC",sans-serif; font-size:34px; font-weight:700; letter-spacing:.06em; color:#FFC93C; opacity:0; }
+</style></head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="307.125" data-width="1080" data-height="1920">
+  <div id="if1" class="kb clip" data-start="2.6" data-duration="5.2" data-track-index="1" style="background-image:url(stills/guli1.jpg);background-position:58% 33%"></div>
+<video id="if2" class="fv clip" data-start="7.4" data-duration="5.4" data-track-index="2" src="clips_seg2/w_yx_a.mp4" muted playsinline></video>
+<div id="if3" class="kb clip" data-start="12.2" data-duration="4.0" data-track-index="3" style="background-image:url(stills/guli2.jpg);background-position:60% 40%"></div>
+<video id="if4" class="fv clip" data-start="15.4" data-duration="2.125" data-track-index="4" src="clips_seg2/w_yx_garden.mp4" muted playsinline></video>
+<video id="fv_s5" class="fv clip" data-start="15.525" data-duration="46.5" data-track-index="7" src="clips_seg/s5.mp4" muted playsinline></video>
+<video id="fv_s4" class="fv clip" data-start="61.025" data-duration="53.0" data-track-index="8" src="clips_seg/s4.mp4" muted playsinline></video>
+<video id="fv_s3" class="fv clip" data-start="113.025" data-duration="55.325" data-track-index="9" src="clips_seg/s3.mp4" muted playsinline></video>
+<video id="fv_s2" class="fv clip" data-start="167.35" data-duration="58.0" data-track-index="10" src="clips_seg/s2.mp4" muted playsinline></video>
+<video id="fv_s1_0" class="fv clip" data-start="224.35" data-duration="9.025" data-track-index="11" src="clips_seg/s1_m0.mp4" muted playsinline></video>
+<video id="fv_s1_1" class="fv clip" data-start="231.975" data-duration="9.025" data-track-index="12" src="clips_seg/s1_m1.mp4" muted playsinline></video>
+<video id="fv_s1_2" class="fv clip" data-start="239.6" data-duration="9.025" data-track-index="13" src="clips_seg/s1_m2.mp4" muted playsinline></video>
+<video id="fv_s1_3" class="fv clip" data-start="247.225" data-duration="9.025" data-track-index="14" src="clips_seg/s1_m3.mp4" muted playsinline></video>
+<video id="fv_s1_4" class="fv clip" data-start="254.85" data-duration="9.025" data-track-index="15" src="clips_seg/s1_m4.mp4" muted playsinline></video>
+<video id="fv_s1_5" class="fv clip" data-start="262.475" data-duration="9.025" data-track-index="16" src="clips_seg/s1_m5.mp4" muted playsinline></video>
+<video id="fv_s1_6" class="fv clip" data-start="270.1" data-duration="9.025" data-track-index="17" src="clips_seg/s1_m6.mp4" muted playsinline></video>
+<video id="fv_s1_7" class="fv clip" data-start="277.725" data-duration="9.025" data-track-index="18" src="clips_seg/s1_m7.mp4" muted playsinline></video>
+  <div id="tint_s5" class="clip tint" data-start="15.525" data-duration="46.5" data-track-index="100" style="background:linear-gradient(180deg,rgba(120,150,190,.20) 0%, rgba(20,14,8,.30) 42%, rgba(16,10,6,.82) 100%)"></div>
+<div id="rail_s5" class="clip rail" data-start="16.525" data-duration="45.5" data-track-index="101" style="--pri:#9FB3C8"><div class="rd act"><span>5</span></div><div class="rd"><span>4</span></div><div class="rd"><span>3</span></div><div class="rd"><span>2</span></div><div class="rd"><span>1</span></div></div>
+<div id="badge_s5" class="clip badge" data-start="17.475" data-duration="44.55" data-track-index="102" style="--pri:#9FB3C8"><span class="b-no">No.<b>5</b></span><span class="b-nm">《又圆了的月亮》</span></div>
+<div id="card_s5" class="clip card" data-start="17.475" data-duration="15.65" data-track-index="103" style="--pri:#9FB3C8;--acc:#E8E2D6">
+      <div class="c-nm">《又圆了的月亮》</div>
+      <div class="c-al">2009《爱异想》</div>
+      <div class="c-tag"><span class="dot"></span>苦甜 · 月光味的倔强</div></div>
+<div id="kw_s5" class="clip kw" data-start="33.025" data-duration="29.0" data-track-index="104" style="color:#9FB3C8">苦甜</div>
+<div id="mid_s5" class="clip midq" data-start="55.525" data-duration="6.5" data-track-index="105">还没学会冷脸，她先学会了，自己把自己哄好。</div>
+<div id="tint_s4" class="clip tint" data-start="61.025" data-duration="53.0" data-track-index="110" style="background:linear-gradient(180deg,rgba(247,162,59,.18) 0%, rgba(20,14,8,.30) 42%, rgba(16,10,6,.82) 100%)"></div>
+<div id="rail_s4" class="clip rail" data-start="62.025" data-duration="52.0" data-track-index="111" style="--pri:#F7A23B"><div class="rd past"><span>5</span></div><div class="rd act"><span>4</span></div><div class="rd"><span>3</span></div><div class="rd"><span>2</span></div><div class="rd"><span>1</span></div></div>
+<div id="badge_s4" class="clip badge" data-start="68.675" data-duration="45.35" data-track-index="112" style="--pri:#F7A23B"><span class="b-no">No.<b>4</b></span><span class="b-nm">《快一点》</span></div>
+<div id="card_s4" class="clip card" data-start="68.675" data-duration="17.45" data-track-index="113" style="--pri:#F7A23B;--acc:#FCD96B">
+      <div class="c-nm">《快一点》</div>
+      <div class="c-al">2007《隐形超人》</div>
+      <div class="c-tag"><span class="dot"></span>元气 · 校园 · 初代甜妹</div></div>
+<div id="kw_s4" class="clip kw" data-start="86.025" data-duration="28.0" data-track-index="114" style="color:#F7A23B">元气</div>
+<div id="mid_s4" class="clip midq" data-start="107.525" data-duration="6.5" data-track-index="115">喜欢一个人，连呼吸都想催它——快一点。</div>
+<div id="tr_s4" class="clip transcard" data-start="62.025" data-duration="6.95" data-track-index="116"><div class="tc-line">还没到顾里的冷脸时期，<br>她已经，有点小倔强了。</div></div>
+<div id="tint_s3" class="clip tint" data-start="113.025" data-duration="55.325" data-track-index="120" style="background:linear-gradient(180deg,rgba(244,169,192,.20) 0%, rgba(20,14,8,.30) 42%, rgba(16,10,6,.82) 100%)"></div>
+<div id="rail_s3" class="clip rail" data-start="114.025" data-duration="54.325" data-track-index="121" style="--pri:#F4A9C0"><div class="rd past"><span>5</span></div><div class="rd past"><span>4</span></div><div class="rd act"><span>3</span></div><div class="rd"><span>2</span></div><div class="rd"><span>1</span></div></div>
+<div id="badge_s3" class="clip badge" data-start="119.7" data-duration="48.65" data-track-index="122" style="--pri:#F4A9C0"><span class="b-no">No.<b>3</b></span><span class="b-nm">《卡通人生》</span></div>
+<div id="card_s3" class="clip card" data-start="119.7" data-duration="16.75" data-track-index="123" style="--pri:#F4A9C0;--acc:#FFE3F0">
+      <div class="c-nm">《卡通人生》</div>
+      <div class="c-al">2010《烟火》· 广告主题曲</div>
+      <div class="c-tag"><span class="dot"></span>鬼马 · 童话 · 可爱暴击</div></div>
+<div id="kw_s3" class="clip kw" data-start="136.35" data-duration="32.0" data-track-index="124" style="color:#F4A9C0">鬼马</div>
+<div id="mid_s3" class="clip midq" data-start="161.85" data-duration="6.5" data-track-index="125">她把人生过成了卡通，连烦恼，都是彩色的。</div>
+<div id="tr_s3" class="clip transcard" data-start="114.025" data-duration="5.975" data-track-index="126"><div class="tc-line">甜妹，也不是只会撒娇——<br>她还可以，很鬼马。</div></div>
+<div id="tint_s2" class="clip tint" data-start="167.35" data-duration="58.0" data-track-index="130" style="background:linear-gradient(180deg,rgba(232,89,123,.18) 0%, rgba(20,14,8,.30) 42%, rgba(16,10,6,.82) 100%)"></div>
+<div id="rail_s2" class="clip rail" data-start="168.35" data-duration="57.0" data-track-index="131" style="--pri:#E8597B"><div class="rd past"><span>5</span></div><div class="rd past"><span>4</span></div><div class="rd past"><span>3</span></div><div class="rd act"><span>2</span></div><div class="rd"><span>1</span></div></div>
+<div id="badge_s2" class="clip badge" data-start="175.55" data-duration="49.8" data-track-index="132" style="--pri:#E8597B"><span class="b-no">No.<b>2</b></span><span class="b-nm">《爱异想》</span></div>
+<div id="card_s2" class="clip card" data-start="175.55" data-duration="17.9" data-track-index="133" style="--pri:#E8597B;--acc:#C9CED6">
+      <div class="c-nm">《爱异想》</div>
+      <div class="c-al">2009《爱异想》同名主打</div>
+      <div class="c-tag"><span class="dot"></span>甜酷 · 嘴硬心软 · 反差萌</div></div>
+<div id="kw_s2" class="clip kw" data-start="193.35" data-duration="32.0" data-track-index="134" style="color:#E8597B">甜酷</div>
+<div id="mid_s2" class="clip midq" data-start="218.85" data-duration="6.5" data-track-index="135">她的甜里有怪，有想法，还有一点点，酷。</div>
+<div id="tr_s2" class="clip transcard" data-start="168.35" data-duration="7.5" data-track-index="136"><div class="tc-line">你以为她后来才有气场？<br>早期的甜里，就藏着锋利。</div></div>
+<div id="tint_s1" class="clip tint" data-start="224.35" data-duration="62.0" data-track-index="140" style="background:linear-gradient(180deg,rgba(255,201,60,.16) 0%, rgba(20,14,8,.30) 42%, rgba(16,10,6,.82) 100%)"></div>
+<div id="rail_s1" class="clip rail" data-start="225.35" data-duration="61.0" data-track-index="141" style="--pri:#FFC93C"><div class="rd past"><span>5</span></div><div class="rd past"><span>4</span></div><div class="rd past"><span>3</span></div><div class="rd past"><span>2</span></div><div class="rd act"><span>1</span></div></div>
+<div id="badge_s1" class="clip badge" data-start="230.75" data-duration="55.6" data-track-index="142" style="--pri:#FFC93C"><span class="b-no">No.<b>1</b></span><span class="b-nm">Little Sunshine</span></div>
+<div id="card_s1" class="clip card" data-start="230.75" data-duration="19.7" data-track-index="143" style="--pri:#FFC93C;--acc:#FFF1D6">
+      <div class="c-nm">Little Sunshine</div>
+      <div class="c-al">2010《烟火》</div>
+      <div class="c-tag"><span class="dot"></span>小太阳 · 清爽甜 · 顾里之前的郭采洁</div></div>
+<div id="kw_s1" class="clip kw" data-start="250.35" data-duration="36.0" data-track-index="144" style="color:#FFC93C">小太阳</div>
+<div id="mid_s1" class="clip midq" data-start="279.85" data-duration="6.5" data-track-index="145">气场可以后天再长，可这份亮，是她本来就有的。</div>
+<div id="tr_s1" class="clip transcard" data-start="225.35" data-duration="5.7" data-track-index="146"><div class="tc-line">而最后这一首，<br>才是本期真正的——小太阳。</div></div>
+  <div id="grain" class="clip" data-start="0" data-duration="307.125" data-track-index="300"></div>
+  <div id="cover" class="clip" data-start="0" data-duration="3.0" data-track-index="200">
+  <div class="cv-glow-l"></div><div class="cv-glow-r"></div>
+  <div class="cv-card cv-card-l"></div><div class="cv-card cv-card-r"></div>
+  <div class="cv-seam"></div><div class="cv-grain"></div>
+  <div class="cv-clabel cv-clabel-l">顾里 · 高冷</div><div class="cv-clabel cv-clabel-r">早期 · 甜妹</div>
+  <div class="cv-eyebrow">华 语 甜 妹 考 古 · 郭 采 洁</div>
+  <div class="cv-hook"><span class="hk-pill">这真的是同一个郭采洁？</span></div>
+  <div class="cv-title"><h1>顾里之前，<br>她明明是<span class="ti-acc">甜妹</span>啊。</h1>
+    <div class="ti-sub">短发红唇之前，她是一颗小太阳</div></div>
+</div>
+  <div id="ol1" class="clip ollab" data-start="2.8" data-duration="4.8" data-track-index="5"><span class="ol-tag ol-cold">顾里 · 高冷</span></div><div id="ol2" class="clip ollab" data-start="7.8" data-duration="8.425" data-track-index="6"><span class="ol-tag ol-warm">早期 · 甜妹</span></div>
+  <div id="outro" class="clip outroblk" data-start="286.35" data-duration="20.775" data-track-index="310">
+  <div class="ot-rail"><div class="ot-li"><span class="ot-n">No.5</span><span class="ot-m">《又圆了的月亮》</span></div><div class="ot-li"><span class="ot-n">No.4</span><span class="ot-m">《快一点》</span></div><div class="ot-li"><span class="ot-n">No.3</span><span class="ot-m">《卡通人生》</span></div><div class="ot-li"><span class="ot-n">No.2</span><span class="ot-m">《爱异想》</span></div><div class="ot-li"><span class="ot-n">No.1</span><span class="ot-m">Little Sunshine</span></div></div>
+  <h2 class="ot-h">顾里之前，<br>她明明是个甜妹啊。</h2>
+  <p class="ot-q">你是从哪一首歌认识她的？</p>
+</div>
+  <audio id="master" data-start="0" data-duration="307.125" data-track-index="190" src="master.wav" data-volume="1"></audio>
+</div>
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused:true });
+tl.set("#cover",{opacity:1},0);tl.set(".cv-card,.cv-clabel,.cv-title,.cv-hook,.cv-eyebrow,.cv-seam",{opacity:1},0);tl.fromTo(".cv-card-l",{scale:1.0},{scale:1.04,duration:3.0,ease:"none"},0);tl.fromTo(".cv-card-r",{scale:1.0},{scale:1.04,duration:3.0,ease:"none"},0);tl.fromTo(".cv-hook .hk-pill",{scale:.97},{scale:1.03,duration:1.4,yoyo:true,repeat:1,ease:"sine.inOut"},0.4);tl.to("#cover",{opacity:0,duration:.7,ease:"power2.in"},2.3);tl.set("#cover",{opacity:0},3.0);tl.to("#grain",{opacity:1,duration:1.0},2.8);tl.set("#if1",{scale:1.06},2.6);tl.fromTo("#if1",{opacity:0},{opacity:1,duration:.9},2.6);tl.to("#if1",{scale:1.16,duration:5.2,ease:"none"},2.6);tl.to("#if1",{opacity:0,duration:.8},7.0);tl.set("#if1",{opacity:0},7.8);tl.fromTo("#if2",{opacity:0,scale:1.06},{opacity:1,scale:1.0,duration:.9},7.4);tl.to("#if2",{opacity:0,duration:.8},12.0);tl.set("#if2",{opacity:0},12.8);tl.set("#if3",{scale:1.05},12.2);tl.fromTo("#if3",{opacity:0},{opacity:1,duration:.9},12.2);tl.to("#if3",{scale:1.15,duration:4.0,ease:"none"},12.2);tl.to("#if3",{opacity:0,duration:.8},15.4);tl.set("#if3",{opacity:0},16.2);tl.fromTo("#if4",{opacity:0,scale:1.06},{opacity:1,scale:1.0,duration:.9},15.4);tl.to("#if4",{opacity:0,duration:.8},16.725);tl.set("#if4",{opacity:0},17.525);tl.fromTo("#fv_s5",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0},15.525);tl.to("#fv_s5",{opacity:0,duration:1.0},61.025);tl.set("#fv_s5",{opacity:0},62.025);tl.fromTo("#fv_s4",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0},61.025);tl.to("#fv_s4",{opacity:0,duration:1.0},113.025);tl.set("#fv_s4",{opacity:0},114.025);tl.fromTo("#fv_s3",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0},113.025);tl.to("#fv_s3",{opacity:0,duration:1.0},167.35);tl.set("#fv_s3",{opacity:0},168.35);tl.fromTo("#fv_s2",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0},167.35);tl.to("#fv_s2",{opacity:0,duration:1.0},224.35);tl.set("#fv_s2",{opacity:0},225.35);tl.fromTo("#fv_s1_0",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0},224.35);tl.to("#fv_s1_0",{opacity:0,duration:1.0},232.375);tl.set("#fv_s1_0",{opacity:0},233.375);tl.fromTo("#fv_s1_1",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0},231.975);tl.to("#fv_s1_1",{opacity:0,duration:1.0},240.0);tl.set("#fv_s1_1",{opacity:0},241.0);tl.fromTo("#fv_s1_2",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0},239.6);tl.to("#fv_s1_2",{opacity:0,duration:1.0},247.625);tl.set("#fv_s1_2",{opacity:0},248.625);tl.fromTo("#fv_s1_3",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0},247.225);tl.to("#fv_s1_3",{opacity:0,duration:1.0},255.25);tl.set("#fv_s1_3",{opacity:0},256.25);tl.fromTo("#fv_s1_4",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0},254.85);tl.to("#fv_s1_4",{opacity:0,duration:1.0},262.875);tl.set("#fv_s1_4",{opacity:0},263.875);tl.fromTo("#fv_s1_5",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0},262.475);tl.to("#fv_s1_5",{opacity:0,duration:1.0},270.5);tl.set("#fv_s1_5",{opacity:0},271.5);tl.fromTo("#fv_s1_6",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0},270.1);tl.to("#fv_s1_6",{opacity:0,duration:1.0},278.125);tl.set("#fv_s1_6",{opacity:0},279.125);tl.fromTo("#fv_s1_7",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0},277.725);tl.to("#fv_s1_7",{opacity:0,duration:1.0},285.75);tl.set("#fv_s1_7",{opacity:0},286.75);tl.fromTo("#ol1",{opacity:0,x:-22},{opacity:1,x:0,duration:.5},2.8);tl.to("#ol1",{opacity:0,duration:.45},7.1);tl.set("#ol1",{opacity:0},7.6);tl.fromTo("#ol2",{opacity:0,x:-22},{opacity:1,x:0,duration:.5},7.8);tl.to("#ol2",{opacity:0,duration:.45},15.725);tl.set("#ol2",{opacity:0},16.225);tl.fromTo("#tint_s5",{opacity:0},{opacity:1,duration:1.2},15.525);tl.to("#tint_s5",{opacity:0,duration:1.0},61.025);tl.set("#tint_s5",{opacity:0},62.025);tl.fromTo("#rail_s5",{opacity:0},{opacity:1,duration:.7},16.725);tl.to("#rail_s5",{opacity:0,duration:.6},61.525);tl.set("#rail_s5",{opacity:0},62.025);tl.fromTo("#badge_s5",{opacity:0,x:-16},{opacity:1,x:0,duration:.7,ease:"power2.out"},17.475);tl.to("#badge_s5",{opacity:0,duration:.7},61.425);tl.set("#badge_s5",{opacity:0},62.025);tl.fromTo("#card_s5",{opacity:0,y:36},{opacity:1,y:0,duration:.8,ease:"power3.out"},17.775);tl.to("#card_s5",{opacity:0,y:-14,duration:.55,ease:"power2.in"},32.525);tl.set("#card_s5",{opacity:0},33.125);tl.fromTo("#kw_s5",{opacity:0,scale:.92},{opacity:.5,scale:1.0,duration:1.6,ease:"power3.out"},33.625);tl.to("#kw_s5",{opacity:0,duration:1.0},60.725);tl.set("#kw_s5",{opacity:0},62.025);tl.fromTo("#mid_s5",{opacity:0,y:26},{opacity:1,y:0,duration:.8,ease:"power2.out"},56.025);tl.to("#mid_s5",{opacity:0,y:-12,duration:.55},60.225);tl.set("#mid_s5",{opacity:0},62.025);tl.fromTo("#tint_s4",{opacity:0},{opacity:1,duration:1.2},61.025);tl.to("#tint_s4",{opacity:0,duration:1.0},113.025);tl.set("#tint_s4",{opacity:0},114.025);tl.fromTo("#rail_s4",{opacity:0},{opacity:1,duration:.7},62.225);tl.to("#rail_s4",{opacity:0,duration:.6},113.525);tl.set("#rail_s4",{opacity:0},114.025);tl.fromTo("#badge_s4",{opacity:0,x:-16},{opacity:1,x:0,duration:.7,ease:"power2.out"},68.675);tl.to("#badge_s4",{opacity:0,duration:.7},113.425);tl.set("#badge_s4",{opacity:0},114.025);tl.fromTo("#card_s4",{opacity:0,y:36},{opacity:1,y:0,duration:.8,ease:"power3.out"},68.975);tl.to("#card_s4",{opacity:0,y:-14,duration:.55,ease:"power2.in"},85.525);tl.set("#card_s4",{opacity:0},86.125);tl.fromTo("#kw_s4",{opacity:0,scale:.92},{opacity:.5,scale:1.0,duration:1.6,ease:"power3.out"},86.625);tl.to("#kw_s4",{opacity:0,duration:1.0},112.725);tl.set("#kw_s4",{opacity:0},114.025);tl.fromTo("#mid_s4",{opacity:0,y:26},{opacity:1,y:0,duration:.8,ease:"power2.out"},108.025);tl.to("#mid_s4",{opacity:0,y:-12,duration:.55},112.225);tl.set("#mid_s4",{opacity:0},114.025);tl.fromTo("#tr_s4",{opacity:0},{opacity:1,duration:.45},62.175);tl.fromTo("#tr_s4 .tc-line",{y:14},{y:0,duration:.6,ease:"power2.out"},62.175);tl.to("#tr_s4",{opacity:0,duration:.5},68.325);tl.set("#tr_s4",{opacity:0},68.775);tl.fromTo("#tint_s3",{opacity:0},{opacity:1,duration:1.2},113.025);tl.to("#tint_s3",{opacity:0,duration:1.0},167.35);tl.set("#tint_s3",{opacity:0},168.35);tl.fromTo("#rail_s3",{opacity:0},{opacity:1,duration:.7},114.225);tl.to("#rail_s3",{opacity:0,duration:.6},167.85);tl.set("#rail_s3",{opacity:0},168.35);tl.fromTo("#badge_s3",{opacity:0,x:-16},{opacity:1,x:0,duration:.7,ease:"power2.out"},119.7);tl.to("#badge_s3",{opacity:0,duration:.7},167.75);tl.set("#badge_s3",{opacity:0},168.35);tl.fromTo("#card_s3",{opacity:0,y:36},{opacity:1,y:0,duration:.8,ease:"power3.out"},120.0);tl.to("#card_s3",{opacity:0,y:-14,duration:.55,ease:"power2.in"},135.85);tl.set("#card_s3",{opacity:0},136.45);tl.fromTo("#kw_s3",{opacity:0,scale:.92},{opacity:.5,scale:1.0,duration:1.6,ease:"power3.out"},136.95);tl.to("#kw_s3",{opacity:0,duration:1.0},167.05);tl.set("#kw_s3",{opacity:0},168.35);tl.fromTo("#mid_s3",{opacity:0,y:26},{opacity:1,y:0,duration:.8,ease:"power2.out"},162.35);tl.to("#mid_s3",{opacity:0,y:-12,duration:.55},166.55);tl.set("#mid_s3",{opacity:0},168.35);tl.fromTo("#tr_s3",{opacity:0},{opacity:1,duration:.45},114.175);tl.fromTo("#tr_s3 .tc-line",{y:14},{y:0,duration:.6,ease:"power2.out"},114.175);tl.to("#tr_s3",{opacity:0,duration:.5},119.35);tl.set("#tr_s3",{opacity:0},119.8);tl.fromTo("#tint_s2",{opacity:0},{opacity:1,duration:1.2},167.35);tl.to("#tint_s2",{opacity:0,duration:1.0},224.35);tl.set("#tint_s2",{opacity:0},225.35);tl.fromTo("#rail_s2",{opacity:0},{opacity:1,duration:.7},168.55);tl.to("#rail_s2",{opacity:0,duration:.6},224.85);tl.set("#rail_s2",{opacity:0},225.35);tl.fromTo("#badge_s2",{opacity:0,x:-16},{opacity:1,x:0,duration:.7,ease:"power2.out"},175.55);tl.to("#badge_s2",{opacity:0,duration:.7},224.75);tl.set("#badge_s2",{opacity:0},225.35);tl.fromTo("#card_s2",{opacity:0,y:36},{opacity:1,y:0,duration:.8,ease:"power3.out"},175.85);tl.to("#card_s2",{opacity:0,y:-14,duration:.55,ease:"power2.in"},192.85);tl.set("#card_s2",{opacity:0},193.45);tl.fromTo("#kw_s2",{opacity:0,scale:.92},{opacity:.5,scale:1.0,duration:1.6,ease:"power3.out"},193.95);tl.to("#kw_s2",{opacity:0,duration:1.0},224.05);tl.set("#kw_s2",{opacity:0},225.35);tl.fromTo("#mid_s2",{opacity:0,y:26},{opacity:1,y:0,duration:.8,ease:"power2.out"},219.35);tl.to("#mid_s2",{opacity:0,y:-12,duration:.55},223.55);tl.set("#mid_s2",{opacity:0},225.35);tl.fromTo("#tr_s2",{opacity:0},{opacity:1,duration:.45},168.5);tl.fromTo("#tr_s2 .tc-line",{y:14},{y:0,duration:.6,ease:"power2.out"},168.5);tl.to("#tr_s2",{opacity:0,duration:.5},175.2);tl.set("#tr_s2",{opacity:0},175.65);tl.fromTo("#tint_s1",{opacity:0},{opacity:1,duration:1.2},224.35);tl.to("#tint_s1",{opacity:0,duration:1.0},285.35);tl.set("#tint_s1",{opacity:0},286.35);tl.fromTo("#rail_s1",{opacity:0},{opacity:1,duration:.7},225.55);tl.to("#rail_s1",{opacity:0,duration:.6},285.85);tl.set("#rail_s1",{opacity:0},286.35);tl.fromTo("#badge_s1",{opacity:0,x:-16},{opacity:1,x:0,duration:.7,ease:"power2.out"},230.75);tl.to("#badge_s1",{opacity:0,duration:.7},285.75);tl.set("#badge_s1",{opacity:0},286.35);tl.fromTo("#card_s1",{opacity:0,y:36},{opacity:1,y:0,duration:.8,ease:"power3.out"},231.05);tl.to("#card_s1",{opacity:0,y:-14,duration:.55,ease:"power2.in"},249.85);tl.set("#card_s1",{opacity:0},250.45);tl.fromTo("#kw_s1",{opacity:0,scale:.92},{opacity:.5,scale:1.0,duration:1.6,ease:"power3.out"},250.95);tl.to("#kw_s1",{opacity:0,duration:1.0},285.05);tl.set("#kw_s1",{opacity:0},286.35);tl.fromTo("#mid_s1",{opacity:0,y:26},{opacity:1,y:0,duration:.8,ease:"power2.out"},280.35);tl.to("#mid_s1",{opacity:0,y:-12,duration:.55},284.55);tl.set("#mid_s1",{opacity:0},286.35);tl.fromTo("#tr_s1",{opacity:0},{opacity:1,duration:.45},225.5);tl.fromTo("#tr_s1 .tc-line",{y:14},{y:0,duration:.6,ease:"power2.out"},225.5);tl.to("#tr_s1",{opacity:0,duration:.5},230.4);tl.set("#tr_s1",{opacity:0},230.85);tl.fromTo("#outro",{opacity:0},{opacity:1,duration:.9},286.65);tl.fromTo(".ot-rail .ot-li:nth-child(1)",{opacity:0,x:-18},{opacity:.92,x:0,duration:.5},287.35);tl.fromTo(".ot-rail .ot-li:nth-child(2)",{opacity:0,x:-18},{opacity:.92,x:0,duration:.5},287.57);tl.fromTo(".ot-rail .ot-li:nth-child(3)",{opacity:0,x:-18},{opacity:.92,x:0,duration:.5},287.79);tl.fromTo(".ot-rail .ot-li:nth-child(4)",{opacity:0,x:-18},{opacity:.92,x:0,duration:.5},288.01);tl.fromTo(".ot-rail .ot-li:nth-child(5)",{opacity:0,x:-18},{opacity:.92,x:0,duration:.5},288.23);tl.fromTo(".ot-h",{opacity:0,y:30},{opacity:1,y:0,duration:1.0,ease:"power3.out"},288.95);tl.fromTo(".ot-q",{opacity:0,y:10},{opacity:.95,y:0,duration:.7},303.925);
+window.__timelines["main"] = tl;
+</script>
+</body></html>

@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="zh"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=1080, height=1920"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700;800;900&family=Ma+Shan+Zheng&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#080B12;color:#ECE3CE;
+  font-family:"Noto Serif SC","Songti SC",serif;-webkit-font-smoothing:antialiased;}
+:root{--ink:#080B12;--gold:#C9A24B;--goldhi:#E8C879;--paper:#ECE3CE;}
+.paper{position:absolute;inset:0;background:
+  radial-gradient(ellipse at 30% 18%, rgba(36,46,72,.55) 0, transparent 55%),
+  radial-gradient(ellipse at 75% 82%, rgba(28,22,14,.6) 0, transparent 60%),
+  linear-gradient(180deg,#0A0E18 0%,#080B12 55%,#06080E 100%);}
+.grain{position:absolute;inset:0;opacity:.5;mix-blend-mode:overlay;background-image:
+  radial-gradient(circle at 12% 28%, rgba(236,227,206,.05) 0 .6px, transparent 1px),
+  radial-gradient(circle at 68% 62%, rgba(236,227,206,.05) 0 .6px, transparent 1px),
+  radial-gradient(circle at 42% 88%, rgba(236,227,206,.04) 0 .5px, transparent .9px);
+  background-size:160px 160px,210px 210px,140px 140px;}
+/* 封面 */
+.cover{position:absolute;inset:0;z-index:60;overflow:hidden;background:#06080E;}
+.cv-bokeh{position:absolute;inset:0;filter:blur(2px);}
+.cv-bokeh span{position:absolute;border-radius:50%;filter:blur(46px);mix-blend-mode:screen;opacity:.66;}
+.b1{width:420px;height:420px;left:560px;top:60px;background:radial-gradient(circle,rgba(216,170,80,.9),transparent 70%);}
+.b2{width:360px;height:360px;left:820px;top:300px;background:radial-gradient(circle,rgba(120,150,220,.8),transparent 70%);}
+.b3{width:300px;height:300px;left:640px;top:430px;background:radial-gradient(circle,rgba(200,90,130,.7),transparent 70%);}
+.b4{width:340px;height:340px;left:430px;top:240px;background:radial-gradient(circle,rgba(90,170,150,.55),transparent 70%);}
+.cv-veil{position:absolute;inset:0;background:linear-gradient(115deg,rgba(6,8,14,.96) 0%,rgba(6,8,14,.72) 38%,rgba(6,8,14,.4) 62%,rgba(8,12,22,.86) 100%);}
+.cv-vinyl{position:absolute;right:-190px;bottom:-210px;width:620px;height:620px;border-radius:50%;
+  background:radial-gradient(circle,#1a1206 0 14%,transparent 14.5%),
+  repeating-radial-gradient(circle, rgba(201,162,75,.10) 0 2px, transparent 2px 9px);
+  border:2px solid rgba(201,162,75,.18);opacity:.5;}
+.cv-vinyl::after{content:"";position:absolute;left:50%;top:50%;width:56px;height:56px;transform:translate(-50%,-50%);
+  border-radius:50%;background:radial-gradient(circle,var(--gold),#7a5c1f);}
+.cv-ink{position:absolute;left:-60px;top:120px;width:560px;height:760px;
+  background:radial-gradient(ellipse at 40% 45%, rgba(10,14,26,.9) 0, transparent 70%);filter:blur(6px);}
+.cv-ms{position:absolute;left:70px;top:250px;width:300px;height:560px;opacity:.16;
+  background:repeating-linear-gradient(180deg,rgba(236,227,206,.55) 0 1.5px,transparent 1.5px 34px);
+  border-left:2px solid rgba(236,227,206,.25);transform:rotate(-1.5deg);}
+.cv-fws{position:absolute;left:96px;top:236px;font-family:"Ma Shan Zheng",cursive;
+  font-size:208px;line-height:.96;color:var(--goldhi);writing-mode:vertical-rl;letter-spacing:6px;
+  text-shadow:0 0 30px rgba(201,162,75,.45),0 6px 20px rgba(0,0,0,.6);}
+.cv-seal{position:absolute;left:322px;top:700px;width:112px;height:112px;border-radius:10px;
+  background:linear-gradient(145deg,#a8231f,#7c1714);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 8px 26px rgba(0,0,0,.5),inset 0 0 0 3px rgba(255,255,255,.14);transform:rotate(-4deg);}
+.cv-seal span{font-family:"Ma Shan Zheng",cursive;font-size:74px;color:#f6ece0;}
+.cv-main{position:absolute;left:84px;right:84px;top:1066px;}
+.cv-eyebrow{font-family:"Noto Sans SC",sans-serif;font-size:30px;font-weight:700;letter-spacing:.34em;color:var(--gold);margin-bottom:30px;}
+.cv-eyebrow b{color:var(--paper);font-weight:800;}
+.cv-title{font-family:"Noto Serif SC",serif;font-size:90px;font-weight:900;line-height:1.16;color:var(--paper);letter-spacing:-1px;text-shadow:0 4px 24px rgba(0,0,0,.6);}
+.cv-title .zjl{color:rgba(236,227,206,.5);position:relative;}
+.cv-title .zjl::after{content:"";position:absolute;left:-4px;right:-4px;top:54%;height:6px;background:var(--gold);transform:rotate(-3deg);border-radius:3px;opacity:.92;}
+.cv-title .fws{color:var(--goldhi);}
+.cv-sub{font-family:"Noto Serif SC",serif;font-size:46px;font-weight:500;color:rgba(236,227,206,.82);margin-top:36px;letter-spacing:.02em;}
+.cv-foot{position:absolute;left:84px;bottom:88px;font-family:"Noto Sans SC",sans-serif;font-size:26px;font-weight:600;letter-spacing:.3em;color:rgba(201,162,75,.78);}
+.cv-foot .dot{color:rgba(236,227,206,.45);margin:0 14px;}
+/* 钩子 */
+.hook{position:absolute;inset:0;z-index:55;background:#06080E;overflow:hidden;}
+.hk-glow{position:absolute;inset:0;background:
+  radial-gradient(ellipse at 28% 30%, rgba(201,162,75,.10) 0, transparent 52%),
+  radial-gradient(ellipse at 72% 74%, rgba(120,150,220,.10) 0, transparent 55%);}
+.hk-a{position:absolute;left:0;right:0;top:560px;text-align:center;opacity:0;}
+.hk-a .big{font-family:"Ma Shan Zheng",cursive;font-size:230px;color:var(--goldhi);line-height:1;text-shadow:0 0 40px rgba(201,162,75,.4);}
+.hk-a .neq{font-family:"Noto Serif SC",serif;font-size:50px;color:rgba(236,227,206,.78);margin-top:30px;font-weight:600;}
+.hk-b{position:absolute;left:0;right:0;top:600px;text-align:center;opacity:0;}
+.hk-b .hkw{display:block;font-family:"Noto Serif SC",serif;font-size:150px;font-weight:800;color:var(--paper);line-height:1.14;letter-spacing:.14em;}
+.hk-b .hkw.g{color:var(--goldhi);}
+.hk-c{position:absolute;left:80px;right:80px;top:640px;text-align:center;opacity:0;}
+.hk-c .hc-eyebrow{font-family:"Noto Sans SC",sans-serif;font-size:34px;font-weight:700;letter-spacing:.32em;color:var(--gold);margin-bottom:46px;}
+.hk-c .hc-row{font-family:"Noto Serif SC",serif;font-size:96px;font-weight:800;line-height:1.34;color:var(--paper);}
+.hk-c .hc-row .fws{color:var(--goldhi);}
+.hk-c .hc-row .zjl{color:rgba(236,227,206,.42);text-decoration:line-through;text-decoration-color:rgba(201,162,75,.85);text-decoration-thickness:5px;}
+.hk-c .hc-tail{font-family:"Noto Serif SC",serif;font-size:58px;font-weight:600;color:rgba(236,227,206,.8);margin-top:48px;}
+/* chapter */
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:1;opacity:0;}
+.scrim{position:absolute;inset:0;z-index:2;opacity:0;background:linear-gradient(180deg,rgba(6,8,14,.82) 0%,rgba(6,8,14,.12) 26%,rgba(6,8,14,.05) 60%,rgba(6,8,14,.9) 100%);}
+.scrim2{position:absolute;inset:0;z-index:2;opacity:0;mix-blend-mode:soft-light;}
+.chrome{position:absolute;inset:0;z-index:4;pointer-events:none;}
+.hd{position:absolute;top:74px;left:88px;right:88px;display:flex;align-items:center;gap:22px;opacity:0;}
+.hd .seq{font-family:"JetBrains Mono",monospace;font-size:30px;font-weight:700;color:var(--gold);letter-spacing:.08em;white-space:nowrap;}
+.hd .line{flex:1;height:1px;background:linear-gradient(90deg,rgba(201,162,75,.6),rgba(201,162,75,0));}
+.hd .mark{font-family:"Ma Shan Zheng",cursive;font-size:40px;color:rgba(236,227,206,.8);}
+.rail{position:absolute;left:60px;top:300px;bottom:560px;width:8px;opacity:0;}
+.rail .bar{position:absolute;left:3px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,rgba(236,227,206,.05),rgba(236,227,206,.22),rgba(236,227,206,.05));}
+.rail .nd{position:absolute;left:-13px;width:34px;height:34px;border-radius:50%;background:rgba(20,25,40,.9);border:2px solid rgba(236,227,206,.22);display:flex;align-items:center;justify-content:center;}
+.rail .nd.pa{background:rgba(70,70,82,.7);border-color:rgba(236,227,206,.3);}
+.rail .nd.on{background:var(--acc);border-color:var(--acc);box-shadow:0 0 26px var(--acc);transform:scale(1.2);}
+.rail .nd .t{font-family:"JetBrains Mono",monospace;font-size:16px;font-weight:700;color:rgba(236,227,206,.55);}
+.rail .nd.on .t{color:#12161e;}
+.kw{position:absolute;left:0;right:0;top:300px;text-align:center;font-family:"Noto Serif SC",serif;font-size:300px;font-weight:900;color:var(--acc);opacity:0;letter-spacing:6px;mix-blend-mode:screen;filter:drop-shadow(0 6px 50px rgba(255,255,255,.16));}
+.card{position:absolute;left:70px;right:70px;bottom:300px;padding:44px 50px 46px;border-radius:24px;opacity:0;
+  background:linear-gradient(155deg,rgba(20,26,42,.66),rgba(8,11,20,.5));backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);
+  border:1.5px solid rgba(201,162,75,.32);box-shadow:0 30px 80px rgba(0,0,0,.6),inset 0 0 0 1px rgba(236,227,206,.06);}
+.card .cno{font-family:"JetBrains Mono",monospace;font-size:30px;font-weight:700;letter-spacing:.3em;color:var(--gold);margin-bottom:16px;}
+.card .cname{font-family:"Noto Serif SC",serif;font-size:88px;font-weight:800;line-height:1.04;color:var(--paper);}
+.card .cart{font-family:"Noto Sans SC",sans-serif;font-size:40px;font-weight:600;color:rgba(236,227,206,.78);margin-top:10px;letter-spacing:.04em;}
+.card .ccr{font-family:"Noto Sans SC",sans-serif;font-size:32px;font-weight:500;color:rgba(236,227,206,.62);margin-top:24px;letter-spacing:.02em;}
+.card .ccr b{color:var(--goldhi);font-weight:700;}
+.card .ctag{display:inline-flex;align-items:center;gap:14px;margin-top:26px;font-family:"Noto Serif SC",serif;font-size:38px;font-weight:700;color:var(--acc);}
+.card .ctag .d{width:12px;height:12px;border-radius:50%;background:var(--acc);box-shadow:0 0 16px var(--acc);}
+.midq{position:absolute;left:84px;right:84px;bottom:430px;text-align:center;font-family:"Noto Serif SC",serif;font-size:52px;font-weight:600;line-height:1.42;color:rgba(236,227,206,.96);opacity:0;letter-spacing:.01em;text-shadow:0 4px 24px rgba(0,0,0,.7);}
+.src{position:absolute;left:0;right:0;bottom:96px;text-align:center;font-family:"Noto Sans SC",sans-serif;font-size:22px;font-weight:500;letter-spacing:.24em;color:rgba(236,227,206,.4);opacity:0;}
+/* 转场 */
+.trans{position:absolute;inset:0;z-index:9;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;
+  background:radial-gradient(ellipse at center, rgba(6,8,14,.9) 0%, rgba(6,8,14,.66) 100%);}
+.tr-rule{width:120px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin-bottom:46px;}
+.tr-txt{font-family:"Noto Serif SC",serif;font-size:70px;font-weight:700;line-height:1.5;text-align:center;color:var(--paper);text-shadow:0 4px 24px rgba(0,0,0,.7);}
+/* 结尾 */
+.outro{position:absolute;inset:0;z-index:58;overflow:hidden;background:#06080E;}
+.ot-glow{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 36%, rgba(201,162,75,.12) 0, transparent 52%);}
+.ot-fws{position:absolute;left:0;right:0;top:150px;text-align:center;font-family:"Ma Shan Zheng",cursive;font-size:150px;color:var(--goldhi);text-shadow:0 0 36px rgba(201,162,75,.4);}
+.ot-seal{position:absolute;left:50%;top:150px;transform:translateX(180px) rotate(-4deg);width:92px;height:92px;border-radius:9px;background:linear-gradient(145deg,#a8231f,#7c1714);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.5),inset 0 0 0 3px rgba(255,255,255,.14);}
+.ot-seal span{font-family:"Ma Shan Zheng",cursive;font-size:58px;color:#f6ece0;}
+.ot-h{position:absolute;left:80px;right:80px;top:430px;text-align:center;font-family:"Noto Serif SC",serif;font-size:104px;font-weight:900;line-height:1.14;color:var(--paper);opacity:0;}
+.ot-recap{position:absolute;left:90px;right:90px;top:760px;text-align:center;line-height:2.0;opacity:0;}
+.ot-recap .rc{font-family:"Noto Sans SC",sans-serif;font-size:30px;font-weight:500;color:rgba(236,227,206,.72);margin:0 14px;white-space:nowrap;}
+.ot-recap .rc b{color:var(--goldhi);font-weight:700;}
+.ot-cta1{position:absolute;left:80px;right:80px;top:1230px;text-align:center;font-family:"Noto Serif SC",serif;font-size:64px;font-weight:800;color:var(--goldhi);opacity:0;}
+.ot-cta2{position:absolute;left:80px;right:80px;top:1360px;text-align:center;font-family:"Noto Sans SC",sans-serif;font-size:34px;font-weight:600;color:rgba(236,227,206,.7);letter-spacing:.04em;opacity:0;}
+</style></head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="418.975" data-width="1080" data-height="1920">
+<video id="fv_s1" class="fv clip" data-start="22.025" data-duration="53.525" data-track-index="0" src="clips_seg/s1.mp4" muted playsinline></video>
+<video id="fv_s2" class="fv clip" data-start="75.55" data-duration="53.975" data-track-index="6" src="clips_seg/s2.mp4" muted playsinline></video>
+<video id="fv_s3" class="fv clip" data-start="129.525" data-duration="49.475" data-track-index="0" src="clips_seg/s3.mp4" muted playsinline></video>
+<video id="fv_s4" class="fv clip" data-start="179.0" data-duration="54.2" data-track-index="6" src="clips_seg/s4.mp4" muted playsinline></video>
+<video id="fv_s5" class="fv clip" data-start="233.2" data-duration="53.675" data-track-index="0" src="clips_seg/s5.mp4" muted playsinline></video>
+<video id="fv_s6" class="fv clip" data-start="286.875" data-duration="51.75" data-track-index="6" src="clips_seg/s6.mp4" muted playsinline></video>
+<video id="fv_s7" class="fv clip" data-start="338.625" data-duration="57.825" data-track-index="0" src="clips_seg/s7.mp4" muted playsinline></video>
+<div id="scrim_s1" class="scrim clip" data-start="22.025" data-duration="53.525" data-track-index="10"></div>
+<div id="scrim2_s1" class="scrim2 clip" data-start="22.025" data-duration="53.525" data-track-index="20" style="background:linear-gradient(180deg,rgba(120,150,200,.16),rgba(10,14,26,.55));"></div>
+<div id="scrim_s2" class="scrim clip" data-start="75.55" data-duration="53.975" data-track-index="11"></div>
+<div id="scrim2_s2" class="scrim2 clip" data-start="75.55" data-duration="53.975" data-track-index="21" style="background:linear-gradient(180deg,rgba(180,70,50,.18),rgba(30,12,10,.55));"></div>
+<div id="scrim_s3" class="scrim clip" data-start="129.525" data-duration="49.475" data-track-index="12"></div>
+<div id="scrim2_s3" class="scrim2 clip" data-start="129.525" data-duration="49.475" data-track-index="22" style="background:linear-gradient(180deg,rgba(200,140,60,.16),rgba(28,16,8,.55));"></div>
+<div id="scrim_s4" class="scrim clip" data-start="179.0" data-duration="54.2" data-track-index="13"></div>
+<div id="scrim2_s4" class="scrim2 clip" data-start="179.0" data-duration="54.2" data-track-index="23" style="background:linear-gradient(180deg,rgba(190,170,90,.16),rgba(20,22,10,.52));"></div>
+<div id="scrim_s5" class="scrim clip" data-start="233.2" data-duration="53.675" data-track-index="14"></div>
+<div id="scrim2_s5" class="scrim2 clip" data-start="233.2" data-duration="53.675" data-track-index="24" style="background:linear-gradient(180deg,rgba(210,150,90,.15),rgba(24,16,10,.55));"></div>
+<div id="scrim_s6" class="scrim clip" data-start="286.875" data-duration="51.75" data-track-index="15"></div>
+<div id="scrim2_s6" class="scrim2 clip" data-start="286.875" data-duration="51.75" data-track-index="25" style="background:linear-gradient(180deg,rgba(190,90,110,.16),rgba(26,10,14,.55));"></div>
+<div id="scrim_s7" class="scrim clip" data-start="338.625" data-duration="57.825" data-track-index="16"></div>
+<div id="scrim2_s7" class="scrim2 clip" data-start="338.625" data-duration="57.825" data-track-index="26" style="background:linear-gradient(180deg,rgba(80,210,170,.15),rgba(8,24,20,.5));"></div>
+<div id="chrome_s1" class="chrome clip" data-start="22.025" data-duration="53.525" data-track-index="30" style="--acc:#93A7C4;">
+  <div class="hd" id="hd_s1"><span class="seq">第一首 · 01 ／ 07</span><span class="line"></span><span class="mark">詞</span></div>
+  <div class="rail" id="rail_s1"><div class="bar"></div><div class="nd on" style="top:0.0%"><span class="t">01</span></div><div class="nd" style="top:15.4%"><span class="t">02</span></div><div class="nd" style="top:30.8%"><span class="t">03</span></div><div class="nd" style="top:46.2%"><span class="t">04</span></div><div class="nd" style="top:61.6%"><span class="t">05</span></div><div class="nd" style="top:77.0%"><span class="t">06</span></div><div class="nd" style="top:92.4%"><span class="t">07</span></div></div>
+  <div class="kw" id="kw_s1">静</div>
+  <div class="card" id="card_s1">
+    <div class="cno">FANG WEN SHAN · 01</div>
+    <div class="cname">一直很安静</div>
+    <div class="cart">阿桑</div>
+    <div class="ccr">词：<b>方文山</b>　曲：蔡如岳</div>
+    <div class="ctag"><span class="d"></span>安静到卑微的爱</div>
+  </div>
+  <div class="midq" id="mid_s1">没有华丽的辞藻，也没有大开大合，<br>他只是把站在爱情边缘的沉默，写得很痛。</div>
+  <div class="src" id="src_s1">官方 MV · 華研國際</div>
+</div>
+<div id="chrome_s2" class="chrome clip" data-start="75.55" data-duration="53.975" data-track-index="31" style="--acc:#D06A4A;">
+  <div class="hd" id="hd_s2"><span class="seq">第二首 · 02 ／ 07</span><span class="line"></span><span class="mark">詞</span></div>
+  <div class="rail" id="rail_s2"><div class="bar"></div><div class="nd pa" style="top:0.0%"><span class="t">01</span></div><div class="nd on" style="top:15.4%"><span class="t">02</span></div><div class="nd" style="top:30.8%"><span class="t">03</span></div><div class="nd" style="top:46.2%"><span class="t">04</span></div><div class="nd" style="top:61.6%"><span class="t">05</span></div><div class="nd" style="top:77.0%"><span class="t">06</span></div><div class="nd" style="top:92.4%"><span class="t">07</span></div></div>
+  <div class="kw" id="kw_s2">醉</div>
+  <div class="card" id="card_s2">
+    <div class="cno">FANG WEN SHAN · 02</div>
+    <div class="cname">醉赤壁</div>
+    <div class="cart">林俊杰</div>
+    <div class="ccr">词：<b>方文山</b>　曲：林俊杰</div>
+    <div class="ctag"><span class="d"></span>离开周杰伦的中国风</div>
+  </div>
+  <div class="midq" id="mid_s2">林俊杰给了它流行情歌的骨架，<br>方文山把它写成了前世、江湖和赤壁的梦。</div>
+  <div class="src" id="src_s2">官方 MV · 太合音樂</div>
+</div>
+<div id="chrome_s3" class="chrome clip" data-start="129.525" data-duration="49.475" data-track-index="32" style="--acc:#D69A52;">
+  <div class="hd" id="hd_s3"><span class="seq">第三首 · 03 ／ 07</span><span class="line"></span><span class="mark">詞</span></div>
+  <div class="rail" id="rail_s3"><div class="bar"></div><div class="nd pa" style="top:0.0%"><span class="t">01</span></div><div class="nd pa" style="top:15.4%"><span class="t">02</span></div><div class="nd on" style="top:30.8%"><span class="t">03</span></div><div class="nd" style="top:46.2%"><span class="t">04</span></div><div class="nd" style="top:61.6%"><span class="t">05</span></div><div class="nd" style="top:77.0%"><span class="t">06</span></div><div class="nd" style="top:92.4%"><span class="t">07</span></div></div>
+  <div class="kw" id="kw_s3">侠</div>
+  <div class="card" id="card_s3">
+    <div class="cno">FANG WEN SHAN · 03</div>
+    <div class="cname">缘分一道桥</div>
+    <div class="cart">王力宏 · 谭维维</div>
+    <div class="ccr">词：<b>方文山</b>　曲：王力宏</div>
+    <div class="ctag"><span class="d"></span>电影级的江湖与宿命</div>
+  </div>
+  <div class="midq" id="mid_s3">他写的不是小情小爱，<br>而是城墙、战鼓与风沙之间，一种宿命的英雄气。</div>
+  <div class="src" id="src_s3">官方 MV · 电影《长城》片尾曲</div>
+</div>
+<div id="chrome_s4" class="chrome clip" data-start="179.0" data-duration="54.2" data-track-index="33" style="--acc:#CBB46A;">
+  <div class="hd" id="hd_s4"><span class="seq">第四首 · 04 ／ 07</span><span class="line"></span><span class="mark">詞</span></div>
+  <div class="rail" id="rail_s4"><div class="bar"></div><div class="nd pa" style="top:0.0%"><span class="t">01</span></div><div class="nd pa" style="top:15.4%"><span class="t">02</span></div><div class="nd pa" style="top:30.8%"><span class="t">03</span></div><div class="nd on" style="top:46.2%"><span class="t">04</span></div><div class="nd" style="top:61.6%"><span class="t">05</span></div><div class="nd" style="top:77.0%"><span class="t">06</span></div><div class="nd" style="top:92.4%"><span class="t">07</span></div></div>
+  <div class="kw" id="kw_s4">神</div>
+  <div class="card" id="card_s4">
+    <div class="cno">FANG WEN SHAN · 04</div>
+    <div class="cname">月桂女神</div>
+    <div class="cart">S.H.E</div>
+    <div class="ccr">词：<b>方文山</b>　曲：李天龙</div>
+    <div class="ctag"><span class="d"></span>写进女团的希腊神话</div>
+  </div>
+  <div class="midq" id="mid_s4">他把希腊神话写进女团的流行歌里——<br>不是单纯的甜，而是自由、神话与女性的选择。</div>
+  <div class="src" id="src_s4">官方 MV · 華研國際</div>
+</div>
+<div id="chrome_s5" class="chrome clip" data-start="233.2" data-duration="53.675" data-track-index="34" style="--acc:#D9A86A;">
+  <div class="hd" id="hd_s5"><span class="seq">第五首 · 05 ／ 07</span><span class="line"></span><span class="mark">詞</span></div>
+  <div class="rail" id="rail_s5"><div class="bar"></div><div class="nd pa" style="top:0.0%"><span class="t">01</span></div><div class="nd pa" style="top:15.4%"><span class="t">02</span></div><div class="nd pa" style="top:30.8%"><span class="t">03</span></div><div class="nd pa" style="top:46.2%"><span class="t">04</span></div><div class="nd on" style="top:61.6%"><span class="t">05</span></div><div class="nd" style="top:77.0%"><span class="t">06</span></div><div class="nd" style="top:92.4%"><span class="t">07</span></div></div>
+  <div class="kw" id="kw_s5">念</div>
+  <div class="card" id="card_s5">
+    <div class="cno">FANG WEN SHAN · 05</div>
+    <div class="cname">千纸鹤</div>
+    <div class="cart">方大同</div>
+    <div class="ccr">词：<b>方文山</b>　曲：方大同</div>
+    <div class="ctag"><span class="d"></span>都市里很轻的想念</div>
+  </div>
+  <div class="midq" id="mid_s5">没有古风，没有战争，也没有浓烈的戏剧感，<br>他写的是都市里那种很轻、却很有后劲的想念。</div>
+  <div class="src" id="src_s5">官方 MV · Warner Music</div>
+</div>
+<div id="chrome_s6" class="chrome clip" data-start="286.875" data-duration="51.75" data-track-index="35" style="--acc:#CE8090;">
+  <div class="hd" id="hd_s6"><span class="seq">第六首 · 06 ／ 07</span><span class="line"></span><span class="mark">詞</span></div>
+  <div class="rail" id="rail_s6"><div class="bar"></div><div class="nd pa" style="top:0.0%"><span class="t">01</span></div><div class="nd pa" style="top:15.4%"><span class="t">02</span></div><div class="nd pa" style="top:30.8%"><span class="t">03</span></div><div class="nd pa" style="top:46.2%"><span class="t">04</span></div><div class="nd pa" style="top:61.6%"><span class="t">05</span></div><div class="nd on" style="top:77.0%"><span class="t">06</span></div><div class="nd" style="top:92.4%"><span class="t">07</span></div></div>
+  <div class="kw" id="kw_s6">家</div>
+  <div class="card" id="card_s6">
+    <div class="cno">FANG WEN SHAN · 06</div>
+    <div class="cname">将故事写成我们</div>
+    <div class="cart">林俊杰</div>
+    <div class="ccr">词：<b>方文山</b>　曲：林俊杰</div>
+    <div class="ctag"><span class="d"></span>把人生写成一个家</div>
+  </div>
+  <div class="midq" id="mid_s6">上一次写前世与江湖，这一次，<br>他把一个人的人生，慢慢写成两个人的家。</div>
+  <div class="src" id="src_s6">官方 MV · JJ Lin</div>
+</div>
+<div id="chrome_s7" class="chrome clip" data-start="338.625" data-duration="57.825" data-track-index="36" style="--acc:#5FD2A6;">
+  <div class="hd" id="hd_s7"><span class="seq">第七首 · 07 ／ 07</span><span class="line"></span><span class="mark">詞</span></div>
+  <div class="rail" id="rail_s7"><div class="bar"></div><div class="nd pa" style="top:0.0%"><span class="t">01</span></div><div class="nd pa" style="top:15.4%"><span class="t">02</span></div><div class="nd pa" style="top:30.8%"><span class="t">03</span></div><div class="nd pa" style="top:46.2%"><span class="t">04</span></div><div class="nd pa" style="top:61.6%"><span class="t">05</span></div><div class="nd pa" style="top:77.0%"><span class="t">06</span></div><div class="nd on" style="top:92.4%"><span class="t">07</span></div></div>
+  <div class="kw" id="kw_s7">街</div>
+  <div class="card" id="card_s7">
+    <div class="cno">FANG WEN SHAN · 07</div>
+    <div class="cname">壁虎漫步</div>
+    <div class="cart">潘玮柏</div>
+    <div class="ccr">词：<b>方文山</b>　曲：Eddy Teddy / Park Hong-Jun</div>
+    <div class="ctag"><span class="d"></span>原来他也能写街头</div>
+  </div>
+  <div class="midq" id="mid_s7">原来他也能写怪、写俏皮、写街头——<br>方文山不是某一种风格，而是一整套文字系统。</div>
+  <div class="src" id="src_s7">官方 MV · 潘瑋柏</div>
+</div>
+<div id="tr_0" class="trans clip" data-start="74.55" data-duration="2.8" data-track-index="40">
+  <div class="tr-rule"></div><div class="tr-txt">他写得了沉默的爱，<br>也写得了三国旧梦</div></div>
+<div id="tr_1" class="trans clip" data-start="128.525" data-duration="2.8" data-track-index="41">
+  <div class="tr-rule"></div><div class="tr-txt">从一个人的赤壁，<br>到千军万马的城墙</div></div>
+<div id="tr_2" class="trans clip" data-start="178.0" data-duration="2.8" data-track-index="42">
+  <div class="tr-rule"></div><div class="tr-txt">从东方的战鼓，<br>到希腊的神话</div></div>
+<div id="tr_3" class="trans clip" data-start="232.2" data-duration="2.8" data-track-index="43">
+  <div class="tr-rule"></div><div class="tr-txt">从天上的女神，<br>到城市里的想念</div></div>
+<div id="tr_4" class="trans clip" data-start="285.875" data-duration="2.8" data-track-index="44">
+  <div class="tr-rule"></div><div class="tr-txt">从一个人的想念，<br>到两个人的家</div></div>
+<div id="tr_5" class="trans clip" data-start="337.625" data-duration="2.8" data-track-index="45">
+  <div class="tr-rule"></div><div class="tr-txt">从婚礼的温柔，<br>到街头的节奏</div></div>
+<div id="cover" class="clip cover" data-start="0" data-duration="5.6" data-track-index="50">
+  <div class="paper cvp"></div>
+  <div class="cv-bokeh"><span class="b1"></span><span class="b2"></span><span class="b3"></span><span class="b4"></span></div>
+  <div class="cv-veil"></div><div class="cv-vinyl" id="cvVinyl"></div><div class="grain"></div>
+  <div class="cv-ink"></div><div class="cv-ms"></div>
+  <div class="cv-fws">方文山</div><div class="cv-seal"><span>詞</span></div>
+  <div class="cv-main">
+    <div class="cv-eyebrow">华语词人 · <b>周杰伦之外</b></div>
+    <h1 class="cv-title">没有<span class="zjl">周杰伦</span>，<br><span class="fws">方文山</span>也写过这些歌</h1>
+    <div class="cv-sub">原来这些歌，也藏着他的名字</div>
+  </div>
+  <div class="cv-foot">手写的歌词<span class="dot">·</span>没署他的脸<span class="dot">·</span>却都听过</div>
+</div>
+<div id="hook" class="clip hook" data-start="4.4" data-duration="17.825" data-track-index="51">
+  <div class="paper"></div><div class="hk-glow"></div><div class="grain"></div>
+  <div class="hk-a" id="hkA"><div class="big">方文山</div><div class="neq">很多人以为，他只会和周杰伦一起出现</div></div>
+  <div class="hk-b" id="hkB"><span class="hkw">青春</span><span class="hkw g">江湖</span><span class="hkw">爱情</span></div>
+  <div class="hk-c" id="hkC">
+    <div class="hc-eyebrow">这一期 · 只有一个范围</div>
+    <div class="hc-row">作词，<span class="fws">方文山</span></div>
+    <div class="hc-row">却没有，<span class="zjl">周杰伦</span></div>
+    <div class="hc-tail">这些歌，你可能都听过</div>
+  </div>
+</div>
+<div id="outro" class="clip outro" data-start="396.45" data-duration="22.525" data-track-index="52">
+  <div class="paper"></div><div class="grain"></div><div class="ot-glow"></div>
+  <div class="ot-fws">方文山</div><div class="ot-seal"><span>詞</span></div>
+  <h2 class="ot-h">他不只是<br>周杰伦的影子</h2>
+  <div class="ot-recap"><span class="rc"><b>阿桑</b>《一直很安静》</span><span class="rc"><b>林俊杰</b>《醉赤壁》</span><span class="rc"><b>王力宏</b>《缘分一道桥》</span><span class="rc"><b>S.H.E</b>《月桂女神》</span><span class="rc"><b>方大同</b>《千纸鹤》</span><span class="rc"><b>林俊杰</b>《将故事写成我们》</span><span class="rc"><b>潘玮柏</b>《壁虎漫步》</span></div>
+  <div class="ot-cta1">你最意外的是哪一首？</div>
+  <div class="ot-cta2">评论区，再补一首方文山写给别人的歌 →</div>
+</div>
+<audio id="master" class="clip" data-start="0" data-duration="418.975" data-track-index="3" src="master.wav" data-volume="1"></audio>
+</div>
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({paused:true});
+tl.set("#cover",{opacity:1},0);
+tl.set("#cover .cv-main, #cover .cv-fws, #cover .cv-seal, #cover .cv-foot",{opacity:1},0);
+tl.to("#cvVinyl",{rotation:14,duration:5.6,ease:"none",transformOrigin:"50% 50%"},0.2);
+tl.fromTo(".cv-bokeh",{scale:1.0},{scale:1.06,duration:4.2,ease:"sine.inOut",yoyo:true,repeat:1},0.3);
+tl.fromTo(".cv-title",{scale:1.0},{scale:1.018,duration:3.0,ease:"sine.inOut",yoyo:true,repeat:1},2.0);
+tl.to("#cover",{opacity:0,duration:.6,ease:"power2.in"},5.0);
+tl.set("#cover",{opacity:0},5.6);
+tl.set("#hook",{opacity:1},4.4);
+tl.fromTo("#hkA",{opacity:0,y:30},{opacity:1,y:0,duration:.8,ease:"power2.out"},5.5);
+tl.to("#hkA",{opacity:0,y:-24,duration:.7,ease:"power2.in"},10.4);
+tl.set("#hkA",{opacity:0},11.2);
+tl.fromTo("#hkB .hkw",{opacity:0,y:26},{opacity:1,y:0,duration:.6,stagger:.5,ease:"power2.out"},11.0);
+tl.set("#hkB",{opacity:1},11.0);
+tl.to("#hkB",{opacity:0,duration:.7,ease:"power2.in"},15.4);
+tl.set("#hkB",{opacity:0},16.2);
+tl.fromTo("#hkC",{opacity:0,y:24},{opacity:1,y:0,duration:.8,ease:"power2.out"},15.8);
+tl.fromTo("#hkC .hc-row",{y:18},{y:0,duration:.6,stagger:.16,ease:"power2.out"},15.8);
+tl.to("#hook",{opacity:0,duration:.8,ease:"power2.in"},21.425);
+tl.set("#hook",{opacity:0},22.225);
+
+tl.fromTo("#fv_s1",{opacity:0,scale:1.06},{opacity:1,scale:1.0,duration:1.4,ease:"power2.out"},22.025);
+tl.to("#scrim_s1",{opacity:1,duration:1.2},22.025);
+tl.to("#scrim2_s1",{opacity:1,duration:1.2},22.025);
+tl.fromTo("#hd_s1",{opacity:0,y:-14},{opacity:1,y:0,duration:.7,ease:"power2.out"},22.525);
+tl.fromTo("#rail_s1",{opacity:0},{opacity:1,duration:.8},22.725);
+tl.fromTo("#card_s1",{opacity:0,y:40},{opacity:1,y:0,duration:.9,ease:"power3.out"},23.025);
+tl.to("#card_s1",{opacity:.34,y:10,duration:.7,ease:"power2.inOut"},35.275);
+tl.fromTo("#kw_s1",{opacity:0,scale:.9},{opacity:.5,scale:1,duration:1.8,ease:"power3.out"},36.275);
+tl.to("#kw_s1",{opacity:.32,duration:2.0,ease:"sine.inOut"},38.275);
+tl.to("#kw_s1",{opacity:0,duration:1.0,ease:"power1.in"},67.175);
+tl.set("#kw_s1",{opacity:0},68.175);
+tl.to("#card_s1",{opacity:0,y:-12,duration:.6,ease:"power2.in"},67.375);
+tl.set("#card_s1",{opacity:0},68.075);
+tl.fromTo("#mid_s1",{opacity:0,y:24},{opacity:1,y:0,duration:.9,ease:"power2.out"},67.775);
+tl.fromTo("#src_s1",{opacity:0},{opacity:1,duration:.6},23.625);
+tl.to("#mid_s1",{opacity:0,duration:.8,ease:"power1.in"},74.65);
+tl.set("#mid_s1",{opacity:0},75.55);
+tl.to("#fv_s1",{opacity:0,duration:1.0,ease:"power1.in"},74.55);
+tl.set("#fv_s1",{opacity:0},75.55);
+tl.to("#scrim_s1, #scrim2_s1, #src_s1, #hd_s1, #rail_s1",{opacity:0,duration:1.0,ease:"power1.in"},74.55);
+tl.set("#scrim_s1, #scrim2_s1, #src_s1, #hd_s1, #rail_s1",{opacity:0},75.55);
+
+tl.fromTo("#fv_s2",{opacity:0,scale:1.06},{opacity:1,scale:1.0,duration:1.4,ease:"power2.out"},75.55);
+tl.to("#scrim_s2",{opacity:1,duration:1.2},75.55);
+tl.to("#scrim2_s2",{opacity:1,duration:1.2},75.55);
+tl.fromTo("#hd_s2",{opacity:0,y:-14},{opacity:1,y:0,duration:.7,ease:"power2.out"},76.05);
+tl.fromTo("#rail_s2",{opacity:0},{opacity:1,duration:.8},76.25);
+tl.fromTo("#card_s2",{opacity:0,y:40},{opacity:1,y:0,duration:.9,ease:"power3.out"},76.55);
+tl.to("#card_s2",{opacity:.34,y:10,duration:.7,ease:"power2.inOut"},87.325);
+tl.fromTo("#kw_s2",{opacity:0,scale:.9},{opacity:.5,scale:1,duration:1.8,ease:"power3.out"},88.325);
+tl.to("#kw_s2",{opacity:.32,duration:2.0,ease:"sine.inOut"},90.325);
+tl.to("#kw_s2",{opacity:0,duration:1.0,ease:"power1.in"},119.225);
+tl.set("#kw_s2",{opacity:0},120.225);
+tl.to("#card_s2",{opacity:0,y:-12,duration:.6,ease:"power2.in"},119.425);
+tl.set("#card_s2",{opacity:0},120.125);
+tl.fromTo("#mid_s2",{opacity:0,y:24},{opacity:1,y:0,duration:.9,ease:"power2.out"},119.825);
+tl.fromTo("#src_s2",{opacity:0},{opacity:1,duration:.6},77.15);
+tl.to("#mid_s2",{opacity:0,duration:.8,ease:"power1.in"},128.625);
+tl.set("#mid_s2",{opacity:0},129.525);
+tl.to("#fv_s2",{opacity:0,duration:1.0,ease:"power1.in"},128.525);
+tl.set("#fv_s2",{opacity:0},129.525);
+tl.to("#scrim_s2, #scrim2_s2, #src_s2, #hd_s2, #rail_s2",{opacity:0,duration:1.0,ease:"power1.in"},128.525);
+tl.set("#scrim_s2, #scrim2_s2, #src_s2, #hd_s2, #rail_s2",{opacity:0},129.525);
+
+tl.fromTo("#fv_s3",{opacity:0,scale:1.06},{opacity:1,scale:1.0,duration:1.4,ease:"power2.out"},129.525);
+tl.to("#scrim_s3",{opacity:1,duration:1.2},129.525);
+tl.to("#scrim2_s3",{opacity:1,duration:1.2},129.525);
+tl.fromTo("#hd_s3",{opacity:0,y:-14},{opacity:1,y:0,duration:.7,ease:"power2.out"},130.025);
+tl.fromTo("#rail_s3",{opacity:0},{opacity:1,duration:.8},130.225);
+tl.fromTo("#card_s3",{opacity:0,y:40},{opacity:1,y:0,duration:.9,ease:"power3.out"},130.525);
+tl.to("#card_s3",{opacity:.34,y:10,duration:.7,ease:"power2.inOut"},138.625);
+tl.fromTo("#kw_s3",{opacity:0,scale:.9},{opacity:.5,scale:1,duration:1.8,ease:"power3.out"},139.625);
+tl.to("#kw_s3",{opacity:.32,duration:2.0,ease:"sine.inOut"},141.625);
+tl.to("#kw_s3",{opacity:0,duration:1.0,ease:"power1.in"},170.525);
+tl.set("#kw_s3",{opacity:0},171.525);
+tl.to("#card_s3",{opacity:0,y:-12,duration:.6,ease:"power2.in"},170.725);
+tl.set("#card_s3",{opacity:0},171.425);
+tl.fromTo("#mid_s3",{opacity:0,y:24},{opacity:1,y:0,duration:.9,ease:"power2.out"},171.125);
+tl.fromTo("#src_s3",{opacity:0},{opacity:1,duration:.6},131.125);
+tl.to("#mid_s3",{opacity:0,duration:.8,ease:"power1.in"},178.1);
+tl.set("#mid_s3",{opacity:0},179.0);
+tl.to("#fv_s3",{opacity:0,duration:1.0,ease:"power1.in"},178.0);
+tl.set("#fv_s3",{opacity:0},179.0);
+tl.to("#scrim_s3, #scrim2_s3, #src_s3, #hd_s3, #rail_s3",{opacity:0,duration:1.0,ease:"power1.in"},178.0);
+tl.set("#scrim_s3, #scrim2_s3, #src_s3, #hd_s3, #rail_s3",{opacity:0},179.0);
+
+tl.fromTo("#fv_s4",{opacity:0,scale:1.06},{opacity:1,scale:1.0,duration:1.4,ease:"power2.out"},179.0);
+tl.to("#scrim_s4",{opacity:1,duration:1.2},179.0);
+tl.to("#scrim2_s4",{opacity:1,duration:1.2},179.0);
+tl.fromTo("#hd_s4",{opacity:0,y:-14},{opacity:1,y:0,duration:.7,ease:"power2.out"},179.5);
+tl.fromTo("#rail_s4",{opacity:0},{opacity:1,duration:.8},179.7);
+tl.fromTo("#card_s4",{opacity:0,y:40},{opacity:1,y:0,duration:.9,ease:"power3.out"},180.0);
+tl.to("#card_s4",{opacity:.34,y:10,duration:.7,ease:"power2.inOut"},191.85);
+tl.fromTo("#kw_s4",{opacity:0,scale:.9},{opacity:.5,scale:1,duration:1.8,ease:"power3.out"},192.85);
+tl.to("#kw_s4",{opacity:.32,duration:2.0,ease:"sine.inOut"},194.85);
+tl.to("#kw_s4",{opacity:0,duration:1.0,ease:"power1.in"},223.75);
+tl.set("#kw_s4",{opacity:0},224.75);
+tl.to("#card_s4",{opacity:0,y:-12,duration:.6,ease:"power2.in"},223.95);
+tl.set("#card_s4",{opacity:0},224.65);
+tl.fromTo("#mid_s4",{opacity:0,y:24},{opacity:1,y:0,duration:.9,ease:"power2.out"},224.35);
+tl.fromTo("#src_s4",{opacity:0},{opacity:1,duration:.6},180.6);
+tl.to("#mid_s4",{opacity:0,duration:.8,ease:"power1.in"},232.3);
+tl.set("#mid_s4",{opacity:0},233.2);
+tl.to("#fv_s4",{opacity:0,duration:1.0,ease:"power1.in"},232.2);
+tl.set("#fv_s4",{opacity:0},233.2);
+tl.to("#scrim_s4, #scrim2_s4, #src_s4, #hd_s4, #rail_s4",{opacity:0,duration:1.0,ease:"power1.in"},232.2);
+tl.set("#scrim_s4, #scrim2_s4, #src_s4, #hd_s4, #rail_s4",{opacity:0},233.2);
+
+tl.fromTo("#fv_s5",{opacity:0,scale:1.06},{opacity:1,scale:1.0,duration:1.4,ease:"power2.out"},233.2);
+tl.to("#scrim_s5",{opacity:1,duration:1.2},233.2);
+tl.to("#scrim2_s5",{opacity:1,duration:1.2},233.2);
+tl.fromTo("#hd_s5",{opacity:0,y:-14},{opacity:1,y:0,duration:.7,ease:"power2.out"},233.7);
+tl.fromTo("#rail_s5",{opacity:0},{opacity:1,duration:.8},233.9);
+tl.fromTo("#card_s5",{opacity:0,y:40},{opacity:1,y:0,duration:.9,ease:"power3.out"},234.2);
+tl.to("#card_s5",{opacity:.34,y:10,duration:.7,ease:"power2.inOut"},245.825);
+tl.fromTo("#kw_s5",{opacity:0,scale:.9},{opacity:.5,scale:1,duration:1.8,ease:"power3.out"},246.825);
+tl.to("#kw_s5",{opacity:.32,duration:2.0,ease:"sine.inOut"},248.825);
+tl.to("#kw_s5",{opacity:0,duration:1.0,ease:"power1.in"},277.725);
+tl.set("#kw_s5",{opacity:0},278.725);
+tl.to("#card_s5",{opacity:0,y:-12,duration:.6,ease:"power2.in"},277.925);
+tl.set("#card_s5",{opacity:0},278.625);
+tl.fromTo("#mid_s5",{opacity:0,y:24},{opacity:1,y:0,duration:.9,ease:"power2.out"},278.325);
+tl.fromTo("#src_s5",{opacity:0},{opacity:1,duration:.6},234.8);
+tl.to("#mid_s5",{opacity:0,duration:.8,ease:"power1.in"},285.975);
+tl.set("#mid_s5",{opacity:0},286.875);
+tl.to("#fv_s5",{opacity:0,duration:1.0,ease:"power1.in"},285.875);
+tl.set("#fv_s5",{opacity:0},286.875);
+tl.to("#scrim_s5, #scrim2_s5, #src_s5, #hd_s5, #rail_s5",{opacity:0,duration:1.0,ease:"power1.in"},285.875);
+tl.set("#scrim_s5, #scrim2_s5, #src_s5, #hd_s5, #rail_s5",{opacity:0},286.875);
+
+tl.fromTo("#fv_s6",{opacity:0,scale:1.06},{opacity:1,scale:1.0,duration:1.4,ease:"power2.out"},286.875);
+tl.to("#scrim_s6",{opacity:1,duration:1.2},286.875);
+tl.to("#scrim2_s6",{opacity:1,duration:1.2},286.875);
+tl.fromTo("#hd_s6",{opacity:0,y:-14},{opacity:1,y:0,duration:.7,ease:"power2.out"},287.375);
+tl.fromTo("#rail_s6",{opacity:0},{opacity:1,duration:.8},287.575);
+tl.fromTo("#card_s6",{opacity:0,y:40},{opacity:1,y:0,duration:.9,ease:"power3.out"},287.875);
+tl.to("#card_s6",{opacity:.34,y:10,duration:.7,ease:"power2.inOut"},295.875);
+tl.fromTo("#kw_s6",{opacity:0,scale:.9},{opacity:.5,scale:1,duration:1.8,ease:"power3.out"},296.875);
+tl.to("#kw_s6",{opacity:.32,duration:2.0,ease:"sine.inOut"},298.875);
+tl.to("#kw_s6",{opacity:0,duration:1.0,ease:"power1.in"},327.775);
+tl.set("#kw_s6",{opacity:0},328.775);
+tl.to("#card_s6",{opacity:0,y:-12,duration:.6,ease:"power2.in"},327.975);
+tl.set("#card_s6",{opacity:0},328.675);
+tl.fromTo("#mid_s6",{opacity:0,y:24},{opacity:1,y:0,duration:.9,ease:"power2.out"},328.375);
+tl.fromTo("#src_s6",{opacity:0},{opacity:1,duration:.6},288.475);
+tl.to("#mid_s6",{opacity:0,duration:.8,ease:"power1.in"},337.725);
+tl.set("#mid_s6",{opacity:0},338.625);
+tl.to("#fv_s6",{opacity:0,duration:1.0,ease:"power1.in"},337.625);
+tl.set("#fv_s6",{opacity:0},338.625);
+tl.to("#scrim_s6, #scrim2_s6, #src_s6, #hd_s6, #rail_s6",{opacity:0,duration:1.0,ease:"power1.in"},337.625);
+tl.set("#scrim_s6, #scrim2_s6, #src_s6, #hd_s6, #rail_s6",{opacity:0},338.625);
+
+tl.fromTo("#fv_s7",{opacity:0,scale:1.06},{opacity:1,scale:1.0,duration:1.4,ease:"power2.out"},338.625);
+tl.to("#scrim_s7",{opacity:1,duration:1.2},338.625);
+tl.to("#scrim2_s7",{opacity:1,duration:1.2},338.625);
+tl.fromTo("#hd_s7",{opacity:0,y:-14},{opacity:1,y:0,duration:.7,ease:"power2.out"},339.125);
+tl.fromTo("#rail_s7",{opacity:0},{opacity:1,duration:.8},339.325);
+tl.fromTo("#card_s7",{opacity:0,y:40},{opacity:1,y:0,duration:.9,ease:"power3.out"},339.625);
+tl.to("#card_s7",{opacity:.34,y:10,duration:.7,ease:"power2.inOut"},346.9);
+tl.fromTo("#kw_s7",{opacity:0,scale:.9},{opacity:.5,scale:1,duration:1.8,ease:"power3.out"},347.9);
+tl.to("#kw_s7",{opacity:.32,duration:2.0,ease:"sine.inOut"},349.9);
+tl.to("#kw_s7",{opacity:0,duration:1.0,ease:"power1.in"},378.8);
+tl.set("#kw_s7",{opacity:0},379.8);
+tl.to("#card_s7",{opacity:0,y:-12,duration:.6,ease:"power2.in"},379.0);
+tl.set("#card_s7",{opacity:0},379.7);
+tl.fromTo("#mid_s7",{opacity:0,y:24},{opacity:1,y:0,duration:.9,ease:"power2.out"},379.4);
+tl.fromTo("#src_s7",{opacity:0},{opacity:1,duration:.6},340.225);
+tl.to("#mid_s7",{opacity:0,duration:.8,ease:"power1.in"},395.55);
+tl.set("#mid_s7",{opacity:0},396.45);
+tl.to("#fv_s7",{opacity:0,duration:1.0,ease:"power1.in"},395.45);
+tl.set("#fv_s7",{opacity:0},396.45);
+tl.to("#scrim_s7, #scrim2_s7, #src_s7, #hd_s7, #rail_s7",{opacity:0,duration:1.0,ease:"power1.in"},395.45);
+tl.set("#scrim_s7, #scrim2_s7, #src_s7, #hd_s7, #rail_s7",{opacity:0},396.45);
+
+tl.fromTo("#tr_0",{opacity:0},{opacity:1,duration:.4,ease:"power2.out"},74.55);
+tl.fromTo("#tr_0 .tr-txt",{y:18},{y:0,duration:.6,ease:"power2.out"},74.55);
+tl.to("#tr_0",{opacity:0,duration:.6,ease:"power2.in"},76.55);
+tl.set("#tr_0",{opacity:0},77.35);
+
+tl.fromTo("#tr_1",{opacity:0},{opacity:1,duration:.4,ease:"power2.out"},128.525);
+tl.fromTo("#tr_1 .tr-txt",{y:18},{y:0,duration:.6,ease:"power2.out"},128.525);
+tl.to("#tr_1",{opacity:0,duration:.6,ease:"power2.in"},130.525);
+tl.set("#tr_1",{opacity:0},131.325);
+
+tl.fromTo("#tr_2",{opacity:0},{opacity:1,duration:.4,ease:"power2.out"},178.0);
+tl.fromTo("#tr_2 .tr-txt",{y:18},{y:0,duration:.6,ease:"power2.out"},178.0);
+tl.to("#tr_2",{opacity:0,duration:.6,ease:"power2.in"},180.0);
+tl.set("#tr_2",{opacity:0},180.8);
+
+tl.fromTo("#tr_3",{opacity:0},{opacity:1,duration:.4,ease:"power2.out"},232.2);
+tl.fromTo("#tr_3 .tr-txt",{y:18},{y:0,duration:.6,ease:"power2.out"},232.2);
+tl.to("#tr_3",{opacity:0,duration:.6,ease:"power2.in"},234.2);
+tl.set("#tr_3",{opacity:0},235.0);
+
+tl.fromTo("#tr_4",{opacity:0},{opacity:1,duration:.4,ease:"power2.out"},285.875);
+tl.fromTo("#tr_4 .tr-txt",{y:18},{y:0,duration:.6,ease:"power2.out"},285.875);
+tl.to("#tr_4",{opacity:0,duration:.6,ease:"power2.in"},287.875);
+tl.set("#tr_4",{opacity:0},288.675);
+
+tl.fromTo("#tr_5",{opacity:0},{opacity:1,duration:.4,ease:"power2.out"},337.625);
+tl.fromTo("#tr_5 .tr-txt",{y:18},{y:0,duration:.6,ease:"power2.out"},337.625);
+tl.to("#tr_5",{opacity:0,duration:.6,ease:"power2.in"},339.625);
+tl.set("#tr_5",{opacity:0},340.425);
+
+tl.set("#outro",{opacity:1},396.45);
+tl.set("#outro .ot-fws, #outro .ot-seal",{opacity:1},396.45);
+tl.fromTo("#outro .ot-h",{opacity:0,y:30},{opacity:1,y:0,duration:1.0,ease:"power3.out"},397.05);
+tl.fromTo("#outro .ot-recap",{opacity:0},{opacity:1,duration:1.0},398.45);
+tl.fromTo("#outro .ot-cta1",{opacity:0,y:14},{opacity:1,y:0,duration:.7,ease:"power2.out"},399.85);
+tl.fromTo("#outro .ot-cta2",{opacity:0,y:10},{opacity:1,y:0,duration:.7,ease:"power2.out"},400.85);
+tl.to("#outro",{opacity:1,duration:.1},418.775);
+window.__timelines["main"] = tl;
+</script>
+</body></html>

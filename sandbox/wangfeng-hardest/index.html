@@ -1,0 +1,159 @@
+<!doctype html><html lang="zh"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=1080, height=1920"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700;900&family=Oswald:wght@600;700&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#08080a;font-family:"Noto Sans SC","PingFang SC",system-ui,sans-serif}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(6,6,9,.62) 0%,rgba(6,6,9,.06) 24%,rgba(6,6,9,.18) 54%,rgba(6,6,9,.88) 100%)}
+#vig{position:absolute;inset:0;z-index:1;background:radial-gradient(125% 80% at 50% 42%,rgba(0,0,0,0) 40%,rgba(0,0,0,.6) 100%)}
+#cover{position:absolute;inset:0;z-index:8;background:#000}
+#cover .cimg{position:absolute;inset:0;background:url("assets/cover.png") center/cover no-repeat;transform-origin:50% 42%}
+#cover .cgrad{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(8,6,8,.5) 0%,rgba(8,6,8,0) 30%,rgba(8,6,8,.12) 52%,rgba(10,6,8,.82) 82%,rgba(8,5,7,.96) 100%)}
+#cover .ctop{position:absolute;top:96px;left:84px;right:84px;display:flex;justify-content:center}
+.cbadge{display:inline-flex;align-items:center;gap:14px;padding:13px 30px;border:2px solid rgba(255,60,46,.85);border-radius:999px;font-size:30px;font-weight:800;letter-spacing:.2em;color:#ff6a52;background:rgba(20,6,6,.45)}
+.cbadge::before{content:"";width:14px;height:14px;border-radius:50%;background:#ff3324;box-shadow:0 0 18px #ff3324}
+#cover .ctitle{position:absolute;left:84px;right:84px;bottom:150px;color:#fff;text-align:left}
+.ctitle .who{font-size:46px;font-weight:700;color:#dfe3ea;letter-spacing:.04em}
+.ctitle .who b{color:#ff5a45;font-weight:900;font-size:84px;letter-spacing:.02em;margin-left:6px;vertical-align:-6px}
+.ctitle .hero{margin-top:8px;font-size:158px;font-weight:900;line-height:.92;letter-spacing:-2px;background:linear-gradient(100deg,#ff5236 4%,#ff8a3c 48%,#ffc24d 98%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 8px 36px rgba(255,80,40,.4))}
+.ctitle .desc{margin-top:30px;font-size:38px;font-weight:700;color:#e7eaf0;letter-spacing:.04em}
+.ctitle .desc b{color:#ffc24d}
+.ctitle .bar{margin-top:24px;width:140px;height:9px;border-radius:5px;background:linear-gradient(90deg,#ff3a24,#ffc24d)}
+#hook{position:absolute;left:84px;right:120px;top:300px;z-index:5;color:#fff}
+.hk{display:inline-flex;align-items:center;gap:16px;font-size:31px;font-weight:800;color:#ff6a52;letter-spacing:.26em}
+.hk::before{content:"";width:50px;height:5px;background:#ff3324;border-radius:3px;box-shadow:0 0 16px rgba(255,60,40,.8)}
+#hook .hl{margin-top:34px;font-size:76px;font-weight:900;line-height:1.28;color:#f3f5f8}
+#hook .hl b{color:#ffc24d}
+#bridge{position:absolute;left:84px;right:84px;top:50%;transform:translateY(-50%);z-index:5;color:#fff;text-align:center}
+#bridge .big{font-size:250px;font-weight:900;line-height:.86;letter-spacing:-4px;background:linear-gradient(100deg,#ff5236,#ff8a3c 50%,#ffc24d);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 50px rgba(255,80,40,.5))}
+#bridge .big small{display:block;font-size:58px;font-weight:800;letter-spacing:.22em;color:#ff6a52;margin-bottom:10px;-webkit-text-fill-color:#ff6a52}
+#bridge .line{margin-top:26px;font-size:50px;font-weight:900;color:#fff;letter-spacing:.04em}
+#bridge .line b{color:#ffc24d}
+.labelFull{position:absolute;left:84px;right:84px;bottom:300px;z-index:5;color:#fff}
+.labelFull .rank{display:flex;align-items:flex-end;gap:24px}
+.labelFull .rank .lab{font-size:33px;font-weight:800;color:#ff6a52;letter-spacing:.24em;padding-bottom:32px}
+.labelFull .rank .crown{font-size:34px;font-weight:900;color:#2a0b06;background:linear-gradient(180deg,#ffd98a,#ffb02e);border-radius:10px;padding:10px 22px;margin-bottom:36px;letter-spacing:.08em;box-shadow:0 0 34px rgba(255,160,40,.65)}
+.labelFull .no{font-size:210px;font-weight:900;line-height:.8;color:#fff;font-family:"Oswald","Noto Sans SC",sans-serif;text-shadow:0 0 44px rgba(255,70,40,.5)}
+.labelFull.climax .no{background:linear-gradient(180deg,#ffe0a0,#ffb02e);-webkit-background-clip:text;background-clip:text;color:transparent}
+.labelFull .song{font-size:88px;font-weight:900;margin-top:6px;color:#fff;letter-spacing:.01em}
+.labelFull.climax .song{font-size:84px}
+.labelFull .tags{margin-top:24px;display:flex;flex-wrap:wrap;gap:14px}
+.labelFull .tags span{font-size:31px;font-weight:700;color:#ffd9c2;border:1.5px solid rgba(255,90,60,.55);border-radius:999px;padding:9px 22px}
+.labelFull.climax .tags span{color:#ffe2ad;border-color:rgba(255,176,46,.7)}
+.labelFull .tag{font-size:43px;font-weight:700;color:#e3e7ee;margin-top:26px;line-height:1.3}
+.labelFull .tag b{color:#ff6a52;font-weight:900}
+.labelFull.climax .tag b{color:#ffc24d}
+.labelMin{position:absolute;top:120px;left:74px;z-index:5;color:#fff;display:flex;align-items:center;gap:18px}
+.labelMin .no{font-size:64px;font-weight:900;color:#ff5a45;font-family:"Oswald","Noto Sans SC",sans-serif}
+.labelMin.climax .no{color:#ffc24d}
+.labelMin .song{font-size:50px;font-weight:800}
+#outro{position:absolute;left:84px;right:84px;top:182px;z-index:5;color:#fff}
+#outro .o1{font-size:42px;font-weight:700;color:#dfe4ec;line-height:1.4}
+#outro .o2{margin-top:14px;font-size:74px;font-weight:900;line-height:1.06;background:linear-gradient(100deg,#ff5236,#ff8a3c 50%,#ffc24d);-webkit-background-clip:text;background-clip:text;color:transparent}
+#rankbox{margin-top:46px;display:flex;flex-direction:column;gap:20px}
+.rrow{display:flex;align-items:center;gap:26px;padding:18px 26px;border-radius:16px;background:rgba(22,16,18,.5);border:1.5px solid rgba(255,90,60,.28)}
+.rrow .rn{font-size:62px;font-weight:900;color:#ff5a45;font-family:"Oswald","Noto Sans SC",sans-serif;min-width:96px}
+.rrow .rs{font-size:58px;font-weight:900;color:#fff}
+.rrow.rgold{background:linear-gradient(90deg,rgba(60,34,8,.7),rgba(30,18,10,.4));border-color:rgba(255,176,46,.75)}
+.rrow.rgold .rn{color:#ffc24d}
+.rrow .rc{margin-left:auto;font-size:28px;font-weight:900;color:#2a0b06;background:linear-gradient(180deg,#ffd98a,#ffb02e);border-radius:8px;padding:8px 16px;letter-spacing:.06em}
+#outro .q{margin-top:42px;font-size:46px;font-weight:800;color:#f0f3f8;text-align:center}
+#outro .q b{color:#ffc24d}
+</style></head><body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="266.475" data-width="1080" data-height="1920">
+<video id="v0" class="fv" data-start="0.0" data-duration="26.0" data-track-index="0" src="clips/vert_introbed.mp4" muted playsinline></video>
+<video id="v1" class="fv" data-start="26.0" data-duration="44.3" data-track-index="6" src="clips_seg/p5_yaobai.mp4" muted playsinline></video>
+<video id="v2" class="fv" data-start="70.3" data-duration="43.7" data-track-index="0" src="clips_seg/p4_yonggan.mp4" muted playsinline></video>
+<video id="v3" class="fv" data-start="114.0" data-duration="45.075" data-track-index="6" src="clips_seg/p3_cunzai.mp4" muted playsinline></video>
+<video id="v4" class="fv" data-start="159.075" data-duration="42.8" data-track-index="0" src="clips_seg/p2_dengdai.mp4" muted playsinline></video>
+<video id="v5" class="fv" data-start="201.875" data-duration="42.2" data-track-index="6" src="clips_seg/p1_guangming.mp4" muted playsinline></video>
+<video id="v6" class="fv" data-start="244.075" data-duration="22.4" data-track-index="0" src="clips/vert_introbed.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="266.475" data-track-index="1"></div>
+<div id="vig" class="clip" data-start="0" data-duration="266.475" data-track-index="7"></div>
+<div id="cover" class="clip" data-start="0" data-duration="6.5" data-track-index="8"><div class="cimg"></div><div class="cgrad"></div><div class="ctop"><div class="cbadge">高音封神 · 难度盘点</div></div><div class="ctitle"><div class="who">你以为只会上热搜的<b>汪峰</b></div><div class="hero">最难的5首歌</div><div class="desc">副歌持续高压 · 嘶吼 · <b>高位轰炸</b></div><div class="bar"></div></div></div><div id="hook" class="clip" data-start="7.4" data-duration="6.6" data-track-index="4"><div class="hk">先把话放这</div><div class="hl">这五首，每一首副歌<br>都唱到<b>缺氧</b></div></div><div id="bridge" class="clip" data-start="18.4" data-duration="6.6" data-track-index="5"><div class="big"><small>公认最难唱</small>TOP 5</div><div class="line">高音 · 嘶吼 · <b>体能极限</b></div></div>
+<div id="lf05" class="clip labelFull" data-start="26.25" data-duration="19.05" data-track-index="2"><div class="rank"><div class="no">05</div><div class="lab">最难 TOP 5</div></div><div class="song">《一起摇摆》</div><div class="tags"><span>110+个 G4</span><span>近90个 A4</span><span>持续轰炸</span></div><div class="tag">不是气氛歌，<b>是血氧测试</b></div></div>
+<div id="lm05" class="clip labelMin" data-start="45.3" data-duration="25.0" data-track-index="4"><span class="no">05</span><span class="song">《一起摇摆》</span></div>
+<div id="lf04" class="clip labelFull" data-start="70.55" data-duration="18.45" data-track-index="2"><div class="rank"><div class="no">04</div><div class="lab">最难 TOP 5</div></div><div class="song">《勇敢的心》</div><div class="tags"><span>著名 B4 折磨曲</span><span>长时高位</span><span>体能极限</span></div><div class="tag">越往后，越像<b>一场体能测试</b></div></div>
+<div id="lm04" class="clip labelMin" data-start="89.0" data-duration="25.0" data-track-index="4"><span class="no">04</span><span class="song">《勇敢的心》</span></div>
+<div id="lf03" class="clip labelFull" data-start="114.25" data-duration="19.825" data-track-index="2"><div class="rank"><div class="no">03</div><div class="lab">最难 TOP 5</div></div><div class="song">《存在》</div><div class="tags"><span>B4 / C#5</span><span>男声高压区</span><span>字头不能糊</span></div><div class="tag">想的不是如何存在，<b>是如何换歌</b></div></div>
+<div id="lm03" class="clip labelMin" data-start="134.075" data-duration="25.0" data-track-index="4"><span class="no">03</span><span class="song">《存在》</span></div>
+<div id="lf02" class="clip labelFull" data-start="159.325" data-duration="17.55" data-track-index="2"><div class="rank"><div class="no">02</div><div class="lab">最难 TOP 5</div></div><div class="song">《等待》</div><div class="tags"><span>撕裂唱法</span><span>B4 连咬</span><span>C5 撕裂音</span></div><div class="tag">在嘶吼和失控之间，<b>走钢丝</b></div></div>
+<div id="lm02" class="clip labelMin" data-start="176.875" data-duration="25.0" data-track-index="4"><span class="no">02</span><span class="song">《等待》</span></div>
+<div id="lf01" class="clip labelFull climax" data-start="202.125" data-duration="16.95" data-track-index="2"><div class="rank"><div class="no">01</div><div class="crown">公认天花板</div></div><div class="song">《光明》</div><div class="tags"><span>60+个 A4</span><span>C5 - D5 高音</span><span>副歌持续高压</span></div><div class="tag">光明还没寻到，<b>声音先没了</b></div></div>
+<div id="lm01" class="clip labelMin climax" data-start="219.075" data-duration="25.0" data-track-index="4"><span class="no">01</span><span class="song">《光明》</span></div>
+<div id="outro" class="clip" data-start="243.975" data-duration="22.5" data-track-index="9"><div class="o1">汪峰，从来不只是热搜上的那个汪峰</div><div class="o2">最难5首 · 完整难度榜</div><div id="rankbox"><div class="rrow rgold" id="rr01"><span class="rn">01</span><span class="rs">《光明》</span><span class=rc>公认天花板</span></div><div class="rrow" id="rr02"><span class="rn">02</span><span class="rs">《等待》</span></div><div class="rrow" id="rr03"><span class="rn">03</span><span class="rs">《存在》</span></div><div class="rrow" id="rr04"><span class="rn">04</span><span class="rs">《勇敢的心》</span></div><div class="rrow" id="rr05"><span class="rn">05</span><span class="rs">《一起摇摆》</span></div></div><div class="q">你心里的天花板，是<b>哪一首</b>？</div></div>
+<audio id="master" data-start="0" data-duration="266.475" data-track-index="3" src="master.wav" data-volume="1"></audio>
+</div>
+<script>
+window.__timelines=window.__timelines||{};
+const tl=gsap.timeline({paused:true});
+tl.set("#cover",{opacity:1},0);
+tl.set(["#cover .ctitle",".cbadge"],{opacity:1},0);
+tl.fromTo("#cover .cimg",{scale:1.0},{scale:1.05,duration:6,ease:"none"},0);
+tl.from(".ctitle .hero",{y:30,duration:.7,ease:"power3.out"},0.1);
+tl.from(".cbadge",{y:-14,duration:.6,ease:"power2.out"},0.15);
+tl.to("#cover",{opacity:0,duration:1.0,ease:"power1.inOut"},5.5);
+tl.set("#cover",{opacity:0},6.5);
+tl.from("#hook .hk",{x:-26,opacity:0,duration:.5,ease:"power2.out"},7.5);
+tl.from("#hook .hl",{y:26,opacity:0,duration:.6,ease:"power3.out"},7.85);
+tl.to("#hook",{opacity:0,duration:.4,ease:"power1.in"},13.6);
+tl.set("#hook",{opacity:0},14.0);
+tl.from("#bridge .big small",{opacity:0,y:14,duration:.4},18.5);
+tl.from("#bridge .big",{scale:.72,opacity:0,duration:.6,ease:"back.out(1.5)"},18.6);
+tl.from("#bridge .line",{y:22,opacity:0,duration:.5,ease:"power3.out"},19.15);
+tl.to("#bridge",{opacity:0,duration:.45,ease:"power1.in"},24.4);
+tl.set("#bridge",{opacity:0},25.0);
+tl.from("#lf05 .no",{y:60,opacity:0,duration:.6,ease:"power3.out"},26.3);
+tl.from("#lf05 .rank>div:last-child",{x:-18,opacity:0,duration:.45,ease:"power2.out"},26.55);
+tl.from("#lf05 .song",{y:42,opacity:0,duration:.55,ease:"power3.out"},26.6);
+tl.from("#lf05 .tags span",{y:18,opacity:0,duration:.4,ease:"power2.out",stagger:.09},26.9);
+tl.from("#lf05 .tag",{y:20,opacity:0,duration:.45,ease:"power2.out"},27.2);
+tl.to("#lf05",{opacity:0,duration:.4,ease:"power1.in"},44.9);
+tl.set("#lf05",{opacity:0},45.3);
+tl.from("#lm05",{x:-26,opacity:0,duration:.45,ease:"power2.out"},45.4);
+tl.from("#lf04 .no",{y:60,opacity:0,duration:.6,ease:"power3.out"},70.6);
+tl.from("#lf04 .rank>div:last-child",{x:-18,opacity:0,duration:.45,ease:"power2.out"},70.85);
+tl.from("#lf04 .song",{y:42,opacity:0,duration:.55,ease:"power3.out"},70.9);
+tl.from("#lf04 .tags span",{y:18,opacity:0,duration:.4,ease:"power2.out",stagger:.09},71.2);
+tl.from("#lf04 .tag",{y:20,opacity:0,duration:.45,ease:"power2.out"},71.5);
+tl.to("#lf04",{opacity:0,duration:.4,ease:"power1.in"},88.6);
+tl.set("#lf04",{opacity:0},89.0);
+tl.from("#lm04",{x:-26,opacity:0,duration:.45,ease:"power2.out"},89.1);
+tl.from("#lf03 .no",{y:60,opacity:0,duration:.6,ease:"power3.out"},114.3);
+tl.from("#lf03 .rank>div:last-child",{x:-18,opacity:0,duration:.45,ease:"power2.out"},114.55);
+tl.from("#lf03 .song",{y:42,opacity:0,duration:.55,ease:"power3.out"},114.6);
+tl.from("#lf03 .tags span",{y:18,opacity:0,duration:.4,ease:"power2.out",stagger:.09},114.9);
+tl.from("#lf03 .tag",{y:20,opacity:0,duration:.45,ease:"power2.out"},115.2);
+tl.to("#lf03",{opacity:0,duration:.4,ease:"power1.in"},133.675);
+tl.set("#lf03",{opacity:0},134.075);
+tl.from("#lm03",{x:-26,opacity:0,duration:.45,ease:"power2.out"},134.175);
+tl.from("#lf02 .no",{y:60,opacity:0,duration:.6,ease:"power3.out"},159.375);
+tl.from("#lf02 .rank>div:last-child",{x:-18,opacity:0,duration:.45,ease:"power2.out"},159.625);
+tl.from("#lf02 .song",{y:42,opacity:0,duration:.55,ease:"power3.out"},159.675);
+tl.from("#lf02 .tags span",{y:18,opacity:0,duration:.4,ease:"power2.out",stagger:.09},159.975);
+tl.from("#lf02 .tag",{y:20,opacity:0,duration:.45,ease:"power2.out"},160.275);
+tl.to("#lf02",{opacity:0,duration:.4,ease:"power1.in"},176.475);
+tl.set("#lf02",{opacity:0},176.875);
+tl.from("#lm02",{x:-26,opacity:0,duration:.45,ease:"power2.out"},176.975);
+tl.from("#lf01 .no",{y:60,opacity:0,duration:.6,ease:"power3.out"},202.175);
+tl.from("#lf01 .rank>div:last-child",{x:-18,opacity:0,duration:.45,ease:"power2.out"},202.425);
+tl.from("#lf01 .song",{y:42,opacity:0,duration:.55,ease:"power3.out"},202.475);
+tl.from("#lf01 .tags span",{y:18,opacity:0,duration:.4,ease:"power2.out",stagger:.09},202.775);
+tl.from("#lf01 .tag",{y:20,opacity:0,duration:.45,ease:"power2.out"},203.075);
+tl.to("#lf01",{opacity:0,duration:.4,ease:"power1.in"},218.675);
+tl.set("#lf01",{opacity:0},219.075);
+tl.from("#lm01",{x:-26,opacity:0,duration:.45,ease:"power2.out"},219.175);
+tl.from("#rr05",{x:-34,opacity:0,duration:.5,ease:"power3.out"},250.375);
+tl.from("#rr04",{x:-34,opacity:0,duration:.5,ease:"power3.out"},251.425);
+tl.from("#rr03",{x:-34,opacity:0,duration:.5,ease:"power3.out"},252.475);
+tl.from("#rr02",{x:-34,opacity:0,duration:.5,ease:"power3.out"},253.525);
+tl.from("#rr01",{x:-34,opacity:0,duration:.5,ease:"power3.out"},254.575);
+tl.fromTo("#rr01",{scale:.92},{scale:1,duration:.5,ease:"back.out(1.8)"},254.575);
+tl.from("#outro .o1",{y:22,opacity:0,duration:.6,ease:"power2.out"},244.475);
+tl.from("#outro .o2",{y:40,opacity:0,scale:1.04,duration:.7,ease:"power4.out"},245.075);
+tl.from("#outro .q",{y:18,opacity:0,duration:.5,ease:"power2.out"},256.375);
+window.__timelines["main"]=tl;
+</script></body></html>

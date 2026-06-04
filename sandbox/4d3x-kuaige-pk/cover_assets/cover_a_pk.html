@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;700;800;900&family=Noto+Sans+SC:wght@600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1080px; height: 1440px; overflow: hidden;
+  font-family: "Noto Sans SC", sans-serif; color: #F7F0E8;
+  background: radial-gradient(ellipse at 50% 30%, #2A0B1F 0%, #0A0512 60%, #06080F 100%);
+}
+.bg { position: absolute; inset: 0; background:
+  radial-gradient(ellipse at 18% 18%, rgba(230,60,92,.25) 0, transparent 35%),
+  radial-gradient(ellipse at 82% 22%, rgba(90,200,255,.22) 0, transparent 35%),
+  radial-gradient(ellipse at 50% 88%, rgba(212,168,72,.22) 0, transparent 40%); }
+.electric { position: absolute; inset: 0;
+  background-image: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.05) 49.7%, rgba(255,255,255,.05) 50.3%, transparent 100%);
+  background-size: 6px 100%; mix-blend-mode: screen; opacity: .4; }
+.stripe { position: absolute; left: 0; right: 0; height: 6px;
+  background: linear-gradient(90deg, transparent, #E63C5C, #D4A848, #5AC8FF, transparent);
+  box-shadow: 0 0 24px #E63C5C; }
+.stripe-top { top: 44px; }
+.stripe-bot { bottom: 44px; }
+
+.eyebrow { position: absolute; top: 92px; left: 0; right: 0; text-align: center;
+  font-size: 28px; font-weight: 800; letter-spacing: .42em; color: #D4A848; }
+.eyebrow .sep { color: rgba(255,255,255,.30); padding: 0 14px; font-weight: 400; }
+
+.title-wrap { position: absolute; top: 162px; left: 0; right: 0; text-align: center;
+  z-index: 5; }
+.t1 { display: block; font-family: "Noto Serif SC", serif; font-size: 142px;
+  font-weight: 900; line-height: .98; color: #F7F0E8; letter-spacing: -4px;
+  text-shadow: 0 0 36px rgba(212,168,72,.40); }
+.t2 { display: block; font-family: "Noto Serif SC", serif; font-size: 86px;
+  font-weight: 700; line-height: .98; color: #D4A848; letter-spacing: .12em; margin: -6px 0 -10px; }
+.tPK { display: block; font-family: "Bebas Neue", "Noto Serif SC", serif;
+  font-size: 220px; font-weight: 900; color: #E63C5C; letter-spacing: .04em;
+  line-height: .98; text-shadow: 0 0 48px rgba(230,60,92,.55), 0 8px 24px rgba(0,0,0,.75); }
+.sub { position: absolute; top: 712px; left: 0; right: 0; text-align: center;
+  font-size: 38px; font-weight: 800; letter-spacing: .22em; color: rgba(247,240,232,.92);
+  z-index: 5; }
+.sub .sub-dot { color: #D4A848; padding: 0 14px; }
+
+.grid { position: absolute; top: 800px; left: 56px; right: 56px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; z-index: 4; }
+.cell { padding: 16px 22px; border-radius: 18px;
+  background: linear-gradient(155deg, rgba(255,255,255,.10), rgba(255,255,255,.02));
+  border: 1.5px solid rgba(255,255,255,.22);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  display: flex; align-items: baseline; gap: 12px; }
+.cell:nth-child(7) { grid-column: 1 / -1; justify-content: center;
+  background: linear-gradient(155deg, rgba(230,60,92,.22), rgba(212,168,72,.12));
+  border-color: rgba(230,60,92,.55); }
+.no { font-family: "Bebas Neue", sans-serif; font-size: 30px; font-weight: 900;
+  color: #D4A848; min-width: 40px; }
+.singer { font-size: 28px; font-weight: 800; color: #F7F0E8; }
+.song { font-family: "Noto Serif SC", serif; font-size: 28px; font-weight: 600;
+  color: rgba(247,240,232,.85); }
+
+.cta { position: absolute; bottom: 96px; left: 0; right: 0; text-align: center; }
+.btn { display: inline-block; padding: 22px 72px;
+  font-size: 52px; font-weight: 900; letter-spacing: .4em; color: #06080F;
+  background: linear-gradient(135deg, #FFE89A 0%, #FFD45E 30%, #E63C5C 75%);
+  border-radius: 999px;
+  box-shadow: 0 14px 50px rgba(230,60,92,.45),
+              inset 0 -8px 22px rgba(0,0,0,.18),
+              inset 0 4px 18px rgba(255,255,255,.40);
+  border: 4px solid #FFE89A; }
+
+.corner { position: absolute; bottom: 38px; left: 64px;
+  font-size: 22px; font-weight: 700; letter-spacing: .25em; color: rgba(247,240,232,.45); }
+.corner span:first-child { color: #E63C5C; margin-right: 10px; }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="electric"></div>
+  <div class="stripe stripe-top"></div>
+  <div class="stripe stripe-bot"></div>
+
+  <div class="eyebrow">EP.01<span class="sep">·</span>四大三小<span class="sep">·</span>千禧女声</div>
+
+  <div class="title-wrap">
+    <span class="t1">四大三小</span>
+    <span class="t2">快歌</span>
+    <span class="tPK">PK</span>
+  </div>
+
+  <div class="sub">每人 1 首<span class="sub-dot">·</span>你来投票</div>
+
+  <div class="grid">
+    <div class="cell"><span class="no">01</span><span class="singer">蔡依林</span><span class="song">《舞娘》</span></div>
+    <div class="cell"><span class="no">02</span><span class="singer">萧亚轩</span><span class="song">《爱的主打歌》</span></div>
+    <div class="cell"><span class="no">03</span><span class="singer">孙燕姿</span><span class="song">《超快感》</span></div>
+    <div class="cell"><span class="no">04</span><span class="singer">梁静茹</span><span class="song">《燕尾蝶》</span></div>
+    <div class="cell"><span class="no">05</span><span class="singer">王心凌</span><span class="song">《Honey》</span></div>
+    <div class="cell"><span class="no">06</span><span class="singer">张韶涵</span><span class="song">《That Girl》</span></div>
+    <div class="cell"><span class="no">07</span><span class="singer">杨丞琳</span><span class="song">《新流感》</span></div>
+  </div>
+
+  <div class="cta">
+    <span class="btn">你 来 投 票</span>
+  </div>
+
+  <div class="corner"><span>⚠</span>出场顺序 ≠ 排名</div>
+</body>
+</html>

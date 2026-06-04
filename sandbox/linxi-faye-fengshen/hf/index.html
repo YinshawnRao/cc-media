@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:1080px; height:1920px; overflow:hidden; background:#08080b;
+  font-family:"Noto Serif SC",serif; color:#ece4d6; -webkit-font-smoothing:antialiased; }
+.foot { position:absolute; opacity:0; will-change:opacity,transform; }
+.full { inset:0; width:1080px; height:1920px; object-fit:cover; }
+.lb   { left:0; width:1080px; height:auto; top:740px; }   /* 1080x372 letterbox 居中偏上 */
+.g-city  { filter:grayscale(.45) saturate(.55) brightness(.5) contrast(1.12); }
+.g-vinyl { filter:saturate(.6) brightness(.58) contrast(1.05) sepia(.12); }
+.g-cool  { filter:grayscale(.55) saturate(.7) brightness(1.0) contrast(1.1); }
+.g-warm  { filter:saturate(.92) brightness(1.06) contrast(1.04) sepia(.06); }
+.g-dim   { filter:grayscale(.4) saturate(.7) brightness(.62) contrast(1.06); }
+
+/* cinematic 框：上下暗渐变托字 + 暗角 + 颗粒 */
+.cinetop { position:absolute; top:0; left:0; right:0; height:660px; z-index:6; pointer-events:none;
+  background:linear-gradient(180deg, rgba(8,8,11,.94) 0%, rgba(8,8,11,.55) 52%, rgba(8,8,11,0) 100%); }
+.cinebot { position:absolute; bottom:0; left:0; right:0; height:720px; z-index:6; pointer-events:none;
+  background:linear-gradient(0deg, rgba(8,8,11,.96) 0%, rgba(8,8,11,.62) 48%, rgba(8,8,11,0) 100%); }
+.vignette { position:absolute; inset:0; z-index:7; pointer-events:none;
+  background:radial-gradient(ellipse 78% 62% at 50% 46%, rgba(0,0,0,0) 38%, rgba(0,0,0,.5) 100%); }
+.grain { position:absolute; inset:0; z-index:9; pointer-events:none; opacity:.09; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E"); background-size:220px 220px; }
+
+/* 字幕 */
+.sub { position:absolute; left:90px; right:90px; bottom:300px; z-index:13; text-align:center;
+  font-family:"Noto Serif SC",serif; font-weight:500; font-size:46px; line-height:1.5;
+  color:rgba(236,228,214,.97); letter-spacing:.02em; opacity:0;
+  text-shadow:0 2px 24px rgba(0,0,0,.85), 0 1px 4px rgba(0,0,0,.9); }
+
+/* 屏幕文字（开头精神地图） */
+.screen { position:absolute; left:80px; right:80px; top:560px; z-index:14; text-align:center; opacity:0; }
+.sa-1 { font-family:"Noto Sans SC",sans-serif; font-weight:500; font-size:40px; letter-spacing:.06em;
+  color:rgba(236,228,214,.5); margin-bottom:26px; text-decoration:line-through; text-decoration-color:rgba(180,55,59,.7); text-decoration-thickness:2px; }
+.sa-2 { font-family:"Noto Serif SC",serif; font-weight:700; font-size:64px; line-height:1.34; color:#ece4d6; letter-spacing:.01em; }
+.acc { color:#c0413f; }
+
+/* 人间 番号歌名卡（置于上方暗区，避免与画面条重叠） */
+.songcard { position:absolute; left:0; right:0; top:286px; z-index:15; text-align:center; opacity:0; }
+.sc-no { font-family:"Cormorant Garamond",serif; font-style:italic; font-weight:500; font-size:108px;
+  line-height:.8; color:rgba(192,65,63,.92); letter-spacing:.02em; }
+.sc-name { font-family:"Noto Serif SC",serif; font-weight:900; font-size:150px; line-height:1.0; color:#ece4d6;
+  letter-spacing:.06em; margin:4px 0 24px; text-shadow:0 6px 50px rgba(0,0,0,.6); }
+.sc-credit { font-family:"Noto Sans SC",sans-serif; font-weight:500; font-size:30px; letter-spacing:.16em;
+  color:rgba(236,228,214,.72); margin-bottom:14px; }
+.sc-album { font-family:"JetBrains Mono",monospace; font-weight:400; font-size:24px; letter-spacing:.2em;
+  color:rgba(91,110,128,.95); }
+
+/* 常驻角标 */
+.corner { position:absolute; top:96px; left:64px; z-index:16; display:flex; align-items:center; gap:18px; opacity:0; }
+.cn-no { font-family:"Cormorant Garamond",serif; font-style:italic; font-weight:600; font-size:46px; color:#c0413f; }
+.cn-line { width:46px; height:2px; background:rgba(236,228,214,.4); }
+.cn-tag { font-family:"Noto Serif SC",serif; font-weight:700; font-size:40px; color:rgba(236,228,214,.92); letter-spacing:.14em; }
+
+/* 人间 主题屏幕文字（副歌） */
+.screen2 { position:absolute; left:80px; right:80px; top:430px; z-index:17; text-align:center; opacity:0; }
+.sb-1 { font-family:"Noto Serif SC",serif; font-weight:500; font-size:50px; color:rgba(236,228,214,.85); margin-bottom:18px; letter-spacing:.04em; }
+.sb-2 { font-family:"Noto Serif SC",serif; font-weight:700; font-size:70px; line-height:1.28; color:#ece4d6; letter-spacing:.02em; }
+
+/* 开头老唱片（CSS 旋转环） */
+.opvinyl { position:absolute; left:0; right:0; top:0; bottom:0; z-index:5; pointer-events:none; opacity:0;
+  display:flex; align-items:center; justify-content:center;
+  background:radial-gradient(circle at 50% 50%, rgba(8,8,11,.62) 0%, rgba(8,8,11,.2) 32%, rgba(8,8,11,0) 52%); }
+.ov-disc { width:520px; height:520px; border-radius:50%;
+  background:
+    radial-gradient(circle at 50% 50%, #2a2530 0 5.5%, #7d1f24 5.5% 6.2%, #1e1a24 6.6% 9%, rgba(0,0,0,0) 9%),
+    radial-gradient(circle at 40% 36%, rgba(236,228,214,.12) 0%, rgba(236,228,214,0) 46%),
+    repeating-radial-gradient(circle at 50% 50%, rgba(236,228,214,.06) 0 1.4px, rgba(0,0,0,.18) 1.4px 6px),
+    radial-gradient(circle at 50% 50%, #181420 0 100%);
+  box-shadow:0 0 0 2px rgba(236,228,214,.10), inset 0 0 70px rgba(0,0,0,.55), 0 30px 90px rgba(0,0,0,.75);
+  opacity:.5; }
+
+/* 转场卡 */
+.transcard { position:absolute; left:0; right:0; top:0; bottom:0; z-index:18; opacity:0;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.tc-bg { position:absolute; inset:0; z-index:-1;
+  background:radial-gradient(ellipse 70% 50% at 50% 50%, rgba(140,30,36,.34) 0%, rgba(8,8,11,.0) 60%); }
+.tc-rule { width:64px; height:2px; background:#c0413f; margin:0 0 40px; opacity:.9; }
+.tc-text { font-family:"Noto Serif SC",serif; font-weight:600; font-size:80px; line-height:1.35; text-align:center; color:#ece4d6; letter-spacing:.02em; padding:0 70px; }
+
+/* ============ 封面 ============ */
+.cover { position:absolute; inset:0; z-index:50; background:#08080b; overflow:hidden; }
+.cv-veil { position:absolute; inset:0; z-index:1;
+  background:radial-gradient(ellipse 90% 70% at 50% 38%, rgba(40,20,22,.5) 0%, rgba(8,8,11,.9) 62%, #08080b 100%); }
+.cv-film { position:absolute; top:0; bottom:0; width:46px; z-index:2; opacity:.5;
+  background:repeating-linear-gradient(180deg, rgba(236,228,214,.0) 0 14px, rgba(236,228,214,.0) 14px 22px, transparent 22px 40px),
+             repeating-linear-gradient(180deg, transparent 0 8px, rgba(236,228,214,.16) 8px 24px, transparent 24px 40px); }
+.cv-film-l { left:30px; }
+.cv-flower { position:absolute; right:-120px; bottom:-140px; width:560px; height:560px; z-index:2; opacity:.5;
+  background:radial-gradient(circle at 50% 50%, rgba(176,40,46,.55) 0%, rgba(120,20,26,.32) 26%, rgba(60,10,14,.12) 46%, transparent 62%);
+  filter:blur(2px); }
+.cv-col { position:absolute; left:0; right:0; top:50%; transform:translateY(-50%); z-index:5;
+  display:flex; flex-direction:column; align-items:center; }
+.cv-eyebrow { font-family:"Noto Sans SC",sans-serif; font-weight:600; font-size:30px; letter-spacing:.42em;
+  color:rgba(192,65,63,.9); margin-bottom:34px; padding-left:.42em; }
+.cv-pwrap { position:relative; width:470px; height:560px; margin-bottom:46px; }
+.cv-vinyl { position:absolute; right:-66px; top:120px; width:300px; height:300px; border-radius:50%; z-index:1;
+  background:radial-gradient(circle at 50% 50%, #b0282e 0 8%, #1a1216 9% 12%, #0e0c10 13% 100%);
+  box-shadow:0 0 0 1px rgba(236,228,214,.1), inset 0 0 0 26px rgba(236,228,214,.02), inset 0 0 0 52px rgba(236,228,214,.03);
+  opacity:.85; filter:brightness(.9); }
+.cv-portrait { position:absolute; inset:0; z-index:2; border-radius:8px;
+  background-image:url("cover_assets/faye_wide.jpg"); background-size:cover; background-position:50% 38%;
+  filter:grayscale(.85) contrast(1.16) brightness(1.05); border:1px solid rgba(236,228,214,.14);
+  box-shadow:0 40px 90px rgba(0,0,0,.6); }
+.cv-ptint { position:absolute; inset:0; z-index:3; border-radius:8px; mix-blend-mode:soft-light;
+  background:linear-gradient(155deg, rgba(176,40,46,.42) 0%, rgba(8,8,11,0) 50%, rgba(70,90,110,.3) 100%); }
+.cv-title { font-family:"Noto Serif SC",serif; font-weight:900; font-size:118px; line-height:1.06; text-align:center;
+  color:#ece4d6; letter-spacing:.04em; text-shadow:0 8px 50px rgba(0,0,0,.55); }
+.cv-title .acc { color:#c0413f; }
+.cv-sub { font-family:"Noto Sans SC",sans-serif; font-weight:500; font-size:42px; letter-spacing:.28em;
+  color:rgba(236,228,214,.82); margin-top:34px; padding-left:.28em;
+  border-top:1px solid rgba(236,228,214,.16); padding-top:30px; }
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="98.2" data-width="1080" data-height="1920">
+    <video id="city" class="foot full g-city clip" data-start="4.5" data-duration="25.5" data-track-index="0" src="clips_seg/city.mp4" muted playsinline preload="auto"></video>
+    <video id="fopen" class="foot lb g-cool clip" data-start="26.0" data-duration="20.0" data-track-index="1" src="clips_seg/faye_open.mp4" muted playsinline preload="auto"></video>
+    <video id="rimg" class="foot lb g-warm clip" data-start="44.3" data-duration="18.0" data-track-index="2" src="clips_seg/renjian_img.mp4" muted playsinline preload="auto"></video>
+    <video id="rshow" class="foot lb g-warm clip" data-start="62.25" data-duration="30.0" data-track-index="5" src="clips_seg/renjian_show.mp4" muted playsinline preload="auto"></video>
+    <div id="sub_op1" class="sub clip" data-start="5.8" data-duration="3.675" data-track-index="12">王菲，当然有很多好歌。</div>
+    <div id="sub_op2" class="sub clip" data-start="9.875" data-duration="4.3" data-track-index="12">但有一种王菲，是林夕写出来的。</div>
+    <div id="sub_op3" class="sub clip" data-start="14.475" data-duration="3.725" data-track-index="12">他写给她的，不只是爱情；</div>
+    <div id="sub_op4" class="sub clip" data-start="18.25" data-duration="4.2" data-track-index="12">还有孤独，还有放下，还有无常。</div>
+    <div id="sub_op5" class="sub clip" data-start="22.65" data-duration="5.6" data-track-index="12">还有一个人走到世界尽头以后，<br>仍然不解释自己的样子。</div>
+    <div id="sub_op6" class="sub clip" data-start="29.25" data-duration="7.425" data-track-index="12">今天这十首，不只听旋律，<br>更听林夕怎么把王菲写成传奇。</div>
+    <div id="sub_rj1" class="sub clip" data-start="38.275" data-duration="4.425" data-track-index="12">林夕写给王菲的第一层，是人间。</div>
+    <div id="sub_rj2" class="sub clip" data-start="43.0" data-duration="5.575" data-track-index="12">这首歌没有太多锋利的隐喻，<br>反而像一句很轻的祝福。</div>
+    <div id="sub_rj3" class="sub clip" data-start="48.775" data-duration="4.925" data-track-index="12">王菲一开口，那种疏离感忽然就落地了。</div>
+    <div id="sub_rj4" class="sub clip" data-start="53.9" data-duration="6.15" data-track-index="12">她不是不食人间烟火，<br>她只是把人间唱得很远，也很温柔。</div>
+    <div id="sub_tr1" class="sub clip" data-start="91.95" data-duration="5.75" data-track-index="12">但林夕真正厉害的地方，<br>是他写爱，从来不只写甜。</div>
+    <div id="cinetop" class="cinetop"></div>
+    <div id="cinebot" class="cinebot"></div>
+    <div id="vignette" class="vignette"></div>
+    <div id="grain" class="grain"></div>
+    <div id="opvinyl" class="opvinyl clip" data-start="13.0" data-duration="13.5" data-track-index="8">
+  <div class="ov-disc"></div>
+</div>
+    <div id="screenA" class="screen clip" data-start="26.0" data-duration="5.6" data-track-index="14">
+  <div class="sa-1">不是王菲热门歌单</div>
+  <div class="sa-2">是林夕写给王菲的<span class="acc">精神地图</span></div>
+</div>
+    <div id="title_rj" class="songcard clip" data-start="37.775" data-duration="8.6" data-track-index="15">
+  <div class="sc-no">10</div>
+  <div class="sc-name">人间</div>
+  <div class="sc-credit">词 · 林夕　唱 · 王菲　曲 · 中岛美雪</div>
+  <div class="sc-album">1997 ·《王菲》</div>
+</div>
+    <div id="tag_rj" class="corner clip" data-start="45.475" data-duration="46.475" data-track-index="16">
+  <span class="cn-no">10</span><span class="cn-line"></span><span class="cn-tag">人间</span>
+</div>
+    <div id="screenB" class="screen2 clip" data-start="61.2" data-duration="8.5" data-track-index="17">
+  <div class="sb-1">她不是不在人间</div>
+  <div class="sb-2">她只是把人间<span class="acc">唱得很远</span></div>
+</div>
+    <div id="trans" class="transcard clip" data-start="91.95" data-duration="6.25" data-track-index="18">
+  <div class="tc-bg"></div>
+  <div class="tc-rule"></div>
+  <div class="tc-text">他写爱，<br>从来<span class="acc">不只写甜</span></div>
+</div>
+    <div id="cover" class="cover clip" data-start="0" data-duration="5.0" data-track-index="40">
+  <div class="cv-veil"></div>
+  <div class="cv-film cv-film-l"></div>
+  <div class="cv-flower"></div>
+  <div class="cv-col">
+    <div class="cv-eyebrow">词 · 林夕　／　唱 · 王菲</div>
+    <div class="cv-pwrap">
+      <div class="cv-vinyl"></div>
+      <div class="cv-portrait"></div>
+      <div class="cv-ptint"></div>
+    </div>
+    <h1 class="cv-title">林夕把王菲<br><span class="acc">写成了神</span></h1>
+    <div class="cv-sub">10 首封神词作盘点</div>
+  </div>
+</div>
+    <audio id="master" data-start="0" data-duration="98.2" data-track-index="3" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused:true });
+    tl.set("#cover",{opacity:1},0);
+tl.set(".cv-col,.cv-portrait,.cv-title,.cv-sub,.cv-eyebrow,.cv-flower,.cv-vinyl",{opacity:1},0);
+tl.fromTo(".cv-portrait",{scale:1.0},{scale:1.03,duration:4.0,ease:"sine.inOut"},0.6);
+tl.fromTo(".cv-flower",{scale:1.0,opacity:.5},{scale:1.08,opacity:.62,duration:4.2,ease:"sine.inOut"},0.4);
+tl.to("#cover",{opacity:0,duration:0.7,ease:"power2.in"},4.3);
+tl.set("#cover",{opacity:0},5.0);
+tl.fromTo("#city",{opacity:0},{opacity:1.0,duration:1.3,ease:"power1.inOut"},4.5);
+tl.to("#city",{opacity:0,duration:1.8,ease:"power1.in"},28.2);
+tl.set("#city",{opacity:0},30.0);
+
+tl.fromTo("#city",{scale:1.06},{scale:1.0,duration:25.5,ease:"none"},4.5);
+tl.fromTo("#fopen",{opacity:0},{opacity:1.0,duration:1.8,ease:"power1.inOut"},26.0);
+tl.to("#fopen",{opacity:0,duration:1.8,ease:"power1.in"},44.2);
+tl.set("#fopen",{opacity:0},46.0);
+
+tl.fromTo("#fopen",{scale:1.04},{scale:1.0,duration:20.0,ease:"none"},26.0);
+tl.fromTo("#rimg",{opacity:0},{opacity:1.0,duration:1.6,ease:"power1.inOut"},44.3);
+tl.to("#rimg",{opacity:0,duration:1.7,ease:"power1.in"},60.6);
+tl.set("#rimg",{opacity:0},62.3);
+
+tl.fromTo("#rimg",{scale:1.04},{scale:1.0,duration:18.0,ease:"none"},44.3);
+tl.fromTo("#rshow",{opacity:0},{opacity:1.0,duration:0.9,ease:"power1.inOut"},62.25);
+tl.to("#rshow",{opacity:0,duration:1.8,ease:"power1.in"},90.45);
+tl.set("#rshow",{opacity:0},92.25);
+
+tl.fromTo("#rshow",{scale:1.04},{scale:1.0,duration:30.0,ease:"none"},62.25);
+tl.fromTo("#sub_op1",{opacity:0,y:16},{opacity:1,y:0,duration:0.45,ease:"power2.out"},5.8);
+tl.to("#sub_op1",{opacity:0,y:-8,duration:0.45,ease:"power1.in"},9.025);
+tl.set("#sub_op1",{opacity:0},9.475);
+tl.fromTo("#sub_op2",{opacity:0,y:16},{opacity:1,y:0,duration:0.45,ease:"power2.out"},9.875);
+tl.to("#sub_op2",{opacity:0,y:-8,duration:0.45,ease:"power1.in"},13.725);
+tl.set("#sub_op2",{opacity:0},14.175);
+tl.fromTo("#sub_op3",{opacity:0,y:16},{opacity:1,y:0,duration:0.45,ease:"power2.out"},14.475);
+tl.to("#sub_op3",{opacity:0,y:-8,duration:0.45,ease:"power1.in"},17.75);
+tl.set("#sub_op3",{opacity:0},18.2);
+tl.fromTo("#sub_op4",{opacity:0,y:16},{opacity:1,y:0,duration:0.45,ease:"power2.out"},18.25);
+tl.to("#sub_op4",{opacity:0,y:-8,duration:0.45,ease:"power1.in"},22.0);
+tl.set("#sub_op4",{opacity:0},22.45);
+tl.fromTo("#sub_op5",{opacity:0,y:16},{opacity:1,y:0,duration:0.45,ease:"power2.out"},22.65);
+tl.to("#sub_op5",{opacity:0,y:-8,duration:0.45,ease:"power1.in"},27.8);
+tl.set("#sub_op5",{opacity:0},28.25);
+tl.fromTo("#sub_op6",{opacity:0,y:16},{opacity:1,y:0,duration:0.45,ease:"power2.out"},29.25);
+tl.to("#sub_op6",{opacity:0,y:-8,duration:0.45,ease:"power1.in"},36.225);
+tl.set("#sub_op6",{opacity:0},36.675);
+tl.fromTo("#sub_rj1",{opacity:0,y:16},{opacity:1,y:0,duration:0.45,ease:"power2.out"},38.275);
+tl.to("#sub_rj1",{opacity:0,y:-8,duration:0.45,ease:"power1.in"},42.25);
+tl.set("#sub_rj1",{opacity:0},42.7);
+tl.fromTo("#sub_rj2",{opacity:0,y:16},{opacity:1,y:0,duration:0.45,ease:"power2.out"},43.0);
+tl.to("#sub_rj2",{opacity:0,y:-8,duration:0.45,ease:"power1.in"},48.125);
+tl.set("#sub_rj2",{opacity:0},48.575);
+tl.fromTo("#sub_rj3",{opacity:0,y:16},{opacity:1,y:0,duration:0.45,ease:"power2.out"},48.775);
+tl.to("#sub_rj3",{opacity:0,y:-8,duration:0.45,ease:"power1.in"},53.25);
+tl.set("#sub_rj3",{opacity:0},53.7);
+tl.fromTo("#sub_rj4",{opacity:0,y:16},{opacity:1,y:0,duration:0.45,ease:"power2.out"},53.9);
+tl.to("#sub_rj4",{opacity:0,y:-8,duration:0.45,ease:"power1.in"},59.6);
+tl.set("#sub_rj4",{opacity:0},60.05);
+tl.fromTo("#sub_tr1",{opacity:0,y:16},{opacity:1,y:0,duration:0.45,ease:"power2.out"},91.95);
+tl.to("#sub_tr1",{opacity:0,y:-8,duration:0.45,ease:"power1.in"},97.25);
+tl.set("#sub_tr1",{opacity:0},97.7);
+tl.fromTo("#opvinyl",{opacity:0},{opacity:1,duration:1.5,ease:"power1.inOut"},13.0);
+tl.to("#opvinyl",{opacity:0,duration:1.8,ease:"power1.in"},24.7);
+tl.set("#opvinyl",{opacity:0},26.5);
+tl.fromTo(".ov-disc",{rotation:0},{rotation:150,duration:13.5,ease:"none"},13.0);
+tl.fromTo("#screenA",{opacity:0,y:14},{opacity:1,y:0,duration:0.6,ease:"power2.out"},26.0);
+tl.to("#screenA",{opacity:0,y:-10,duration:0.7,ease:"power1.in"},30.4);
+tl.set("#screenA",{opacity:0},31.6);
+tl.fromTo("#title_rj",{opacity:0},{opacity:1.0,duration:0.7,ease:"power2.out"},37.775);
+tl.to("#title_rj",{opacity:0,duration:1.0,ease:"power1.in"},45.375);
+tl.set("#title_rj",{opacity:0},46.375);
+
+tl.fromTo("#title_rj .sc-name",{letterSpacing:"0.22em",opacity:0},{letterSpacing:"0.06em",opacity:1,duration:1.0,ease:"power3.out"},37.975);
+tl.fromTo("#tag_rj",{opacity:0,x:-14},{opacity:1,x:0,duration:0.7,ease:"power2.out"},45.475);
+tl.to("#tag_rj",{opacity:0,duration:0.8,ease:"power1.in"},91.55);
+tl.set("#tag_rj",{opacity:0},91.95);
+tl.fromTo("#screenB",{opacity:0,y:16},{opacity:1,y:0,duration:0.8,ease:"power2.out"},61.2);
+tl.to("#screenB",{opacity:0,y:-10,duration:0.9,ease:"power1.in"},68.8);
+tl.set("#screenB",{opacity:0},69.7);
+tl.fromTo("#trans",{opacity:0,y:18},{opacity:1,y:0,duration:0.7,ease:"power2.out"},92.15);
+tl.to("#trans",{opacity:1,duration:0.1},97.9);
+tl.fromTo("#grain",{opacity:.07},{opacity:.12,duration:2.2,yoyo:true,repeat:44,ease:"sine.inOut"},0);
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

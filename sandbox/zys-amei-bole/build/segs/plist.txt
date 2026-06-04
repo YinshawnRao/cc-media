@@ -1,0 +1,4 @@
+file 'seg_cover.wav'
+file 'seg_hook.wav'
+file 'seg_s8.wav'
+file 'seg_end.wav'

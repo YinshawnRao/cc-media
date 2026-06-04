@@ -1,0 +1,384 @@
+<!doctype html><html lang="zh"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=1080, height=1920"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#05060A;color:#F5EFE6;font-family:"Noto Serif SC","Songti SC",serif;-webkit-font-smoothing:antialiased;}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:1;opacity:0;}
+.ftint{position:absolute;inset:0;z-index:2;opacity:0;}
+.chbg{position:absolute;inset:0;z-index:0;opacity:0;}
+.chbg-glow{position:absolute;inset:0;mix-blend-mode:screen;opacity:.9;}
+.chrome{position:absolute;inset:0;z-index:6;pointer-events:none;}
+
+/* 进度轨(顶部4点) */
+.rail{position:absolute;top:70px;left:0;right:0;display:flex;justify-content:center;gap:26px;opacity:0;}
+.rdot{width:62px;height:62px;border-radius:50%;background:rgba(18,18,26,.85);border:2px solid rgba(255,255,255,.20);display:flex;align-items:center;justify-content:center;font-family:"Noto Sans SC",sans-serif;font-size:24px;font-weight:800;color:rgba(255,255,255,.72);}
+.rdot.done{background:rgba(60,60,72,.55);border-color:rgba(255,255,255,.24);color:rgba(255,255,255,.5);}
+.rdot.on{background:var(--pri);border-color:var(--pri);color:#0b0c12;box-shadow:0 0 30px var(--pri);transform:scale(1.12);}
+
+/* 大名次 */
+.bignum{position:absolute;top:150px;left:0;right:0;text-align:center;font-family:"Noto Sans SC",sans-serif;font-size:440px;font-weight:900;line-height:.82;color:transparent;-webkit-text-stroke:3px var(--pri);opacity:0;letter-spacing:-10px;filter:drop-shadow(0 10px 50px rgba(0,0,0,.5));}
+.bn-hash{display:block;-webkit-text-stroke:0;color:var(--pri);font-size:56px;font-weight:800;letter-spacing:.42em;text-indent:.42em;margin-bottom:4px;}
+
+/* 揭晓卡 */
+.reveal{position:absolute;top:560px;left:60px;right:60px;opacity:0;}
+.rv-credit{font-family:"Noto Sans SC",sans-serif;font-size:46px;font-weight:800;letter-spacing:.04em;color:#F5EFE6;text-align:center;}
+.rv-x{color:var(--pri);margin:0 18px;font-weight:700;}
+.rv-name{font-family:"Noto Serif SC",serif;font-size:104px;font-weight:900;line-height:1.04;color:#fff;text-align:center;letter-spacing:-1px;margin:10px 0 14px;text-shadow:0 6px 36px rgba(0,0,0,.5);}
+.rv-meta{font-family:"Noto Sans SC",sans-serif;font-size:30px;font-weight:500;letter-spacing:.06em;color:rgba(245,239,230,.6);text-align:center;margin-bottom:20px;}
+.rv-tag{display:block;width:fit-content;margin:0 auto 30px;font-family:"Noto Sans SC",sans-serif;font-size:34px;font-weight:800;color:#0b0c12;background:var(--pri);padding:12px 30px;border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.4);}
+.rv-bars{margin:0 14px;}
+.sbar{display:flex;align-items:center;gap:18px;margin:16px 0;}
+.sb-l{font-family:"Noto Sans SC",sans-serif;font-size:32px;font-weight:700;color:#F5EFE6;width:172px;letter-spacing:.02em;}
+.sb-w{font-family:"Noto Sans SC",sans-serif;font-size:24px;font-weight:600;color:rgba(245,239,230,.5);width:70px;}
+.sb-track{flex:1;height:18px;border-radius:999px;background:rgba(255,255,255,.10);overflow:hidden;}
+.sb-fill{display:block;height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,var(--pri),var(--acc));}
+.sb-v{font-family:"Noto Sans SC",sans-serif;font-size:34px;font-weight:900;color:var(--acc);width:78px;text-align:right;}
+.rv-score{display:flex;align-items:center;justify-content:center;gap:24px;margin-top:34px;}
+.rs-l{font-family:"Noto Sans SC",sans-serif;font-size:38px;font-weight:700;letter-spacing:.14em;color:rgba(245,239,230,.8);}
+.rs-v{font-family:"Noto Sans SC",sans-serif;font-size:128px;font-weight:900;line-height:1;color:var(--pri);text-shadow:0 0 40px var(--pri);}
+
+/* 展示期角标 */
+.badge{position:absolute;top:104px;left:56px;right:56px;display:flex;align-items:center;gap:18px;opacity:0;}
+.bg-no{font-family:"Noto Sans SC",sans-serif;font-size:52px;font-weight:900;color:var(--pri);text-shadow:0 3px 18px rgba(0,0,0,.7);}
+.bg-nm{flex:1;font-family:"Noto Serif SC",serif;font-size:40px;font-weight:800;color:#fff;text-shadow:0 3px 18px rgba(0,0,0,.8);}
+.bg-sc{font-family:"Noto Sans SC",sans-serif;font-size:58px;font-weight:900;color:var(--acc);text-shadow:0 3px 18px rgba(0,0,0,.7);}
+
+/* ===== 封面 ===== */
+.cover{position:absolute;inset:0;z-index:80;background:#05060A;overflow:hidden;}
+.cv-grid{position:absolute;top:78px;left:40px;right:40px;height:1050px;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px;}
+.cv-cell{position:relative;overflow:hidden;border-radius:14px;border:1px solid rgba(233,199,122,.25);}
+.cv-img{position:absolute;inset:0;background-size:cover;background-position:center 22%;filter:contrast(1.05) saturate(1.02) brightness(1.04);}
+.cv-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,6,10,.04) 54%,rgba(5,6,10,.82) 100%);}
+.cv-q{position:absolute;top:14px;right:20px;font-family:"Noto Sans SC",sans-serif;font-size:64px;font-weight:900;color:rgba(233,199,122,.92);text-shadow:0 4px 16px rgba(0,0,0,.6);}
+.cv-nm{position:absolute;bottom:18px;left:0;right:0;text-align:center;font-family:"Noto Sans SC",sans-serif;font-size:46px;font-weight:900;letter-spacing:.06em;color:#fff;text-shadow:0 3px 16px rgba(0,0,0,.8);}
+.cv-no{position:absolute;top:96px;right:64px;z-index:3;font-family:"Noto Sans SC",sans-serif;font-size:34px;font-weight:800;letter-spacing:.1em;color:#0b0c12;background:linear-gradient(135deg,#E9C77A,#C99B3F);padding:8px 22px;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.5);}
+.cv-no span{font-size:44px;}
+.cv-title{position:absolute;bottom:62px;left:50px;right:50px;text-align:center;}
+.cv-eyebrow{font-family:"Noto Sans SC",sans-serif;font-size:30px;font-weight:700;letter-spacing:.22em;color:#E9C77A;margin-bottom:18px;}
+.cv-h{font-family:"Noto Serif SC",serif;font-size:140px;font-weight:900;line-height:1.0;color:#fff;letter-spacing:8px;white-space:nowrap;}
+.cv-h2{font-family:"Noto Serif SC",serif;font-size:84px;font-weight:900;color:#E9C77A;letter-spacing:6px;margin-top:8px;white-space:nowrap;}
+.cv-pk{font-family:"Noto Sans SC",sans-serif;font-size:84px;font-weight:900;color:#E0584C;margin-left:20px;-webkit-text-stroke:2px rgba(255,255,255,.12);}
+.cv-sub{font-family:"Noto Serif SC",serif;font-size:54px;font-weight:600;color:rgba(245,239,230,.92);margin-top:20px;}
+.cv-sub b{color:#E9C77A;font-weight:900;}
+.cv-cta{font-family:"Noto Sans SC",sans-serif;font-size:32px;font-weight:600;letter-spacing:.06em;color:rgba(245,239,230,.62);margin-top:22px;}
+
+/* ===== 开场钩子 ===== */
+.introblk{position:absolute;inset:0;z-index:70;background:radial-gradient(ellipse at 50% 26%,#11131F 0%,#05060A 74%);}
+.ib-grad{position:absolute;inset:0;background:radial-gradient(circle at 74% 22%,rgba(224,88,76,.10) 0,transparent 46%),radial-gradient(circle at 24% 78%,rgba(233,199,122,.08) 0,transparent 44%);}
+.ib-names{position:absolute;top:230px;left:60px;right:60px;display:flex;flex-wrap:wrap;justify-content:center;gap:18px 34px;}
+.ib-n{font-family:"Noto Sans SC",sans-serif;font-size:60px;font-weight:900;color:#F5EFE6;opacity:0;text-shadow:0 4px 24px rgba(0,0,0,.5);}
+.ib-h{position:absolute;top:440px;left:80px;right:80px;text-align:center;font-family:"Noto Serif SC",serif;font-size:80px;font-weight:800;line-height:1.18;color:#F5EFE6;opacity:0;}
+.ib-h span{color:#E9C77A;font-size:104px;}
+.ib-slots{position:absolute;top:760px;left:70px;right:70px;display:grid;grid-template-columns:1fr 1fr;gap:26px;}
+.ib-slot{height:200px;border:2px dashed rgba(255,255,255,.22);border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;opacity:0;background:rgba(255,255,255,.02);}
+.ib-sno{font-family:"Noto Sans SC",sans-serif;font-size:42px;font-weight:900;color:#E9C77A;letter-spacing:.06em;}
+.ib-sq{font-family:"Noto Sans SC",sans-serif;font-size:86px;font-weight:900;color:rgba(255,255,255,.3);line-height:.7;}
+.ib-q{position:absolute;bottom:150px;left:80px;right:80px;text-align:center;font-family:"Noto Serif SC",serif;font-size:78px;font-weight:900;color:#fff;opacity:0;}
+
+/* ===== 评分规则 ===== */
+.rulesblk{position:absolute;inset:0;z-index:69;background:radial-gradient(ellipse at 50% 30%,#101524 0%,#05060A 74%);}
+.rb-grad{position:absolute;inset:0;background:radial-gradient(circle at 70% 24%,rgba(127,176,230,.10) 0,transparent 46%);}
+.rb-eyebrow{position:absolute;top:300px;left:0;right:0;text-align:center;font-family:"Noto Sans SC",sans-serif;font-size:32px;font-weight:700;letter-spacing:.24em;color:#7FB0E6;}
+.rb-h{position:absolute;top:360px;left:0;right:0;text-align:center;font-family:"Noto Serif SC",serif;font-size:88px;font-weight:900;color:#fff;}
+.rb-list{position:absolute;top:560px;left:90px;right:90px;}
+.rb-row{display:flex;align-items:center;gap:24px;margin:30px 0;opacity:0;}
+.rb-l{font-family:"Noto Sans SC",sans-serif;font-size:42px;font-weight:800;color:#F5EFE6;width:230px;}
+.rb-track{flex:1;height:24px;border-radius:999px;background:rgba(255,255,255,.10);overflow:hidden;}
+.rb-fill{display:block;height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,#7FB0E6,#E9C77A);}
+.rb-w{font-family:"Noto Sans SC",sans-serif;font-size:48px;font-weight:900;color:#E9C77A;width:120px;text-align:right;}
+.rb-foot{position:absolute;bottom:200px;left:0;right:0;text-align:center;font-family:"Noto Sans SC",sans-serif;font-size:38px;font-weight:700;letter-spacing:.12em;color:rgba(245,239,230,.7);opacity:0;}
+
+/* ===== 总榜 + CTA ===== */
+.outroblk{position:absolute;inset:0;z-index:71;background:radial-gradient(ellipse at 50% 40%,#1A1410 0%,#05060A 74%);}
+.ot-bg{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,rgba(232,178,76,.12) 0,transparent 48%);}
+.ot-head{position:absolute;top:250px;left:0;right:0;text-align:center;font-family:"Noto Sans SC",sans-serif;font-size:40px;font-weight:800;letter-spacing:.2em;color:#E9C77A;}
+.ot-list{position:absolute;top:360px;left:90px;right:90px;}
+.ot-line{display:flex;align-items:center;gap:22px;padding:18px 0;border-bottom:1px solid rgba(255,255,255,.10);opacity:0;}
+.ot-no{font-family:"Noto Sans SC",sans-serif;font-size:40px;font-weight:900;color:#E9C77A;width:130px;}
+.ot-nm{flex:1;font-family:"Noto Serif SC",serif;font-size:44px;font-weight:700;color:#fff;}
+.ot-sc{font-family:"Noto Sans SC",sans-serif;font-size:52px;font-weight:900;color:#F0786A;}
+.ot-q{position:absolute;top:1180px;left:80px;right:80px;text-align:center;font-family:"Noto Serif SC",serif;font-size:84px;font-weight:900;color:#fff;opacity:0;}
+.ot-cta{position:absolute;top:1360px;left:80px;right:80px;text-align:center;font-family:"Noto Sans SC",sans-serif;font-size:40px;font-weight:700;letter-spacing:.06em;color:#E9C77A;opacity:0;}
+.chrome_heaven{--pri:#7FB0E6;--acc:#E9C77A;}
+.chbg_heaven{background:radial-gradient(ellipse 130% 90% at 50% 16%, #0A1020 0%, #05060A 76%);}
+.chbg_heaven .chbg-glow{background:radial-gradient(circle at 72% 26%, #7FB0E626 0%, transparent 46%),radial-gradient(circle at 24% 76%, #7FB0E61c 0%, transparent 42%);}
+.ftint_heaven{background:linear-gradient(180deg, rgba(90,130,200,.10) 0%, rgba(5,6,10,.18) 38%, rgba(5,6,10,.82) 100%);}
+.chrome_dimples{--pri:#F2A84E;--acc:#F7CEDA;}
+.chbg_dimples{background:radial-gradient(ellipse 130% 90% at 50% 16%, #1B1206 0%, #05060A 76%);}
+.chbg_dimples .chbg-glow{background:radial-gradient(circle at 72% 26%, #F2A84E26 0%, transparent 46%),radial-gradient(circle at 24% 76%, #F2A84E1c 0%, transparent 42%);}
+.ftint_dimples{background:linear-gradient(180deg, rgba(220,150,90,.10) 0%, rgba(5,6,10,.18) 38%, rgba(5,6,10,.82) 100%);}
+.chrome_coral{--pri:#6FC6D8;--acc:#CFE9F1;}
+.chbg_coral{background:radial-gradient(ellipse 130% 90% at 50% 16%, #08131C 0%, #05060A 76%);}
+.chbg_coral .chbg-glow{background:radial-gradient(circle at 72% 26%, #6FC6D826 0%, transparent 46%),radial-gradient(circle at 24% 76%, #6FC6D81c 0%, transparent 42%);}
+.ftint_coral{background:linear-gradient(180deg, rgba(90,170,195,.10) 0%, rgba(5,6,10,.18) 38%, rgba(5,6,10,.82) 100%);}
+.chrome_today{--pri:#E8B24C;--acc:#F0786A;}
+.chbg_today{background:radial-gradient(ellipse 130% 90% at 50% 16%, #1C0A0A 0%, #05060A 76%);}
+.chbg_today .chbg-glow{background:radial-gradient(circle at 72% 26%, #E8B24C26 0%, transparent 46%),radial-gradient(circle at 24% 76%, #E8B24C1c 0%, transparent 42%);}
+.ftint_today{background:linear-gradient(180deg, rgba(220,150,70,.10) 0%, rgba(5,6,10,.18) 38%, rgba(5,6,10,.82) 100%);}</style></head><body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="265.1" data-width="1080" data-height="1920">
+<div id="bg_heaven" class="clip chbg chbg_heaven" data-start="36.175" data-duration="52.625" data-track-index="40"><div class="chbg-glow"></div></div>
+<div id="bg_dimples" class="clip chbg chbg_dimples" data-start="88.8" data-duration="50.425" data-track-index="41"><div class="chbg-glow"></div></div>
+<div id="bg_coral" class="clip chbg chbg_coral" data-start="139.225" data-duration="49.875" data-track-index="42"><div class="chbg-glow"></div></div>
+<div id="bg_today" class="clip chbg chbg_today" data-start="189.1" data-duration="57.4" data-track-index="43"><div class="chbg-glow"></div></div>
+<video id="fv_heaven" class="fv clip" data-start="59.7" data-duration="28.0" data-track-index="0" src="clips_seg/heaven.mp4" muted playsinline></video>
+<video id="fv_dimples" class="fv clip" data-start="111.125" data-duration="27.0" data-track-index="6" src="clips_seg/dimples.mp4" muted playsinline></video>
+<video id="fv_coral" class="fv clip" data-start="160.0" data-duration="28.0" data-track-index="0" src="clips_seg/coral.mp4" muted playsinline></video>
+<video id="fv_today" class="fv clip" data-start="213.4" data-duration="32.0" data-track-index="6" src="clips_seg/today.mp4" muted playsinline></video>
+<div id="tint_heaven" class="clip ftint ftint_heaven" data-start="59.7" data-duration="28.0" data-track-index="50"></div>
+<div id="tint_dimples" class="clip ftint ftint_dimples" data-start="111.125" data-duration="27.0" data-track-index="51"></div>
+<div id="tint_coral" class="clip ftint ftint_coral" data-start="160.0" data-duration="28.0" data-track-index="52"></div>
+<div id="tint_today" class="clip ftint ftint_today" data-start="213.4" data-duration="32.0" data-track-index="53"></div>
+<div id="ch_heaven" class="clip chrome chrome_heaven" data-start="36.175" data-duration="52.625" data-track-index="20">
+  <div class="rail"><div class="rdot on"><span>04</span></div><div class="rdot"><span>03</span></div><div class="rdot"><span>02</span></div><div class="rdot"><span>01</span></div></div>
+  <div class="bignum" id="big_heaven"><span class="bn-hash">NO.</span>04</div>
+  <div class="reveal" id="rev_heaven">
+    <div class="rv-credit">王力宏<span class="rv-x">×</span>张靓颖</div>
+    <div class="rv-name">《另一个天堂》</div>
+    <div class="rv-meta">心跳 · 2008</div>
+    <div class="rv-tag">双强对唱 · 高配置对撞</div>
+    <div class="rv-bars"><div class="sbar"><span class="sb-l">传唱度</span><span class="sb-w">30%</span><span class="sb-track"><i class="sb-fill" id="sf_heaven_0"></i></span><span class="sb-v" id="sv_heaven_0">8.5</span></div><div class="sbar"><span class="sb-l">影响力</span><span class="sb-w">25%</span><span class="sb-track"><i class="sb-fill" id="sf_heaven_1"></i></span><span class="sb-v" id="sv_heaven_1">8.5</span></div><div class="sbar"><span class="sb-l">奖项</span><span class="sb-w">20%</span><span class="sb-track"><i class="sb-fill" id="sf_heaven_2"></i></span><span class="sb-v" id="sv_heaven_2">8.5</span></div><div class="sbar"><span class="sb-l">口碑</span><span class="sb-w">15%</span><span class="sb-track"><i class="sb-fill" id="sf_heaven_3"></i></span><span class="sb-v" id="sv_heaven_3">9.0</span></div><div class="sbar"><span class="sb-l">合唱适配</span><span class="sb-w">10%</span><span class="sb-track"><i class="sb-fill" id="sf_heaven_4"></i></span><span class="sb-v" id="sv_heaven_4">10.0</span></div></div>
+    <div class="rv-score"><span class="rs-l">综合评分</span><span class="rs-v" id="rsv_heaven">8.7</span></div>
+  </div>
+  <div class="badge" id="badge_heaven"><span class="bg-no">NO.04</span><span class="bg-nm">王力宏×张靓颖《另一个天堂》</span><span class="bg-sc">8.7</span></div>
+</div>
+<div id="ch_dimples" class="clip chrome chrome_dimples" data-start="88.8" data-duration="50.425" data-track-index="21">
+  <div class="rail"><div class="rdot done"><span>04</span></div><div class="rdot on"><span>03</span></div><div class="rdot"><span>02</span></div><div class="rdot"><span>01</span></div></div>
+  <div class="bignum" id="big_dimples"><span class="bn-hash">NO.</span>03</div>
+  <div class="reveal" id="rev_dimples">
+    <div class="rv-credit">林俊杰<span class="rv-x">×</span>蔡卓妍</div>
+    <div class="rv-name">《小酒窝》</div>
+    <div class="rv-meta">JJ陆 · 2008</div>
+    <div class="rv-tag">甜歌天花板 · 记忆点拉满</div>
+    <div class="rv-bars"><div class="sbar"><span class="sb-l">传唱度</span><span class="sb-w">30%</span><span class="sb-track"><i class="sb-fill" id="sf_dimples_0"></i></span><span class="sb-v" id="sv_dimples_0">9.5</span></div><div class="sbar"><span class="sb-l">影响力</span><span class="sb-w">25%</span><span class="sb-track"><i class="sb-fill" id="sf_dimples_1"></i></span><span class="sb-v" id="sv_dimples_1">8.5</span></div><div class="sbar"><span class="sb-l">奖项</span><span class="sb-w">20%</span><span class="sb-track"><i class="sb-fill" id="sf_dimples_2"></i></span><span class="sb-v" id="sv_dimples_2">7.5</span></div><div class="sbar"><span class="sb-l">口碑</span><span class="sb-w">15%</span><span class="sb-track"><i class="sb-fill" id="sf_dimples_3"></i></span><span class="sb-v" id="sv_dimples_3">9.0</span></div><div class="sbar"><span class="sb-l">合唱适配</span><span class="sb-w">10%</span><span class="sb-track"><i class="sb-fill" id="sf_dimples_4"></i></span><span class="sb-v" id="sv_dimples_4">9.5</span></div></div>
+    <div class="rv-score"><span class="rs-l">综合评分</span><span class="rs-v" id="rsv_dimples">8.8</span></div>
+  </div>
+  <div class="badge" id="badge_dimples"><span class="bg-no">NO.03</span><span class="bg-nm">林俊杰×蔡卓妍《小酒窝》</span><span class="bg-sc">8.8</span></div>
+</div>
+<div id="ch_coral" class="clip chrome chrome_coral" data-start="139.225" data-duration="49.875" data-track-index="22">
+  <div class="rail"><div class="rdot done"><span>04</span></div><div class="rdot done"><span>03</span></div><div class="rdot on"><span>02</span></div><div class="rdot"><span>01</span></div></div>
+  <div class="bignum" id="big_coral"><span class="bn-hash">NO.</span>02</div>
+  <div class="reveal" id="rev_coral">
+    <div class="rv-credit">周杰伦<span class="rv-x">×</span>梁心颐</div>
+    <div class="rv-name">《珊瑚海》</div>
+    <div class="rv-meta">十一月的萧邦 · 2005</div>
+    <div class="rv-tag">遗憾感 · 质感最稳</div>
+    <div class="rv-bars"><div class="sbar"><span class="sb-l">传唱度</span><span class="sb-w">30%</span><span class="sb-track"><i class="sb-fill" id="sf_coral_0"></i></span><span class="sb-v" id="sv_coral_0">9.0</span></div><div class="sbar"><span class="sb-l">影响力</span><span class="sb-w">25%</span><span class="sb-track"><i class="sb-fill" id="sf_coral_1"></i></span><span class="sb-v" id="sv_coral_1">9.5</span></div><div class="sbar"><span class="sb-l">奖项</span><span class="sb-w">20%</span><span class="sb-track"><i class="sb-fill" id="sf_coral_2"></i></span><span class="sb-v" id="sv_coral_2">8.8</span></div><div class="sbar"><span class="sb-l">口碑</span><span class="sb-w">15%</span><span class="sb-track"><i class="sb-fill" id="sf_coral_3"></i></span><span class="sb-v" id="sv_coral_3">9.8</span></div><div class="sbar"><span class="sb-l">合唱适配</span><span class="sb-w">10%</span><span class="sb-track"><i class="sb-fill" id="sf_coral_4"></i></span><span class="sb-v" id="sv_coral_4">9.0</span></div></div>
+    <div class="rv-score"><span class="rs-l">综合评分</span><span class="rs-v" id="rsv_coral">9.2</span></div>
+  </div>
+  <div class="badge" id="badge_coral"><span class="bg-no">NO.02</span><span class="bg-nm">周杰伦×梁心颐《珊瑚海》</span><span class="bg-sc">9.2</span></div>
+</div>
+<div id="ch_today" class="clip chrome chrome_today" data-start="189.1" data-duration="57.4" data-track-index="23">
+  <div class="rail"><div class="rdot done"><span>04</span></div><div class="rdot done"><span>03</span></div><div class="rdot done"><span>02</span></div><div class="rdot on"><span>01</span></div></div>
+  <div class="bignum" id="big_today"><span class="bn-hash">NO.</span>01</div>
+  <div class="reveal" id="rev_today">
+    <div class="rv-credit">陶喆<span class="rv-x">×</span>蔡依林</div>
+    <div class="rv-name">《今天你要嫁给我》</div>
+    <div class="rv-meta">太美丽 · 2005</div>
+    <div class="rv-tag">婚礼神曲 · 全民场景统治</div>
+    <div class="rv-bars"><div class="sbar"><span class="sb-l">传唱度</span><span class="sb-w">30%</span><span class="sb-track"><i class="sb-fill" id="sf_today_0"></i></span><span class="sb-v" id="sv_today_0">10.0</span></div><div class="sbar"><span class="sb-l">影响力</span><span class="sb-w">25%</span><span class="sb-track"><i class="sb-fill" id="sf_today_1"></i></span><span class="sb-v" id="sv_today_1">9.8</span></div><div class="sbar"><span class="sb-l">奖项</span><span class="sb-w">20%</span><span class="sb-track"><i class="sb-fill" id="sf_today_2"></i></span><span class="sb-v" id="sv_today_2">9.5</span></div><div class="sbar"><span class="sb-l">口碑</span><span class="sb-w">15%</span><span class="sb-track"><i class="sb-fill" id="sf_today_3"></i></span><span class="sb-v" id="sv_today_3">9.0</span></div><div class="sbar"><span class="sb-l">合唱适配</span><span class="sb-w">10%</span><span class="sb-track"><i class="sb-fill" id="sf_today_4"></i></span><span class="sb-v" id="sv_today_4">9.5</span></div></div>
+    <div class="rv-score"><span class="rs-l">综合评分</span><span class="rs-v" id="rsv_today">9.6</span></div>
+  </div>
+  <div class="badge" id="badge_today"><span class="bg-no">NO.01</span><span class="bg-nm">陶喆×蔡依林《今天你要嫁给我》</span><span class="bg-sc">9.6</span></div>
+</div>
+<div id="cover" class="clip cover" data-start="0" data-duration="2.0" data-track-index="60">
+  <div class="cv-grid">
+    <div class="cv-cell"><div class="cv-img" style="background-image:url(cover_assets/p_jay.png)"></div><div class="cv-shade"></div><div class="cv-nm">周杰伦</div></div><div class="cv-cell"><div class="cv-img" style="background-image:url(cover_assets/p_wlh.png)"></div><div class="cv-shade"></div><div class="cv-nm">王力宏</div></div><div class="cv-cell"><div class="cv-img" style="background-image:url(cover_assets/p_tao.png)"></div><div class="cv-shade"></div><div class="cv-nm">陶喆</div></div><div class="cv-cell"><div class="cv-img" style="background-image:url(cover_assets/p_jj.png)"></div><div class="cv-shade"></div><div class="cv-nm">林俊杰</div></div>
+  </div>
+  <div class="cv-title">
+    <div class="cv-eyebrow">四位创作天王 · 各一首男女合唱</div>
+    <h1 class="cv-h">周王陶林</h1>
+    <div class="cv-h2">合唱神曲<span class="cv-pk">PK</span></div>
+    <div class="cv-sub">谁才是男女对唱，<b>最强王者</b>？</div>
+    <div class="cv-cta">综合评分排名 · 评论区先猜</div>
+  </div>
+</div>
+<div id="introblk" class="clip introblk" data-start="2.0" data-duration="13.8" data-track-index="61">
+  <div class="ib-grad"></div>
+  <div class="ib-names">
+    <span class="ib-n" id="ibn_0">周杰伦</span><span class="ib-n" id="ibn_1">王力宏</span><span class="ib-n" id="ibn_2">陶喆</span><span class="ib-n" id="ibn_3">林俊杰</span>
+  </div>
+  <h2 class="ib-h" id="ib_h">每人只能派出<br><span>一首</span>男女合唱代表作</h2>
+  <div class="ib-slots">
+    <div class="ib-slot" id="ibs_0"><span class="ib-sno">NO.4</span><span class="ib-sq">？</span></div><div class="ib-slot" id="ibs_1"><span class="ib-sno">NO.3</span><span class="ib-sq">？</span></div><div class="ib-slot" id="ibs_2"><span class="ib-sno">NO.2</span><span class="ib-sq">？</span></div><div class="ib-slot" id="ibs_3"><span class="ib-sno">NO.1</span><span class="ib-sq">？</span></div>
+  </div>
+  <div class="ib-q" id="ib_q">谁，才是最强王者？</div>
+</div>
+<div id="rulesblk" class="clip rulesblk" data-start="15.8" data-duration="20.375" data-track-index="63">
+  <div class="rb-grad"></div>
+  <div class="rb-eyebrow">评分规则 · 十分制</div>
+  <h2 class="rb-h">五个维度，综合打分</h2>
+  <div class="rb-list">
+    <div class="rb-row" id="rbr_0"><span class="rb-l">传唱度</span><span class="rb-track"><i class="rb-fill" id="rbf_0"></i></span><span class="rb-w">30%</span></div><div class="rb-row" id="rbr_1"><span class="rb-l">影响力</span><span class="rb-track"><i class="rb-fill" id="rbf_1"></i></span><span class="rb-w">25%</span></div><div class="rb-row" id="rbr_2"><span class="rb-l">奖项</span><span class="rb-track"><i class="rb-fill" id="rbf_2"></i></span><span class="rb-w">20%</span></div><div class="rb-row" id="rbr_3"><span class="rb-l">口碑</span><span class="rb-track"><i class="rb-fill" id="rbf_3"></i></span><span class="rb-w">15%</span></div><div class="rb-row" id="rbr_4"><span class="rb-l">合唱适配</span><span class="rb-track"><i class="rb-fill" id="rbf_4"></i></span><span class="rb-w">10%</span></div>
+  </div>
+  <div class="rb-foot" id="rb_foot">一首一首，倒序揭晓</div>
+</div>
+<div id="outroblk" class="clip outroblk" data-start="246.5" data-duration="18.6" data-track-index="62">
+  <div class="ot-bg"></div>
+  <div class="ot-head">本期总榜</div>
+  <div class="ot-list"><div class="ot-line" id="otl_0"><span class="ot-no">NO.01</span><span class="ot-nm">陶喆×蔡依林《今天你要嫁给我》</span><span class="ot-sc">9.6</span></div><div class="ot-line" id="otl_1"><span class="ot-no">NO.02</span><span class="ot-nm">周杰伦×梁心颐《珊瑚海》</span><span class="ot-sc">9.2</span></div><div class="ot-line" id="otl_2"><span class="ot-no">NO.03</span><span class="ot-nm">林俊杰×蔡卓妍《小酒窝》</span><span class="ot-sc">8.8</span></div><div class="ot-line" id="otl_3"><span class="ot-no">NO.04</span><span class="ot-nm">王力宏×张靓颖《另一个天堂》</span><span class="ot-sc">8.7</span></div></div>
+  <h2 class="ot-q" id="ot_q">这个排名，你认吗？</h2>
+  <p class="ot-cta" id="ot_cta">评论区，说出你心里的第一名</p>
+</div>
+<audio id="master" data-start="0" data-duration="265.1" data-track-index="3" src="master.wav" data-volume="1"></audio>
+</div>
+<script>
+window.__timelines=window.__timelines||{};
+const tl=gsap.timeline({paused:true});
+
+// 封面：首帧即满(无fade-in)；2s 短开场, 轻微推进运动
+tl.set("#cover",{opacity:1},0);
+tl.fromTo(".cv-grid",{scale:1.0},{scale:1.022,duration:2.0,ease:"sine.out"},0);
+tl.to("#cover",{opacity:0,duration:.5,ease:"power2.in"},1.5);
+tl.set("#cover",{opacity:0},2.0);
+
+// 开场钩子
+tl.set("#introblk",{opacity:1},2.0);
+tl.fromTo("#ibn_0",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power2.out"},2.3);
+tl.fromTo("#ibn_1",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power2.out"},2.58);
+tl.fromTo("#ibn_2",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power2.out"},2.86);
+tl.fromTo("#ibn_3",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power2.out"},3.14);
+
+tl.fromTo("#ib_h",{opacity:0,y:28},{opacity:1,y:0,duration:.7,ease:"power3.out"},3.8);
+tl.fromTo("#ibs_0",{opacity:0,scale:.9},{opacity:1,scale:1,duration:.4,ease:"back.out(1.6)"},5.2);
+tl.fromTo("#ibs_1",{opacity:0,scale:.9},{opacity:1,scale:1,duration:.4,ease:"back.out(1.6)"},5.42);
+tl.fromTo("#ibs_2",{opacity:0,scale:.9},{opacity:1,scale:1,duration:.4,ease:"back.out(1.6)"},5.64);
+tl.fromTo("#ibs_3",{opacity:0,scale:.9},{opacity:1,scale:1,duration:.4,ease:"back.out(1.6)"},5.86);
+
+tl.fromTo("#ib_q",{opacity:0,y:18},{opacity:1,y:0,duration:.6,ease:"power2.out"},7.0);
+tl.to("#introblk",{opacity:0,duration:.6,ease:"power2.in"},15.2);
+tl.set("#introblk",{opacity:0},15.8);
+
+// 评分规则
+tl.set("#rulesblk",{opacity:1},15.8);
+tl.fromTo(".rb-eyebrow",{opacity:0},{opacity:1,duration:.5},16.0);
+tl.fromTo(".rb-h",{opacity:0,y:24},{opacity:1,y:0,duration:.6,ease:"power3.out"},16.2);
+tl.fromTo("#rbr_0",{opacity:0,x:-20},{opacity:1,x:0,duration:.45,ease:"power2.out"},17.0);tl.to("#rbf_0",{width:"78%",duration:.7,ease:"power2.out"},17.25);
+tl.fromTo("#rbr_1",{opacity:0,x:-20},{opacity:1,x:0,duration:.45,ease:"power2.out"},17.5);tl.to("#rbf_1",{width:"65%",duration:.7,ease:"power2.out"},17.75);
+tl.fromTo("#rbr_2",{opacity:0,x:-20},{opacity:1,x:0,duration:.45,ease:"power2.out"},18.0);tl.to("#rbf_2",{width:"52%",duration:.7,ease:"power2.out"},18.25);
+tl.fromTo("#rbr_3",{opacity:0,x:-20},{opacity:1,x:0,duration:.45,ease:"power2.out"},18.5);tl.to("#rbf_3",{width:"39%",duration:.7,ease:"power2.out"},18.75);
+tl.fromTo("#rbr_4",{opacity:0,x:-20},{opacity:1,x:0,duration:.45,ease:"power2.out"},19.0);tl.to("#rbf_4",{width:"26%",duration:.7,ease:"power2.out"},19.25);
+
+tl.fromTo("#rb_foot",{opacity:0},{opacity:1,duration:.6},20.4);
+tl.to("#rulesblk",{opacity:0,duration:.6,ease:"power2.in"},35.575);
+tl.set("#rulesblk",{opacity:0},36.175);
+
+
+// ---- 另一个天堂 (#04) ----
+tl.set("#bg_heaven",{opacity:1},36.175);
+tl.fromTo(".chrome_heaven .rail",{opacity:0},{opacity:1,duration:.6},36.325);
+tl.fromTo("#big_heaven",{opacity:0,scale:1.16,y:8},{opacity:1,scale:1,y:0,duration:.8,ease:"power3.out"},36.375);
+tl.to("#big_heaven",{opacity:0,y:-30,duration:.6,ease:"power2.in"},37.675);
+tl.set("#big_heaven",{opacity:0},38.375);
+tl.fromTo("#rev_heaven",{opacity:0,y:40},{opacity:1,y:0,duration:.7,ease:"power3.out"},37.575);
+tl.to("#sf_heaven_0",{width:"85%",duration:.7,ease:"power2.out"},37.875);tl.to("#sf_heaven_1",{width:"85%",duration:.7,ease:"power2.out"},37.995);tl.to("#sf_heaven_2",{width:"85%",duration:.7,ease:"power2.out"},38.115);tl.to("#sf_heaven_3",{width:"90%",duration:.7,ease:"power2.out"},38.235);tl.to("#sf_heaven_4",{width:"100%",duration:.7,ease:"power2.out"},38.355);
+tl.fromTo("#rsv_heaven",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.6,ease:"back.out(2)"},38.675);
+tl.to("#rev_heaven",{opacity:0,y:-26,duration:.55,ease:"power2.in"},58.3);
+tl.set("#rev_heaven",{opacity:0},59.7);
+tl.fromTo("#fv_heaven",{opacity:0,scale:1.07},{opacity:1,scale:1,duration:1.0,ease:"power2.out"},59.3);
+tl.fromTo("#tint_heaven",{opacity:0},{opacity:1,duration:1.0},59.3);
+tl.fromTo("#badge_heaven",{opacity:0,x:-22},{opacity:1,x:0,duration:.6,ease:"power2.out"},59.85);
+tl.to("#fv_heaven",{opacity:0,duration:.9,ease:"power1.in"},87.2);
+tl.set("#fv_heaven",{opacity:0},88.8);
+tl.to("#tint_heaven",{opacity:0,duration:.9},87.2);
+tl.set("#tint_heaven",{opacity:0},88.8);
+tl.to("#badge_heaven",{opacity:0,duration:.5},87.3);
+tl.set("#badge_heaven",{opacity:0},88.8);
+tl.to(".chrome_heaven .rail",{opacity:0,duration:.4},88.4);
+tl.set(".chrome_heaven .rail",{opacity:0},88.8);
+tl.to("#bg_heaven",{opacity:0,duration:.7},88.3);
+tl.set("#bg_heaven",{opacity:0},88.8);
+
+// ---- 小酒窝 (#03) ----
+tl.set("#bg_dimples",{opacity:1},88.8);
+tl.fromTo(".chrome_dimples .rail",{opacity:0},{opacity:1,duration:.6},88.95);
+tl.fromTo("#big_dimples",{opacity:0,scale:1.16,y:8},{opacity:1,scale:1,y:0,duration:.8,ease:"power3.out"},89.0);
+tl.to("#big_dimples",{opacity:0,y:-30,duration:.6,ease:"power2.in"},90.3);
+tl.set("#big_dimples",{opacity:0},91.0);
+tl.fromTo("#rev_dimples",{opacity:0,y:40},{opacity:1,y:0,duration:.7,ease:"power3.out"},90.2);
+tl.to("#sf_dimples_0",{width:"95%",duration:.7,ease:"power2.out"},90.5);tl.to("#sf_dimples_1",{width:"85%",duration:.7,ease:"power2.out"},90.62);tl.to("#sf_dimples_2",{width:"75%",duration:.7,ease:"power2.out"},90.74);tl.to("#sf_dimples_3",{width:"90%",duration:.7,ease:"power2.out"},90.86);tl.to("#sf_dimples_4",{width:"95%",duration:.7,ease:"power2.out"},90.98);
+tl.fromTo("#rsv_dimples",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.6,ease:"back.out(2)"},91.3);
+tl.to("#rev_dimples",{opacity:0,y:-26,duration:.55,ease:"power2.in"},109.725);
+tl.set("#rev_dimples",{opacity:0},111.125);
+tl.fromTo("#fv_dimples",{opacity:0,scale:1.07},{opacity:1,scale:1,duration:1.0,ease:"power2.out"},110.725);
+tl.fromTo("#tint_dimples",{opacity:0},{opacity:1,duration:1.0},110.725);
+tl.fromTo("#badge_dimples",{opacity:0,x:-22},{opacity:1,x:0,duration:.6,ease:"power2.out"},111.275);
+tl.to("#fv_dimples",{opacity:0,duration:.9,ease:"power1.in"},137.625);
+tl.set("#fv_dimples",{opacity:0},139.225);
+tl.to("#tint_dimples",{opacity:0,duration:.9},137.625);
+tl.set("#tint_dimples",{opacity:0},139.225);
+tl.to("#badge_dimples",{opacity:0,duration:.5},137.725);
+tl.set("#badge_dimples",{opacity:0},139.225);
+tl.to(".chrome_dimples .rail",{opacity:0,duration:.4},138.825);
+tl.set(".chrome_dimples .rail",{opacity:0},139.225);
+tl.to("#bg_dimples",{opacity:0,duration:.7},138.725);
+tl.set("#bg_dimples",{opacity:0},139.225);
+
+// ---- 珊瑚海 (#02) ----
+tl.set("#bg_coral",{opacity:1},139.225);
+tl.fromTo(".chrome_coral .rail",{opacity:0},{opacity:1,duration:.6},139.375);
+tl.fromTo("#big_coral",{opacity:0,scale:1.16,y:8},{opacity:1,scale:1,y:0,duration:.8,ease:"power3.out"},139.425);
+tl.to("#big_coral",{opacity:0,y:-30,duration:.6,ease:"power2.in"},140.725);
+tl.set("#big_coral",{opacity:0},141.425);
+tl.fromTo("#rev_coral",{opacity:0,y:40},{opacity:1,y:0,duration:.7,ease:"power3.out"},140.625);
+tl.to("#sf_coral_0",{width:"90%",duration:.7,ease:"power2.out"},140.925);tl.to("#sf_coral_1",{width:"95%",duration:.7,ease:"power2.out"},141.045);tl.to("#sf_coral_2",{width:"88%",duration:.7,ease:"power2.out"},141.165);tl.to("#sf_coral_3",{width:"98%",duration:.7,ease:"power2.out"},141.285);tl.to("#sf_coral_4",{width:"90%",duration:.7,ease:"power2.out"},141.405);
+tl.fromTo("#rsv_coral",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.6,ease:"back.out(2)"},141.725);
+tl.to("#rev_coral",{opacity:0,y:-26,duration:.55,ease:"power2.in"},158.6);
+tl.set("#rev_coral",{opacity:0},160.0);
+tl.fromTo("#fv_coral",{opacity:0,scale:1.07},{opacity:1,scale:1,duration:1.0,ease:"power2.out"},159.6);
+tl.fromTo("#tint_coral",{opacity:0},{opacity:1,duration:1.0},159.6);
+tl.fromTo("#badge_coral",{opacity:0,x:-22},{opacity:1,x:0,duration:.6,ease:"power2.out"},160.15);
+tl.to("#fv_coral",{opacity:0,duration:.9,ease:"power1.in"},187.5);
+tl.set("#fv_coral",{opacity:0},189.1);
+tl.to("#tint_coral",{opacity:0,duration:.9},187.5);
+tl.set("#tint_coral",{opacity:0},189.1);
+tl.to("#badge_coral",{opacity:0,duration:.5},187.6);
+tl.set("#badge_coral",{opacity:0},189.1);
+tl.to(".chrome_coral .rail",{opacity:0,duration:.4},188.7);
+tl.set(".chrome_coral .rail",{opacity:0},189.1);
+tl.to("#bg_coral",{opacity:0,duration:.7},188.6);
+tl.set("#bg_coral",{opacity:0},189.1);
+
+// ---- 今天你要嫁给我 (#01) ----
+tl.set("#bg_today",{opacity:1},189.1);
+tl.fromTo(".chrome_today .rail",{opacity:0},{opacity:1,duration:.6},189.25);
+tl.fromTo("#big_today",{opacity:0,scale:1.16,y:8},{opacity:1,scale:1,y:0,duration:.8,ease:"power3.out"},189.3);
+tl.to("#big_today",{opacity:0,y:-30,duration:.6,ease:"power2.in"},190.6);
+tl.set("#big_today",{opacity:0},191.3);
+tl.fromTo("#rev_today",{opacity:0,y:40},{opacity:1,y:0,duration:.7,ease:"power3.out"},190.5);
+tl.to("#sf_today_0",{width:"100%",duration:.7,ease:"power2.out"},190.8);tl.to("#sf_today_1",{width:"98%",duration:.7,ease:"power2.out"},190.92);tl.to("#sf_today_2",{width:"95%",duration:.7,ease:"power2.out"},191.04);tl.to("#sf_today_3",{width:"90%",duration:.7,ease:"power2.out"},191.16);tl.to("#sf_today_4",{width:"95%",duration:.7,ease:"power2.out"},191.28);
+tl.fromTo("#rsv_today",{scale:.6,opacity:0},{scale:1,opacity:1,duration:.6,ease:"back.out(2)"},191.6);
+tl.to("#rev_today",{opacity:0,y:-26,duration:.55,ease:"power2.in"},212.0);
+tl.set("#rev_today",{opacity:0},213.4);
+tl.fromTo("#fv_today",{opacity:0,scale:1.07},{opacity:1,scale:1,duration:1.0,ease:"power2.out"},213.0);
+tl.fromTo("#tint_today",{opacity:0},{opacity:1,duration:1.0},213.0);
+tl.fromTo("#badge_today",{opacity:0,x:-22},{opacity:1,x:0,duration:.6,ease:"power2.out"},213.55);
+tl.to("#fv_today",{opacity:0,duration:.9,ease:"power1.in"},244.9);
+tl.set("#fv_today",{opacity:0},246.5);
+tl.to("#tint_today",{opacity:0,duration:.9},244.9);
+tl.set("#tint_today",{opacity:0},246.5);
+tl.to("#badge_today",{opacity:0,duration:.5},245.0);
+tl.set("#badge_today",{opacity:0},246.5);
+tl.to(".chrome_today .rail",{opacity:0,duration:.4},246.1);
+tl.set(".chrome_today .rail",{opacity:0},246.5);
+tl.to("#bg_today",{opacity:0,duration:.7},246.0);
+tl.set("#bg_today",{opacity:0},246.5);
+
+
+// 总榜 + CTA（#1 揭晓后才出现）
+tl.set("#outroblk",{opacity:0},246.49);
+tl.fromTo("#outroblk",{opacity:0},{opacity:1,duration:.7,ease:"power2.out"},246.5);
+tl.fromTo(".ot-head",{opacity:0},{opacity:1,duration:.5},246.9);
+tl.fromTo("#otl_0",{opacity:0,x:-18},{opacity:1,x:0,duration:.45,ease:"power2.out"},247.3);
+tl.fromTo("#otl_1",{opacity:0,x:-18},{opacity:1,x:0,duration:.45,ease:"power2.out"},247.52);
+tl.fromTo("#otl_2",{opacity:0,x:-18},{opacity:1,x:0,duration:.45,ease:"power2.out"},247.74);
+tl.fromTo("#otl_3",{opacity:0,x:-18},{opacity:1,x:0,duration:.45,ease:"power2.out"},247.96);
+
+tl.fromTo("#ot_q",{opacity:0,y:24},{opacity:1,y:0,duration:.7,ease:"power3.out"},248.9);
+tl.fromTo("#ot_cta",{opacity:0,y:14},{opacity:1,y:0,duration:.6,ease:"power2.out"},249.9);
+tl.to("#outroblk",{opacity:1,duration:.1},264.9);
+
+window.__timelines["main"]=tl;
+</script></body></html>

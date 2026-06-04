@@ -1,0 +1,116 @@
+{
+  "total_dur": 174,
+  "comment": "AI 跨时空同台《Don't Break My Heart》接力，总时长 2:54。三段BPM 99/108/103接近，不强制全段同步，仅在拼接边界用 0.8-1.2s acrossfade。",
+  "sections": [
+    {
+      "id": "S1_open",
+      "label": "开场 + TTS intro (黑豹 MV instrumental 低音量床 + TTS 旁白)",
+      "t_start": 0,
+      "t_end": 12,
+      "src": "douwei",
+      "src_start": 5,
+      "src_end": 17,
+      "audio_gain_db": -8,
+      "video_role": "stage_main"
+    },
+    {
+      "id": "S2_dw_main",
+      "label": "窦唯主段开场 — riff+第一句",
+      "t_start": 12,
+      "t_end": 50,
+      "src": "douwei",
+      "src_start": 17,
+      "src_end": 55,
+      "audio_gain_db": 0,
+      "video_role": "stage_main"
+    },
+    {
+      "id": "S3_bridge1",
+      "label": "转接1：窦唯尾→王菲入 (crossfade 1.0s)",
+      "t_start": 48,
+      "t_end": 60,
+      "src": "faye",
+      "src_start": 65,
+      "src_end": 77,
+      "audio_gain_db": 0,
+      "crossfade_in": 1.0,
+      "video_role": "transition"
+    },
+    {
+      "id": "S4_fw_main",
+      "label": "王菲核心段 — chorus + verse + 王菲在前/窦唯打鼓的现场关系",
+      "t_start": 60,
+      "t_end": 110,
+      "src": "faye",
+      "src_start": 77,
+      "src_end": 127,
+      "audio_gain_db": 0,
+      "video_role": "stage_main"
+    },
+    {
+      "id": "S5_bridge2",
+      "label": "转接2：王菲尾→窦靖童入 (crossfade 1.0s)",
+      "t_start": 108,
+      "t_end": 120,
+      "src": "jingtong",
+      "src_start": 33,
+      "src_end": 45,
+      "audio_gain_db": 0,
+      "crossfade_in": 1.0,
+      "video_role": "transition"
+    },
+    {
+      "id": "S6_jt_main",
+      "label": "窦靖童段 — verse 接住前两人",
+      "t_start": 120,
+      "t_end": 150,
+      "src": "jingtong",
+      "src_start": 45,
+      "src_end": 75,
+      "audio_gain_db": 0,
+      "video_role": "stage_main"
+    },
+    {
+      "id": "S7_threeway",
+      "label": "三人同台爆点 — 短切轮换 + 末段3s叠加",
+      "t_start": 150,
+      "t_end": 164,
+      "audio_gain_db": 0,
+      "composite": [
+        {"src": "douwei",   "src_start": 200, "src_end": 204, "dur": 4},
+        {"src": "faye",     "src_start": 220, "src_end": 224, "dur": 4},
+        {"src": "jingtong", "src_start": 215, "src_end": 219, "dur": 4},
+        {"src": "stack3",   "comment": "最后 2s 三声叠加（各 -6dB）"}
+      ],
+      "video_role": "split3"
+    },
+    {
+      "id": "S8_outro",
+      "label": "结尾 — 三人同屏渐收 + TTS outro (窦靖童 outro 低音量床)",
+      "t_start": 164,
+      "t_end": 174,
+      "src": "jingtong",
+      "src_start": 245,
+      "src_end": 255,
+      "audio_gain_db": -10,
+      "fade_out": 4.0,
+      "video_role": "stage_three"
+    }
+  ],
+  "tts": {
+    "intro": {
+      "text": "这不是一场真实演出，而是一次AI剪辑实验。我们试着让窦唯、王菲、窦靖童，在同一首《Don't Break My Heart》里，完成一次跨时空接唱。",
+      "t_start": 0,
+      "max_dur": 12,
+      "voice": "zm_yunxi",
+      "speed": 0.95
+    },
+    "outro": {
+      "text": "这不是同一场演出，却像同一首歌，终于在时间里见了一面。",
+      "t_start": 164,
+      "max_dur": 10,
+      "voice": "zm_yunxi",
+      "speed": 0.92
+    }
+  }
+}

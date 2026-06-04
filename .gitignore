@@ -1,0 +1,68 @@
+# =========================================================
+#  cc-media .gitignore
+#  原则：只入库「源」（脚本 / HTML 合成 / brief / 规范 / 字幕）。
+#  所有可重下的素材、可重渲的产物、本地环境一律不入库。
+#  跨机器同步重素材请走外置盘 / 网盘，git 扛不动 54G。
+# =========================================================
+
+# ---- 依赖 / 本地环境 ----
+node_modules/
+venv/
+*.venv/
+__pycache__/
+*.pyc
+
+# ---- 敏感：登录态，绝不入库 ----
+cookies.txt
+*cookies*.txt
+.env
+*.pem
+*.key
+
+# ---- 音频（配音/预混产物 + 下载音轨，可复现）----
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.flac
+*.opus
+*.pcm
+
+# ---- 视频（下载素材 + 渲染成片，可复现）----
+*.mp4
+*.mov
+*.webm
+*.mkv
+*.avi
+*.flv
+
+# ---- 图片（封面 / QA 抽帧 / probe，全部可从素材重生成）----
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.gif
+*.bmp
+*.tiff
+
+# ---- 渲染 / 下载 / 素材 整目录（体积大，不入库）----
+renders/
+downloads/
+clips/
+audio/
+raw/
+*.part
+*.ytdl
+
+# ---- 编译缓存 / 二进制（保留 build/ 里的脚本源，只挡缓存与编译产物）----
+.clang-module-cache/
+*.swiftmodule
+*.timestamp
+watermark_renderer
+
+# ---- 临时 / 日志 / 系统 / 运行期 ----
+tmp/
+*.log
+.DS_Store
+.claude/*.lock
+.claude/settings.local.json

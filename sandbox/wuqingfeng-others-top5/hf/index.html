@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=1080, height=1920"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:1080px; height:1920px; overflow:hidden; background:#06070C;
+  font-family:"Noto Serif SC",serif; color:#F4EFE6; -webkit-font-smoothing:antialiased; }
+.fv { position:absolute; inset:0; width:1080px; height:1920px; object-fit:cover; z-index:1; opacity:0; }
+.tint { position:absolute; inset:0; z-index:2; opacity:0; }
+.tint_s1 { background:linear-gradient(180deg, rgba(240,192,121,.16) 0%, rgba(40,26,10,.50) 44%, rgba(0,0,0,.84) 100%); }
+.tint_s2 { background:linear-gradient(180deg, rgba(120,160,205,.16) 0%, rgba(10,18,30,.55) 45%, rgba(0,0,0,.86) 100%); }
+.tint_s3 { background:linear-gradient(180deg, rgba(150,55,65,.22) 0%, rgba(24,8,10,.60) 45%, rgba(0,0,0,.90) 100%); }
+.tint_s4 { background:linear-gradient(180deg, rgba(180,205,225,.14) 0%, rgba(18,28,38,.52) 46%, rgba(0,0,0,.84) 100%); }
+.tint_s5 { background:linear-gradient(180deg, rgba(225,40,70,.20) 0%, rgba(26,4,8,.58) 44%, rgba(0,0,0,.90) 100%); }
+
+/* 顶/底 杂志暗角，统一各首 */
+#vign { position:absolute; inset:0; z-index:3; pointer-events:none;
+  background:linear-gradient(180deg, rgba(0,0,0,.42) 0%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 78%, rgba(0,0,0,.55) 100%); }
+
+.chrome { position:absolute; inset:0; z-index:4; pointer-events:none; }
+.ch_s1 { --pri:#F0C079; --acc:#FBEAC4; --muted:#9A7B45; }
+.ch_s2 { --pri:#8FB8DC; --acc:#D6E6F2; --muted:#4E6076; }
+.ch_s3 { --pri:#C76470; --acc:#E7B6BC; --muted:#6E3138; }
+.ch_s4 { --pri:#BCD2E0; --acc:#E8F1F7; --muted:#5E7282; }
+.ch_s5 { --pri:#F0586E; --acc:#FFC2CF; --muted:#8A2738; }
+
+/* 左侧排名时间线轨 */
+.rail { position:absolute; top:150px; left:60px; bottom:300px; width:10px; opacity:0; }
+.rail-bar { position:absolute; top:0; bottom:0; left:4px; width:2px;
+  background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.22), rgba(255,255,255,.06)); }
+.rd { position:absolute; left:-21px; width:50px; height:50px; border-radius:50%;
+  background:rgba(16,16,22,.9); border:2px solid rgba(255,255,255,.22);
+  display:flex; align-items:center; justify-content:center; }
+.rd.pst { background:rgba(70,68,74,.7); border-color:rgba(255,255,255,.30); }
+.rd.act { background:var(--pri); border-color:var(--pri);
+  box-shadow:0 0 30px var(--pri), 0 0 64px rgba(255,255,255,.18); transform:scale(1.22); }
+.rt { font-family:"JetBrains Mono",monospace; font-size:22px; font-weight:800; color:rgba(255,255,255,.78); }
+.rd.act .rt { color:rgba(14,14,18,.95); }
+
+/* 排名卡（右上玻璃卡） */
+.card { position:absolute; top:140px; right:54px; width:660px; padding:44px 46px 40px;
+  border-radius:24px; background:linear-gradient(160deg, rgba(255,255,255,.11), rgba(255,255,255,.03));
+  backdrop-filter:blur(30px); -webkit-backdrop-filter:blur(30px);
+  border:1.5px solid rgba(255,255,255,.18); box-shadow:0 34px 90px rgba(0,0,0,.6); opacity:0; }
+.card-top { display:flex; align-items:baseline; gap:20px; margin-bottom:14px; }
+.card-no { font-family:"JetBrains Mono",monospace; font-size:88px; font-weight:800; line-height:.9;
+  color:var(--pri); letter-spacing:-2px; text-shadow:0 0 30px rgba(0,0,0,.4); }
+.card-yr { font-family:"JetBrains Mono",monospace; font-size:26px; font-weight:600;
+  letter-spacing:.12em; color:rgba(255,255,255,.6); padding:6px 14px;
+  border:1.5px solid rgba(255,255,255,.24); border-radius:999px; }
+.card-name { font-size:84px; font-weight:800; line-height:1.02; color:#FBF6EC;
+  letter-spacing:-1px; margin-bottom:8px; }
+.card-singer { font-family:"Noto Sans SC",sans-serif; font-size:40px; font-weight:700;
+  color:var(--acc); letter-spacing:.06em; margin-bottom:22px; }
+.card-credit { font-family:"Noto Sans SC",sans-serif; font-size:27px; line-height:1.5;
+  color:rgba(255,255,255,.72); font-weight:500; letter-spacing:.02em; margin-bottom:24px; }
+.card-tag { font-family:"Noto Sans SC",sans-serif; font-size:29px; font-weight:700; color:var(--acc);
+  display:inline-flex; align-items:center; gap:13px; }
+.card-tag .dot { width:12px; height:12px; border-radius:50%; background:var(--pri); box-shadow:0 0 16px var(--pri); }
+
+/* 副歌大字（单字水印感） */
+.kw { position:absolute; right:40px; bottom:330px; font-family:"Noto Serif SC",serif;
+  font-size:520px; font-weight:900; line-height:.8; color:var(--pri); opacity:0;
+  mix-blend-mode:soft-light; filter:drop-shadow(0 10px 60px rgba(0,0,0,.3)); }
+
+/* 副歌金句（观点字幕） */
+.quote { position:absolute; left:70px; right:70px; bottom:250px; font-family:"Noto Serif SC",serif;
+  font-size:54px; font-weight:600; line-height:1.42; text-align:center;
+  color:#FBF6EC; opacity:0; letter-spacing:.01em; text-shadow:0 4px 30px rgba(0,0,0,.7); }
+
+/* 来源标（小，低调） */
+.src { position:absolute; bottom:62px; left:0; right:0; text-align:center;
+  font-family:"Noto Sans SC",sans-serif; font-size:19px; font-weight:400;
+  color:rgba(255,255,255,.34); letter-spacing:.24em; opacity:0; }
+
+/* ============ 封面 ============ */
+.cover { position:absolute; inset:0; z-index:50; background:#06070C; overflow:hidden; }
+.cv-bg { position:absolute; inset:-8%; background:url("cover_assets/wqf_bg.jpg") center 18%/cover no-repeat;
+  filter:blur(34px) saturate(.75) brightness(.5); transform:scale(1.18); opacity:.6; }
+.cv-veil { position:absolute; inset:0;
+  background:radial-gradient(ellipse at 50% 32%, rgba(212,175,106,.12) 0%, transparent 46%),
+  linear-gradient(180deg, rgba(6,7,12,.55) 0%, rgba(6,7,12,.30) 30%, rgba(6,7,12,.80) 72%, rgba(6,7,12,.97) 100%); }
+.cv-vinyl { position:absolute; right:-150px; top:-150px; width:520px; height:520px; border-radius:50%;
+  background:repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.05) 0 2px, transparent 2px 7px);
+  border:2px solid rgba(212,175,106,.18); opacity:.5; }
+.cv-staff { position:absolute; left:0; right:0; top:0; height:100%; opacity:.10;
+  background:repeating-linear-gradient(180deg, transparent 0 26px, rgba(255,255,255,.5) 26px 27px); transform:rotate(-7deg) scale(1.4); }
+.cv-grain { position:absolute; inset:0; opacity:.5;
+  background-image:radial-gradient(circle at 12% 30%, rgba(255,255,255,.04) 0 .5px, transparent .8px),
+  radial-gradient(circle at 78% 66%, rgba(255,255,255,.04) 0 .5px, transparent .8px); background-size:190px 190px, 230px 230px; }
+
+.cv-head { position:absolute; top:70px; left:70px; right:70px; display:flex;
+  justify-content:space-between; align-items:center; }
+.cv-eyebrow { font-family:"Noto Sans SC",sans-serif; font-size:26px; font-weight:700;
+  letter-spacing:.4em; color:#D4AF6A; }
+.cv-byline { font-family:"Noto Sans SC",sans-serif; font-size:23px; font-weight:600;
+  letter-spacing:.14em; color:rgba(255,255,255,.62); }
+
+.cv-portrait { position:absolute; top:150px; left:0; right:0; display:flex; justify-content:center; }
+.cv-pimg { width:340px; height:404px; border-radius:14px; background:url("cover_assets/wqf.jpg") center top/cover no-repeat;
+  box-shadow:0 30px 70px rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.12); }
+.cv-pring { position:absolute; top:-14px; left:50%; transform:translateX(-50%); width:368px; height:432px;
+  border:1.5px solid rgba(212,175,106,.55); border-radius:18px; }
+
+.cv-titlewrap { position:absolute; top:610px; left:70px; right:70px; text-align:center; }
+.cv-kicker { font-family:"Noto Sans SC",sans-serif; font-size:30px; font-weight:700;
+  letter-spacing:.5em; color:#D4AF6A; margin-bottom:18px; }
+.cv-title { font-family:"Noto Serif SC",serif; font-size:140px; font-weight:900; line-height:1.0;
+  color:#FBF6EC; letter-spacing:-2px; text-shadow:0 6px 40px rgba(0,0,0,.6); }
+.cv-top5 { font-family:"JetBrains Mono",monospace; font-size:124px; font-weight:800; color:#D4AF6A; margin-left:18px; letter-spacing:0; }
+.cv-sub { font-family:"Noto Serif SC",serif; font-size:44px; font-weight:500;
+  color:rgba(244,239,230,.82); margin-top:24px; letter-spacing:.04em; }
+
+.cv-list { position:absolute; bottom:232px; left:90px; right:90px; }
+.cv-node { display:flex; align-items:baseline; gap:26px; padding:12px 0; border-bottom:1px solid rgba(255,255,255,.1); }
+.cv-node:last-child { border-bottom:none; }
+.cv-no { font-family:"JetBrains Mono",monospace; font-size:28px; font-weight:800; color:#D4AF6A; min-width:46px; }
+.cv-nm { font-family:"Noto Serif SC",serif; font-size:42px; font-weight:600; color:#FBF6EC; flex:1; }
+.cv-sg { font-family:"Noto Sans SC",sans-serif; font-size:28px; font-weight:500; color:rgba(244,239,230,.6); letter-spacing:.04em; }
+
+/* ============ Hook ============ */
+.hook { position:absolute; inset:0; z-index:49; background:linear-gradient(180deg,#0A0C16 0%,#06070C 100%); }
+.hk-grad { position:absolute; inset:0;
+  background:radial-gradient(ellipse at 28% 18%, rgba(212,175,106,.10) 0, transparent 50%),
+  radial-gradient(ellipse at 74% 82%, rgba(140,60,80,.10) 0, transparent 50%); }
+.hk-title { position:absolute; top:232px; left:90px; right:90px; font-family:"Noto Serif SC",serif;
+  font-size:86px; font-weight:900; line-height:1.1; color:#FBF6EC; opacity:0; letter-spacing:-1px; }
+.hk-t5 { font-family:"JetBrains Mono",monospace; font-weight:800; color:#D4AF6A; }
+.hk-sub { position:absolute; top:516px; left:90px; right:90px; font-family:"Noto Sans SC",sans-serif;
+  font-size:38px; font-weight:600; line-height:1.4; color:rgba(212,175,106,.92); opacity:0; letter-spacing:.03em; }
+.hk-line { position:absolute; left:90px; right:90px; display:flex; align-items:baseline; gap:28px; opacity:0; }
+#hk_1 { top:760px; } #hk_2 { top:912px; } #hk_3 { top:1064px; } #hk_4 { top:1216px; } #hk_5 { top:1368px; }
+.hk-no { font-family:"JetBrains Mono",monospace; font-size:34px; font-weight:800; color:#D4AF6A; min-width:62px; }
+.hk-nm { font-family:"Noto Serif SC",serif; font-size:62px; font-weight:700; color:#FBF6EC; }
+.hk-sg { font-family:"Noto Sans SC",sans-serif; font-size:34px; font-weight:500; color:rgba(244,239,230,.55); margin-left:auto; }
+
+/* ============ Outro ============ */
+.outroblk { position:absolute; inset:0; z-index:48; background:radial-gradient(ellipse at 50% 38%, #16131F 0%, #06070C 72%); }
+.ot-bg { position:absolute; inset:0; background:radial-gradient(circle at 50% 46%, rgba(212,175,106,.10) 0, transparent 46%); }
+.ot-rail { position:absolute; top:300px; left:110px; right:110px; }
+.ot-line { display:flex; align-items:baseline; gap:26px; padding:11px 0; opacity:0; border-bottom:1px solid rgba(255,255,255,.08); }
+.ot-no { font-family:"JetBrains Mono",monospace; font-size:26px; font-weight:800; color:#D4AF6A; min-width:48px; }
+.ot-nm { font-family:"Noto Serif SC",serif; font-size:48px; font-weight:700; color:#FBF6EC; flex:1; }
+.ot-sg { font-family:"Noto Sans SC",sans-serif; font-size:28px; font-weight:500; color:rgba(244,239,230,.55); }
+.ot-h { position:absolute; top:1020px; left:110px; right:110px; font-family:"Noto Serif SC",serif;
+  font-size:74px; font-weight:800; line-height:1.18; color:#FBF6EC; letter-spacing:-1px; opacity:0; }
+</style></head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="237.125" data-width="1080" data-height="1920">
+  <video id="fv_s1" class="fv clip" data-start="21.75" data-duration="34.325" data-track-index="0" src="clips_seg/s1.mp4" muted playsinline></video>
+<video id="fv_s2" class="fv clip" data-start="56.075" data-duration="37.75" data-track-index="6" src="clips_seg/s2.mp4" muted playsinline></video>
+<video id="fv_s3" class="fv clip" data-start="93.825" data-duration="44.475" data-track-index="0" src="clips_seg/s3.mp4" muted playsinline></video>
+<video id="fv_s4" class="fv clip" data-start="138.3" data-duration="42.825" data-track-index="6" src="clips_seg/s4.mp4" muted playsinline></video>
+<video id="fv_s5" class="fv clip" data-start="181.125" data-duration="40.325" data-track-index="0" src="clips_seg/s5.mp4" muted playsinline></video>
+  <div id="tint_s1" class="clip tint tint_s1" data-start="21.75" data-duration="34.325" data-track-index="10"></div>
+<div id="tint_s2" class="clip tint tint_s2" data-start="56.075" data-duration="37.75" data-track-index="11"></div>
+<div id="tint_s3" class="clip tint tint_s3" data-start="93.825" data-duration="44.475" data-track-index="12"></div>
+<div id="tint_s4" class="clip tint tint_s4" data-start="138.3" data-duration="42.825" data-track-index="13"></div>
+<div id="tint_s5" class="clip tint tint_s5" data-start="181.125" data-duration="40.325" data-track-index="14"></div>
+  <div id="vign"></div>
+  <div id="ch_s1" class="clip chrome ch_s1" data-start="21.75" data-duration="34.325" data-track-index="20">
+  <div class="rail"><div class="rail-bar"></div><div class="rd act" style="top:8.0%"><span class="rt">01</span></div><div class="rd" style="top:28.5%"><span class="rt">02</span></div><div class="rd" style="top:49.0%"><span class="rt">03</span></div><div class="rd" style="top:69.5%"><span class="rt">04</span></div><div class="rd" style="top:90.0%"><span class="rt">05</span></div></div>
+  <div class="card">
+    <div class="card-top"><span class="card-no">01</span><span class="card-yr">2007</span></div>
+    <div class="card-name">有形的翅膀</div>
+    <div class="card-singer">张韶涵</div>
+    <div class="card-credit">作词 · 作曲　吴青峰</div>
+    <div class="card-tag"><span class="dot"></span>传唱度最高 · 温暖励志</div>
+  </div>
+  <div class="kw" id="kw_s1">飞</div>
+  <div class="quote" id="qt_s1">不是一个人撑住，<br>是有人，陪你一起飞。</div>
+  <div class="src" id="src_s1">官方 MV · YouTube</div>
+</div>
+<div id="ch_s2" class="clip chrome ch_s2" data-start="56.075" data-duration="37.75" data-track-index="21">
+  <div class="rail"><div class="rail-bar"></div><div class="rd pst" style="top:8.0%"><span class="rt">01</span></div><div class="rd act" style="top:28.5%"><span class="rt">02</span></div><div class="rd" style="top:49.0%"><span class="rt">03</span></div><div class="rd" style="top:69.5%"><span class="rt">04</span></div><div class="rd" style="top:90.0%"><span class="rt">05</span></div></div>
+  <div class="card">
+    <div class="card-top"><span class="card-no">02</span><span class="card-yr">2007</span></div>
+    <div class="card-name">带我走</div>
+    <div class="card-singer">杨丞琳</div>
+    <div class="card-credit">作词 · 作曲　吴青峰</div>
+    <div class="card-tag"><span class="dot"></span>偶像剧记忆 · 青春离别</div>
+  </div>
+  <div class="kw" id="kw_s2">走</div>
+  <div class="quote" id="qt_s2">悲伤，但不狗血——<br>越听，越有被留下的后劲。</div>
+  <div class="src" id="src_s2">4K 修复 MV · 哔哩哔哩</div>
+</div>
+<div id="ch_s3" class="clip chrome ch_s3" data-start="93.825" data-duration="44.475" data-track-index="22">
+  <div class="rail"><div class="rail-bar"></div><div class="rd pst" style="top:8.0%"><span class="rt">01</span></div><div class="rd pst" style="top:28.5%"><span class="rt">02</span></div><div class="rd act" style="top:49.0%"><span class="rt">03</span></div><div class="rd" style="top:69.5%"><span class="rt">04</span></div><div class="rd" style="top:90.0%"><span class="rt">05</span></div></div>
+  <div class="card">
+    <div class="card-top"><span class="card-no">03</span><span class="card-yr">2009</span></div>
+    <div class="card-name">掉了</div>
+    <div class="card-singer">张惠妹</div>
+    <div class="card-credit">作词 · 作曲　吴青峰</div>
+    <div class="card-tag"><span class="dot"></span>失去感 · 情绪重量</div>
+  </div>
+  <div class="kw" id="kw_s3">掉</div>
+  <div class="quote" id="qt_s3">青峰写得碎，<br>阿妹，唱得重。</div>
+  <div class="src" id="src_s3">华纳官方修复 4K · 哔哩哔哩</div>
+</div>
+<div id="ch_s4" class="clip chrome ch_s4" data-start="138.3" data-duration="42.825" data-track-index="23">
+  <div class="rail"><div class="rail-bar"></div><div class="rd pst" style="top:8.0%"><span class="rt">01</span></div><div class="rd pst" style="top:28.5%"><span class="rt">02</span></div><div class="rd pst" style="top:49.0%"><span class="rt">03</span></div><div class="rd act" style="top:69.5%"><span class="rt">04</span></div><div class="rd" style="top:90.0%"><span class="rt">05</span></div></div>
+  <div class="card">
+    <div class="card-top"><span class="card-no">04</span><span class="card-yr">2015</span></div>
+    <div class="card-name">年轮说</div>
+    <div class="card-singer">杨丞琳</div>
+    <div class="card-credit">作词　吴青峰　·　作曲　郑宇界</div>
+    <div class="card-tag"><span class="dot"></span>高级作词 · 时间剖面</div>
+  </div>
+  <div class="kw" id="kw_s4">轮</div>
+  <div class="quote" id="qt_s4">把爱情，<br>写成时间的剖面。</div>
+  <div class="src" id="src_s4">官方 HD MV · YouTube</div>
+</div>
+<div id="ch_s5" class="clip chrome ch_s5" data-start="181.125" data-duration="40.325" data-track-index="24">
+  <div class="rail"><div class="rail-bar"></div><div class="rd pst" style="top:8.0%"><span class="rt">01</span></div><div class="rd pst" style="top:28.5%"><span class="rt">02</span></div><div class="rd pst" style="top:49.0%"><span class="rt">03</span></div><div class="rd pst" style="top:69.5%"><span class="rt">04</span></div><div class="rd act" style="top:90.0%"><span class="rt">05</span></div></div>
+  <div class="card">
+    <div class="card-top"><span class="card-no">05</span><span class="card-yr">2018</span></div>
+    <div class="card-name">怪美的</div>
+    <div class="card-singer">蔡依林</div>
+    <div class="card-credit">作词　吴青峰　·　作曲　Rhys Fletcher 等</div>
+    <div class="card-tag"><span class="dot"></span>态度表达 · 自我重建</div>
+  </div>
+  <div class="kw" id="kw_s5">美</div>
+  <div class="quote" id="qt_s5">不再只是清冷诗意，<br>而是反击，与重建。</div>
+  <div class="src" id="src_s5">官方 MV · YouTube</div>
+</div>
+  <div id="cover" class="clip cover" data-start="0" data-duration="3.6" data-track-index="30">
+  <div class="cv-bg"></div><div class="cv-veil"></div>
+  <div class="cv-vinyl"></div><div class="cv-staff"></div><div class="cv-grain"></div>
+  <div class="cv-head">
+    <div class="cv-eyebrow">华语创作者盘点</div>
+    <div class="cv-byline">作词 · 作曲　吴青峰</div>
+  </div>
+  <div class="cv-portrait"><div class="cv-pimg"></div><div class="cv-pring"></div></div>
+  <div class="cv-titlewrap">
+    <div class="cv-kicker">写给别人的歌</div>
+    <h1 class="cv-title">吴青峰<br>写给别人<span class="cv-top5">TOP5</span></h1>
+    <div class="cv-sub">原来，这些歌都是他写的</div>
+  </div>
+  <div class="cv-list"><div class="cv-node"><span class="cv-no">01</span><span class="cv-nm">《有形的翅膀》</span><span class="cv-sg">张韶涵</span></div><div class="cv-node"><span class="cv-no">02</span><span class="cv-nm">《带我走》</span><span class="cv-sg">杨丞琳</span></div><div class="cv-node"><span class="cv-no">03</span><span class="cv-nm">《掉了》</span><span class="cv-sg">张惠妹</span></div><div class="cv-node"><span class="cv-no">04</span><span class="cv-nm">《年轮说》</span><span class="cv-sg">杨丞琳</span></div><div class="cv-node"><span class="cv-no">05</span><span class="cv-nm">《怪美的》</span><span class="cv-sg">蔡依林</span></div></div>
+</div>
+  <div id="hook" class="clip hook" data-start="3.6" data-duration="18.15" data-track-index="31">
+  <div class="hk-grad"></div>
+  <div class="hk-title">吴青峰<br>为别人写的歌 <span class="hk-t5">TOP5</span></div>
+  <div class="hk-sub">不只是会唱，他写给别人也首首有戏</div>
+  <div class="hk-line" id="hk_1"><span class="hk-no">01</span><span class="hk-nm">有形的翅膀</span><span class="hk-sg">张韶涵</span></div><div class="hk-line" id="hk_2"><span class="hk-no">02</span><span class="hk-nm">带我走</span><span class="hk-sg">杨丞琳</span></div><div class="hk-line" id="hk_3"><span class="hk-no">03</span><span class="hk-nm">掉了</span><span class="hk-sg">张惠妹</span></div><div class="hk-line" id="hk_4"><span class="hk-no">04</span><span class="hk-nm">年轮说</span><span class="hk-sg">杨丞琳</span></div><div class="hk-line" id="hk_5"><span class="hk-no">05</span><span class="hk-nm">怪美的</span><span class="hk-sg">蔡依林</span></div>
+</div>
+  <div id="outro" class="clip outroblk" data-start="221.45" data-duration="15.675" data-track-index="32">
+  <div class="ot-bg"></div>
+  <div class="ot-rail"><div class="ot-line"><span class="ot-no">01</span><span class="ot-nm">有形的翅膀</span><span class="ot-sg">张韶涵</span></div><div class="ot-line"><span class="ot-no">02</span><span class="ot-nm">带我走</span><span class="ot-sg">杨丞琳</span></div><div class="ot-line"><span class="ot-no">03</span><span class="ot-nm">掉了</span><span class="ot-sg">张惠妹</span></div><div class="ot-line"><span class="ot-no">04</span><span class="ot-nm">年轮说</span><span class="ot-sg">杨丞琳</span></div><div class="ot-line"><span class="ot-no">05</span><span class="ot-nm">怪美的</span><span class="ot-sg">蔡依林</span></div></div>
+  <h2 class="ot-h">他写给别人的歌，<br>也是一部隐藏的<br>吴青峰作品集。</h2>
+</div>
+  <audio id="master" data-start="0" data-duration="237.125" data-track-index="3" src="master.wav" data-volume="1"></audio>
+</div>
+<script>
+  window.__timelines = window.__timelines || {};
+  const tl = gsap.timeline({ paused:true });
+  
+// 封面（首帧即封面：opacity 起就 1，仅做呼吸，不淡入）
+tl.set("#cover", {opacity:1}, 0);
+tl.set(".cv-portrait, .cv-titlewrap, .cv-list, .cv-head", {opacity:1}, 0);
+tl.fromTo(".cv-pimg", {scale:1.0}, {scale:1.03, duration:2.6, yoyo:true, repeat:1, ease:"sine.inOut"}, 0.4);
+tl.to(".cv-vinyl", {rotation:24, duration:3.6, ease:"none", transformOrigin:"50% 50%"}, 0);
+tl.to("#cover", {opacity:0, duration:.6, ease:"power2.in"}, 3.0);
+tl.set("#cover", {opacity:0}, 3.6);
+
+// Hook
+tl.set("#hook", {opacity:1}, 3.6);
+tl.fromTo(".hk-title", {opacity:0, y:24}, {opacity:1, y:0, duration:.7, ease:"power2.out"}, 3.9);
+tl.fromTo(".hk-sub", {opacity:0, y:16}, {opacity:1, y:0, duration:.6, ease:"power2.out"}, 4.5);
+tl.fromTo("#hk_1", {opacity:0, x:-28}, {opacity:1, x:0, duration:.5, ease:"power2.out"}, 5.0);
+tl.to("#hk_1", {opacity:.42, duration:.5}, 7.4);
+tl.fromTo("#hk_2", {opacity:0, x:-28}, {opacity:1, x:0, duration:.5, ease:"power2.out"}, 5.62);
+tl.to("#hk_2", {opacity:.42, duration:.5}, 8.02);
+tl.fromTo("#hk_3", {opacity:0, x:-28}, {opacity:1, x:0, duration:.5, ease:"power2.out"}, 6.24);
+tl.to("#hk_3", {opacity:.42, duration:.5}, 8.64);
+tl.fromTo("#hk_4", {opacity:0, x:-28}, {opacity:1, x:0, duration:.5, ease:"power2.out"}, 6.86);
+tl.to("#hk_4", {opacity:.42, duration:.5}, 9.26);
+tl.fromTo("#hk_5", {opacity:0, x:-28}, {opacity:1, x:0, duration:.5, ease:"power2.out"}, 7.48);
+tl.to("#hk_5", {opacity:.42, duration:.5}, 9.88);
+
+tl.to("#hook", {opacity:0, duration:.7, ease:"power2.in"}, 21.05);
+tl.set("#hook", {opacity:0}, 21.75);
+
+
+// ---- 有形的翅膀 ----
+tl.fromTo("#fv_s1", {opacity:0, scale:1.07}, {opacity:1, scale:1.0, duration:1.5, ease:"power2.out"}, 21.75);
+tl.to("#tint_s1", {opacity:1, duration:1.3, ease:"power1.out"}, 21.75);
+tl.fromTo(".ch_s1 .rail", {opacity:0}, {opacity:1, duration:.8}, 22.05);
+tl.fromTo(".ch_s1 .card", {opacity:0, x:54, y:-16}, {opacity:1, x:0, y:0, duration:.9, ease:"power3.out"}, 22.3);
+tl.fromTo(".ch_s1 .src", {opacity:0}, {opacity:1, duration:.6}, 23.05);
+// 副歌前：卡片淡出，让位给画面与大字
+tl.to(".ch_s1 .card", {opacity:0, y:-12, duration:.6, ease:"power2.in"}, 37.175);
+tl.fromTo(".ch_s1 #kw_s1", {opacity:0, scale:.94, x:30}, {opacity:.5, scale:1.0, x:0, duration:1.8, ease:"power3.out"}, 38.375);
+tl.to(".ch_s1 #kw_s1", {opacity:.62, duration:1.2, ease:"sine.inOut"}, 40.375);
+// 副歌中段：金句观点字幕
+tl.fromTo(".ch_s1 #qt_s1", {opacity:0, y:26}, {opacity:1, y:0, duration:.85, ease:"power2.out"}, 45.595);
+tl.to(".ch_s1 #qt_s1", {opacity:0, y:-12, duration:.6, ease:"power2.in"}, 54.475);
+// 收尾淡出（带 hard kill）
+tl.to("#fv_s1", {opacity:0, duration:1.0, ease:"power1.in"}, 55.075);
+tl.set("#fv_s1", {opacity:0}, 56.075);
+tl.to("#tint_s1", {opacity:0, duration:1.0, ease:"power1.in"}, 55.075);
+tl.set("#tint_s1", {opacity:0}, 56.075);
+tl.to(".ch_s1 #kw_s1", {opacity:0, duration:.9, ease:"power1.in"}, 55.075);
+tl.set(".ch_s1 #kw_s1", {opacity:0}, 56.075);
+tl.to(".ch_s1 .src", {opacity:0, duration:.6}, 55.075);
+tl.set(".ch_s1 .src", {opacity:0}, 56.075);
+tl.to(".ch_s1 .rail", {opacity:0, duration:.5}, 55.675);
+tl.set(".ch_s1 .rail", {opacity:0}, 56.075);
+
+// ---- 带我走 ----
+tl.fromTo("#fv_s2", {opacity:0, scale:1.07}, {opacity:1, scale:1.0, duration:1.5, ease:"power2.out"}, 56.075);
+tl.to("#tint_s2", {opacity:1, duration:1.3, ease:"power1.out"}, 56.075);
+tl.fromTo(".ch_s2 .rail", {opacity:0}, {opacity:1, duration:.8}, 56.375);
+tl.fromTo(".ch_s2 .card", {opacity:0, x:54, y:-16}, {opacity:1, x:0, y:0, duration:.9, ease:"power3.out"}, 56.625);
+tl.fromTo(".ch_s2 .src", {opacity:0}, {opacity:1, duration:.6}, 57.375);
+// 副歌前：卡片淡出，让位给画面与大字
+tl.to(".ch_s2 .card", {opacity:0, y:-12, duration:.6, ease:"power2.in"}, 70.925);
+tl.fromTo(".ch_s2 #kw_s2", {opacity:0, scale:.94, x:30}, {opacity:.5, scale:1.0, x:0, duration:1.8, ease:"power3.out"}, 72.125);
+tl.to(".ch_s2 #kw_s2", {opacity:.62, duration:1.2, ease:"sine.inOut"}, 74.125);
+// 副歌中段：金句观点字幕
+tl.fromTo(".ch_s2 #qt_s2", {opacity:0, y:26}, {opacity:1, y:0, duration:.85, ease:"power2.out"}, 81.025);
+tl.to(".ch_s2 #qt_s2", {opacity:0, y:-12, duration:.6, ease:"power2.in"}, 92.225);
+// 收尾淡出（带 hard kill）
+tl.to("#fv_s2", {opacity:0, duration:1.0, ease:"power1.in"}, 92.825);
+tl.set("#fv_s2", {opacity:0}, 93.825);
+tl.to("#tint_s2", {opacity:0, duration:1.0, ease:"power1.in"}, 92.825);
+tl.set("#tint_s2", {opacity:0}, 93.825);
+tl.to(".ch_s2 #kw_s2", {opacity:0, duration:.9, ease:"power1.in"}, 92.825);
+tl.set(".ch_s2 #kw_s2", {opacity:0}, 93.825);
+tl.to(".ch_s2 .src", {opacity:0, duration:.6}, 92.825);
+tl.set(".ch_s2 .src", {opacity:0}, 93.825);
+tl.to(".ch_s2 .rail", {opacity:0, duration:.5}, 93.425);
+tl.set(".ch_s2 .rail", {opacity:0}, 93.825);
+
+// ---- 掉了 ----
+tl.fromTo("#fv_s3", {opacity:0, scale:1.07}, {opacity:1, scale:1.0, duration:1.5, ease:"power2.out"}, 93.825);
+tl.to("#tint_s3", {opacity:1, duration:1.3, ease:"power1.out"}, 93.825);
+tl.fromTo(".ch_s3 .rail", {opacity:0}, {opacity:1, duration:.8}, 94.125);
+tl.fromTo(".ch_s3 .card", {opacity:0, x:54, y:-16}, {opacity:1, x:0, y:0, duration:.9, ease:"power3.out"}, 94.375);
+tl.fromTo(".ch_s3 .src", {opacity:0}, {opacity:1, duration:.6}, 95.125);
+// 副歌前：卡片淡出，让位给画面与大字
+tl.to(".ch_s3 .card", {opacity:0, y:-12, duration:.6, ease:"power2.in"}, 109.4);
+tl.fromTo(".ch_s3 #kw_s3", {opacity:0, scale:.94, x:30}, {opacity:.5, scale:1.0, x:0, duration:1.8, ease:"power3.out"}, 110.6);
+tl.to(".ch_s3 #kw_s3", {opacity:.62, duration:1.2, ease:"sine.inOut"}, 112.6);
+// 副歌中段：金句观点字幕
+tl.fromTo(".ch_s3 #qt_s3", {opacity:0, y:26}, {opacity:1, y:0, duration:.85, ease:"power2.out"}, 122.02);
+tl.to(".ch_s3 #qt_s3", {opacity:0, y:-12, duration:.6, ease:"power2.in"}, 136.7);
+// 收尾淡出（带 hard kill）
+tl.to("#fv_s3", {opacity:0, duration:1.0, ease:"power1.in"}, 137.3);
+tl.set("#fv_s3", {opacity:0}, 138.3);
+tl.to("#tint_s3", {opacity:0, duration:1.0, ease:"power1.in"}, 137.3);
+tl.set("#tint_s3", {opacity:0}, 138.3);
+tl.to(".ch_s3 #kw_s3", {opacity:0, duration:.9, ease:"power1.in"}, 137.3);
+tl.set(".ch_s3 #kw_s3", {opacity:0}, 138.3);
+tl.to(".ch_s3 .src", {opacity:0, duration:.6}, 137.3);
+tl.set(".ch_s3 .src", {opacity:0}, 138.3);
+tl.to(".ch_s3 .rail", {opacity:0, duration:.5}, 137.9);
+tl.set(".ch_s3 .rail", {opacity:0}, 138.3);
+
+// ---- 年轮说 ----
+tl.fromTo("#fv_s4", {opacity:0, scale:1.07}, {opacity:1, scale:1.0, duration:1.5, ease:"power2.out"}, 138.3);
+tl.to("#tint_s4", {opacity:1, duration:1.3, ease:"power1.out"}, 138.3);
+tl.fromTo(".ch_s4 .rail", {opacity:0}, {opacity:1, duration:.8}, 138.6);
+tl.fromTo(".ch_s4 .card", {opacity:0, x:54, y:-16}, {opacity:1, x:0, y:0, duration:.9, ease:"power3.out"}, 138.85);
+tl.fromTo(".ch_s4 .src", {opacity:0}, {opacity:1, duration:.6}, 139.6);
+// 副歌前：卡片淡出，让位给画面与大字
+tl.to(".ch_s4 .card", {opacity:0, y:-12, duration:.6, ease:"power2.in"}, 152.225);
+tl.fromTo(".ch_s4 #kw_s4", {opacity:0, scale:.94, x:30}, {opacity:.5, scale:1.0, x:0, duration:1.8, ease:"power3.out"}, 153.425);
+tl.to(".ch_s4 #kw_s4", {opacity:.62, duration:1.2, ease:"sine.inOut"}, 155.425);
+// 副歌中段：金句观点字幕
+tl.fromTo(".ch_s4 #qt_s4", {opacity:0, y:26}, {opacity:1, y:0, duration:.85, ease:"power2.out"}, 164.845);
+tl.to(".ch_s4 #qt_s4", {opacity:0, y:-12, duration:.6, ease:"power2.in"}, 179.525);
+// 收尾淡出（带 hard kill）
+tl.to("#fv_s4", {opacity:0, duration:1.0, ease:"power1.in"}, 180.125);
+tl.set("#fv_s4", {opacity:0}, 181.125);
+tl.to("#tint_s4", {opacity:0, duration:1.0, ease:"power1.in"}, 180.125);
+tl.set("#tint_s4", {opacity:0}, 181.125);
+tl.to(".ch_s4 #kw_s4", {opacity:0, duration:.9, ease:"power1.in"}, 180.125);
+tl.set(".ch_s4 #kw_s4", {opacity:0}, 181.125);
+tl.to(".ch_s4 .src", {opacity:0, duration:.6}, 180.125);
+tl.set(".ch_s4 .src", {opacity:0}, 181.125);
+tl.to(".ch_s4 .rail", {opacity:0, duration:.5}, 180.725);
+tl.set(".ch_s4 .rail", {opacity:0}, 181.125);
+
+// ---- 怪美的 ----
+tl.fromTo("#fv_s5", {opacity:0, scale:1.07}, {opacity:1, scale:1.0, duration:1.5, ease:"power2.out"}, 181.125);
+tl.to("#tint_s5", {opacity:1, duration:1.3, ease:"power1.out"}, 181.125);
+tl.fromTo(".ch_s5 .rail", {opacity:0}, {opacity:1, duration:.8}, 181.425);
+tl.fromTo(".ch_s5 .card", {opacity:0, x:54, y:-16}, {opacity:1, x:0, y:0, duration:.9, ease:"power3.out"}, 181.675);
+tl.fromTo(".ch_s5 .src", {opacity:0}, {opacity:1, duration:.6}, 182.425);
+// 副歌前：卡片淡出，让位给画面与大字
+tl.to(".ch_s5 .card", {opacity:0, y:-12, duration:.6, ease:"power2.in"}, 196.55);
+tl.fromTo(".ch_s5 #kw_s5", {opacity:0, scale:.94, x:30}, {opacity:.5, scale:1.0, x:0, duration:1.8, ease:"power3.out"}, 197.75);
+tl.to(".ch_s5 #kw_s5", {opacity:.62, duration:1.2, ease:"sine.inOut"}, 199.75);
+// 副歌中段：金句观点字幕
+tl.fromTo(".ch_s5 #qt_s5", {opacity:0, y:26}, {opacity:1, y:0, duration:.85, ease:"power2.out"}, 207.49);
+tl.to(".ch_s5 #qt_s5", {opacity:0, y:-12, duration:.6, ease:"power2.in"}, 219.85);
+// 收尾淡出（带 hard kill）
+tl.to("#fv_s5", {opacity:0, duration:1.0, ease:"power1.in"}, 220.45);
+tl.set("#fv_s5", {opacity:0}, 221.45);
+tl.to("#tint_s5", {opacity:0, duration:1.0, ease:"power1.in"}, 220.45);
+tl.set("#tint_s5", {opacity:0}, 221.45);
+tl.to(".ch_s5 #kw_s5", {opacity:0, duration:.9, ease:"power1.in"}, 220.45);
+tl.set(".ch_s5 #kw_s5", {opacity:0}, 221.45);
+tl.to(".ch_s5 .src", {opacity:0, duration:.6}, 220.45);
+tl.set(".ch_s5 .src", {opacity:0}, 221.45);
+tl.to(".ch_s5 .rail", {opacity:0, duration:.5}, 221.05);
+tl.set(".ch_s5 .rail", {opacity:0}, 221.45);
+
+
+// Outro
+tl.fromTo("#outro", {opacity:0}, {opacity:1, duration:.8, ease:"power2.out"}, 221.45);
+tl.fromTo(".ot-rail .ot-line:nth-child(1)", {opacity:0, x:-18}, {opacity:.92, x:0, duration:.45, ease:"power2.out"}, 221.95);
+tl.fromTo(".ot-rail .ot-line:nth-child(2)", {opacity:0, x:-18}, {opacity:.92, x:0, duration:.45, ease:"power2.out"}, 222.17);
+tl.fromTo(".ot-rail .ot-line:nth-child(3)", {opacity:0, x:-18}, {opacity:.92, x:0, duration:.45, ease:"power2.out"}, 222.39);
+tl.fromTo(".ot-rail .ot-line:nth-child(4)", {opacity:0, x:-18}, {opacity:.92, x:0, duration:.45, ease:"power2.out"}, 222.61);
+tl.fromTo(".ot-rail .ot-line:nth-child(5)", {opacity:0, x:-18}, {opacity:.92, x:0, duration:.45, ease:"power2.out"}, 222.83);
+
+tl.fromTo(".ot-h", {opacity:0, y:34}, {opacity:1, y:0, duration:1.0, ease:"power3.out"}, 223.85);
+tl.to("#outro", {opacity:1, duration:.1}, 236.925);
+
+  window.__timelines["main"] = tl;
+</script>
+</body></html>

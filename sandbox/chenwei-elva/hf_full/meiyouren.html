@@ -1,0 +1,122 @@
+<!doctype html><html lang="zh"><head><meta charset="UTF-8"/><meta name="viewport" content="width=1080, height=1920"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script><style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#06070d;font-family:"Noto Sans SC",sans-serif;color:#e8edf5;-webkit-font-smoothing:antialiased;}
+.foot{position:absolute;opacity:0;will-change:opacity,transform;}
+#show,.showv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;}
+.estill{position:absolute;inset:0;width:1080px;height:1920px;background-size:cover;background-position:50% 42%;opacity:0;}
+.g-cool{filter:saturate(.86) brightness(.98) contrast(1.1);}
+.g-steel{filter:saturate(.78) brightness(1.0) contrast(1.12) hue-rotate(-6deg);}
+.g-warm{filter:saturate(.96) brightness(1.06) contrast(1.06);}
+.g-live{filter:saturate(.9) brightness(1.02) contrast(1.08);}
+.g-dim{filter:saturate(.7) brightness(.5) contrast(1.1);}
+.ebg{filter:saturate(.6) brightness(.42) contrast(1.12) blur(2px);}
+.tintl{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;mix-blend-mode:soft-light;}
+.cinetop{position:absolute;top:0;left:0;right:0;height:640px;z-index:6;pointer-events:none;background:linear-gradient(180deg,rgba(6,7,13,.94) 0%,rgba(6,7,13,.5) 54%,rgba(6,7,13,0) 100%);}
+.cinebot{position:absolute;bottom:0;left:0;right:0;height:760px;z-index:6;pointer-events:none;background:linear-gradient(0deg,rgba(6,7,13,.97) 0%,rgba(6,7,13,.6) 46%,rgba(6,7,13,0) 100%);}
+.neonglow{position:absolute;inset:0;z-index:5;pointer-events:none;background:radial-gradient(ellipse 50% 36% at 84% 16%,rgba(123,92,255,.18) 0%,rgba(123,92,255,0) 60%),radial-gradient(ellipse 56% 40% at 12% 88%,rgba(47,214,232,.14) 0%,rgba(47,214,232,0) 62%);}
+.scan{position:absolute;inset:0;z-index:8;pointer-events:none;opacity:.5;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,rgba(0,0,0,0) 1px 4px);mix-blend-mode:overlay;}
+.vignette{position:absolute;inset:0;z-index:7;pointer-events:none;background:radial-gradient(ellipse 80% 64% at 50% 46%,rgba(0,0,0,0) 40%,rgba(0,0,0,.55) 100%);}
+.grain{position:absolute;inset:0;z-index:9;pointer-events:none;opacity:.10;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.9'/%3E%3C/svg%3E");background-size:220px 220px;}
+.sub{position:absolute;left:70px;right:70px;bottom:286px;z-index:13;text-align:center;opacity:0;}
+.sub-in{display:inline-block;padding:20px 34px;border-radius:4px;font-family:"Noto Sans SC",sans-serif;font-weight:500;font-size:44px;line-height:1.46;color:#eef2f8;background:linear-gradient(180deg,rgba(12,16,28,.66),rgba(8,11,20,.82));border:1px solid rgba(150,170,210,.28);box-shadow:0 0 0 1px rgba(0,0,0,.5),0 14px 40px rgba(0,0,0,.55),inset 0 1px 0 rgba(180,200,240,.16);text-shadow:0 2px 14px rgba(0,0,0,.85);}
+.neon{color:#5fe4f5;text-shadow:0 0 18px rgba(47,214,232,.55),0 0 40px rgba(47,214,232,.3);}
+.warm{color:#e06b6b;text-shadow:0 0 18px rgba(192,65,63,.5);}
+.chrome{background:linear-gradient(180deg,#f4f8ff 0%,#cdd6e6 28%,#8c97ad 52%,#e6ecf7 60%,#9aa6bd 76%,#c3cdde 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;filter:drop-shadow(0 2px 1px rgba(0,0,0,.45));}
+.songcard{position:absolute;left:0;right:0;top:268px;z-index:15;text-align:center;opacity:0;padding:0 50px;}
+.sc-no{font-family:"Chakra Petch",monospace;font-weight:700;font-size:122px;line-height:.82;letter-spacing:.02em;}
+.sc-name{font-family:"Noto Sans SC",sans-serif;font-weight:900;font-size:138px;line-height:1.02;color:#eef2f8;letter-spacing:.06em;margin:6px 0 26px;text-shadow:0 6px 50px rgba(0,0,0,.6);}
+.sc-name.sm{font-size:96px;letter-spacing:.04em;}
+.sc-credit{font-family:"Chakra Petch",monospace;font-weight:500;font-size:31px;letter-spacing:.1em;color:rgba(95,228,245,.92);margin-bottom:14px;}
+.sc-album{font-family:"Chakra Petch",monospace;font-weight:400;font-size:25px;letter-spacing:.16em;color:rgba(150,164,190,.92);}
+.corner{position:absolute;top:90px;left:60px;z-index:16;display:flex;align-items:center;gap:18px;opacity:0;}
+.cn-no{font-family:"Chakra Petch",monospace;font-weight:700;font-size:46px;color:#5fe4f5;text-shadow:0 0 14px rgba(47,214,232,.5);}
+.cn-line{width:40px;height:2px;background:rgba(150,170,210,.5);}
+.cn-tag{font-family:"Noto Sans SC",sans-serif;font-weight:700;font-size:37px;color:rgba(232,237,245,.92);letter-spacing:.12em;}
+.screen2{position:absolute;left:80px;right:80px;top:402px;z-index:17;text-align:center;opacity:0;}
+.sb-1{font-family:"Chakra Petch",monospace;font-weight:600;font-size:46px;color:rgba(180,192,214,.85);margin-bottom:18px;letter-spacing:.08em;}
+.sb-2{font-family:"Noto Sans SC",sans-serif;font-weight:900;font-size:82px;line-height:1.2;color:#eef2f8;letter-spacing:.03em;}
+.transcard{position:absolute;inset:0;z-index:18;opacity:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.tc-bg{position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse 70% 50% at 50% 50%,rgba(47,214,232,.15) 0%,rgba(6,7,13,0) 60%);}
+.tc-rule{width:58px;height:2px;background:#5fe4f5;margin:0 0 38px;box-shadow:0 0 16px rgba(47,214,232,.6);}
+.tc-text{font-family:"Noto Sans SC",sans-serif;font-weight:800;font-size:74px;line-height:1.36;text-align:center;color:#eef2f8;letter-spacing:.02em;padding:0 80px;}
+/* 封面 */
+.cover{position:absolute;inset:0;z-index:50;background:#06070d;overflow:hidden;}
+.cv-bg{position:absolute;inset:-40px;z-index:1;background-size:cover;background-position:50% 30%;filter:blur(14px) brightness(.4) saturate(.7) contrast(1.1);transform:scale(1.15);}
+.cv-grade{position:absolute;inset:0;z-index:2;background:radial-gradient(ellipse 70% 44% at 80% 14%,rgba(123,92,255,.30) 0%,rgba(123,92,255,0) 60%),radial-gradient(ellipse 70% 44% at 16% 92%,rgba(47,214,232,.22) 0%,rgba(47,214,232,0) 60%),linear-gradient(180deg,rgba(6,7,13,.5) 0%,rgba(6,7,13,.16) 36%,rgba(6,7,13,.72) 76%,#06070d 100%);}
+.cv-scan{position:absolute;inset:0;z-index:7;pointer-events:none;opacity:.5;background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,rgba(0,0,0,0) 1px 4px);mix-blend-mode:overlay;}
+.cv-cd{position:absolute;right:-150px;top:120px;width:430px;height:430px;z-index:3;border-radius:50%;background:conic-gradient(from 20deg,#c9d2e2,#8ea0c4,#e9eef8,#9fb4d8,#c0a6d8,#e6c8e0,#9fc8d8,#c9d2e2);box-shadow:inset 0 0 50px rgba(0,0,0,.5),0 20px 70px rgba(0,0,0,.5);opacity:.28;filter:brightness(.92) saturate(.8);}
+.cd-hole{position:absolute;left:50%;top:50%;width:78px;height:78px;transform:translate(-50%,-50%);border-radius:50%;background:#06070d;box-shadow:0 0 0 16px rgba(180,200,240,.1);}
+.cv-col{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);z-index:5;display:flex;flex-direction:column;align-items:center;padding:0 64px;}
+.cv-eyebrow{display:flex;align-items:center;gap:16px;font-family:"Chakra Petch",monospace;font-weight:600;font-size:30px;letter-spacing:.28em;color:rgba(95,228,245,.92);margin-bottom:34px;text-shadow:0 0 16px rgba(47,214,232,.4);}
+.ey-dot{width:12px;height:12px;border-radius:50%;background:#5fe4f5;box-shadow:0 0 14px rgba(47,214,232,.8);}
+.cv-av{position:relative;width:420px;height:420px;margin-bottom:46px;}
+.cv-ring{position:absolute;inset:-14px;border-radius:50%;background:conic-gradient(from 140deg,#5fe4f5,#7b5cff,#e06b6b,#5fe4f5);opacity:.9;filter:blur(.5px);}
+.cv-ring2{position:absolute;inset:-4px;border-radius:50%;border:2px solid rgba(232,237,245,.5);}
+.cv-face{position:absolute;inset:0;border-radius:50%;background-image:url("cover_assets/aida_face.png");background-size:cover;background-position:50% 42%;filter:saturate(.92) contrast(1.1) brightness(1.02);box-shadow:inset 0 0 0 4px rgba(6,7,13,.9),0 30px 80px rgba(0,0,0,.6);}
+.cv-title{font-family:"Noto Sans SC",sans-serif;font-weight:900;font-size:104px;line-height:1.12;text-align:center;color:#eef2f8;letter-spacing:.02em;text-shadow:0 8px 50px rgba(0,0,0,.55);}
+.cv-title .chrome{font-family:"Chakra Petch",monospace;font-weight:700;letter-spacing:.06em;}
+.cv-eq{display:flex;align-items:flex-end;gap:8px;height:40px;margin:28px 0 24px;}
+.cv-eq i{width:9px;border-radius:2px;background:linear-gradient(180deg,#5fe4f5,#7b5cff);box-shadow:0 0 10px rgba(47,214,232,.5);}
+.cv-eq i:nth-child(1){height:18px}.cv-eq i:nth-child(2){height:34px}.cv-eq i:nth-child(3){height:24px}.cv-eq i:nth-child(4){height:40px}.cv-eq i:nth-child(5){height:14px}.cv-eq i:nth-child(6){height:30px}.cv-eq i:nth-child(7){height:22px}.cv-eq i:nth-child(8){height:38px}.cv-eq i:nth-child(9){height:16px}
+.cv-sub{font-family:"Noto Sans SC",sans-serif;font-weight:500;font-size:40px;letter-spacing:.16em;color:rgba(220,228,240,.9);padding-top:26px;border-top:1px solid rgba(150,170,210,.26);}
+/* 开头 CD + 屏幕字 */
+.opcd{position:absolute;left:0;right:0;top:300px;z-index:4;pointer-events:none;opacity:0;display:flex;align-items:center;justify-content:center;}
+.ov-cd{position:relative;width:520px;height:520px;border-radius:50%;background:conic-gradient(from 0deg,#c9d2e2,#8ea0c4,#e9eef8,#9fb4d8,#c0a6d8,#e6c8e0,#9fc8d8,#c9d2e2),radial-gradient(circle at 50% 50%,#0a0c14 0 16%,rgba(0,0,0,0) 17%);box-shadow:0 0 0 2px rgba(180,200,240,.18),inset 0 0 60px rgba(0,0,0,.5);opacity:.32;filter:brightness(.9) saturate(.8);}
+.ov-hole{position:absolute;left:50%;top:50%;width:92px;height:92px;transform:translate(-50%,-50%);border-radius:50%;background:#06070d;box-shadow:0 0 0 18px rgba(180,200,240,.1);}
+.screen{position:absolute;left:80px;right:80px;top:556px;z-index:14;text-align:center;opacity:0;}
+.sa-1{font-family:"Noto Sans SC",sans-serif;font-weight:500;font-size:40px;letter-spacing:.05em;color:rgba(180,192,214,.55);margin-bottom:26px;text-decoration:line-through;text-decoration-color:rgba(47,214,232,.55);text-decoration-thickness:2px;}
+.sa-2{font-family:"Noto Sans SC",sans-serif;font-weight:900;font-size:64px;line-height:1.3;color:#eef2f8;}
+/* outro */
+.otblk{position:absolute;inset:0;z-index:18;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;}
+.ot-bg{position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse 80% 55% at 50% 50%,rgba(47,214,232,.16) 0%,rgba(6,7,13,0) 62%);}
+.ot-rule{width:58px;height:2px;background:#5fe4f5;margin:0 0 34px;box-shadow:0 0 16px rgba(47,214,232,.6);}
+.ot-1{font-family:"Noto Sans SC",sans-serif;font-weight:500;font-size:50px;color:rgba(220,228,240,.88);margin-bottom:18px;letter-spacing:.04em;text-align:center;}
+.ot-2{font-family:"Noto Sans SC",sans-serif;font-weight:900;font-size:74px;line-height:1.3;color:#eef2f8;text-align:center;letter-spacing:.02em;}
+.ot-cta{position:absolute;left:90px;right:90px;bottom:200px;z-index:19;text-align:center;font-family:"Noto Sans SC",sans-serif;font-weight:600;font-size:38px;line-height:1.5;color:rgba(220,228,240,.92);letter-spacing:.03em;opacity:0;text-shadow:0 2px 20px rgba(0,0,0,.8);}
+</style></head><body><div id="root" data-composition-id="meiyouren" data-start="0" data-duration="67.65" data-width="1080" data-height="1920">
+<div id="es_meiyouren" class="estill ebg clip" data-start="0" data-duration="29.15" data-track-index="0" style="background-image:url('cover_assets/meiyouren_entry.jpg')"></div>
+<video id="show_meiyouren" class="foot showv g-cool clip" data-start="28.15" data-duration="33.5" data-track-index="1" src="clips_seg/meiyouren_show.mp4" muted playsinline preload="auto"></video>
+<div id="card_meiyouren" class="songcard clip" data-start="0.4" data-duration="9.2" data-track-index="15"><div class="sc-no"><span class="chrome">08</span></div><div class="sc-name">没有人</div><div class="sc-credit">曲 · 陈伟　词 · 姚谦　制作 · 陈伟</div><div class="sc-album">1999 ·《萧亚轩》同名专辑</div></div>
+<div id="tag_meiyouren" class="corner clip" data-start="9.6" data-duration="57.55" data-track-index="16"><span class="cn-no">08</span><span class="cn-line"></span><span class="cn-tag">出道冷感</span></div>
+<div id="scr_meiyouren" class="screen2 clip" data-start="30.15" data-duration="8.6" data-track-index="17"><div class="sb-1">Elva 的起点</div><div class="sb-2">不是甜，<span class="warm">是冷</span></div></div>
+<div id="sub_s8a" class="sub clip" data-start="0.9" data-duration="2.975" data-track-index="12"><span class="sub-in">第 8 首 ·《没有人》</span></div>
+<div id="sub_s8b" class="sub clip" data-start="3.925" data-duration="9.5" data-track-index="12"><span class="sub-in">不是讨好市场的甜歌，<br>而是直接推出她的中低音和 R&B 底色。</span></div>
+<div id="sub_s8c" class="sub clip" data-start="13.475" data-duration="6.125" data-track-index="12"><span class="sub-in">陈伟做的不只是写一首歌，<br>是帮她确认了一个方向。</span></div>
+<div id="sub_s8d" class="sub clip" data-start="19.65" data-duration="6.3" data-track-index="12"><span class="sub-in">她不是邻家女孩，<br>是带着距离感的都市女声。</span></div>
+<div id="sub_t8" class="sub clip" data-start="58.55" data-duration="8.6" data-track-index="12"><span class="sub-in">想念不再是哭哭啼啼，<br>是城市夜里的突然失神。</span></div>
+<div id="trans_meiyouren" class="transcard clip" data-start="58.25" data-duration="9.4" data-track-index="18"><div class="tc-bg"></div><div class="tc-rule"></div><div class="tc-text">想念不再是哭哭啼啼，<br>是城市夜里的突然失神。</div></div>
+<div class="neonglow"></div><div class="cinetop"></div><div class="cinebot"></div><div class="scan"></div><div class="vignette"></div><div class="grain"></div>
+<audio id="aud" data-start="0" data-duration="67.65" data-track-index="3" src="audio/meiyouren.wav" data-volume="1"></audio>
+</div>
+<script>window.__timelines=window.__timelines||{};const tl=gsap.timeline({paused:true});
+tl.fromTo("#es_meiyouren",{opacity:0},{opacity:1,duration:1.0,ease:"power1.inOut"},0.0);
+tl.to("#es_meiyouren",{opacity:0,duration:1.2,ease:"power1.in"},27.95);
+tl.set("#es_meiyouren",{opacity:0},29.15);
+tl.fromTo("#es_meiyouren",{scale:1.06},{scale:1.0,duration:29.15,ease:"none"},0);
+tl.fromTo("#show_meiyouren",{opacity:0},{opacity:1,duration:0.9,ease:"power1.inOut"},28.15);
+tl.to("#show_meiyouren",{opacity:0,duration:1.5,ease:"power1.in"},60.15);
+tl.set("#show_meiyouren",{opacity:0},61.65);
+tl.fromTo("#show_meiyouren",{scale:1.05},{scale:1.0,duration:33.5,ease:"none"},28.15);
+tl.fromTo("#card_meiyouren",{opacity:0,y:18},{opacity:1,y:0,duration:0.8,ease:"power2.out"},0.5);
+tl.fromTo("#card_meiyouren .sc-name",{letterSpacing:"0.24em",opacity:0},{letterSpacing:"0.06em",opacity:1,duration:1.0,ease:"power3.out"},0.7);
+tl.to("#card_meiyouren",{opacity:0,y:-12,duration:0.7,ease:"power2.in"},8.8);
+tl.set("#card_meiyouren",{opacity:0},9.6);
+tl.fromTo("#tag_meiyouren",{opacity:0,x:-14},{opacity:1,x:0,duration:0.7,ease:"power2.out"},9.6);
+tl.to("#tag_meiyouren",{opacity:0,duration:0.7},67.05);
+tl.set("#tag_meiyouren",{opacity:0},67.35);
+tl.fromTo("#scr_meiyouren",{opacity:0,y:16},{opacity:1,y:0,duration:0.8,ease:"power2.out"},30.15);
+tl.to("#scr_meiyouren",{opacity:0,y:-10,duration:0.9,ease:"power1.in"},37.15);
+tl.set("#scr_meiyouren",{opacity:0},38.75);
+tl.fromTo("#sub_s8a",{opacity:0,y:16},{opacity:1,y:0,duration:0.42,ease:"power2.out"},0.9);tl.to("#sub_s8a",{opacity:0,y:-8,duration:0.42,ease:"power1.in"},3.455);tl.set("#sub_s8a",{opacity:0},3.875);
+tl.fromTo("#sub_s8b",{opacity:0,y:16},{opacity:1,y:0,duration:0.42,ease:"power2.out"},3.925);tl.to("#sub_s8b",{opacity:0,y:-8,duration:0.42,ease:"power1.in"},13.005);tl.set("#sub_s8b",{opacity:0},13.425);
+tl.fromTo("#sub_s8c",{opacity:0,y:16},{opacity:1,y:0,duration:0.42,ease:"power2.out"},13.475);tl.to("#sub_s8c",{opacity:0,y:-8,duration:0.42,ease:"power1.in"},19.18);tl.set("#sub_s8c",{opacity:0},19.6);
+tl.fromTo("#sub_s8d",{opacity:0,y:16},{opacity:1,y:0,duration:0.42,ease:"power2.out"},19.65);tl.to("#sub_s8d",{opacity:0,y:-8,duration:0.42,ease:"power1.in"},25.53);tl.set("#sub_s8d",{opacity:0},25.95);
+tl.fromTo("#sub_t8",{opacity:0,y:16},{opacity:1,y:0,duration:0.42,ease:"power2.out"},58.55);tl.to("#sub_t8",{opacity:0,y:-8,duration:0.42,ease:"power1.in"},66.73);tl.set("#sub_t8",{opacity:0},67.15);
+tl.fromTo("#trans_meiyouren",{opacity:0,y:18},{opacity:1,y:0,duration:0.7,ease:"power2.out"},58.35);
+tl.to("#trans_meiyouren",{opacity:1,duration:0.1},67.4);
+
+tl.fromTo("#root>.grain",{opacity:.08},{opacity:.13,duration:2.2,yoyo:true,repeat:29,ease:"sine.inOut"},0);
+window.__timelines["meiyouren"]=tl;</script></body></html>

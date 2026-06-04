@@ -1,0 +1,8 @@
+file 'seg_cover.wav'
+file 'seg_intro.wav'
+file 'seg_guaimei.wav'
+file 'seg_nianlun.wav'
+file 'seg_diaole.wav'
+file 'seg_daiwozou.wav'
+file 'seg_youxing.wav'
+file 'seg_outro.wav'

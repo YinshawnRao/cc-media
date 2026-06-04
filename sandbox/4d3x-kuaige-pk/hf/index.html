@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 1080px; height: 1920px; overflow: hidden;
+  background: #06080F; color: #F7F0E8;
+  font-family: "Noto Sans SC","PingFang SC",system-ui,sans-serif;
+  -webkit-font-smoothing: antialiased; }
+
+/* ===== Footage ===== */
+.fv { position: absolute; inset: 0; width: 1080px; height: 1920px; object-fit: cover; z-index: 1; opacity: 0; }
+
+/* ===== Tints (per-song color glaze) ===== */
+.tint { position: absolute; inset: 0; z-index: 2; mix-blend-mode: multiply; opacity: 0; }
+.tint_s1 { background: linear-gradient(180deg, rgba(212,168,72,.22) 0%, rgba(21,10,31,.55) 40%, rgba(0,0,0,.80) 100%); }
+.tint_s2 { background: linear-gradient(180deg, rgba(232,74,140,.18) 0%, rgba(10,10,18,.60) 40%, rgba(0,0,0,.85) 100%); }
+.tint_s3 { background: linear-gradient(180deg, rgba(255,179,71,.22) 0%, rgba(26,18,8,.55) 42%, rgba(0,0,0,.82) 100%); }
+.tint_s4 { background: linear-gradient(180deg, rgba(143,168,255,.18) 0%, rgba(10,15,42,.55) 42%, rgba(0,0,0,.82) 100%); }
+.tint_s5 { background: linear-gradient(180deg, rgba(255,143,184,.22) 0%, rgba(42,16,32,.55) 42%, rgba(0,0,0,.80) 100%); }
+.tint_s6 { background: linear-gradient(180deg, rgba(90,200,255,.18) 0%, rgba(8,10,24,.60) 42%, rgba(0,0,0,.85) 100%); }
+.tint_s7 { background: linear-gradient(180deg, rgba(168,255,90,.18) 0%, rgba(21,8,24,.60) 42%, rgba(0,0,0,.85) 100%); }
+
+
+/* ===== Chrome (per-song UI) ===== */
+.chrome { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.chrome_s1 { --pri:#D4A848; --acc:#E63C5C; --bg:#150A1F; --muted:#8B5A8C; }
+.chrome_s2 { --pri:#C8C8D4; --acc:#E84A8C; --bg:#0A0A12; --muted:#5A5A6E; }
+.chrome_s3 { --pri:#FFB347; --acc:#7DC95E; --bg:#1A1208; --muted:#9A7234; }
+.chrome_s4 { --pri:#8FA8FF; --acc:#C8AEFF; --bg:#0A0F2A; --muted:#4A5878; }
+.chrome_s5 { --pri:#FF8FB8; --acc:#F7E8F0; --bg:#2A1020; --muted:#8B5074; }
+.chrome_s6 { --pri:#5AC8FF; --acc:#D0D8E0; --bg:#080A18; --muted:#3A5078; }
+.chrome_s7 { --pri:#A8FF5A; --acc:#E63C5C; --bg:#150818; --muted:#8B3D74; }
+
+
+/* 候选编号（左上） */
+.cand { position: absolute; top: 70px; left: 64px; display: flex; align-items: baseline; gap: 10px; opacity: 0; }
+.cand-lbl { font-family: "Noto Sans SC"; font-size: 26px; font-weight: 700; letter-spacing: .35em; color: var(--pri); padding: 6px 14px 6px 16px; border: 2px solid var(--pri); border-radius: 999px; background: rgba(0,0,0,.32); }
+.cand-no { font-family: "Bebas Neue","Noto Sans SC"; font-size: 110px; font-weight: 900; line-height: .9; color: var(--pri); margin-left: 8px; text-shadow: 0 6px 32px rgba(0,0,0,.5), 0 0 24px color-mix(in srgb, var(--pri) 70%, transparent); }
+.cand-tag { font-family: "Noto Sans SC"; font-size: 28px; font-weight: 700; color: rgba(255,255,255,.55); letter-spacing: .15em; }
+
+/* 歌名卡（右上） */
+.card { position: absolute; top: 90px; right: 56px; width: 600px; padding: 38px 42px 36px;
+  border-radius: 28px;
+  background: linear-gradient(155deg, rgba(255,255,255,.10), rgba(255,255,255,.025));
+  backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
+  border: 1.5px solid rgba(255,255,255,.18);
+  box-shadow: 0 30px 80px rgba(0,0,0,.55);
+  opacity: 0; }
+.card-singer { font-family: "Noto Sans SC"; font-size: 36px; font-weight: 800; letter-spacing: .08em; color: rgba(255,255,255,.78); margin-bottom: 8px; }
+.card-song { font-family: "Noto Serif SC","Songti SC",serif; font-size: 90px; font-weight: 800; line-height: 1.0; color: #F7F0E8; letter-spacing: -2px; margin-bottom: 22px; text-shadow: 0 2px 14px color-mix(in srgb, var(--pri) 30%, transparent); }
+.card-meta { font-family: "Noto Sans SC"; font-size: 26px; font-weight: 600; color: rgba(255,255,255,.62); letter-spacing: .04em; margin-bottom: 26px; display: flex; align-items: center; gap: 14px; }
+.card-meta .dot-sep { color: var(--pri); font-size: 20px; }
+.card-pills { display: flex; flex-wrap: wrap; gap: 12px; }
+.kw-pill { font-family: "Noto Sans SC"; font-size: 26px; font-weight: 700; padding: 9px 18px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1.5px solid var(--pri); color: var(--pri); letter-spacing: .04em; }
+
+/* 金句（副歌段大字浮于画面） */
+.gold { position: absolute; left: 60px; right: 60px; bottom: 480px; font-family: "Noto Serif SC",serif; font-size: 64px; font-weight: 600; line-height: 1.35; text-align: center; color: #F7F0E8; opacity: 0; letter-spacing: .02em; text-shadow: 0 6px 28px rgba(0,0,0,.85), 0 0 18px color-mix(in srgb, var(--pri) 35%, transparent); }
+
+/* 投票刺激句（mid 段时弹出，模拟弹幕） */
+.cta-vote { position: absolute; left: 60px; right: 60px; bottom: 250px; font-family: "Noto Sans SC"; font-size: 38px; font-weight: 700; text-align: center; color: var(--acc); opacity: 0; letter-spacing: .03em; padding: 22px 30px; border-radius: 22px; background: rgba(0,0,0,.45); border: 2px solid var(--pri); box-shadow: 0 10px 34px rgba(0,0,0,.55), inset 0 0 40px color-mix(in srgb, var(--pri) 18%, transparent); }
+
+/* 粒子层 */
+.particles { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; opacity: 0;
+  background:
+    radial-gradient(circle at 18% 22%, color-mix(in srgb, var(--pri) 18%, transparent) 0, transparent 2%),
+    radial-gradient(circle at 70% 35%, color-mix(in srgb, var(--pri) 12%, transparent) 0, transparent 1.5%),
+    radial-gradient(circle at 35% 70%, color-mix(in srgb, var(--acc) 14%, transparent) 0, transparent 1.8%),
+    radial-gradient(circle at 82% 78%, color-mix(in srgb, var(--pri) 12%, transparent) 0, transparent 1.5%); }
+
+/* ===== Cover ===== */
+.cover { position: absolute; inset: 0; z-index: 50; background: #06080F; overflow: hidden; }
+/* 7 段 MV 拼贴背景：用 cover_bg.jpg（已 vstack 7 个 vert clip 中段） */
+.cv-mosaic { position: absolute; inset: 0; background-image: url("cover_assets/cover_bg.jpg"); background-size: cover; background-position: center; filter: saturate(.92); }
+/* 暗色叠层 — 保证标题清晰可读 */
+.cv-veil { position: absolute; inset: 0; background:
+  radial-gradient(ellipse at 50% 50%, rgba(6,8,15,.88) 0%, rgba(6,8,15,.55) 22%, rgba(6,8,15,.22) 40%, rgba(6,8,15,.22) 60%, rgba(6,8,15,.55) 78%, rgba(6,8,15,.88) 100%); }
+.cv-grad { position: absolute; inset: 0; background:
+  radial-gradient(ellipse at 50% 42%, rgba(230,60,92,.22) 0, transparent 40%),
+  radial-gradient(ellipse at 50% 92%, rgba(212,168,72,.20) 0, transparent 45%); mix-blend-mode: screen; }
+.cv-electric { position: absolute; inset: 0; background-image:
+  linear-gradient(90deg, transparent 0, transparent 49.5%, rgba(255,255,255,.025) 49.7%, rgba(255,255,255,.025) 50.3%, transparent 50.5%, transparent 100%);
+  background-size: 4px 100%; opacity: .25; mix-blend-mode: screen; }
+.cv-stripe { position: absolute; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, transparent, #E63C5C, #D4A848, #5AC8FF, transparent); opacity: .82; box-shadow: 0 0 24px #E63C5C; }
+.cv-stripe-top { top: 56px; }
+.cv-stripe-bot { bottom: 56px; }
+
+.cv-top { position: absolute; top: 140px; left: 0; right: 0; text-align: center; }
+.cv-eyebrow { display: inline-flex; align-items: center; gap: 14px; font-family: "Noto Sans SC"; font-size: 28px; font-weight: 800; letter-spacing: .38em; color: #D4A848; padding: 10px 26px; border: 1.5px solid rgba(212,168,72,.55); border-radius: 999px; background: rgba(0,0,0,.45); }
+.cv-dot { color: rgba(255,255,255,.35); font-weight: 400; }
+
+/* 居中放置标题区，落在 9 宫格中心格内 (y=640-1280)，紧凑 ~580px */
+.cv-title-wrap { position: absolute; top: 685px; left: 0; right: 0; text-align: center; }
+.cv-title { font-family: "Noto Serif SC",serif; letter-spacing: -3px; }
+.cv-title .cv-l1 { display: block; font-size: 132px; font-weight: 900; line-height: 1.0; color: #F7F0E8; text-shadow: 0 0 48px rgba(212,168,72,.5), 0 6px 24px rgba(0,0,0,.85); margin-bottom: 32px; }
+.cv-title .cv-vs { display: block; font-size: 92px; font-weight: 700; line-height: 1.0; color: #D4A848; letter-spacing: .18em; margin-bottom: 32px; text-shadow: 0 0 36px rgba(212,168,72,.5); }
+.cv-title .cv-l2 { display: block; font-size: 220px; font-weight: 900; line-height: 1.0; color: #E63C5C; font-family: "Bebas Neue","Noto Serif SC",serif; letter-spacing: .06em; text-shadow: 0 0 60px rgba(230,60,92,.7), 0 8px 28px rgba(0,0,0,.85); }
+
+.cv-foot { position: absolute; bottom: 70px; left: 0; right: 0; text-align: center; }
+.cv-sub { font-family: "Noto Sans SC"; font-size: 38px; font-weight: 800; color: #F7F0E8; letter-spacing: .22em; margin-bottom: 18px; text-shadow: 0 2px 12px rgba(0,0,0,.95); padding: 10px 0; background: linear-gradient(90deg, transparent, rgba(0,0,0,.55) 20%, rgba(0,0,0,.55) 80%, transparent); }
+.cv-corner { font-family: "Noto Sans SC"; font-size: 22px; font-weight: 700; letter-spacing: .26em; color: rgba(247,240,232,.78); display: inline-flex; align-items: center; gap: 10px; padding: 8px 22px; border: 1.5px solid rgba(255,255,255,.32); border-radius: 999px; background: rgba(0,0,0,.65); }
+.cv-warn { color: #E63C5C; font-size: 24px; }
+
+/* ===== Hook ===== */
+.hook { position: absolute; inset: 0; z-index: 49; background: linear-gradient(180deg, #0A0512 0%, #06080F 100%); }
+.hk-grad { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(230,60,92,.15) 0, transparent 50%); }
+.hk-flash { position: absolute; inset: 0; background: linear-gradient(180deg, transparent, rgba(255,255,255,.04) 50%, transparent); opacity: .5; mix-blend-mode: screen; }
+.hk-title { position: absolute; top: 180px; left: 0; right: 0; text-align: center; font-family: "Noto Serif SC",serif; font-size: 96px; font-weight: 800; color: #F7F0E8; line-height: 1.1; letter-spacing: -2px; text-shadow: 0 0 32px rgba(212,168,72,.4); }
+.hk-list { position: absolute; top: 520px; left: 80px; right: 80px; }
+.hk-line { display: flex; align-items: baseline; gap: 22px; padding: 14px 0; opacity: 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+.hk-line:last-child { border-bottom: none; }
+.hk-no { font-family: "Bebas Neue","Noto Sans SC"; font-size: 40px; font-weight: 900; color: #D4A848; min-width: 80px; letter-spacing: .04em; }
+.hk-singer { font-family: "Noto Sans SC"; font-size: 40px; font-weight: 800; color: #F7F0E8; }
+.hk-song { font-family: "Noto Serif SC",serif; font-size: 38px; font-weight: 600; color: rgba(247,240,232,.70); margin-left: auto; }
+
+/* ===== Rules — 居中布局，无 7 卡列表，避免重复 ===== */
+.rules { position: absolute; inset: 0; z-index: 48; background: linear-gradient(180deg, #0A0512 0%, #06080F 100%); }
+.rl-grad { position: absolute; inset: 0; background:
+  radial-gradient(ellipse at 50% 35%, rgba(230,60,92,.16) 0, transparent 45%),
+  radial-gradient(ellipse at 50% 85%, rgba(90,200,255,.14) 0, transparent 45%); }
+.rl-eyebrow { position: absolute; top: 580px; left: 0; right: 0; text-align: center; font-family: "Noto Sans SC"; font-size: 32px; font-weight: 800; letter-spacing: .48em; color: #D4A848; opacity: 0; }
+.rl-h { position: absolute; top: 700px; left: 0; right: 0; text-align: center; font-family: "Noto Serif SC",serif; font-size: 92px; font-weight: 800; color: #F7F0E8; line-height: 1.22; letter-spacing: -1px; opacity: 0; }
+.rl-h .rl-acc { color: #E63C5C; text-shadow: 0 0 28px rgba(230,60,92,.55); }
+.rl-divider { position: absolute; top: 1080px; left: 50%; transform: translateX(-50%); width: 120px; height: 3px; background: linear-gradient(90deg, transparent, #D4A848, transparent); opacity: 0; }
+.rl-tags { position: absolute; top: 1140px; left: 0; right: 0; text-align: center; display: flex; justify-content: center; flex-wrap: wrap; gap: 18px; padding: 0 60px; }
+.rl-tag { font-family: "Noto Sans SC"; font-size: 36px; font-weight: 700; padding: 14px 32px; border-radius: 999px; background: rgba(255,255,255,.06); border: 2px solid rgba(255,255,255,.22); color: rgba(247,240,232,.88); letter-spacing: .12em; opacity: 0; }
+.rl-foot { position: absolute; bottom: 240px; left: 0; right: 0; text-align: center; opacity: 0; }
+.rl-foot .rl-warn { color: #E63C5C; font-size: 40px; margin-right: 20px; }
+.rl-foot span:last-child { font-family: "Noto Sans SC"; font-size: 40px; font-weight: 800; color: #F7F0E8; letter-spacing: .3em; }
+
+/* ===== Outro ===== */
+.outroblk { position: absolute; inset: 0; z-index: 47; background: radial-gradient(ellipse at 50% 40%, #2A0B1F 0%, #06080F 70%); }
+.ot-bg { position: absolute; inset: 0; background:
+  radial-gradient(ellipse at 18% 18%, rgba(230,60,92,.18) 0, transparent 35%),
+  radial-gradient(ellipse at 82% 22%, rgba(90,200,255,.14) 0, transparent 32%),
+  radial-gradient(ellipse at 50% 92%, rgba(212,168,72,.18) 0, transparent 40%); }
+.ot-eyebrow { position: absolute; top: 110px; left: 0; right: 0; text-align: center; font-family: "Noto Sans SC"; font-size: 28px; font-weight: 800; letter-spacing: .4em; color: #D4A848; opacity: 0; }
+.ot-grid { position: absolute; top: 220px; left: 64px; right: 64px; display: grid; grid-template-columns: 1fr; gap: 10px; }
+.ot-card { padding: 16px 24px; border-radius: 18px; background: linear-gradient(155deg, rgba(255,255,255,.10), rgba(255,255,255,.02)); border: 1.5px solid rgba(255,255,255,.22); display: flex; align-items: baseline; gap: 14px; opacity: 0; }
+.ot-no { font-family: "Bebas Neue"; font-size: 32px; font-weight: 900; color: #D4A848; min-width: 38px; }
+.ot-singer { font-family: "Noto Sans SC"; font-size: 28px; font-weight: 800; color: #F7F0E8; min-width: 130px; }
+.ot-song { font-family: "Noto Serif SC",serif; font-size: 28px; font-weight: 600; color: rgba(247,240,232,.80); }
+.ot-style { font-family: "Noto Sans SC"; font-size: 22px; font-weight: 700; color: #E63C5C; margin-left: auto; padding: 4px 14px; border: 1.5px solid rgba(230,60,92,.6); border-radius: 999px; }
+.ot-h { position: absolute; bottom: 340px; left: 0; right: 0; text-align: center; font-family: "Noto Serif SC",serif; font-size: 108px; font-weight: 900; color: #F7F0E8; letter-spacing: .14em; opacity: 0; text-shadow: 0 0 48px rgba(230,60,92,.55); white-space: nowrap; }
+.ot-foot { position: absolute; bottom: 200px; left: 60px; right: 60px; text-align: center; font-family: "Noto Sans SC"; font-size: 32px; font-weight: 700; color: rgba(247,240,232,.82); opacity: 0; letter-spacing: .04em; line-height: 1.5; }
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="390.675" data-width="1080" data-height="1920">
+    <video id="fv_s1" class="fv clip" data-start="31.15" data-duration="47.375" data-track-index="0" src="clips_seg/s1.mp4" muted playsinline></video>
+<video id="fv_s2" class="fv clip" data-start="78.525" data-duration="45.675" data-track-index="6" src="clips_seg/s2.mp4" muted playsinline></video>
+<video id="fv_s3" class="fv clip" data-start="124.2" data-duration="46.5" data-track-index="0" src="clips_seg/s3.mp4" muted playsinline></video>
+<video id="fv_s4" class="fv clip" data-start="170.7" data-duration="46.975" data-track-index="6" src="clips_seg/s4.mp4" muted playsinline></video>
+<video id="fv_s5" class="fv clip" data-start="217.675" data-duration="45.775" data-track-index="0" src="clips_seg/s5.mp4" muted playsinline></video>
+<video id="fv_s6" class="fv clip" data-start="263.45" data-duration="46.0" data-track-index="6" src="clips_seg/s6.mp4" muted playsinline></video>
+<video id="fv_s7" class="fv clip" data-start="309.45" data-duration="49.85" data-track-index="0" src="clips_seg/s7.mp4" muted playsinline></video>
+    <div id="tint_s1" class="clip tint tint_s1" data-start="31.15" data-duration="47.375" data-track-index="10"></div>
+<div id="tint_s2" class="clip tint tint_s2" data-start="78.525" data-duration="45.675" data-track-index="11"></div>
+<div id="tint_s3" class="clip tint tint_s3" data-start="124.2" data-duration="46.5" data-track-index="12"></div>
+<div id="tint_s4" class="clip tint tint_s4" data-start="170.7" data-duration="46.975" data-track-index="13"></div>
+<div id="tint_s5" class="clip tint tint_s5" data-start="217.675" data-duration="45.775" data-track-index="14"></div>
+<div id="tint_s6" class="clip tint tint_s6" data-start="263.45" data-duration="46.0" data-track-index="15"></div>
+<div id="tint_s7" class="clip tint tint_s7" data-start="309.45" data-duration="49.85" data-track-index="16"></div>
+    <div id="chrome_s1" class="clip chrome chrome_s1" data-start="31.15" data-duration="47.375" data-track-index="20">
+  <div class="cand">
+    <span class="cand-lbl">候选</span><span class="cand-no">01</span>
+    <span class="cand-tag">/ 7</span>
+  </div>
+  <div class="card">
+    <div class="card-singer">蔡依林</div>
+    <div class="card-song">舞娘</div>
+    <div class="card-meta"><span>2006</span><span class="dot-sep">·</span><span>唱跳标杆</span></div>
+    <div class="card-pills"><span class="kw-pill kw-pill-s1">唱跳控制</span><span class="kw-pill kw-pill-s1">舞台工业化</span><span class="kw-pill kw-pill-s1">快歌标杆</span></div>
+  </div>
+  <div class="gold" id="gold_s1">很多人的快歌是热闹，<br>蔡依林的快歌是控制。</div>
+  <div class="cta-vote" id="cta_s1">如果快歌看舞台完成度，这一票很难绕开。</div>
+  <div class="particles"></div>
+</div>
+<div id="chrome_s2" class="clip chrome chrome_s2" data-start="78.525" data-duration="45.675" data-track-index="21">
+  <div class="cand">
+    <span class="cand-lbl">候选</span><span class="cand-no">02</span>
+    <span class="cand-tag">/ 7</span>
+  </div>
+  <div class="card">
+    <div class="card-singer">萧亚轩</div>
+    <div class="card-song">爱的主打歌</div>
+    <div class="card-meta"><span>2006</span><span class="dot-sep">·</span><span>千禧律动</span></div>
+    <div class="card-pills"><span class="kw-pill kw-pill-s2">千禧律动</span><span class="kw-pill kw-pill-s2">都市女王</span><span class="kw-pill kw-pill-s2">松弛快歌</span></div>
+  </div>
+  <div class="gold" id="gold_s2">她的快歌不是用力炸场，<br>是松弛地踩在节奏上。</div>
+  <div class="cta-vote" id="cta_s2">不费力但很会撩，这一票给松弛感。</div>
+  <div class="particles"></div>
+</div>
+<div id="chrome_s3" class="clip chrome chrome_s3" data-start="124.2" data-duration="46.5" data-track-index="22">
+  <div class="cand">
+    <span class="cand-lbl">候选</span><span class="cand-no">03</span>
+    <span class="cand-tag">/ 7</span>
+  </div>
+  <div class="card">
+    <div class="card-singer">孙燕姿</div>
+    <div class="card-song">超快感</div>
+    <div class="card-meta"><span>2001</span><span class="dot-sep">·</span><span>生命力快歌</span></div>
+    <div class="card-pills"><span class="kw-pill kw-pill-s3">少年感</span><span class="kw-pill kw-pill-s3">冲劲</span><span class="kw-pill kw-pill-s3">生命力快歌</span></div>
+  </div>
+  <div class="gold" id="gold_s3">她的快，不是舞步的快，<br>是整个人往前跑。</div>
+  <div class="cta-vote" id="cta_s3">快歌也可以是冲出去，这一首必须有名字。</div>
+  <div class="particles"></div>
+</div>
+<div id="chrome_s4" class="clip chrome chrome_s4" data-start="170.7" data-duration="46.975" data-track-index="23">
+  <div class="cand">
+    <span class="cand-lbl">候选</span><span class="cand-no">04</span>
+    <span class="cand-tag">/ 7</span>
+  </div>
+  <div class="card">
+    <div class="card-singer">梁静茹</div>
+    <div class="card-song">燕尾蝶</div>
+    <div class="card-meta"><span>2004</span><span class="dot-sep">·</span><span>情绪起飞</span></div>
+    <div class="card-pills"><span class="kw-pill kw-pill-s4">情绪起飞</span><span class="kw-pill kw-pill-s4">流行摇滚</span><span class="kw-pill kw-pill-s4">梁式快歌</span></div>
+  </div>
+  <div class="gold" id="gold_s4">她连快歌都不是为了炫技，<br>而是把心事唱到飞起来。</div>
+  <div class="cta-vote" id="cta_s4">快歌里也有情绪和故事，这一票有重量。</div>
+  <div class="particles"></div>
+</div>
+<div id="chrome_s5" class="clip chrome chrome_s5" data-start="217.675" data-duration="45.775" data-track-index="24">
+  <div class="cand">
+    <span class="cand-lbl">候选</span><span class="cand-no">05</span>
+    <span class="cand-tag">/ 7</span>
+  </div>
+  <div class="card">
+    <div class="card-singer">王心凌</div>
+    <div class="card-song">Honey</div>
+    <div class="card-meta"><span>2005</span><span class="dot-sep">·</span><span>甜心舞曲</span></div>
+    <div class="card-pills"><span class="kw-pill kw-pill-s5">甜心舞曲</span><span class="kw-pill kw-pill-s5">旋律记忆</span><span class="kw-pill kw-pill-s5">可爱暴击</span></div>
+  </div>
+  <div class="gold" id="gold_s5">甜心快歌不是幼稚，<br>是旋律记忆太强。</div>
+  <div class="cta-vote" id="cta_s5">甜到自动跟着摇，这一票很稳。</div>
+  <div class="particles"></div>
+</div>
+<div id="chrome_s6" class="clip chrome chrome_s6" data-start="263.45" data-duration="46.0" data-track-index="25">
+  <div class="cand">
+    <span class="cand-lbl">候选</span><span class="cand-no">06</span>
+    <span class="cand-tag">/ 7</span>
+  </div>
+  <div class="card">
+    <div class="card-singer">张韶涵</div>
+    <div class="card-song">That Girl</div>
+    <div class="card-meta"><span>2012</span><span class="dot-sep">·</span><span>自我宣言</span></div>
+    <div class="card-pills"><span class="kw-pill kw-pill-s6">Girl Power</span><span class="kw-pill kw-pill-s6">电子快歌</span><span class="kw-pill kw-pill-s6">自我宣言</span></div>
+  </div>
+  <div class="gold" id="gold_s6">她不是小身体大能量，<br>而是不被定义的 That Girl。</div>
+  <div class="cta-vote" id="cta_s6">她也能唱快歌，且姿态全开。</div>
+  <div class="particles"></div>
+</div>
+<div id="chrome_s7" class="clip chrome chrome_s7" data-start="309.45" data-duration="49.85" data-track-index="26">
+  <div class="cand">
+    <span class="cand-lbl">候选</span><span class="cand-no">07</span>
+    <span class="cand-tag">/ 7</span>
+  </div>
+  <div class="card">
+    <div class="card-singer">杨丞琳</div>
+    <div class="card-song">新流感</div>
+    <div class="card-meta"><span>2009</span><span class="dot-sep">·</span><span>甜酷转型</span></div>
+    <div class="card-pills"><span class="kw-pill kw-pill-s7">甜酷转型</span><span class="kw-pill kw-pill-s7">电子律动</span><span class="kw-pill kw-pill-s7">节奏态度</span></div>
+  </div>
+  <div class="gold" id="gold_s7">偶像剧女主不哭了，<br>开始把节奏穿在身上。</div>
+  <div class="cta-vote" id="cta_s7">甜酷上身节奏有攻击性，这一票给转型。</div>
+  <div class="particles"></div>
+</div>
+    <div id="cover" class="clip cover" data-start="0.0" data-duration="4.0" data-track-index="30">
+  <div class="cv-mosaic"></div>
+  <div class="cv-veil"></div>
+  <div class="cv-grad"></div>
+  <div class="cv-electric"></div>
+  <div class="cv-stripe cv-stripe-top"></div>
+  <div class="cv-stripe cv-stripe-bot"></div>
+
+  <div class="cv-top">
+    <div class="cv-eyebrow"><span>EP. 01</span><span class="cv-dot">·</span><span>四大三小</span><span class="cv-dot">·</span><span>快歌 PK</span></div>
+  </div>
+
+  <div class="cv-title-wrap">
+    <h1 class="cv-title">
+      <span class="cv-l1">四大三小</span>
+      <span class="cv-vs">快歌</span>
+      <span class="cv-l2">PK</span>
+    </h1>
+  </div>
+
+  <div class="cv-foot">
+    <div class="cv-sub">每人一首 · 投票决定排名</div>
+    <div class="cv-corner"><span class="cv-warn">⚠</span>出场顺序 ≠ 排名</div>
+  </div>
+</div>
+    <div id="hook" class="clip hook" data-start="4.0" data-duration="11.225" data-track-index="31">
+  <div class="hk-grad"></div>
+  <div class="hk-flash"></div>
+  <div class="hk-title">这一次，<br>我们只看快歌。</div>
+  <div class="hk-list"><div class="hk-line" id="hk_1"><span class="hk-no">01</span><span class="hk-singer">蔡依林</span><span class="hk-song">舞娘</span></div>
+<div class="hk-line" id="hk_2"><span class="hk-no">02</span><span class="hk-singer">萧亚轩</span><span class="hk-song">爱的主打歌</span></div>
+<div class="hk-line" id="hk_3"><span class="hk-no">03</span><span class="hk-singer">孙燕姿</span><span class="hk-song">超快感</span></div>
+<div class="hk-line" id="hk_4"><span class="hk-no">04</span><span class="hk-singer">梁静茹</span><span class="hk-song">燕尾蝶</span></div>
+<div class="hk-line" id="hk_5"><span class="hk-no">05</span><span class="hk-singer">王心凌</span><span class="hk-song">Honey</span></div>
+<div class="hk-line" id="hk_6"><span class="hk-no">06</span><span class="hk-singer">张韶涵</span><span class="hk-song">That Girl</span></div>
+<div class="hk-line" id="hk_7"><span class="hk-no">07</span><span class="hk-singer">杨丞琳</span><span class="hk-song">新流感</span></div>
+</div>
+</div>
+    <div id="rules" class="clip rules" data-start="15.225" data-duration="15.925" data-track-index="32">
+  <div class="rl-grad"></div>
+  <div class="rl-eyebrow">本期规则</div>
+  <div class="rl-h">每人 1 首快歌代表作<br>排名由<span class="rl-acc">粉丝投票</span>决定</div>
+  <div class="rl-divider"></div>
+  <div class="rl-tags">
+    <span class="rl-tag">唱跳</span>
+    <span class="rl-tag">律动</span>
+    <span class="rl-tag">传唱度</span>
+    <span class="rl-tag">舞台记忆点</span>
+  </div>
+  <div class="rl-foot">
+    <span class="rl-warn">⚠</span>
+    <span>出场顺序 不代表 排名</span>
+  </div>
+</div>
+    <div id="outro" class="clip outroblk" data-start="359.3" data-duration="31.375" data-track-index="33">
+  <div class="ot-bg"></div>
+  <div class="ot-eyebrow">7 首 · 7 种快歌能量</div>
+  <div class="ot-grid">
+    <div class="ot-card ot-card-s1">
+      <span class="ot-no">01</span>
+      <span class="ot-singer">蔡依林</span>
+      <span class="ot-song">舞娘</span>
+      <span class="ot-style">唱跳标杆</span>
+    </div>
+<div class="ot-card ot-card-s2">
+      <span class="ot-no">02</span>
+      <span class="ot-singer">萧亚轩</span>
+      <span class="ot-song">爱的主打歌</span>
+      <span class="ot-style">千禧律动</span>
+    </div>
+<div class="ot-card ot-card-s3">
+      <span class="ot-no">03</span>
+      <span class="ot-singer">孙燕姿</span>
+      <span class="ot-song">超快感</span>
+      <span class="ot-style">生命力快歌</span>
+    </div>
+<div class="ot-card ot-card-s4">
+      <span class="ot-no">04</span>
+      <span class="ot-singer">梁静茹</span>
+      <span class="ot-song">燕尾蝶</span>
+      <span class="ot-style">情绪起飞</span>
+    </div>
+<div class="ot-card ot-card-s5">
+      <span class="ot-no">05</span>
+      <span class="ot-singer">王心凌</span>
+      <span class="ot-song">Honey</span>
+      <span class="ot-style">甜心舞曲</span>
+    </div>
+<div class="ot-card ot-card-s6">
+      <span class="ot-no">06</span>
+      <span class="ot-singer">张韶涵</span>
+      <span class="ot-song">That Girl</span>
+      <span class="ot-style">自我宣言</span>
+    </div>
+<div class="ot-card ot-card-s7">
+      <span class="ot-no">07</span>
+      <span class="ot-singer">杨丞琳</span>
+      <span class="ot-song">新流感</span>
+      <span class="ot-style">甜酷转型</span>
+    </div>
+  </div>
+  <h2 class="ot-h">你投谁第一？</h2>
+  <div class="ot-foot">投票区见 · 评论区告诉我，没入选的你最不服哪一首？</div>
+</div>
+    <audio id="master" data-start="0" data-duration="390.675" data-track-index="3" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    
+tl.set("#cover", {opacity:1}, 0);
+tl.set(".cv-mosaic", {opacity:1}, 0);
+tl.set(".cv-eyebrow", {opacity:1}, 0);
+tl.set(".cv-title", {opacity:1}, 0);
+tl.set(".cv-sub", {opacity:1}, 0);
+tl.set(".cv-corner", {opacity:1}, 0);
+tl.to(".cv-mosaic", {scale:1.04, duration:4.0, ease:"power1.out"}, 0);
+tl.to(".cv-title .cv-l2", {scale:1.03, duration:.9, yoyo:true, repeat:3, ease:"sine.inOut"}, 0.5);
+tl.to("#cover", {opacity:0, duration:.6, ease:"power2.in"}, 3.5);
+tl.set("#cover", {opacity:0}, 4.0);
+
+tl.set("#hook", {opacity:1}, 4.0);
+tl.fromTo(".hk-title", {opacity:0, y:30}, {opacity:1, y:0, duration:.7, ease:"power3.out"}, 4.1);
+tl.fromTo("#hk_1", {opacity:0, x:-30}, {opacity:1, x:0, duration:.45, ease:"power2.out"}, 4.8);
+tl.to("#hk_1", {opacity:.45, duration:.4, ease:"power1.out"}, 5.8);
+tl.fromTo("#hk_2", {opacity:0, x:-30}, {opacity:1, x:0, duration:.45, ease:"power2.out"}, 6.03);
+tl.to("#hk_2", {opacity:.45, duration:.4, ease:"power1.out"}, 7.03);
+tl.fromTo("#hk_3", {opacity:0, x:-30}, {opacity:1, x:0, duration:.45, ease:"power2.out"}, 7.26);
+tl.to("#hk_3", {opacity:.45, duration:.4, ease:"power1.out"}, 8.26);
+tl.fromTo("#hk_4", {opacity:0, x:-30}, {opacity:1, x:0, duration:.45, ease:"power2.out"}, 8.49);
+tl.to("#hk_4", {opacity:.45, duration:.4, ease:"power1.out"}, 9.49);
+tl.fromTo("#hk_5", {opacity:0, x:-30}, {opacity:1, x:0, duration:.45, ease:"power2.out"}, 9.72);
+tl.to("#hk_5", {opacity:.45, duration:.4, ease:"power1.out"}, 10.72);
+tl.fromTo("#hk_6", {opacity:0, x:-30}, {opacity:1, x:0, duration:.45, ease:"power2.out"}, 10.95);
+tl.to("#hk_6", {opacity:.45, duration:.4, ease:"power1.out"}, 11.95);
+tl.fromTo("#hk_7", {opacity:0, x:-30}, {opacity:1, x:0, duration:.45, ease:"power2.out"}, 12.18);
+tl.to("#hk_7", {opacity:.45, duration:.4, ease:"power1.out"}, 13.18);
+tl.to("#hook", {opacity:0, duration:.6, ease:"power2.in"}, 14.625);
+tl.set("#hook", {opacity:0}, 15.225);
+
+tl.set("#rules", {opacity:1}, 15.225);
+tl.fromTo(".rl-eyebrow", {opacity:0, y:-12}, {opacity:1, y:0, duration:.5, ease:"power2.out"}, 15.425);
+tl.fromTo(".rl-h", {opacity:0, y:30}, {opacity:1, y:0, duration:.9, ease:"power3.out"}, 15.825);
+tl.fromTo(".rl-divider", {opacity:0, scaleX:0}, {opacity:1, scaleX:1, duration:.6, ease:"power2.out"}, 17.225);
+tl.fromTo(".rl-tags .rl-tag:nth-child(1)", {opacity:0, y:14, scale:.94}, {opacity:1, y:0, scale:1.0, duration:.5, ease:"back.out(1.4)"}, 17.625);
+tl.fromTo(".rl-tags .rl-tag:nth-child(2)", {opacity:0, y:14, scale:.94}, {opacity:1, y:0, scale:1.0, duration:.5, ease:"back.out(1.4)"}, 17.805);
+tl.fromTo(".rl-tags .rl-tag:nth-child(3)", {opacity:0, y:14, scale:.94}, {opacity:1, y:0, scale:1.0, duration:.5, ease:"back.out(1.4)"}, 17.985);
+tl.fromTo(".rl-tags .rl-tag:nth-child(4)", {opacity:0, y:14, scale:.94}, {opacity:1, y:0, scale:1.0, duration:.5, ease:"back.out(1.4)"}, 18.165);
+tl.fromTo(".rl-foot", {opacity:0, scale:.92}, {opacity:1, scale:1.0, duration:.7, ease:"back.out(1.5)"}, 19.425);
+tl.to("#rules", {opacity:0, duration:.6, ease:"power2.in"}, 30.55);
+tl.set("#rules", {opacity:0}, 31.15);
+
+// ---- 蔡依林 《舞娘》 ----
+tl.fromTo("#fv_s1", {opacity:0, scale:1.06}, {opacity:1, scale:1.0, duration:1.4, ease:"power2.out"}, 31.15);
+tl.to("#tint_s1", {opacity:1, duration:1.2, ease:"power1.out"}, 31.15);
+tl.fromTo(".chrome_s1 .cand", {opacity:0, y:-12}, {opacity:1, y:0, duration:.6, ease:"power2.out"}, 31.35);
+tl.fromTo(".chrome_s1 .card", {opacity:0, x:40, y:-10}, {opacity:1, x:0, y:0, duration:.85, ease:"power3.out"}, 31.65);
+tl.fromTo(".chrome_s1 .particles", {opacity:0}, {opacity:1, duration:1.8, ease:"sine.inOut"}, 31.55);
+// 旁白结束→ swell：卡片淡出，金句大字浮现
+tl.to(".chrome_s1 .card", {opacity:0, y:-10, duration:.5, ease:"power2.in"}, 48.375);
+tl.to(".chrome_s1 .cand", {opacity:0, duration:.5, ease:"power2.in"}, 48.375);
+tl.fromTo(".chrome_s1 #gold_s1", {opacity:0, y:30, scale:.94}, {opacity:1, y:0, scale:1.0, duration:1.2, ease:"power3.out"}, 49.675);
+// 投票刺激句弹出（mid 旁白时机）
+tl.fromTo(".chrome_s1 #cta_s1", {opacity:0, y:24, scale:.92}, {opacity:1, y:0, scale:1.0, duration:.7, ease:"back.out(1.4)"}, 68.625);
+tl.to(".chrome_s1 #cta_s1", {opacity:0, y:-12, duration:.55, ease:"power2.in"}, 76.925);
+// 章节收尾淡出（hard kill）
+tl.to(".chrome_s1 #gold_s1", {opacity:0, y:-10, duration:.6, ease:"power2.in"}, 77.125);
+tl.set(".chrome_s1 #gold_s1", {opacity:0}, 78.525);
+tl.to("#fv_s1", {opacity:0, duration:1.0, ease:"power1.in"}, 77.525);
+tl.set("#fv_s1", {opacity:0}, 78.525);
+tl.to("#tint_s1", {opacity:0, duration:1.0, ease:"power1.in"}, 77.525);
+tl.set("#tint_s1", {opacity:0}, 78.525);
+tl.to(".chrome_s1 .particles", {opacity:0, duration:1.0, ease:"power1.in"}, 77.525);
+tl.set(".chrome_s1 .particles", {opacity:0}, 78.525);
+
+
+// ---- 萧亚轩 《爱的主打歌》 ----
+tl.fromTo("#fv_s2", {opacity:0, scale:1.06}, {opacity:1, scale:1.0, duration:1.4, ease:"power2.out"}, 78.525);
+tl.to("#tint_s2", {opacity:1, duration:1.2, ease:"power1.out"}, 78.525);
+tl.fromTo(".chrome_s2 .cand", {opacity:0, y:-12}, {opacity:1, y:0, duration:.6, ease:"power2.out"}, 78.725);
+tl.fromTo(".chrome_s2 .card", {opacity:0, x:40, y:-10}, {opacity:1, x:0, y:0, duration:.85, ease:"power3.out"}, 79.025);
+tl.fromTo(".chrome_s2 .particles", {opacity:0}, {opacity:1, duration:1.8, ease:"sine.inOut"}, 78.925);
+// 旁白结束→ swell：卡片淡出，金句大字浮现
+tl.to(".chrome_s2 .card", {opacity:0, y:-10, duration:.5, ease:"power2.in"}, 94.3);
+tl.to(".chrome_s2 .cand", {opacity:0, duration:.5, ease:"power2.in"}, 94.3);
+tl.fromTo(".chrome_s2 #gold_s2", {opacity:0, y:30, scale:.94}, {opacity:1, y:0, scale:1.0, duration:1.2, ease:"power3.out"}, 95.6);
+// 投票刺激句弹出（mid 旁白时机）
+tl.fromTo(".chrome_s2 #cta_s2", {opacity:0, y:24, scale:.92}, {opacity:1, y:0, scale:1.0, duration:.7, ease:"back.out(1.4)"}, 114.8);
+tl.to(".chrome_s2 #cta_s2", {opacity:0, y:-12, duration:.55, ease:"power2.in"}, 122.6);
+// 章节收尾淡出（hard kill）
+tl.to(".chrome_s2 #gold_s2", {opacity:0, y:-10, duration:.6, ease:"power2.in"}, 122.8);
+tl.set(".chrome_s2 #gold_s2", {opacity:0}, 124.2);
+tl.to("#fv_s2", {opacity:0, duration:1.0, ease:"power1.in"}, 123.2);
+tl.set("#fv_s2", {opacity:0}, 124.2);
+tl.to("#tint_s2", {opacity:0, duration:1.0, ease:"power1.in"}, 123.2);
+tl.set("#tint_s2", {opacity:0}, 124.2);
+tl.to(".chrome_s2 .particles", {opacity:0, duration:1.0, ease:"power1.in"}, 123.2);
+tl.set(".chrome_s2 .particles", {opacity:0}, 124.2);
+
+
+// ---- 孙燕姿 《超快感》 ----
+tl.fromTo("#fv_s3", {opacity:0, scale:1.06}, {opacity:1, scale:1.0, duration:1.4, ease:"power2.out"}, 124.2);
+tl.to("#tint_s3", {opacity:1, duration:1.2, ease:"power1.out"}, 124.2);
+tl.fromTo(".chrome_s3 .cand", {opacity:0, y:-12}, {opacity:1, y:0, duration:.6, ease:"power2.out"}, 124.4);
+tl.fromTo(".chrome_s3 .card", {opacity:0, x:40, y:-10}, {opacity:1, x:0, y:0, duration:.85, ease:"power3.out"}, 124.7);
+tl.fromTo(".chrome_s3 .particles", {opacity:0}, {opacity:1, duration:1.8, ease:"sine.inOut"}, 124.6);
+// 旁白结束→ swell：卡片淡出，金句大字浮现
+tl.to(".chrome_s3 .card", {opacity:0, y:-10, duration:.5, ease:"power2.in"}, 139.95);
+tl.to(".chrome_s3 .cand", {opacity:0, duration:.5, ease:"power2.in"}, 139.95);
+tl.fromTo(".chrome_s3 #gold_s3", {opacity:0, y:30, scale:.94}, {opacity:1, y:0, scale:1.0, duration:1.2, ease:"power3.out"}, 141.25);
+// 投票刺激句弹出（mid 旁白时机）
+tl.fromTo(".chrome_s3 #cta_s3", {opacity:0, y:24, scale:.92}, {opacity:1, y:0, scale:1.0, duration:.7, ease:"back.out(1.4)"}, 159.6);
+tl.to(".chrome_s3 #cta_s3", {opacity:0, y:-12, duration:.55, ease:"power2.in"}, 169.1);
+// 章节收尾淡出（hard kill）
+tl.to(".chrome_s3 #gold_s3", {opacity:0, y:-10, duration:.6, ease:"power2.in"}, 169.3);
+tl.set(".chrome_s3 #gold_s3", {opacity:0}, 170.7);
+tl.to("#fv_s3", {opacity:0, duration:1.0, ease:"power1.in"}, 169.7);
+tl.set("#fv_s3", {opacity:0}, 170.7);
+tl.to("#tint_s3", {opacity:0, duration:1.0, ease:"power1.in"}, 169.7);
+tl.set("#tint_s3", {opacity:0}, 170.7);
+tl.to(".chrome_s3 .particles", {opacity:0, duration:1.0, ease:"power1.in"}, 169.7);
+tl.set(".chrome_s3 .particles", {opacity:0}, 170.7);
+
+
+// ---- 梁静茹 《燕尾蝶》 ----
+tl.fromTo("#fv_s4", {opacity:0, scale:1.06}, {opacity:1, scale:1.0, duration:1.4, ease:"power2.out"}, 170.7);
+tl.to("#tint_s4", {opacity:1, duration:1.2, ease:"power1.out"}, 170.7);
+tl.fromTo(".chrome_s4 .cand", {opacity:0, y:-12}, {opacity:1, y:0, duration:.6, ease:"power2.out"}, 170.9);
+tl.fromTo(".chrome_s4 .card", {opacity:0, x:40, y:-10}, {opacity:1, x:0, y:0, duration:.85, ease:"power3.out"}, 171.2);
+tl.fromTo(".chrome_s4 .particles", {opacity:0}, {opacity:1, duration:1.8, ease:"sine.inOut"}, 171.1);
+// 旁白结束→ swell：卡片淡出，金句大字浮现
+tl.to(".chrome_s4 .card", {opacity:0, y:-10, duration:.5, ease:"power2.in"}, 187.475);
+tl.to(".chrome_s4 .cand", {opacity:0, duration:.5, ease:"power2.in"}, 187.475);
+tl.fromTo(".chrome_s4 #gold_s4", {opacity:0, y:30, scale:.94}, {opacity:1, y:0, scale:1.0, duration:1.2, ease:"power3.out"}, 188.775);
+// 投票刺激句弹出（mid 旁白时机）
+tl.fromTo(".chrome_s4 #cta_s4", {opacity:0, y:24, scale:.92}, {opacity:1, y:0, scale:1.0, duration:.7, ease:"back.out(1.4)"}, 207.675);
+tl.to(".chrome_s4 #cta_s4", {opacity:0, y:-12, duration:.55, ease:"power2.in"}, 216.075);
+// 章节收尾淡出（hard kill）
+tl.to(".chrome_s4 #gold_s4", {opacity:0, y:-10, duration:.6, ease:"power2.in"}, 216.275);
+tl.set(".chrome_s4 #gold_s4", {opacity:0}, 217.675);
+tl.to("#fv_s4", {opacity:0, duration:1.0, ease:"power1.in"}, 216.675);
+tl.set("#fv_s4", {opacity:0}, 217.675);
+tl.to("#tint_s4", {opacity:0, duration:1.0, ease:"power1.in"}, 216.675);
+tl.set("#tint_s4", {opacity:0}, 217.675);
+tl.to(".chrome_s4 .particles", {opacity:0, duration:1.0, ease:"power1.in"}, 216.675);
+tl.set(".chrome_s4 .particles", {opacity:0}, 217.675);
+
+
+// ---- 王心凌 《Honey》 ----
+tl.fromTo("#fv_s5", {opacity:0, scale:1.06}, {opacity:1, scale:1.0, duration:1.4, ease:"power2.out"}, 217.675);
+tl.to("#tint_s5", {opacity:1, duration:1.2, ease:"power1.out"}, 217.675);
+tl.fromTo(".chrome_s5 .cand", {opacity:0, y:-12}, {opacity:1, y:0, duration:.6, ease:"power2.out"}, 217.875);
+tl.fromTo(".chrome_s5 .card", {opacity:0, x:40, y:-10}, {opacity:1, x:0, y:0, duration:.85, ease:"power3.out"}, 218.175);
+tl.fromTo(".chrome_s5 .particles", {opacity:0}, {opacity:1, duration:1.8, ease:"sine.inOut"}, 218.075);
+// 旁白结束→ swell：卡片淡出，金句大字浮现
+tl.to(".chrome_s5 .card", {opacity:0, y:-10, duration:.5, ease:"power2.in"}, 233.775);
+tl.to(".chrome_s5 .cand", {opacity:0, duration:.5, ease:"power2.in"}, 233.775);
+tl.fromTo(".chrome_s5 #gold_s5", {opacity:0, y:30, scale:.94}, {opacity:1, y:0, scale:1.0, duration:1.2, ease:"power3.out"}, 235.075);
+// 投票刺激句弹出（mid 旁白时机）
+tl.fromTo(".chrome_s5 #cta_s5", {opacity:0, y:24, scale:.92}, {opacity:1, y:0, scale:1.0, duration:.7, ease:"back.out(1.4)"}, 254.5);
+tl.to(".chrome_s5 #cta_s5", {opacity:0, y:-12, duration:.55, ease:"power2.in"}, 261.85);
+// 章节收尾淡出（hard kill）
+tl.to(".chrome_s5 #gold_s5", {opacity:0, y:-10, duration:.6, ease:"power2.in"}, 262.05);
+tl.set(".chrome_s5 #gold_s5", {opacity:0}, 263.45);
+tl.to("#fv_s5", {opacity:0, duration:1.0, ease:"power1.in"}, 262.45);
+tl.set("#fv_s5", {opacity:0}, 263.45);
+tl.to("#tint_s5", {opacity:0, duration:1.0, ease:"power1.in"}, 262.45);
+tl.set("#tint_s5", {opacity:0}, 263.45);
+tl.to(".chrome_s5 .particles", {opacity:0, duration:1.0, ease:"power1.in"}, 262.45);
+tl.set(".chrome_s5 .particles", {opacity:0}, 263.45);
+
+
+// ---- 张韶涵 《That Girl》 ----
+tl.fromTo("#fv_s6", {opacity:0, scale:1.06}, {opacity:1, scale:1.0, duration:1.4, ease:"power2.out"}, 263.45);
+tl.to("#tint_s6", {opacity:1, duration:1.2, ease:"power1.out"}, 263.45);
+tl.fromTo(".chrome_s6 .cand", {opacity:0, y:-12}, {opacity:1, y:0, duration:.6, ease:"power2.out"}, 263.65);
+tl.fromTo(".chrome_s6 .card", {opacity:0, x:40, y:-10}, {opacity:1, x:0, y:0, duration:.85, ease:"power3.out"}, 263.95);
+tl.fromTo(".chrome_s6 .particles", {opacity:0}, {opacity:1, duration:1.8, ease:"sine.inOut"}, 263.85);
+// 旁白结束→ swell：卡片淡出，金句大字浮现
+tl.to(".chrome_s6 .card", {opacity:0, y:-10, duration:.5, ease:"power2.in"}, 280.05);
+tl.to(".chrome_s6 .cand", {opacity:0, duration:.5, ease:"power2.in"}, 280.05);
+tl.fromTo(".chrome_s6 #gold_s6", {opacity:0, y:30, scale:.94}, {opacity:1, y:0, scale:1.0, duration:1.2, ease:"power3.out"}, 281.35);
+// 投票刺激句弹出（mid 旁白时机）
+tl.fromTo(".chrome_s6 #cta_s6", {opacity:0, y:24, scale:.92}, {opacity:1, y:0, scale:1.0, duration:.7, ease:"back.out(1.4)"}, 301.05);
+tl.to(".chrome_s6 #cta_s6", {opacity:0, y:-12, duration:.55, ease:"power2.in"}, 307.85);
+// 章节收尾淡出（hard kill）
+tl.to(".chrome_s6 #gold_s6", {opacity:0, y:-10, duration:.6, ease:"power2.in"}, 308.05);
+tl.set(".chrome_s6 #gold_s6", {opacity:0}, 309.45);
+tl.to("#fv_s6", {opacity:0, duration:1.0, ease:"power1.in"}, 308.45);
+tl.set("#fv_s6", {opacity:0}, 309.45);
+tl.to("#tint_s6", {opacity:0, duration:1.0, ease:"power1.in"}, 308.45);
+tl.set("#tint_s6", {opacity:0}, 309.45);
+tl.to(".chrome_s6 .particles", {opacity:0, duration:1.0, ease:"power1.in"}, 308.45);
+tl.set(".chrome_s6 .particles", {opacity:0}, 309.45);
+
+
+// ---- 杨丞琳 《新流感》 ----
+tl.fromTo("#fv_s7", {opacity:0, scale:1.06}, {opacity:1, scale:1.0, duration:1.4, ease:"power2.out"}, 309.45);
+tl.to("#tint_s7", {opacity:1, duration:1.2, ease:"power1.out"}, 309.45);
+tl.fromTo(".chrome_s7 .cand", {opacity:0, y:-12}, {opacity:1, y:0, duration:.6, ease:"power2.out"}, 309.65);
+tl.fromTo(".chrome_s7 .card", {opacity:0, x:40, y:-10}, {opacity:1, x:0, y:0, duration:.85, ease:"power3.out"}, 309.95);
+tl.fromTo(".chrome_s7 .particles", {opacity:0}, {opacity:1, duration:1.8, ease:"sine.inOut"}, 309.85);
+// 旁白结束→ swell：卡片淡出，金句大字浮现
+tl.to(".chrome_s7 .card", {opacity:0, y:-10, duration:.5, ease:"power2.in"}, 326.8);
+tl.to(".chrome_s7 .cand", {opacity:0, duration:.5, ease:"power2.in"}, 326.8);
+tl.fromTo(".chrome_s7 #gold_s7", {opacity:0, y:30, scale:.94}, {opacity:1, y:0, scale:1.0, duration:1.2, ease:"power3.out"}, 328.1);
+// 投票刺激句弹出（mid 旁白时机）
+tl.fromTo(".chrome_s7 #cta_s7", {opacity:0, y:24, scale:.92}, {opacity:1, y:0, scale:1.0, duration:.7, ease:"back.out(1.4)"}, 348.7);
+tl.to(".chrome_s7 #cta_s7", {opacity:0, y:-12, duration:.55, ease:"power2.in"}, 357.7);
+// 章节收尾淡出（hard kill）
+tl.to(".chrome_s7 #gold_s7", {opacity:0, y:-10, duration:.6, ease:"power2.in"}, 357.9);
+tl.set(".chrome_s7 #gold_s7", {opacity:0}, 359.3);
+tl.to("#fv_s7", {opacity:0, duration:1.0, ease:"power1.in"}, 358.3);
+tl.set("#fv_s7", {opacity:0}, 359.3);
+tl.to("#tint_s7", {opacity:0, duration:1.0, ease:"power1.in"}, 358.3);
+tl.set("#tint_s7", {opacity:0}, 359.3);
+tl.to(".chrome_s7 .particles", {opacity:0, duration:1.0, ease:"power1.in"}, 358.3);
+tl.set(".chrome_s7 .particles", {opacity:0}, 359.3);
+
+tl.fromTo("#outro", {opacity:0}, {opacity:1, duration:.7, ease:"power2.out"}, 359.3);
+tl.fromTo(".ot-eyebrow", {opacity:0, y:-10}, {opacity:1, y:0, duration:.5, ease:"power2.out"}, 359.6);
+tl.fromTo(".ot-grid .ot-card:nth-child(1)", {opacity:0, x:-16}, {opacity:1, x:0, duration:.5, ease:"power2.out"}, 360.1);
+tl.fromTo(".ot-grid .ot-card:nth-child(2)", {opacity:0, x:-16}, {opacity:1, x:0, duration:.5, ease:"power2.out"}, 360.32);
+tl.fromTo(".ot-grid .ot-card:nth-child(3)", {opacity:0, x:-16}, {opacity:1, x:0, duration:.5, ease:"power2.out"}, 360.54);
+tl.fromTo(".ot-grid .ot-card:nth-child(4)", {opacity:0, x:-16}, {opacity:1, x:0, duration:.5, ease:"power2.out"}, 360.76);
+tl.fromTo(".ot-grid .ot-card:nth-child(5)", {opacity:0, x:-16}, {opacity:1, x:0, duration:.5, ease:"power2.out"}, 360.98);
+tl.fromTo(".ot-grid .ot-card:nth-child(6)", {opacity:0, x:-16}, {opacity:1, x:0, duration:.5, ease:"power2.out"}, 361.2);
+tl.fromTo(".ot-grid .ot-card:nth-child(7)", {opacity:0, x:-16}, {opacity:1, x:0, duration:.5, ease:"power2.out"}, 361.42);
+tl.fromTo(".ot-h", {opacity:0, y:30, scale:.94}, {opacity:1, y:0, scale:1.0, duration:.9, ease:"power3.out"}, 374.05);
+tl.fromTo(".ot-foot", {opacity:0, y:14}, {opacity:1, y:0, duration:.7, ease:"power2.out"}, 375.55);
+tl.to(".ot-h", {scale:1.03, duration:1.0, yoyo:true, repeat:3, ease:"sine.inOut"}, 384.175);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>
