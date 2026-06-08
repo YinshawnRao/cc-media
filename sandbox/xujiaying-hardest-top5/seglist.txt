@@ -1,0 +1,7 @@
+file 'seg_intro.wav'
+file 'seg_p5_daoci.wav'
+file 'seg_p4_huise.wav'
+file 'seg_p3_shalu.wav'
+file 'seg_p2_baima.wav'
+file 'seg_p1_jixian.wav'
+file 'seg_outro.wav'
