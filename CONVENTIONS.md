@@ -372,16 +372,16 @@ voice_rms = np.sqrt(np.mean(S[voice_mask] ** 2, axis=0))
 
 ### 格式之三：AI 克隆歌手音色 MV（整首 MV 换训练音轨）
 
-> 验证项目：`sandbox/angela-ai-mv-covers/`（张韶涵 e200 音色 MV，已生成 `光年之外`、`天空没有极限`、`雨爱`、`理想情人`、`心墙`、`突然想起你` 6 个独立 MP4）。
+> 验证项目：`sandbox/angela-ai-mv-covers/`（张韶涵 e200 / 激进版音色 MV，已持续追加多批独立 MP4，完整清单见该目录 `README.md`）。
 
 当 brief 明确是“AI 克隆/训练歌手音色制作 MV”“如果某歌手唱某歌”，且用户给了可直接使用的训练音频 WAV 时，默认复用 `sandbox/angela-ai-mv-covers/` 继续追加歌曲，不新开实验目录。只有当用户明确要求新项目，或任务不再是“整首 MV 视频轨 + 训练音频替换”时，才另建目录。
 
 **固定流程：**
-- 源音频：把用户给的训练 WAV 复制到 `sandbox/angela-ai-mv-covers/audio/`，不要重新推理、不要改训练音色文件本身。
+- 源音频：把用户给的训练 WAV 复制到 `sandbox/angela-ai-mv-covers/audio/`，不要重新推理、不要改训练音色文件本身。若音频来自 `cc-voice`，只允许复制用户明确给出的 WAV 路径或目录内 WAV 到本项目；不得对 `cc-voice` 做目录扫描、状态检查、哈希/时长探测、进程检查或任何写操作。时长/静音/哈希等校验一律在复制到 `cc-media` 后对本地副本执行。批量目录导入时，文件名含 `废弃` 的 WAV 直接跳过。
 - 源视频：每首仍按“素材源平台”硬约束同时查 YouTube + B站。优先官方 MV/官方 4K 升级源；但必须抽帧确认画面干净度，不能只看“官方”或分辨率。
-- 构建：复用 `sandbox/angela-ai-mv-covers/build/build.py`，新增 `Song` 配置；一首输出一个 `final/<歌名>_AI训练张韶涵音色MV.mp4`。
+- 构建：复用 `sandbox/angela-ai-mv-covers/build/build.py`，新增 `Song` 配置；一首输出一个 `final/<歌名>_AI训练张韶涵音色MV.mp4`。若视频轨只比训练 WAV 短几十毫秒到约 0.5s，在视频滤镜加 `tpad=stop_mode=clone:stop_duration=2` 后再 `-shortest`，避免截掉尾音。
 - intro：用 `tools/tts/narrate.py --female --speed 1.12` 生成“如果张韶涵唱《歌名》。”这类女声提示；构建脚本会自动修剪 TTS 首尾静音。
-- 混音：intro 期间训练音频 duck 到约 25%，intro 结束后 350ms 恢复；最终音频直接由 FFmpeg 预混/编码，不走 HyperFrames 音频归一化。
+- 混音：intro 期间训练音频 duck 到约 25%，intro 结束后 350ms 恢复；最终音频直接由 FFmpeg 预混/编码，不走 HyperFrames 音频归一化。单首训练音频若明显低于本目录响度基线，可在 `Song` 配置轻微 `audio_gain`，但最终 max volume 必须低于 0dB。
 - 角标：全程叠加 `AI训练，仅供娱乐`。当前 FFmpeg 没有 `drawtext`，用 Swift/AppKit 生成透明 PNG 水印再 `overlay`。
 - 来源记录：每首都补 `SOURCES.md`，写清 YouTube/B站候选、最终选择、限制和是否做 crop。
 
@@ -390,6 +390,8 @@ voice_rms = np.sqrt(np.mean(S[voice_mask] ** 2, axis=0))
 - B站 4K 修复源常画质高，但可能有平台水印、UP 主水印、修复者 logo、烧死歌词。先抽 `1s`、`40s`、副歌附近帧，不干净就先试全宽横带 crop。
 - 去水印/烧词优先用**全宽 crop**，只裁底部或顶部污染带，保持主体完整；不要用竖向激进裁切。《心墙》验证：`crop=3840:1920:0:0` 可去掉底部 `bilibili/zyl2012` 和歌词，同时保留 2:1 全宽画面。
 - 若全宽 crop 会裁掉关键人物/标题，宁可退回低清官方源；不要交付含平台/UP 主水印的成片。
+- B站 4K 修复版如果比训练音频短 2-4 秒，且标题/画面提示为歌词重制或非官方修复，不要为了分辨率牺牲整首 MV 对齐；优先选时长精确匹配的官方源，哪怕官方源只有标清。《搁浅》验证：YouTube 官方源 640x480 但与训练 WAV 268.65s 精确对齐，B站 4K 候选均短于训练音频。
+- 官方 MV 若是长剧情版，时长可能明显长于训练 WAV，不能直接从 0 秒替换音轨。先用原 MV 音轨与训练 WAV 做粗粒度 RMS/能量包络相关性估算，确定歌曲对齐偏移，再预切出同长视频片段进 `Song` 配置。《慢冷》验证：官方 MV 457.71s，训练 WAV 289.30s，最佳偏移约 `97.5s`，预切为 `raw/manleng_aligned.mp4` 后合成。
 
 **QA：**
 - `ffprobe` 确认最终 MP4 时长与训练 WAV 对齐，视频为 H.264、音频为 AAC。
