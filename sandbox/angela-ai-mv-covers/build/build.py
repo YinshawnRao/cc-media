@@ -23,6 +23,7 @@ class Song:
     intro_voice: str
     output: str
     crop: tuple[int, int, int, int] | None = None
+    audio_gain: float = 1.0
 
 
 SONGS = [
@@ -74,6 +75,146 @@ SONGS = [
         song_audio="audio/turanxiangqini_e200_jijin.wav",
         intro_voice="voice/turanxiangqini_intro.wav",
         output="final/突然想起你_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="aiqingxunxi",
+        title="爱情讯息",
+        video="raw/aiqingxunxi.mp4",
+        song_audio="audio/aiqingxunxi_jijin.wav",
+        intro_voice="voice/aiqingxunxi_intro.wav",
+        output="final/爱情讯息_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="caihong",
+        title="彩虹",
+        video="raw/caihong.mp4",
+        song_audio="audio/caihong_jijin.wav",
+        intro_voice="voice/caihong_intro.wav",
+        output="final/彩虹_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="kubuchulai",
+        title="哭不出来",
+        video="raw/kubuchulai.mp4",
+        song_audio="audio/kubuchulai_jijin.wav",
+        intro_voice="voice/kubuchulai_intro.wav",
+        output="final/哭不出来_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="daoshu",
+        title="倒数",
+        video="raw/daoshu.mp4",
+        song_audio="audio/daoshu_jijin.wav",
+        intro_voice="voice/daoshu_intro.wav",
+        output="final/倒数_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="yigerenshenghuo",
+        title="一个人生活",
+        video="raw/yigerenshenghuo.mp4",
+        song_audio="audio/yigerenshenghuo_jijin.wav",
+        intro_voice="voice/yigerenshenghuo_intro.wav",
+        output="final/一个人生活_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="manleng",
+        title="慢冷",
+        video="raw/manleng_aligned.mp4",
+        song_audio="audio/manleng_jijin.wav",
+        intro_voice="voice/manleng_intro.wav",
+        output="final/慢冷_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="geqian",
+        title="搁浅",
+        video="raw/geqian.mp4",
+        song_audio="audio/geqian_jijin.wav",
+        intro_voice="voice/geqian_intro.wav",
+        output="final/搁浅_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="xinzhongderiyue",
+        title="心中的日月",
+        video="raw/xinzhongderiyue.mp4",
+        song_audio="audio/xinzhongderiyue_jijin.wav",
+        intro_voice="voice/xinzhongderiyue_intro.wav",
+        output="final/心中的日月_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="zhixiangaini",
+        title="只想爱你",
+        video="raw/zhixiangaini.mp4",
+        song_audio="audio/zhixiangaini_classic.wav",
+        intro_voice="voice/zhixiangaini_intro.wav",
+        output="final/只想爱你_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="xiaozhenguniang",
+        title="小镇姑娘",
+        video="raw/xiaozhenguniang.mp4",
+        song_audio="audio/xiaozhenguniang_classic.wav",
+        intro_voice="voice/xiaozhenguniang_intro.wav",
+        output="final/小镇姑娘_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="ezuoju",
+        title="恶作剧",
+        video="raw/ezuoju.mp4",
+        song_audio="audio/ezuoju_classic.wav",
+        intro_voice="voice/ezuoju_intro.wav",
+        output="final/恶作剧_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="xiangchangjiuchang",
+        title="想唱就唱",
+        video="raw/xiangchangjiuchang.mp4",
+        song_audio="audio/xiangchangjiuchang_classic.wav",
+        intro_voice="voice/xiangchangjiuchang_intro.wav",
+        output="final/想唱就唱_AI训练张韶涵音色MV.mp4",
+        crop=(1440, 820, 0, 260),
+    ),
+    Song(
+        key="manmanxihuanni",
+        title="慢慢喜欢你",
+        video="raw/manmanxihuanni.mp4",
+        song_audio="audio/manmanxihuanni_classic.wav",
+        intro_voice="voice/manmanxihuanni_intro.wav",
+        output="final/慢慢喜欢你_AI训练张韶涵音色MV.mp4",
+        audio_gain=1.22,
+    ),
+    Song(
+        key="wohuanjide",
+        title="我还记得",
+        video="raw/wohuanjide.mp4",
+        song_audio="audio/wohuanjide_classic.wav",
+        intro_voice="voice/wohuanjide_intro.wav",
+        output="final/我还记得_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="bainianguji",
+        title="百年孤寂",
+        video="raw/bainianguji.mp4",
+        song_audio="audio/bainianguji_classic.wav",
+        intro_voice="voice/bainianguji_intro.wav",
+        output="final/百年孤寂_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="namejiaao",
+        title="那么骄傲",
+        video="raw/namejiaao.mp4",
+        song_audio="audio/namejiaao_classic.wav",
+        intro_voice="voice/namejiaao_intro.wav",
+        output="final/那么骄傲_AI训练张韶涵音色MV.mp4",
+        crop=(1920, 880, 0, 0),
+        audio_gain=1.12,
+    ),
+    Song(
+        key="yujizhong",
+        title="雨季中",
+        video="raw/yujizhong.mp4",
+        song_audio="audio/yujizhong_classic.wav",
+        intro_voice="voice/yujizhong_intro.wav",
+        output="final/雨季中_AI训练张韶涵音色MV.mp4",
     ),
 ]
 
@@ -235,14 +376,15 @@ def ffmpeg_filter(song: Song, voice_path: Path) -> str:
         f"0.25+(t-{duck_end:.3f})/{recover:.3f}*0.75,1))"
     )
     video = (
-        f"[0:v]{crop_filter}scale={out_w}:{out_h}:flags=lanczos,"
+        f"[0:v]{crop_filter}tpad=stop_mode=clone:stop_duration=2,"
+        f"scale={out_w}:{out_h}:flags=lanczos,"
         f"format=rgba[base];"
         f"[3:v]format=rgba[wm];"
         f"[base][wm]overlay=x={inset}:y={inset}:eof_action=repeat,"
         f"format=yuv420p[vout]"
     )
     audio = (
-        f"[1:a]volume='{duck_expr}':eval=frame[song];"
+        f"[1:a]volume='{song.audio_gain:.4f}*({duck_expr})':eval=frame[song];"
         f"[2:a]adelay={int(voice_delay * 1000)}:all=1,volume=1.15[voice];"
         f"[song][voice]amix=inputs=2:duration=first:dropout_transition=0:"
         f"normalize=0,alimiter=limit=0.95[aout]"
