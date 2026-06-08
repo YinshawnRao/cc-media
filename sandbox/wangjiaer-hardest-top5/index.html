@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#07070a;font-family:sans-serif;color:#f4f0eb}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#07070a}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+.scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(7,7,10,.72),rgba(7,7,10,.18) 30%,rgba(7,7,10,.24) 55%,rgba(7,7,10,.86))}
+.grain{position:absolute;inset:-20px;z-index:2;opacity:.12;background-image:radial-gradient(circle at 20% 20%,#fff 0 1px,transparent 1px),radial-gradient(circle at 70% 40%,#fff 0 1px,transparent 1px);background-size:38px 38px,53px 53px;mix-blend-mode:screen}
+#cover{position:absolute;left:70px;right:70px;bottom:250px;z-index:5}
+#cover .eyebrow{display:flex;align-items:center;gap:18px;color:#f0b35b;font-size:30px;font-weight:800}
+#cover .eyebrow::before{content:"";display:block;width:54px;height:5px;background:#ff2f4f;border-radius:3px}
+#cover h1{margin-top:34px;font-size:128px;line-height:1.02;font-weight:900;color:#fff;text-shadow:0 14px 50px rgba(0,0,0,.55)}
+#cover .accent{display:block;color:#ff2f4f}
+#cover .desc{margin-top:30px;max-width:830px;font-size:40px;line-height:1.42;font-weight:650;color:#d9d4cf}
+.fullLabel{position:absolute;left:72px;right:72px;bottom:238px;z-index:5;color:#fff}
+.fullLabel .rank{display:inline-flex;align-items:center;height:54px;padding:0 24px;border:2px solid rgba(255,47,79,.78);border-radius:999px;background:rgba(7,7,10,.45);color:#ff5e75;font-size:30px;font-weight:900}
+.fullLabel h2{margin-top:22px;font-size:84px;line-height:1.08;font-weight:900;max-width:900px;text-shadow:0 12px 44px rgba(0,0,0,.7)}
+.fullLabel .tag{margin-top:20px;color:#f0b35b;font-size:38px;line-height:1.32;font-weight:800}
+.fullLabel .note{margin-top:12px;color:#d9d4cf;font-size:31px;line-height:1.38;font-weight:650;max-width:850px}
+.fullLabel.topRank .rank{background:#ff2f4f;color:#fff;box-shadow:0 0 34px rgba(255,47,79,.45)}
+.miniLabel{position:absolute;top:116px;left:62px;z-index:5;display:flex;align-items:center;gap:18px;color:#fff;padding:12px 20px 13px 18px;background:rgba(7,7,10,.62);border-left:6px solid #ff2f4f;backdrop-filter:blur(8px)}
+.miniLabel span{font-size:46px;font-weight:950;color:#ff5e75}
+.miniLabel strong{font-size:41px;font-weight:880}
+.miniLabel.topRank{border-left-color:#f0b35b}
+#outro{position:absolute;left:70px;right:70px;top:220px;bottom:170px;z-index:5;display:flex;flex-direction:column;justify-content:center}
+#outro .kicker{color:#f0b35b;font-size:32px;font-weight:900}
+#outro h2{margin-top:28px;font-size:78px;line-height:1.12;font-weight:950;color:#fff}
+#outro ul{margin-top:42px;list-style:none;display:flex;flex-direction:column;gap:18px}
+#outro li{display:flex;align-items:center;gap:24px;font-size:42px;font-weight:850;color:#f4f0eb}
+#outro li span{width:76px;color:#ff2f4f;font-size:50px;font-weight:950}
+#outro .final{margin-top:44px;color:#d9d4cf;font-size:34px;line-height:1.42;font-weight:650}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="347.1" data-width="1080" data-height="1920">
+    <video id="v0" class="fv" data-start="0.0" data-duration="21.025" data-track-index="0" src="clips/vert_made.mp4" muted playsinline></video>
+<video id="v1" class="fv" data-start="21.025" data-duration="61.06" data-track-index="6" src="clips/vert_come_alive.mp4" muted playsinline></video>
+<video id="v2" class="fv" data-start="82.085" data-duration="60.6" data-track-index="0" src="clips/vert_lmly.mp4" muted playsinline></video>
+<video id="v3" class="fv" data-start="142.685" data-duration="56.4" data-track-index="6" src="clips/vert_cruel.mp4" muted playsinline></video>
+<video id="v4" class="fv" data-start="199.085" data-duration="61.48" data-track-index="0" src="clips/vert_blow.mp4" muted playsinline></video>
+<video id="v5" class="fv" data-start="260.565" data-duration="66.71" data-track-index="6" src="clips/vert_made.mp4" muted playsinline></video>
+<video id="v6" class="fv" data-start="327.275" data-duration="19.825" data-track-index="0" src="clips/vert_made.mp4" muted playsinline></video>
+<div id="scrim" class="clip scrim" data-start="0" data-duration="347.1" data-track-index="1"></div>
+<div id="grain" class="clip grain" data-start="0" data-duration="347.1" data-track-index="5"></div>
+<section id="cover" class="clip" data-start="0.25" data-duration="20.475" data-track-index="2">
+  <div class="eyebrow">声乐难度盘点</div>
+  <h1>王嘉尔<br><span class="accent">最难的5首歌</span></h1>
+  <p class="desc">不只看高音，也看烟嗓、气息、真假声切换、律动和情绪控制。</p>
+</section>
+<section id="full0" class="clip fullLabel" data-start="21.025" data-duration="23.06" data-track-index="2"><div class="rank">第 05 名</div><h2>《Come Alive》</h2><p class="tag">爵士、摇滚和R&B的混合律动</p><p class="note">磁性低位和高位释放要来回切换</p></section>
+<section id="mini0" class="clip miniLabel" data-start="44.085" data-duration="38.0" data-track-index="4"><span>05</span><strong>Come Alive</strong></section>
+<section id="full1" class="clip fullLabel" data-start="82.085" data-duration="22.6" data-track-index="8"><div class="rank">第 04 名</div><h2>《LMLY》</h2><p class="tag">越轻松，越全是控制</p><p class="note">气声、轻混、咬字和尾音都不能松</p></section>
+<section id="mini1" class="clip miniLabel" data-start="104.685" data-duration="38.0" data-track-index="9"><span>04</span><strong>LMLY</strong></section>
+<section id="full2" class="clip fullLabel" data-start="142.685" data-duration="18.4" data-track-index="2"><div class="rank">第 03 名</div><h2>《Cruel》</h2><p class="tag">狠要有控制，不能真伤嗓</p><p class="note">暗黑张力、烟嗓、音准同时在线</p></section>
+<section id="mini2" class="clip miniLabel" data-start="161.085" data-duration="38.0" data-track-index="4"><span>03</span><strong>Cruel</strong></section>
+<section id="full3" class="clip fullLabel" data-start="199.085" data-duration="21.48" data-track-index="8"><div class="rank">第 02 名</div><h2>《Blow》</h2><p class="tag">摇滚烟嗓的代表性考题</p><p class="note">唱轻没冲击，唱重容易真哑</p></section>
+<section id="mini3" class="clip miniLabel" data-start="220.565" data-duration="40.0" data-track-index="9"><span>02</span><strong>Blow</strong></section>
+<section id="full4" class="clip fullLabel topRank" data-start="260.565" data-duration="22.71" data-track-index="2"><div class="rank">第 01 名</div><h2>《Made Me a Man》</h2><p class="tag">破碎感、头声和情绪爆发并存</p><p class="note">脆弱不能散，爆发也要稳</p></section>
+<section id="mini4" class="clip miniLabel topRank" data-start="283.275" data-duration="44.0" data-track-index="4"><span>01</span><strong>Made Me a Man</strong></section>
+<section id="outro" class="clip" data-start="327.625" data-duration="19.475" data-track-index="4">
+  <div class="kicker">最终排名</div>
+  <h2>越接近失控，<br>越考验控制。</h2>
+  <ul><li><span>05</span><strong>Come Alive</strong></li><li><span>04</span><strong>LMLY</strong></li><li><span>03</span><strong>Cruel</strong></li><li><span>02</span><strong>Blow</strong></li><li><span>01</span><strong>Made Me a Man</strong></li></ul>
+  <p class="final">粗粝、脆弱、性感、律动和爆发，都要同时成立。</p>
+</section>
+<audio id="master" data-start="0" data-duration="347.1" data-track-index="3" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    
+tl.from("#cover .eyebrow",{x:-34,opacity:0,duration:.5,ease:"power2.out"},0.45);
+tl.from("#cover h1",{y:64,opacity:0,duration:.75,ease:"power4.out"},0.78);
+tl.from("#cover .desc",{y:26,opacity:0,duration:.55,ease:"power2.out"},1.25);
+tl.to("#cover",{opacity:0,duration:.45,ease:"power1.in"},20.375);
+tl.from("#full0 .rank",{y:30,opacity:0,duration:.45,ease:"power2.out"},21.205);
+tl.from("#full0 h2",{y:46,opacity:0,duration:.6,ease:"power3.out"},21.375);
+tl.from("#full0 .tag",{y:24,opacity:0,duration:.45,ease:"power2.out"},21.745);
+tl.from("#full0 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},21.975);
+tl.to("#full0",{opacity:0,duration:.35,ease:"power1.in"},43.635);
+tl.set("#full0",{opacity:0},44.085);
+tl.from("#mini0",{x:-24,opacity:0,duration:.42,ease:"power2.out"},44.165);
+tl.from("#full1 .rank",{y:30,opacity:0,duration:.45,ease:"power2.out"},82.265);
+tl.from("#full1 h2",{y:46,opacity:0,duration:.6,ease:"power3.out"},82.435);
+tl.from("#full1 .tag",{y:24,opacity:0,duration:.45,ease:"power2.out"},82.805);
+tl.from("#full1 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},83.035);
+tl.to("#full1",{opacity:0,duration:.35,ease:"power1.in"},104.235);
+tl.set("#full1",{opacity:0},104.685);
+tl.from("#mini1",{x:-24,opacity:0,duration:.42,ease:"power2.out"},104.765);
+tl.from("#full2 .rank",{y:30,opacity:0,duration:.45,ease:"power2.out"},142.865);
+tl.from("#full2 h2",{y:46,opacity:0,duration:.6,ease:"power3.out"},143.035);
+tl.from("#full2 .tag",{y:24,opacity:0,duration:.45,ease:"power2.out"},143.405);
+tl.from("#full2 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},143.635);
+tl.to("#full2",{opacity:0,duration:.35,ease:"power1.in"},160.635);
+tl.set("#full2",{opacity:0},161.085);
+tl.from("#mini2",{x:-24,opacity:0,duration:.42,ease:"power2.out"},161.165);
+tl.from("#full3 .rank",{y:30,opacity:0,duration:.45,ease:"power2.out"},199.265);
+tl.from("#full3 h2",{y:46,opacity:0,duration:.6,ease:"power3.out"},199.435);
+tl.from("#full3 .tag",{y:24,opacity:0,duration:.45,ease:"power2.out"},199.805);
+tl.from("#full3 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},200.035);
+tl.to("#full3",{opacity:0,duration:.35,ease:"power1.in"},220.115);
+tl.set("#full3",{opacity:0},220.565);
+tl.from("#mini3",{x:-24,opacity:0,duration:.42,ease:"power2.out"},220.645);
+tl.from("#full4 .rank",{y:30,opacity:0,duration:.45,ease:"power2.out"},260.745);
+tl.from("#full4 h2",{y:46,opacity:0,duration:.6,ease:"power3.out"},260.915);
+tl.from("#full4 .tag",{y:24,opacity:0,duration:.45,ease:"power2.out"},261.285);
+tl.from("#full4 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},261.515);
+tl.to("#full4",{opacity:0,duration:.35,ease:"power1.in"},282.825);
+tl.set("#full4",{opacity:0},283.275);
+tl.from("#mini4",{x:-24,opacity:0,duration:.42,ease:"power2.out"},283.355);
+tl.from("#outro .kicker",{x:-26,opacity:0,duration:.45,ease:"power2.out"},327.825);
+tl.from("#outro h2",{y:44,opacity:0,duration:.65,ease:"power3.out"},328.175);
+tl.from("#outro li",{x:-30,opacity:0,duration:.45,ease:"power2.out",stagger:.11},328.775);
+tl.from("#outro .final",{y:22,opacity:0,duration:.5,ease:"power2.out"},329.675);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

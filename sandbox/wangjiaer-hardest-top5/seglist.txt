@@ -1,0 +1,7 @@
+file 'seg_intro.wav'
+file 'seg_p5_come_alive.wav'
+file 'seg_p4_lmly.wav'
+file 'seg_p3_cruel.wav'
+file 'seg_p2_blow.wav'
+file 'seg_p1_made.wav'
+file 'seg_outro.wav'
