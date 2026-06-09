@@ -23,10 +23,12 @@ BED = 0.14       # 旁白时音乐床增益
 MGAIN = {"p4_quanmian": 2.2}  # 逐首额外增益（暗调安静歌补偿，统一响度）
 LEAD = 0.3       # 每段旁白前导
 GAP_A = 1.35     # intro 旁白后到 p1 的消化位
+DIGEST_O = 1.0   # outro 升华 → 固定 CTA 的消化位（见 CONVENTIONS「固定结尾配音」）
+OUTRO_TAIL = 2.6 # 固定 CTA 念完到片尾的余量（床末 1.6s fade）
 
-# 旁白时长
+# 旁白时长（outro = 作品升华；outro_cta = 固定引流 CTA，全片最后一句，禁改）
 d_intro = dur(f"{A}/intro.wav")
-d = {k: dur(f"{A}/{k}.wav") for k in ["p1_pandora","p2_nahan","p3_pojian","p4_quanmian","p5_adiao","outro"]}
+d = {k: dur(f"{A}/{k}.wav") for k in ["p1_pandora","p2_nahan","p3_pojian","p4_quanmian","p5_adiao","outro","outro_cta"]}
 
 songs = [
     ("p1_pandora", "vert_pandora", "01", "《潘朵拉》",  "天使嗓音，也能打开<b>暗黑魔盒</b>"),
@@ -62,11 +64,13 @@ for key, clip, no, name, tag in songs[1:]:
                        narr_start=ns, narr_end=ne, full_start=fs,
                        no=no, name=name, tag=tag, vid_start=t))
     t = end
-# Block F: outro（回到隐形的翅膀=光）
+# Block F: outro（回到隐形的翅膀=光）：升华 → 消化位 → 固定 CTA → 片尾余量
 F_start = t
 F_voice = F_start + LEAD
 F_voice_end = F_voice + d["outro"]
-F_end = round(F_voice_end + 2.6, 3)
+F_cta = round(F_voice_end + DIGEST_O, 3)      # 固定 CTA 起点
+F_cta_end = round(F_cta + d["outro_cta"], 3)
+F_end = round(F_cta_end + OUTRO_TAIL, 3)
 TOTAL = F_end
 
 # ---------- 构建音频分段 ----------
@@ -110,12 +114,15 @@ for b in blocks[1:]:
          "-map","[out]","-ac","2","-ar","48000",out,"-y"])
     segs.append(out)
 
-# seg F (outro): 隐形的翅膀 低床 + 旁白
+# seg F (outro): 隐形的翅膀 低床 + 升华旁白 → 消化位 → 固定 CTA（床末 1.6s fade）
 segF_dur = F_end - F_start
-run(["ffmpeg","-v","error","-i",f"{C}/vert_wings.mp4","-i",f"{A}/outro.wav",
+cta_local = round(F_cta - F_start, 3)   # CTA 在本段内的起点
+run(["ffmpeg","-v","error","-i",f"{C}/vert_wings.mp4","-i",f"{A}/outro.wav","-i",f"{A}/outro_cta.wav",
      "-filter_complex",
-     f"[1:a]aresample=48000,aformat=channel_layouts=stereo,adelay={int(LEAD*1000)}|{int(LEAD*1000)},volume=2.0[voice];"
-     f"[0:a]aresample=48000,aformat=channel_layouts=stereo,loudnorm=I=-14:TP=-1.0:LRA=11,atrim=0:{segF_dur},volume=0.22,afade=t=in:st=0:d=1,afade=t=out:st={segF_dur-1.5}:d=1.5[music];"
+     f"[1:a]aresample=48000,aformat=channel_layouts=stereo,adelay={int(LEAD*1000)}|{int(LEAD*1000)}[vo];"
+     f"[2:a]aresample=48000,aformat=channel_layouts=stereo,adelay={int(cta_local*1000)}|{int(cta_local*1000)}[vc];"
+     f"[vo][vc]amix=inputs=2:normalize=0,volume=2.0[voice];"
+     f"[0:a]aresample=48000,aformat=channel_layouts=stereo,loudnorm=I=-14:TP=-1.0:LRA=11,atrim=0:{segF_dur},volume=0.22,afade=t=in:st=0:d=1,afade=t=out:st={segF_dur-1.6}:d=1.6[music];"
      f"[voice][music]amix=inputs=2:normalize=0:duration=longest,atrim=0:{segF_dur},alimiter=limit=0.95[out]",
      "-map","[out]","-ac","2","-ar","48000","seg_F.wav","-y"])
 segs.append("seg_F.wav")
@@ -191,6 +198,9 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:#0a0a0d;font-fam
 #outro .o1{font-size:56px;font-weight:700;color:#e9e9f0;line-height:1.4}
 #outro .o2{margin-top:18px;font-size:88px;font-weight:900;line-height:1.05;background:linear-gradient(104deg,#ff2e88,#b15cff 55%,#fff);-webkit-background-clip:text;background-clip:text;color:transparent}
 #outro .bar{width:120px;height:8px;background:#ff2e88;margin-top:28px;border-radius:4px}
+#cta{position:absolute;left:78px;right:78px;bottom:180px;z-index:6;color:#fff;text-align:left}
+#cta .v{font-size:50px;font-weight:900;color:#ff2e88;line-height:1.18}
+#cta .f{margin-top:18px;font-size:38px;font-weight:800;color:#e9e9f0;letter-spacing:.1em}
 """
 
 body = "\n".join(vids) + "\n" + clip("scrim","",0,TOTAL,1) + "\n"
@@ -205,10 +215,13 @@ body += f'''<div id="chips" class="clip" data-start="0.3" data-duration="{round(
 <div class="sub">她不是只会唱希望，也很会唱破茧和反击</div></div>
 '''
 body += "\n".join(labels_html) + "\n"
-body += f'''<div id="outro" class="clip" data-start="{round(F_voice+0.2,3)}" data-duration="{round(F_end-F_voice-0.2,3)}" data-track-index="4">
+body += f'''<div id="outro" class="clip" data-start="{round(F_voice+0.2,3)}" data-duration="{round(F_cta-F_voice,3)}" data-track-index="4">
 <div class="o1">张韶涵不是只有《隐形的翅膀》</div>
 <div class="o2">她只是把黑暗，<br>唱成了光</div>
 <div class="bar"></div></div>
+<div id="cta" class="clip" data-start="{round(F_cta-0.2,3)}" data-duration="{round(F_end-F_cta+0.2,3)}" data-track-index="5">
+<div class="v">为你的第一名，评论区投票</div>
+<div class="f">点赞 · 收藏 · 关注</div></div>
 '''
 body += f'<audio id="master" data-start="0" data-duration="{TOTAL}" data-track-index="3" src="master.wav" data-volume="1"></audio>'
 
@@ -227,6 +240,9 @@ tl.to("#title",{{opacity:0,duration:.45,ease:"power2.in"}},{round(TITLE_OUT-0.45
 tl.from("#outro .o1",{{y:24,opacity:0,duration:.6,ease:"power2.out"}},{round(F_voice+0.3,3)});
 tl.from("#outro .o2",{{y:50,opacity:0,scale:1.05,duration:.8,ease:"power4.out"}},{round(F_voice+0.9,3)});
 tl.from("#outro .bar",{{scaleX:0,transformOrigin:"left",duration:.5}},{round(F_voice+1.6,3)});
+tl.to("#outro",{{opacity:0,duration:.4,ease:"power1.in"}},{round(F_cta-0.4,3)});
+tl.from("#cta .v",{{y:28,opacity:0,duration:.55,ease:"power2.out"}},{round(F_cta,3)});
+tl.from("#cta .f",{{y:20,opacity:0,duration:.5,ease:"power2.out"}},{round(F_cta+0.35,3)});
 '''
 
 html = f'''<!doctype html><html lang="zh"><head><meta charset="UTF-8"/>

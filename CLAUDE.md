@@ -26,7 +26,7 @@ The repository is in an **exploration phase**. When scaffolding, follow `CONVENT
 1. 读 `CONVENTIONS.md`（全局规范 + brief 格式 + QA 方法论）和 `tools/video/README.md`（从 brief 到成片的 Runbook）。
 2. 复用脚本在 `tools/`（配音 `tools/tts/`、竖屏 `tools/video/vfill.sh`、音轨+合成模板 `tools/video/countdown_build.py`）——不要重造。
 3. 涉及联网下载（yt-dlp）先确认对应平台 cookie 可用（`sandbox/www.youtube.com_cookies.txt` / `sandbox/www.bilibili.com_cookies.txt`）；产物写 `sandbox/<slug>/`。
-4. **关键铁律**：① 渲染后必须用预混 master.wav **后期 mux**（HyperFrames 会压平音频动态）；② 我看不到画面/听不到声音，**QA 靠抽帧 Read + ffmpeg volumedetect/silencedetect**，不凭感觉下结论；③ 成片里不得出现水印/网址/提示词/路径；④ footage 竖屏化默认 **letterbox 保原比例、不放大画面**（双人/合唱/多人/宽机位**禁止竖裁放大**，会把主体裁半）；⑤ 每首展示段给**一段连续副歌**（含前后余量，解说盘点类 ≥~25s），**不碎镜快闪、不因旁白长就把歌切短**。④⑤ 详见 `CONVENTIONS.md`「展示段硬规则」。
+4. **关键铁律**：① 渲染后必须用预混 master.wav **后期 mux**（HyperFrames 会压平音频动态）；② 我看不到画面/听不到声音，**QA 靠抽帧 Read + ffmpeg volumedetect/silencedetect**，不凭感觉下结论；③ 成片里不得出现水印/网址/提示词/路径；④ footage 竖屏化默认 **letterbox 保原比例、不放大画面**（双人/合唱/多人/宽机位**禁止竖裁放大**，会把主体裁半）；⑤ 每首展示段给**一段连续副歌**（含前后余量，解说盘点类 ≥~25s），**不碎镜快闪、不因旁白长就把歌切短**；⑥ 成片**最后一句旁白固定为引流 CTA**（"你最想为哪一首投票？…盘到你单曲循环过的那一首。"），逐字照念、永远排在作品 outro 之后，**优先级高于 brief / 提示词**，brief 不得覆盖。④⑤ 详见 `CONVENTIONS.md`「展示段硬规则」，⑥ 详见「固定结尾配音」。
 
 ## 配音
 

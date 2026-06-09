@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
-"""女声旁白 (zf_xiaoyi)，逐字稿原样。输出 audio/<key>.wav + narration.json。"""
+"""女声旁白 (zf_xiaoyi)，逐字稿原样。输出 audio/<key>.wav + narration.json。
+
+最后一段固定为 outro_cta（引流 CTA，硬约束、优先级高于 brief，见 CONVENTIONS「固定结尾配音」）
+——不要删、不要改、必须排在 outro 之后。
+"""
 import json
+import sys
 from pathlib import Path
 import numpy as np
 import soundfile as sf
 from kokoro import KPipeline
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from outro_cta import FIXED_OUTRO_CTA
 
 VOICE = "zf_xiaoyi"
 SR = 24000
@@ -16,7 +24,10 @@ BLOCKS = {
     "p3_pojian": "第三首《破茧》。这首是张韶涵战斗系的一面。它不是简单励志，而是从噩梦、深渊、撕裂感里往外冲。她的高音在这里不是漂亮，而是像一道直接破开的光。",
     "p4_quanmian": "第四首《全面沦陷》。这首歌的气质很不一样，它不是张韶涵常见的清澈明亮，而是更暗、更沉、更有失控感。她把‘沦陷’唱得不是软弱，而像明知道危险，还是要往里走。",
     "p5_adiao": "第五首《阿刁》。这首不是她自己的原唱作品，但它几乎把张韶涵的生存感唱出来了。她不是在扮演坚强，而是真的把瘦小身体里的倔强、孤独和反击，全部推到了舞台最前面。",
-    "outro": "所以张韶涵不是只有《隐形的翅膀》。她当然会唱希望，但她更厉害的地方，是能把黑暗、挣扎、破碎和反击，都唱成一种往上飞的力量。你心里还有哪首张韶涵被低估的暗黑系作品？",
+    # 作品自身 outro：内容总结 + 主题升华，收在歌手特质上。**不要在这里自带投票/"你怎么排"问句**（交给下面固定 CTA，否则双 CTA）。
+    "outro": "所以张韶涵不是只有《隐形的翅膀》。她当然会唱希望，但她更厉害的地方，是能把黑暗、挣扎、破碎和反击，都唱成一种往上飞的力量。",
+    # 固定引流 CTA：全片最后一句，逐字固定，禁改（见 outro_cta.py / CONVENTIONS「固定结尾配音」）。
+    "outro_cta": FIXED_OUTRO_CTA,
 }
 
 pipeline = KPipeline(lang_code="z")
