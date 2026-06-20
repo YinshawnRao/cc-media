@@ -1,0 +1,7 @@
+file 'seg_intro.wav'
+file 'seg_p5_over.wav'
+file 'seg_p4_nuan.wav'
+file 'seg_p3_heidongli.wav'
+file 'seg_p2_orangemoon.wav'
+file 'seg_p1_takeme.wav'
+file 'seg_outro.wav'

@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <script src="vendor/gsap.min.js"></script>
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#090b0b;font-family:sans-serif;color:#f4f0e8}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#090b0b}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(8,10,10,.80),rgba(8,10,10,.16) 31%,rgba(8,10,10,.20) 58%,rgba(8,10,10,.86))}
+#grain{position:absolute;inset:-20px;z-index:2;opacity:.12;background:repeating-linear-gradient(0deg,rgba(244,240,232,.12) 0 1px,transparent 1px 4px);mix-blend-mode:overlay}
+#cover{position:absolute;inset:0;z-index:5;padding:148px 76px 134px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(180deg,rgba(8,10,10,.70),rgba(8,10,10,.16) 34%,rgba(8,10,10,.20) 60%,rgba(8,10,10,.84))}
+.eyebrow{display:inline-flex;align-items:center;gap:18px;font-size:30px;font-weight:800;color:#9fc5aa;letter-spacing:.08em}
+.eyebrow:before{content:"";width:54px;height:4px;background:#9fc5aa;border-radius:99px}
+#cover h1{margin-top:28px;font-family:serif;font-size:118px;line-height:1.08;font-weight:900;max-width:940px;text-shadow:0 6px 42px rgba(0,0,0,.62)}
+#cover .sub{margin-top:30px;font-size:38px;line-height:1.5;color:#d9d1c3;font-weight:500;max-width:886px}
+.chips{display:flex;flex-wrap:wrap;gap:14px;max-width:920px}
+.chips span{border:1px solid rgba(159,197,170,.52);color:#dcebdd;background:rgba(8,10,10,.52);font-size:28px;font-weight:700;padding:12px 19px;border-radius:8px}
+.fullLabel{position:absolute;z-index:5;left:70px;right:70px;bottom:196px;padding:35px 36px 39px;background:linear-gradient(135deg,rgba(8,10,10,.86),rgba(8,10,10,.46));border-left:8px solid #9fc5aa;border-radius:4px;backdrop-filter:blur(2px)}
+.fullLabel .rank{font-size:31px;font-weight:900;color:#9fc5aa;letter-spacing:.12em}
+.fullLabel h2{font-family:serif;margin-top:14px;font-size:88px;line-height:1.06;font-weight:900}
+.fullLabel .tag{margin-top:19px;font-size:42px;line-height:1.28;font-weight:800;color:#d8eadc}
+.fullLabel .note{margin-top:12px;font-size:31px;line-height:1.42;font-weight:500;color:#c8c1b5}
+.fullLabel.topRank{border-left-color:#d9b56f;background:linear-gradient(135deg,rgba(10,9,7,.88),rgba(10,9,7,.48))}
+.fullLabel.topRank .rank,.fullLabel.topRank .tag{color:#d9b56f}
+.miniLabel{position:absolute;z-index:5;top:94px;left:58px;display:flex;align-items:center;gap:16px;padding:13px 21px;background:rgba(8,10,10,.66);border:1px solid rgba(159,197,170,.56);border-radius:8px}
+.miniLabel span{font-size:44px;font-weight:900;color:#9fc5aa}
+.miniLabel strong{font-family:serif;font-size:39px;font-weight:900}
+.miniLabel.topRank{border-color:rgba(217,181,111,.74)}
+.miniLabel.topRank span{color:#d9b56f}
+#outro{position:absolute;z-index:5;inset:0;padding:140px 76px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(180deg,rgba(8,10,10,.28),rgba(8,10,10,.78))}
+#outro .small{font-size:32px;font-weight:900;color:#9fc5aa;letter-spacing:.12em}
+#outro h2{font-family:serif;margin-top:20px;font-size:68px;line-height:1.18;font-weight:900;max-width:925px}
+#outro ol{margin-top:42px;list-style:none;display:grid;gap:15px;width:100%}
+#outro li{display:flex;align-items:center;justify-content:space-between;gap:22px;padding:18px 24px;background:rgba(8,10,10,.58);border:1px solid rgba(244,240,232,.12);border-radius:9px}
+#outro li span{font-size:35px;font-weight:900;color:#9fc5aa}
+#outro li:first-child{background:rgba(217,181,111,.12);border-color:rgba(217,181,111,.36)}
+#outro li:first-child span{color:#d9b56f}
+#outro li strong{font-family:serif;font-size:39px;font-weight:900;text-align:right}
+#outro .close{margin-top:34px;font-size:32px;line-height:1.52;color:#d9d1c3;font-weight:500}
+#cta{position:absolute;z-index:6;left:76px;right:76px;bottom:102px;text-align:center;padding:22px 20px;background:rgba(8,10,10,.62);border:1px solid rgba(217,181,111,.38);border-radius:10px}
+#cta .v{font-size:45px;font-weight:900;color:#d9b56f;line-height:1.22}
+#cta .f{margin-top:16px;font-size:35px;font-weight:800;color:#9fc5aa;letter-spacing:.12em}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="300.0" data-width="1080" data-height="1920">
+<video id="v0" class="clip fv" data-start="0.0" data-duration="19.825" data-track-index="0" src="clips/vert_juli.mp4" muted playsinline></video>
+<video id="v1" class="clip fv" data-start="19.825" data-duration="49.225" data-track-index="6" src="clips/vert_juli.mp4" muted playsinline></video>
+<video id="v2" class="clip fv" data-start="69.05" data-duration="49.575" data-track-index="0" src="clips/vert_taicongming.mp4" muted playsinline></video>
+<video id="v3" class="clip fv" data-start="118.625" data-duration="50.075" data-track-index="6" src="clips/vert_yigui.mp4" muted playsinline></video>
+<video id="v4" class="clip fv" data-start="168.7" data-duration="45.1" data-track-index="0" src="clips/vert_wanmei80.mp4" muted playsinline></video>
+<video id="v5" class="clip fv" data-start="213.8" data-duration="55.85" data-track-index="6" src="clips/vert_fuxiu.mp4" muted playsinline></video>
+<video id="v6" class="clip fv" data-start="269.65" data-duration="30.35" data-track-index="0" src="clips/vert_fuxiu.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="300.0" data-track-index="1"></div>
+<div id="grain" class="clip" data-start="0" data-duration="300.0" data-track-index="7"></div>
+<section id="cover" class="clip" data-start="0" data-duration="19.675" data-track-index="2"><div><div class="eyebrow">华语遗珠 · 创作女声</div><h1>陈绮贞最被低估的5首歌</h1><p class="sub">在那些被反复提起的代表作之外，她还有几首歌，安静、锋利、越长大越听得懂。</p></div><div class="chips"><span>时间</span><span>距离</span><span>少女感</span><span>生活观察</span><span>真爱粉向</span></div></section>
+<section id="full0" class="clip fullLabel" data-start="19.825" data-duration="19.225" data-track-index="2"><div class="rank">第 05 名</div><h2>《距离》</h2><p class="tag">一封永远寄不出去的信</p><p class="note">《Groupies 吉他手》时期的隐藏宝藏</p></section>
+<section id="mini0" class="clip miniLabel" data-start="39.05" data-duration="30.0" data-track-index="4"><span>05</span><strong>距离</strong></section>
+<section id="full1" class="clip fullLabel" data-start="69.05" data-duration="18.575" data-track-index="2"><div class="rank">第 04 名</div><h2>《太聪明》</h2><p class="tag">爱情里的自我觉察写得太早</p><p class="note">二十岁听好听，三十岁听会突然刺回来</p></section>
+<section id="mini1" class="clip miniLabel" data-start="87.625" data-duration="31.0" data-track-index="4"><span>04</span><strong>太聪明</strong></section>
+<section id="full2" class="clip fullLabel" data-start="118.625" data-duration="19.075" data-track-index="2"><div class="rank">第 03 名</div><h2>《躺在你的衣柜》</h2><p class="tag">怪、可爱、又有点悲伤</p><p class="note">真爱粉神曲，少女感后来越来越少见</p></section>
+<section id="mini2" class="clip miniLabel" data-start="137.7" data-duration="31.0" data-track-index="4"><span>03</span><strong>躺在你的衣柜</strong></section>
+<section id="full3" class="clip fullLabel" data-start="168.7" data-duration="20.1" data-track-index="2"><div class="rank">第 02 名</div><h2>《80%完美的日子》</h2><p class="tag">不再纠结爱情，开始观察生活</p><p class="note">听十年会越来越喜欢的后期遗珠</p></section>
+<section id="mini3" class="clip miniLabel" data-start="188.8" data-duration="25.0" data-track-index="4"><span>02</span><strong>80%完美的日子</strong></section>
+<section id="full4" class="clip fullLabel topRank" data-start="213.8" data-duration="21.85" data-track-index="2"><div class="rank">第 01 名</div><h2>《腐朽》</h2><p class="tag">冷静到残忍的时间感</p><p class="note">《华丽的冒险》里最陈绮贞的歌之一</p></section>
+<section id="mini4" class="clip miniLabel topRank" data-start="235.65" data-duration="34.0" data-track-index="4"><span>01</span><strong>腐朽</strong></section>
+<section id="outro" class="clip" data-start="269.65" data-duration="30.35" data-track-index="2"><div class="small">最终榜单</div><h2>陈绮贞最动人的，常常不是把情绪说满，而是轻轻放在那里，等你很多年后自己听懂。</h2><ol><li><span>01</span><strong>腐朽</strong></li><li><span>02</span><strong>80%完美的日子</strong></li><li><span>03</span><strong>躺在你的衣柜</strong></li><li><span>04</span><strong>太聪明</strong></li><li><span>05</span><strong>距离</strong></li></ol><p class="close">从第五到第一：距离、太聪明、躺在你的衣柜、80%完美的日子、腐朽。</p></section>
+<section id="cta" class="clip" data-start="287.675" data-duration="12.325" data-track-index="5"><div class="v">为你的第一名，评论区投票</div><div class="f">点赞 · 收藏 · 关注</div></section>
+<audio id="master" class="clip" data-start="0" data-duration="300.0" data-track-index="3" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+tl.set("#cover",{opacity:1},0);
+tl.set("#cover .eyebrow, #cover h1, #cover .sub, #cover .chips span",{opacity:1,x:0,y:0},0);
+tl.fromTo("#cover h1",{scale:1.0},{scale:1.018,duration:3.2,ease:"sine.inOut",yoyo:true,repeat:1},0.3);
+tl.to("#cover",{opacity:0,duration:.4,ease:"power1.in"},19.275);
+tl.set("#cover",{opacity:0},19.825);
+tl.fromTo("#full0 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},20.005);
+tl.fromTo("#full0 h2",{y:44,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},20.175);
+tl.fromTo("#full0 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},20.545);
+tl.fromTo("#full0 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.45,ease:"power1.out"},20.775);
+tl.to("#full0",{opacity:0,duration:.35,ease:"power1.in"},38.65);
+tl.set("#full0",{opacity:0},39.05);
+tl.fromTo("#mini0",{x:-26,opacity:0},{x:0,opacity:1,duration:.45,ease:"power2.out"},39.15);
+tl.fromTo("#full1 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},69.23);
+tl.fromTo("#full1 h2",{y:44,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},69.4);
+tl.fromTo("#full1 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},69.77);
+tl.fromTo("#full1 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.45,ease:"power1.out"},70.0);
+tl.to("#full1",{opacity:0,duration:.35,ease:"power1.in"},87.225);
+tl.set("#full1",{opacity:0},87.625);
+tl.fromTo("#mini1",{x:-26,opacity:0},{x:0,opacity:1,duration:.45,ease:"power2.out"},87.725);
+tl.fromTo("#full2 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},118.805);
+tl.fromTo("#full2 h2",{y:44,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},118.975);
+tl.fromTo("#full2 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},119.345);
+tl.fromTo("#full2 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.45,ease:"power1.out"},119.575);
+tl.to("#full2",{opacity:0,duration:.35,ease:"power1.in"},137.3);
+tl.set("#full2",{opacity:0},137.7);
+tl.fromTo("#mini2",{x:-26,opacity:0},{x:0,opacity:1,duration:.45,ease:"power2.out"},137.8);
+tl.fromTo("#full3 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},168.88);
+tl.fromTo("#full3 h2",{y:44,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},169.05);
+tl.fromTo("#full3 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},169.42);
+tl.fromTo("#full3 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.45,ease:"power1.out"},169.65);
+tl.to("#full3",{opacity:0,duration:.35,ease:"power1.in"},188.4);
+tl.set("#full3",{opacity:0},188.8);
+tl.fromTo("#mini3",{x:-26,opacity:0},{x:0,opacity:1,duration:.45,ease:"power2.out"},188.9);
+tl.fromTo("#full4 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},213.98);
+tl.fromTo("#full4 h2",{y:44,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},214.15);
+tl.fromTo("#full4 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},214.52);
+tl.fromTo("#full4 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.45,ease:"power1.out"},214.75);
+tl.to("#full4",{opacity:0,duration:.35,ease:"power1.in"},235.25);
+tl.set("#full4",{opacity:0},235.65);
+tl.fromTo("#mini4",{x:-26,opacity:0},{x:0,opacity:1,duration:.45,ease:"power2.out"},235.75);
+tl.fromTo("#outro .small",{y:22,opacity:0},{y:0,opacity:1,duration:.5,ease:"power2.out"},269.85);
+tl.fromTo("#outro h2",{y:40,opacity:0},{y:0,opacity:1,duration:.65,ease:"power3.out"},270.2);
+tl.fromTo("#outro li",{x:-34,opacity:0},{x:0,opacity:1,duration:.45,ease:"power2.out",stagger:.1},270.83);
+tl.fromTo("#outro .close",{y:24,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},271.83);
+tl.fromTo("#cta .v",{y:26,opacity:0},{y:0,opacity:1,duration:.55,ease:"power2.out"},287.875);
+tl.fromTo("#cta .f",{y:18,opacity:0},{y:0,opacity:1,duration:.5,ease:"power1.out"},288.225);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

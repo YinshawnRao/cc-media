@@ -1,0 +1,7 @@
+file 'seg_open.wav'
+file 'seg_butong.wav'
+file 'seg_baibaide.wav'
+file 'seg_zhende.wav'
+file 'seg_qishi.wav'
+file 'seg_yinxing.wav'
+file 'seg_outro.wav'

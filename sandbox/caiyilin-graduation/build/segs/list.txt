@@ -1,0 +1,7 @@
+file 'seg_open.wav'
+file 'seg_lemon.wav'
+file 'seg_daodai.wav'
+file 'seg_kanwo.wav'
+file 'seg_buyiyang.wav'
+file 'seg_meigui.wav'
+file 'seg_outro.wav'

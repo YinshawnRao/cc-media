@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <script src="vendor/gsap-lite.js"></script>
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#07080d;font-family:"PingFang SC","Hiragino Sans GB","Songti SC",serif;color:#f8f4ed}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#07080d}
+#backdrop{position:absolute;inset:0;z-index:0;background:
+radial-gradient(circle at 20% 14%,rgba(184,63,74,.35),rgba(184,63,74,0) 36%),
+radial-gradient(circle at 74% 34%,rgba(16,45,49,.55),rgba(16,45,49,0) 42%),
+linear-gradient(180deg,#07080d,#090a10 56%,#050509)}
+#ghost{position:absolute;z-index:1;right:20px;bottom:78px;width:980px;font-size:158px;line-height:.86;font-weight:950;color:rgba(248,244,237,.045);letter-spacing:0;text-align:right}
+#scrim{position:absolute;inset:0;z-index:3;background:linear-gradient(to bottom,rgba(5,6,10,.72),rgba(5,6,10,.15) 35%,rgba(5,6,10,.18) 61%,rgba(5,6,10,.86))}
+#grain{position:absolute;inset:-30px;z-index:8;opacity:.11;background:repeating-linear-gradient(0deg,rgba(255,255,255,.16) 0 1px,transparent 1px 4px);mix-blend-mode:overlay;pointer-events:none}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:2;opacity:0}
+#cover{position:absolute;z-index:5;inset:0;padding:158px 72px 148px;display:flex;flex-direction:column;justify-content:space-between}
+.eyebrow{display:inline-flex;align-items:center;gap:18px;font-size:31px;font-weight:850;color:#d8b56a}
+.eyebrow:before{content:"";width:54px;height:4px;background:#d8b56a;border-radius:99px}
+#cover h1{margin-top:30px;font-size:130px;line-height:1.04;font-weight:950;max-width:900px;letter-spacing:0}
+#cover .sub{margin-top:28px;font-size:38px;line-height:1.45;color:#d4cbc1;font-weight:650;max-width:900px}
+.chips{display:flex;flex-wrap:wrap;gap:14px;max-width:900px}
+.chips span{border:1px solid rgba(216,181,106,.55);color:#f0d9a8;background:rgba(7,8,13,.56);font-size:28px;font-weight:760;padding:12px 18px;border-radius:8px}
+.rankCard{position:absolute;z-index:5;left:68px;right:68px;bottom:178px;padding:35px 34px 38px;background:linear-gradient(135deg,rgba(7,8,13,.88),rgba(7,8,13,.54));border-left:8px solid #d8b56a}
+.rankCard .rank{font-size:31px;font-weight:900;color:#d8b56a}
+.rankCard h2{margin-top:14px;font-size:86px;line-height:1.05;font-weight:950;letter-spacing:0}
+.rankCard .tag{margin-top:18px;font-size:40px;line-height:1.28;font-weight:850;color:#d8b56a}
+.rankCard .note{margin-top:12px;font-size:31px;line-height:1.38;font-weight:650;color:#d1c7bd}
+.rankCard.topRank{border-left-color:#b83f4a}
+.rankCard.topRank .rank,.rankCard.topRank .tag{color:#ff7683}
+.miniLabel{position:absolute;z-index:6;top:96px;left:58px;display:flex;align-items:center;gap:16px;padding:12px 18px;background:rgba(7,8,13,.76);border:1px solid rgba(216,181,106,.62);border-radius:8px}
+.miniLabel span{font-size:44px;font-weight:950;color:#d8b56a}
+.miniLabel strong{font-size:38px;font-weight:900}
+.miniLabel.topRank{border-color:rgba(184,63,74,.86)}
+.miniLabel.topRank span{color:#ff7683}
+#outro{position:absolute;z-index:5;inset:0;padding:150px 72px;display:flex;flex-direction:column;justify-content:center}
+#outro .small{font-size:32px;font-weight:850;color:#d8b56a}
+#outro h2{margin-top:18px;font-size:66px;line-height:1.16;font-weight:950;max-width:920px;letter-spacing:0}
+#outro ol{margin-top:44px;list-style:none;display:grid;gap:16px;width:100%}
+#outro li{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;background:rgba(7,8,13,.66);border:1px solid rgba(255,255,255,.13);border-radius:8px}
+#outro li span{font-size:34px;font-weight:950;color:#d8b56a}
+#outro li:first-child span{color:#ff7683}
+#outro li strong{font-size:35px;font-weight:900;text-align:right}
+#outro .close{margin-top:34px;font-size:31px;line-height:1.45;color:#d4cbc1;font-weight:650}
+#cta{position:absolute;z-index:7;left:76px;right:76px;bottom:96px;text-align:center;padding:24px 18px;background:rgba(7,8,13,.76);border:1px solid rgba(216,181,106,.36);border-radius:8px}
+#cta .v{font-size:45px;font-weight:950;color:#ff7683;line-height:1.2}
+#cta .f{margin-top:16px;font-size:36px;font-weight:850;color:#d8b56a;letter-spacing:0}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="309.45" data-width="1080" data-height="1920">
+<div id="backdrop"></div><div id="ghost">FAYE<br>WONG</div>
+<video id="v0" class="clip fv" data-start="31.825" data-duration="36.0" data-track-index="0" src="clips/vert_kaidao.mp4" muted playsinline></video>
+<video id="v1" class="clip fv" data-start="84.725" data-duration="36.0" data-track-index="6" src="clips/vert_bianhua.mp4" muted playsinline></video>
+<video id="v2" class="clip fv" data-start="138.55" data-duration="34.0" data-track-index="0" src="clips/vert_hanwuji.mp4" muted playsinline></video>
+<video id="v3" class="clip fv" data-start="189.675" data-duration="36.0" data-track-index="6" src="clips/vert_duodeta.mp4" muted playsinline></video>
+<video id="v4" class="clip fv" data-start="243.85" data-duration="38.0" data-track-index="0" src="clips/vert_face.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="309.45" data-track-index="10"></div>
+<div id="grain" class="clip" data-start="0" data-duration="309.45" data-track-index="11"></div>
+<section id="cover" class="clip" data-start="0" data-duration="16.2" data-track-index="2"><div><div class="eyebrow">声乐难度盘点</div><h1>王菲最难的5首歌</h1><p class="sub">不只看高音。真正难的是音准、气息、共鸣、律动，以及那种轻到快消失、却稳稳落地的控制力。</p></div><div class="chips"><span>音准控制</span><span>腔体共鸣</span><span>R and B 律动</span><span>寓言感</span><span>冷感锋芒</span></div></section>
+<section id="card0" class="clip rankCard" data-start="16.2" data-duration="15.625" data-track-index="2"><div class="rank">第 05 名</div><h2>《开到荼蘼》</h2><p class="tag">冷、倔、锋利之间的平衡</p><p class="note">副歌有推力但不能吼，锋芒不能显得用力</p></section>
+<section id="card1" class="clip rankCard" data-start="68.475" data-duration="16.25" data-track-index="3"><div class="rank">第 04 名</div><h2>《彼岸花》</h2><p class="tag">越轻越难有支点</p><p class="note">长线条、宿命感、气息和尾音都要干净</p></section>
+<section id="card2" class="clip rankCard" data-start="121.375" data-duration="17.175" data-track-index="2"><div class="rank">第 03 名</div><h2>《寒武纪》</h2><p class="tag">难在克制，难在唱对</p><p class="note">冷、悬、远，情绪不能太满也不能空掉</p></section>
+<section id="card3" class="clip rankCard" data-start="173.2" data-duration="16.475" data-track-index="3"><div class="rank">第 02 名</div><h2>《多得他》</h2><p class="tag">R and B 律动和气息弹性</p><p class="note">每一句都要有 groove，轻盈但不能薄</p></section>
+<section id="card4" class="clip rankCard topRank" data-start="226.325" data-duration="17.525" data-track-index="2"><div class="rank">第 01 名</div><h2>《脸》</h2><p class="tag">类美声腔体，但不能学院派</p><p class="note">圆、厚、立体，还要保留轻、冷、飘</p></section>
+<section id="mini0" class="clip miniLabel" data-start="31.825" data-duration="36.0" data-track-index="4"><span>05</span><strong>开到荼蘼</strong></section>
+<section id="mini1" class="clip miniLabel" data-start="84.725" data-duration="36.0" data-track-index="5"><span>04</span><strong>彼岸花</strong></section>
+<section id="mini2" class="clip miniLabel" data-start="138.55" data-duration="34.0" data-track-index="4"><span>03</span><strong>寒武纪</strong></section>
+<section id="mini3" class="clip miniLabel" data-start="189.675" data-duration="36.0" data-track-index="5"><span>02</span><strong>多得他</strong></section>
+<section id="mini4" class="clip miniLabel topRank" data-start="243.85" data-duration="38.0" data-track-index="4"><span>01</span><strong>脸</strong></section>
+<section id="outro" class="clip" data-start="282.5" data-duration="26.95" data-track-index="2"><div class="small">最终榜单</div><h2>王菲最难的地方，是她看起来很轻，其实每一个音都站得很稳。</h2><ol><li><span>01</span><strong>脸</strong></li><li><span>02</span><strong>多得他</strong></li><li><span>03</span><strong>寒武纪</strong></li><li><span>04</span><strong>彼岸花</strong></li><li><span>05</span><strong>开到荼蘼</strong></li></ol><p class="close">从第五到第一：开到荼蘼、彼岸花、寒武纪、多得他、脸。越往前，越不是靠模仿空灵能唱出来的难。</p></section>
+<section id="cta" class="clip" data-start="297.325" data-duration="12.125" data-track-index="5"><div class="v">为你的第一名，评论区投票</div><div class="f">点赞 · 收藏 · 关注</div></section>
+<audio id="master" data-start="0" data-duration="309.45" data-track-index="12" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+tl.fromTo("#cover .eyebrow",{x:-24,opacity:0},{x:0,opacity:1,duration:.55},0.35);
+tl.fromTo("#cover h1",{y:52,opacity:0},{y:0,opacity:1,duration:.75},0.65);
+tl.fromTo("#cover .sub",{y:28,opacity:0},{y:0,opacity:1,duration:.55},1.15);
+tl.fromTo("#cover .chips span",{y:22,opacity:0},{y:0,opacity:1,duration:.45,stagger:.08},1.55);
+tl.fromTo("#card0 .rank",{y:26,opacity:0},{y:0,opacity:1,duration:.45},16.38);
+tl.fromTo("#card0 h2",{y:42,opacity:0},{y:0,opacity:1,duration:.60},16.56);
+tl.fromTo("#card0 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.45},16.93);
+tl.fromTo("#card0 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.45},17.16);
+tl.fromTo("#v0",{opacity:0},{opacity:1,duration:.55},31.825);
+tl.fromTo("#mini0",{x:-24,opacity:0},{x:0,opacity:1,duration:.45},31.945);
+tl.fromTo("#card1 .rank",{y:26,opacity:0},{y:0,opacity:1,duration:.45},68.655);
+tl.fromTo("#card1 h2",{y:42,opacity:0},{y:0,opacity:1,duration:.60},68.835);
+tl.fromTo("#card1 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.45},69.205);
+tl.fromTo("#card1 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.45},69.435);
+tl.fromTo("#v1",{opacity:0},{opacity:1,duration:.55},84.725);
+tl.fromTo("#mini1",{x:-24,opacity:0},{x:0,opacity:1,duration:.45},84.845);
+tl.fromTo("#card2 .rank",{y:26,opacity:0},{y:0,opacity:1,duration:.45},121.555);
+tl.fromTo("#card2 h2",{y:42,opacity:0},{y:0,opacity:1,duration:.60},121.735);
+tl.fromTo("#card2 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.45},122.105);
+tl.fromTo("#card2 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.45},122.335);
+tl.fromTo("#v2",{opacity:0},{opacity:1,duration:.55},138.55);
+tl.fromTo("#mini2",{x:-24,opacity:0},{x:0,opacity:1,duration:.45},138.67);
+tl.fromTo("#card3 .rank",{y:26,opacity:0},{y:0,opacity:1,duration:.45},173.38);
+tl.fromTo("#card3 h2",{y:42,opacity:0},{y:0,opacity:1,duration:.60},173.56);
+tl.fromTo("#card3 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.45},173.93);
+tl.fromTo("#card3 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.45},174.16);
+tl.fromTo("#v3",{opacity:0},{opacity:1,duration:.55},189.675);
+tl.fromTo("#mini3",{x:-24,opacity:0},{x:0,opacity:1,duration:.45},189.795);
+tl.fromTo("#card4 .rank",{y:26,opacity:0},{y:0,opacity:1,duration:.45},226.505);
+tl.fromTo("#card4 h2",{y:42,opacity:0},{y:0,opacity:1,duration:.60},226.685);
+tl.fromTo("#card4 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.45},227.055);
+tl.fromTo("#card4 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.45},227.285);
+tl.fromTo("#v4",{opacity:0},{opacity:1,duration:.55},243.85);
+tl.fromTo("#mini4",{x:-24,opacity:0},{x:0,opacity:1,duration:.45},243.97);
+tl.fromTo("#outro .small",{y:22,opacity:0},{y:0,opacity:1,duration:.5},282.7);
+tl.fromTo("#outro h2",{y:40,opacity:0},{y:0,opacity:1,duration:.65},283.05);
+tl.fromTo("#outro li",{x:-34,opacity:0},{x:0,opacity:1,duration:.45,stagger:.1},283.65);
+tl.fromTo("#outro .close",{y:24,opacity:0},{y:0,opacity:1,duration:.45},284.5);
+tl.fromTo("#cta .v",{y:26,opacity:0},{y:0,opacity:1,duration:.55},297.525);
+tl.fromTo("#cta .f",{y:18,opacity:0},{y:0,opacity:1,duration:.5},297.875);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

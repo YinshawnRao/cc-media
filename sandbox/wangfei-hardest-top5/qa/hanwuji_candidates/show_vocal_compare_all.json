@@ -1,0 +1,46 @@
+{
+  "current_show_audio": {
+    "name": "current_show_audio",
+    "duration": 34.0,
+    "vocal_segments": [
+      [
+        9.52,
+        15.65
+      ],
+      [
+        24.73,
+        30.74
+      ]
+    ]
+  },
+  "new_show_audio": {
+    "name": "new_show_audio",
+    "duration": 34.0,
+    "vocal_segments": [
+      [
+        15.58,
+        29.54
+      ]
+    ]
+  },
+  "audio_21670": {
+    "name": "audio_21670",
+    "duration": 34.0,
+    "vocal_segments": [
+      [
+        11.84,
+        25.8
+      ]
+    ]
+  },
+  "audio_22400": {
+    "name": "audio_22400",
+    "duration": 34.0,
+    "vocal_segments": [
+      [
+        4.57,
+        18.46
+      ]
+    ]
+  }
+}

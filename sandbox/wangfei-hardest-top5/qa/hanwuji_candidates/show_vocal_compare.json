@@ -1,0 +1,26 @@
+{
+  "current_show_audio": {
+    "name": "current_show_audio",
+    "duration": 34.0,
+    "vocal_segments": [
+      [
+        9.52,
+        15.65
+      ],
+      [
+        24.73,
+        30.74
+      ]
+    ]
+  },
+  "new_show_audio": {
+    "name": "new_show_audio",
+    "duration": 34.0,
+    "vocal_segments": [
+      [
+        15.58,
+        29.54
+      ]
+    ]
+  }
+}

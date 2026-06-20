@@ -103,6 +103,7 @@
   - 过期更新比 YT 更频繁（几周）；触发信号：清晰度被压回 720P 或 4K 选项消失 → 重新导出。
   - **B站搜索 yt-dlp 不能解析**，要用 API：`https://api.bilibili.com/x/web-interface/wbi/search/type?search_type=video&keyword=<关键词>`，response 里 `data.result[].bvid` 即视频 ID，URL 拼为 `https://www.bilibili.com/video/<bvid>`。
     - **必须 WBI 签名**（2026 验证）：普通 search 端点 + `yt-dlp bilisearchN:` 现在都返回 **HTTP 412 风控**。要先 GET `https://api.bilibili.com/x/web-interface/nav` 取 `wbi_img.img_url/sub_url` 的文件名 → mixin_key（固定 64 位重排表取前 32 位）→ 参数加 `wts` 排序 urlencode 后 `md5(query+mixin_key)` 得 `w_rid`，带 cookie + 桌面 UA 才通。**复用脚本 `tools/video/bili_search.py`**（用法 `python tools/video/bili_search.py "关键词" [n]`，读 `sandbox/www.bilibili.com_cookies.txt`），输出 `bvid | 时长 | up主 | 标题`。
+  - **B站下载 yt-dlp 报 HTTP 412 风控的救场（2026-06 验证）**：`yt-dlp` 的 BiliBili extractor 走的 webpage/playurl 端点会被 412 风控（即使 cookie 有效、search 与 `--skip-download --print` 偶尔能过），重试也基本恒 412。但**普通浏览器式 `curl --compressed` + 桌面 UA + `referer:https://www.bilibili.com/` + cookie 头能取到视频页**，页里内嵌 `window.__playinfo__`（DASH `baseUrl` m4s 直链）。**复用脚本 `tools/video/bili_dl.py`**（用法 `python tools/video/bili_dl.py <bvid> <out.mp4> [--max-h 1080]`）：curl 取页 → 解析 playinfo → 取 ≤max-h 优先 AVC 的 video + 最佳 audio 直链 → curl 下载 → ffmpeg mux 成 mp4。这是 B站下载被 412 挡住时的首选下载法。
 - **切片**用 `--download-sections "*HH:MM:SS-HH:MM:SS"`，避免下整片（已验证：635s 视频只取 10s）。
 - 已验证可用的切片命令（YouTube 同款，B站把 cookie 文件名换掉即可）：
   ```bash
@@ -193,7 +194,21 @@
 - **「歌手镜头蒙太奇」仅作救场**：当连续段实在不可用（全程拍不到主体 / 大量空镜 / 烧字裁不净）时才拼，且救场段也要够长、并逐镜抽帧验证。
 - QA：抽帧确认长 clip **播放到末尾无黑屏 / 冻结**（`<video> data-duration ≤ clip 实际时长`，clip 切到 SHOW+余量）；各首副歌响度一致（~-15dB）。
 
+**(C) 展示段（full-music 段）必须"正在唱"，且唱声入点要对齐转场配音收尾 — ⚠️ 用户实测反馈，反复犯。**
+
+切片时**必须把转场配音的时间差算进去**。每首结构是：`转场旁白（音乐 duck 成床）→ 消化位/swell → full-music 展示段`。旁白会盖住片段开头约 `LEAD + voice_dur` 秒（≈15-19s）。**最大的坑：把唱的副歌放在了片段开头，结果整段副歌都被旁白盖住，旁白一结束、音量推满的展示段反而落在了间奏/前奏/outro 纯器乐段——观众真正想听的"炸点"全程没人声，只剩背景乐。**（华晨宇期 斗牛九周年：副歌"野性坦露"在旁白下，展示段是管弦 outro；烟火：展示段落在 30s 间奏。用户一耳听出。）
+
+- **对齐原则（理想）**：让一段连续唱的副歌 **在转场旁白结束前约 2 秒入声**（vocal onset），唱声先在旁白尾巴下起来，再随 swell 推满进展示段——既丝滑、展示段又全程有唱。
+- **切片公式**：`clip_start_src = vocal_onset_src − (LEAD + voice_dur − 2)`。即把"副歌入声"对到 segment-local 时间 `narr_end_local − 2`。（`full_start_local = LEAD + voice_dur + 0.25 + DIG`；展示段 = `clip_start + full_start_local` 起的 `SHOW` 秒，必须整段落在唱的区间。）
+- **副歌不够长就缩 SHOW**：不少歌单段连唱只有 ~22-26s，硬铺 38s 会把尾巴拖进器乐。这种把 `SHOW` 调到刚好盖住连唱段（≥25s 即可），别让展示段尾段变纯器乐。
+- **怎么判"在唱"（关键，单一方法都不可靠）**：
+  - `vocal_segments.py` 对**慢歌/民谣可靠**（人声清晰），对**响摇滚/满编曲管弦乐会漏报**（人声频带被乐器淹没 → 整段被判无人声，华晨宇《我管你》整首漏）。
+  - 这类源用**烧死卡拉OK歌词是否在"逐句推进"**当可靠指示：歌词逐行换 = 在唱；同一行**静止不动十几秒** = 唱过一次后歌词 lingering、实际是器乐/holding（华晨宇斗牛"野性坦露"静止42s即此坑）。
+  - 拿不准 / 是用户重点曲：**导 26s showcase mp3 给用户耳听确认**（`ffmpeg -ss <local> -t 26 -i clip.mp4 -vn -af loudnorm out.mp3`），别只靠工具下结论。
+- QA 收尾：成片对每首展示段（旁白结束后那 30s）抽查确实有人声，不是只有伴奏。
+
 > 验证项目：`sandbox/zwtl-duet-pk/`（周王陶林男女合唱PK，4:25）。早期用竖裁放大→双人被裁半、副歌 14s 太短被吐槽；改 letterbox 全宽 + 连续 27–32s 副歌后达标。
+> 验证项目：`sandbox/huachenyu-hardest-top5/`（华晨宇最难5首）。初版 4/5 首展示段落在器乐段（唱声全被转场旁白盖住），按 (C) 重对齐 vocal onset 到旁白收尾前 2s 后修复。
 
 ### 冷启动执行：从 brief 到成片
 

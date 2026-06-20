@@ -20,6 +20,7 @@ INTRO_VOICE_START = 0.45
 INTRO_GAP = 1.15
 BETWEEN = 0.0
 OUTRO_TAIL = 2.6
+DIGEST_O = 1.0   # outro 升华 → 固定 CTA 的消化位（见 CONVENTIONS「固定结尾配音」）
 
 
 def dur(path):
@@ -92,6 +93,7 @@ items = [
 
 d_intro = dur(A / "intro.wav")
 d_outro = dur(A / "outro.wav")
+d_cta = dur(A / "outro_cta.wav")   # 固定引流 CTA（全片最后一句）
 for item in items:
     item["voice_dur"] = dur(A / f"{item['key']}.wav")
 
@@ -110,7 +112,9 @@ for item in items:
 outro_start = q(t)
 outro_voice = q(outro_start + LEAD)
 outro_voice_end = q(outro_voice + d_outro)
-total = q(outro_voice_end + OUTRO_TAIL)
+cta_voice = q(outro_voice_end + DIGEST_O)       # 升华后消化位 → 固定 CTA
+cta_voice_end = q(cta_voice + d_cta)
+total = q(cta_voice_end + OUTRO_TAIL)
 
 
 def song_envelope(narr_end_local, full_start_local):
@@ -184,6 +188,7 @@ for b in blocks:
     segments.append(out)
 
 outro_dur = q(total - outro_start)
+cta_local = q(cta_voice - outro_start)   # CTA 在 outro 段内的起点
 run(
     [
         "ffmpeg",
@@ -193,9 +198,13 @@ run(
         f"{C}/vert_zhengfu.mp4",
         "-i",
         f"{A}/outro.wav",
+        "-i",
+        f"{A}/outro_cta.wav",
         "-filter_complex",
-        f"[1:a]aresample=48000,aformat=channel_layouts=stereo,adelay={int(LEAD*1000)}|{int(LEAD*1000)},volume={VOICE_GAIN}[voice];"
-        f"[0:a]aresample=48000,aformat=channel_layouts=stereo,loudnorm=I=-16:TP=-1.0:LRA=11,atrim=0:{outro_dur},volume=0.14,afade=t=in:st=0:d=0.8,afade=t=out:st={outro_dur-1.2}:d=1.2[music];"
+        f"[1:a]aresample=48000,aformat=channel_layouts=stereo,adelay={int(LEAD*1000)}|{int(LEAD*1000)}[vo];"
+        f"[2:a]aresample=48000,aformat=channel_layouts=stereo,adelay={int(cta_local*1000)}|{int(cta_local*1000)}[vc];"
+        f"[vo][vc]amix=inputs=2:normalize=0,volume={VOICE_GAIN}[voice];"
+        f"[0:a]aresample=48000,aformat=channel_layouts=stereo,loudnorm=I=-16:TP=-1.0:LRA=11,atrim=0:{outro_dur},volume=0.14,afade=t=in:st=0:d=0.8,afade=t=out:st={outro_dur-1.6}:d=1.6[music];"
         f"[voice][music]amix=inputs=2:normalize=0:duration=longest,atrim=0:{outro_dur},alimiter=limit=0.95[out]",
         "-map",
         "[out]",
@@ -300,6 +309,9 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:#08070a;font-fam
 #outro li:first-child span{color:#ff727d}
 #outro li strong{font-size:35px;font-weight:900;text-align:right}
 #outro .close{margin-top:34px;font-size:32px;line-height:1.45;color:#d7cfc2;font-weight:650}
+#cta{position:absolute;z-index:6;left:76px;right:76px;bottom:96px;text-align:center}
+#cta .v{font-size:46px;font-weight:950;color:#ff727d;line-height:1.2}
+#cta .f{margin-top:16px;font-size:36px;font-weight:850;color:#d6b16a;letter-spacing:.1em}
 """
 
 body = "\n".join(videos)
@@ -318,6 +330,10 @@ body += (
     '<div class="small">最终榜单</div><h2>那英的难，是力量、沙哑和亮度在同一个点上稳住。</h2>'
     f'<ol>{ranking_rows}</ol><p class="close">这一期按难度从第五到第一收束：不管有多苦、出卖、白天不懂夜的黑、默、征服。</p></section>'
 )
+body += (
+    f'\n<section id="cta" class="clip" data-start="{q(cta_voice-0.2)}" data-duration="{q(total-cta_voice+0.2)}" data-track-index="5">'
+    '<div class="v">为你的第一名，评论区投票</div><div class="f">点赞 · 收藏 · 关注</div></section>'
+)
 body += f'\n<audio id="master" data-start="0" data-duration="{total}" data-track-index="3" src="master.wav" data-volume="1"></audio>'
 
 js = f"""
@@ -331,6 +347,8 @@ tl.from("#outro .small",{{y:22,opacity:0,duration:.5,ease:"power2.out"}},{q(outr
 tl.from("#outro h2",{{y:40,opacity:0,duration:.65,ease:"power3.out"}},{q(outro_start+.55)});
 tl.from("#outro li",{{x:-34,opacity:0,duration:.45,ease:"power2.out",stagger:.1}},{q(outro_start+1.15)});
 tl.from("#outro .close",{{y:24,opacity:0,duration:.45,ease:"power2.out"}},{q(outro_start+2.0)});
+tl.from("#cta .v",{{y:26,opacity:0,duration:.55,ease:"power2.out"}},{q(cta_voice)});
+tl.from("#cta .f",{{y:18,opacity:0,duration:.5,ease:"power2.out"}},{q(cta_voice+0.35)});
 """
 
 html = f"""<!doctype html>

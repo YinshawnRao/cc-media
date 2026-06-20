@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """Generate female narration wavs for the Na Ying hardest top 5 video."""
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
 import soundfile as sf
 from kokoro import KPipeline
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "tools" / "video"))
+from outro_cta import FIXED_OUTRO_CTA
 
 VOICE = "zf_xiaoyi"
 SR = 24000
@@ -20,6 +24,8 @@ BLOCKS = {
     "p2_mo": "第二名，《默》。这首是听起来克制，唱起来很险。前面要压住情绪，声音不能太满；后面副歌一层一层推上去，高位要稳，气息要长，情绪还要越来越深。难点不是单个高音，而是从低压一路推到爆发，声音不能散，情绪也不能假。",
     "p1_zhengfu": "第一名，《征服》。这首基本就是那英声乐难度的代表作。主歌要稳、要厚，副歌突然打开以后，高位强声和情绪爆发都要同时顶住。最难的是不能只靠喊，声音要有力量、有穿透力，还要保留那英那种沙哑里的亮度。普通人唱这首，很容易前面还在征服，后面已经被嗓子征服。",
     "outro": "最后总结这期排名。第五《不管有多苦》，第四《出卖》，第三《白天不懂夜的黑》，第二《默》，第一《征服》。那英的难，不只是嗓子够不够大，而是力量、沙哑、亮度和情绪能不能在同一个高压点上稳住。",
+    # 固定引流 CTA：全片最后一句，逐字固定，禁改（见 tools/video/outro_cta.py / CONVENTIONS「固定结尾配音」）。
+    "outro_cta": FIXED_OUTRO_CTA,
 }
 
 

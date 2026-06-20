@@ -1,0 +1,7 @@
+file 'seg_intro.wav'
+file 'seg_huiguoqu.wav'
+file 'seg_chongbai.wav'
+file 'seg_manleng.wav'
+file 'seg_kexi.wav'
+file 'seg_huxi.wav'
+file 'seg_outro.wav'

@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#07070a;font-family:sans-serif;color:#f7efe2}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#07070a}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:radial-gradient(circle at 72% 18%,rgba(215,168,92,.24),rgba(215,168,92,0) 34%),linear-gradient(to bottom,rgba(0,0,0,.80),rgba(0,0,0,.13) 32%,rgba(42,8,18,.18) 58%,rgba(0,0,0,.86))}
+#grain{position:absolute;inset:-20px;z-index:2;opacity:.13;background:repeating-linear-gradient(0deg,rgba(255,255,255,.14) 0 1px,rgba(255,255,255,0) 1px 4px);mix-blend-mode:overlay}
+#score{position:absolute;inset:0;z-index:3;opacity:.20;background:repeating-linear-gradient(90deg,rgba(215,168,92,.22) 0 2px,rgba(215,168,92,0) 2px 118px)}
+#cover{position:absolute;inset:0;z-index:5;padding:150px 72px 145px;display:flex;flex-direction:column;justify-content:space-between}
+.eyebrow{display:inline-flex;align-items:center;gap:18px;font-size:30px;font-weight:850;color:#d7a85c;letter-spacing:.08em}
+.eyebrow:before{content:"";width:52px;height:4px;background:#d7a85c;border-radius:99px}
+#cover h1{margin-top:26px;font-family:serif;font-size:126px;line-height:1.05;font-weight:900;max-width:930px;text-wrap:balance}
+#cover .sub{margin-top:28px;font-size:37px;line-height:1.46;color:#cfc2ad;font-weight:650;max-width:890px}
+.chips{display:flex;flex-wrap:wrap;gap:14px;max-width:910px}
+.chips span{border:1px solid rgba(215,168,92,.62);color:#f7efe2;background:rgba(7,7,10,.58);font-size:28px;font-weight:780;padding:12px 18px;border-radius:8px}
+.fullLabel{position:absolute;z-index:5;left:68px;right:68px;bottom:186px;padding:36px 34px 40px;background:linear-gradient(135deg,rgba(7,7,10,.86),rgba(42,8,18,.54));border-left:8px solid #d7a85c;box-shadow:0 24px 80px rgba(0,0,0,.38)}
+.fullLabel .rank{font-size:30px;font-weight:900;color:#d7a85c}
+.fullLabel h2{margin-top:14px;font-family:serif;font-size:78px;line-height:1.08;font-weight:900}
+.fullLabel .tag{margin-top:18px;font-size:40px;line-height:1.28;font-weight:850;color:#f1cf9c}
+.fullLabel .note{margin-top:12px;font-size:30px;line-height:1.42;font-weight:650;color:#cfc2ad}
+.fullLabel.topRank{border-left-color:#f05a7d}
+.fullLabel.topRank .rank,.fullLabel.topRank .tag{color:#f05a7d}
+.miniLabel{position:absolute;z-index:5;top:96px;left:58px;display:flex;align-items:center;gap:16px;padding:12px 18px;background:rgba(7,7,10,.72);border:1px solid rgba(215,168,92,.64);border-radius:8px}
+.miniLabel span{font-size:44px;font-weight:950;color:#d7a85c;font-variant-numeric:tabular-nums}
+.miniLabel strong{font-size:38px;font-weight:900}
+.miniLabel.topRank{border-color:rgba(240,90,125,.82)}
+.miniLabel.topRank span{color:#f05a7d}
+#outro{position:absolute;z-index:5;inset:0;padding:144px 72px;display:flex;flex-direction:column;justify-content:center}
+#outro .small{font-size:32px;font-weight:850;color:#d7a85c}
+#outro h2{margin-top:18px;font-family:serif;font-size:68px;line-height:1.16;font-weight:900;max-width:910px}
+#outro ol{margin-top:42px;list-style:none;display:grid;gap:15px;width:100%}
+#outro li{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;background:rgba(7,7,10,.64);border:1px solid rgba(255,255,255,.13);border-radius:8px}
+#outro li span{font-size:34px;font-weight:950;color:#d7a85c;font-variant-numeric:tabular-nums}
+#outro li:first-child span{color:#f05a7d}
+#outro li strong{font-size:35px;font-weight:900;text-align:right}
+#outro .close{margin-top:32px;font-size:31px;line-height:1.46;color:#cfc2ad;font-weight:650}
+#cta{position:absolute;z-index:6;left:76px;right:76px;bottom:96px;text-align:center}
+#cta .v{font-size:46px;font-weight:950;color:#f05a7d;line-height:1.2}
+#cta .f{margin-top:16px;font-size:36px;font-weight:850;color:#d7a85c;letter-spacing:.1em}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="327.743" data-width="1080" data-height="1920">
+<video id="v0" class="fv" data-start="0.0" data-duration="17.7" data-track-index="0" src="clips/vert_gaomei.mp4" muted playsinline></video>
+<video id="v1" class="fv" data-start="17.7" data-duration="55.65" data-track-index="6" src="clips/vert_gaomei.mp4" muted playsinline></video>
+<video id="v2" class="fv" data-start="73.35" data-duration="56.6" data-track-index="0" src="clips/vert_feihua.mp4" muted playsinline></video>
+<video id="v3" class="fv" data-start="129.95" data-duration="55.7" data-track-index="6" src="clips/vert_yueban.mp4" muted playsinline></video>
+<video id="v4" class="fv" data-start="185.65" data-duration="56.15" data-track-index="0" src="clips/vert_dahuitang.mp4" muted playsinline></video>
+<video id="v5" class="fv" data-start="241.8" data-duration="57.325" data-track-index="6" src="clips/vert_buhui.mp4" muted playsinline></video>
+<video id="v6" class="fv" data-start="299.125" data-duration="28.618" data-track-index="0" src="clips/vert_buhui.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="327.743" data-track-index="1"></div>
+<div id="grain" class="clip" data-start="0" data-duration="327.743" data-track-index="7"></div>
+<div id="score" class="clip" data-start="0" data-duration="327.743" data-track-index="8"></div>
+<section id="cover" class="clip" data-start="0" data-duration="17.55" data-track-index="2"><div><div class="eyebrow">声乐难度盘点</div><h1>李克勤最难的5首歌</h1><p class="sub">从轻快咬字到钢琴切分，从粤语长线条到现场稳定，真正的难，是把一切唱到像没有难度。</p></div><div class="chips"><span>节奏切分</span><span>粤语咬字</span><span>气息线条</span><span>高位控制</span><span>现场稳定</span></div></section>
+<section id="full0" class="clip fullLabel" data-start="17.7" data-duration="17.65" data-track-index="2"><div class="rank">第 05 名</div><h2>《高妹》</h2><p class="tag">轻快里最怕赶拍</p><p class="note">节奏、咬字、换气和松弛度都要准</p></section>
+<section id="mini0" class="clip miniLabel" data-start="35.35" data-duration="38.0" data-track-index="4"><span>05</span><strong>高妹</strong></section>
+<section id="full1" class="clip fullLabel" data-start="73.35" data-duration="18.6" data-track-index="2"><div class="rank">第 04 名</div><h2>《飞花》</h2><p class="tag">高位旋律要柔，还要有支点</p><p class="note">气息均匀、尾音干净，粤语轻重不能塌</p></section>
+<section id="mini1" class="clip miniLabel" data-start="91.95" data-duration="38.0" data-track-index="4"><span>04</span><strong>飞花</strong></section>
+<section id="full2" class="clip fullLabel" data-start="129.95" data-duration="17.7" data-track-index="2"><div class="rank">第 03 名</div><h2>《月半小夜曲》</h2><p class="tag">一开口就知道准不准</p><p class="note">长线条、弱声、尾音、气息和音准全在考</p></section>
+<section id="mini2" class="clip miniLabel" data-start="147.65" data-duration="38.0" data-track-index="4"><span>03</span><strong>月半小夜曲</strong></section>
+<section id="full3" class="clip fullLabel" data-start="185.65" data-duration="18.15" data-track-index="2"><div class="rank">第 02 名</div><h2>《大会堂演奏厅》</h2><p class="tag">优雅外壳，咬字体能双杀</p><p class="note">歌词密、叠字多、句子快，旋律还要端正</p></section>
+<section id="mini3" class="clip miniLabel" data-start="203.8" data-duration="38.0" data-track-index="4"><span>02</span><strong>大会堂演奏厅</strong></section>
+<section id="full4" class="clip fullLabel topRank" data-start="241.8" data-duration="19.325" data-track-index="2"><div class="rank">第 01 名</div><h2>《我不会唱歌》</h2><p class="tag">跟钢琴赛跑，还不能跑飞</p><p class="note">速度、切分、跳跃、高位句和字头都要稳</p></section>
+<section id="mini4" class="clip miniLabel topRank" data-start="261.125" data-duration="38.0" data-track-index="4"><span>01</span><strong>我不会唱歌</strong></section>
+<section id="outro" class="clip" data-start="299.125" data-duration="28.618" data-track-index="2"><div class="small">最终榜单</div><h2>李克勤的难，是把速度、咬字、气息和音准，都藏进稳定里。</h2><ol><li><span>01</span><strong>我不会唱歌</strong></li><li><span>02</span><strong>大会堂演奏厅</strong></li><li><span>03</span><strong>月半小夜曲</strong></li><li><span>04</span><strong>飞花</strong></li><li><span>05</span><strong>高妹</strong></li></ol><p class="close">这一期按难度从第五到第一收束：高妹、飞花、月半小夜曲、大会堂演奏厅、我不会唱歌。</p></section>
+<section id="cta" class="clip" data-start="315.725" data-duration="12.018" data-track-index="5"><div class="v">你最想为哪一首？评论区投票</div><div class="f">点赞 · 收藏 · 关注</div></section>
+<audio id="master" data-start="0" data-duration="327.743" data-track-index="3" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+tl.set("#cover",{opacity:1},0);
+tl.set("#cover .eyebrow,#cover h1,#cover .sub,#cover .chips span",{opacity:1,x:0,y:0},0);
+tl.from("#cover h1",{scale:1.045,duration:.9,ease:"power3.out",transformOrigin:"left top"},0);
+tl.from("#cover .eyebrow",{x:-20,duration:.6,ease:"power2.out"},0);
+tl.from("#cover .sub",{y:18,duration:.55,ease:"sine.out"},0.15);
+tl.from("#cover .chips span",{y:16,duration:.5,ease:"power4.out",stagger:.07},0.2);
+tl.to("#cover h1",{scale:1.02,duration:3.4,yoyo:true,repeat:1,ease:"sine.inOut",transformOrigin:"left top"},1.4);
+tl.to("#cover",{opacity:0,duration:.38,ease:"power1.in"},17.15);
+tl.from("#full0 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},17.88);
+tl.from("#full0 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},18.05);
+tl.from("#full0 .tag",{x:-18,opacity:0,duration:.5,ease:"power4.out"},18.42);
+tl.from("#full0 .note",{y:18,opacity:0,duration:.45,ease:"sine.out"},18.68);
+tl.to("#full0",{opacity:0,duration:.35,ease:"power1.in"},34.95);
+tl.set("#full0",{opacity:0},35.35);
+tl.from("#mini0",{x:-26,opacity:0,duration:.45,ease:"power2.out"},35.45);
+tl.from("#full1 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},73.53);
+tl.from("#full1 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},73.7);
+tl.from("#full1 .tag",{x:-18,opacity:0,duration:.5,ease:"power4.out"},74.07);
+tl.from("#full1 .note",{y:18,opacity:0,duration:.45,ease:"sine.out"},74.33);
+tl.to("#full1",{opacity:0,duration:.35,ease:"power1.in"},91.55);
+tl.set("#full1",{opacity:0},91.95);
+tl.from("#mini1",{x:-26,opacity:0,duration:.45,ease:"power2.out"},92.05);
+tl.from("#full2 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},130.13);
+tl.from("#full2 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},130.3);
+tl.from("#full2 .tag",{x:-18,opacity:0,duration:.5,ease:"power4.out"},130.67);
+tl.from("#full2 .note",{y:18,opacity:0,duration:.45,ease:"sine.out"},130.93);
+tl.to("#full2",{opacity:0,duration:.35,ease:"power1.in"},147.25);
+tl.set("#full2",{opacity:0},147.65);
+tl.from("#mini2",{x:-26,opacity:0,duration:.45,ease:"power2.out"},147.75);
+tl.from("#full3 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},185.83);
+tl.from("#full3 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},186.0);
+tl.from("#full3 .tag",{x:-18,opacity:0,duration:.5,ease:"power4.out"},186.37);
+tl.from("#full3 .note",{y:18,opacity:0,duration:.45,ease:"sine.out"},186.63);
+tl.to("#full3",{opacity:0,duration:.35,ease:"power1.in"},203.4);
+tl.set("#full3",{opacity:0},203.8);
+tl.from("#mini3",{x:-26,opacity:0,duration:.45,ease:"power2.out"},203.9);
+tl.from("#full4 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},241.98);
+tl.from("#full4 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},242.15);
+tl.from("#full4 .tag",{x:-18,opacity:0,duration:.5,ease:"power4.out"},242.52);
+tl.from("#full4 .note",{y:18,opacity:0,duration:.45,ease:"sine.out"},242.78);
+tl.to("#full4",{opacity:0,duration:.35,ease:"power1.in"},260.725);
+tl.set("#full4",{opacity:0},261.125);
+tl.from("#mini4",{x:-26,opacity:0,duration:.45,ease:"power2.out"},261.225);
+tl.from("#outro .small",{y:22,opacity:0,duration:.5,ease:"power2.out"},299.325);
+tl.from("#outro h2",{y:40,opacity:0,duration:.65,ease:"power3.out"},299.675);
+tl.from("#outro li",{x:-34,opacity:0,duration:.45,ease:"power4.out",stagger:.1},300.275);
+tl.from("#outro .close",{y:24,opacity:0,duration:.45,ease:"sine.out"},301.125);
+tl.from("#cta .v",{y:26,opacity:0,duration:.55,ease:"power3.out"},315.925);
+tl.from("#cta .f",{y:18,opacity:0,duration:.5,ease:"power2.out"},316.275);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

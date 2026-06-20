@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#07100b;font-family:"Noto Sans SC","PingFang SC",system-ui,sans-serif;color:#f5f0df}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#07100b}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:radial-gradient(circle at 20% 10%,rgba(216,170,69,.30),rgba(7,16,11,0) 34%),linear-gradient(180deg,rgba(7,16,11,.64) 0%,rgba(7,16,11,.10) 32%,rgba(7,16,11,.22) 58%,rgba(7,16,11,.86) 100%)}
+#grain{position:absolute;inset:-80px;z-index:2;pointer-events:none;opacity:.16;background-image:repeating-linear-gradient(0deg,rgba(245,240,223,.10) 0 1px,rgba(7,16,11,0) 1px 3px)}
+#wipeA,#wipeB{position:absolute;left:0;top:0;width:1080px;height:1920px;z-index:20;pointer-events:none}
+#wipeA{background:#d8aa45}
+#wipeB{background:#e33d2f;clip-path:polygon(0 0,100% 0,82% 100%,0 100%)}
+#cover{position:absolute;inset:0;z-index:5;padding:150px 78px 130px;display:flex;flex-direction:column;justify-content:flex-end}
+.coverTop{position:absolute;top:120px;left:78px;font:700 30px "JetBrains Mono";letter-spacing:.12em;color:#d8aa45}
+.coverTitle{font-family:"Noto Serif SC";font-weight:900;line-height:.96;text-shadow:0 18px 60px rgba(0,0,0,.42)}
+.coverTitle span{display:block;font-size:94px;color:#f5f0df}
+.coverTitle b{display:block;font-size:130px;color:#f5f0df}
+.coverTitle em{display:block;margin-top:18px;font:900 176px "JetBrains Mono";font-style:normal;color:#d8aa45;letter-spacing:-.05em}
+.coverRule{width:248px;height:9px;margin-top:34px;background:#e33d2f;border-radius:999px;box-shadow:0 0 30px rgba(227,61,47,.42)}
+.coverSub{max-width:820px;margin-top:34px;font-size:42px;font-weight:700;line-height:1.36;color:#d8e6e0}
+.songCard{position:absolute;left:70px;right:70px;bottom:178px;z-index:6;color:#f5f0df}
+.songCard .rank{font:900 168px/0.85 "JetBrains Mono";color:#d8aa45;letter-spacing:-.08em;text-shadow:0 16px 48px rgba(0,0,0,.45)}
+.songCard.first .rank{color:#e33d2f;text-shadow:0 0 42px rgba(227,61,47,.44)}
+.songCard .meta{margin-top:24px;font:900 34px "JetBrains Mono";letter-spacing:.08em;color:#d8e6e0}
+.songCard .song{margin-top:18px;font:900 78px/1.05 "Noto Serif SC";max-width:900px;color:#f5f0df}
+.songCard .artist{margin-top:18px;font-size:32px;font-weight:700;line-height:1.25;color:#b7b6a5;max-width:880px}
+.songCard .tag{display:inline-flex;margin-top:28px;padding:15px 22px;border-left:8px solid #e33d2f;background:rgba(13,26,19,.78);font-size:32px;font-weight:800;line-height:1.28;color:#f5f0df;box-shadow:0 18px 55px rgba(0,0,0,.30)}
+.miniLabel{position:absolute;left:56px;right:56px;top:84px;z-index:6;display:flex;align-items:center;gap:18px;padding:16px 20px;background:rgba(7,16,11,.70);border:2px solid rgba(216,170,69,.56);backdrop-filter:blur(14px);color:#f5f0df}
+.miniLabel .rank{font:900 50px "JetBrains Mono";color:#d8aa45}
+.miniLabel.first .rank{color:#e33d2f}
+.miniLabel .song{font:900 34px "Noto Serif SC";white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:610px}
+.miniLabel .cup{margin-left:auto;font:700 22px "JetBrains Mono";letter-spacing:.04em;color:#d8e6e0}
+#outro{position:absolute;left:70px;right:70px;bottom:286px;z-index:6;color:#f5f0df}
+.outroK{font:900 34px "JetBrains Mono";letter-spacing:.09em;color:#d8aa45}
+.outroTitle{margin-top:24px;font:900 76px/1.16 "Noto Serif SC";color:#f5f0df;text-shadow:0 18px 58px rgba(0,0,0,.42)}
+.outroLine{width:220px;height:8px;margin-top:34px;background:#e33d2f;border-radius:999px}
+#cta{position:absolute;left:70px;right:70px;bottom:154px;z-index:7;color:#f5f0df}
+.ctaVote{font:900 58px/1.15 "Noto Serif SC";color:#f5f0df}
+.ctaFollow{display:inline-flex;margin-top:22px;padding:14px 22px;background:#d8aa45;color:#07100b;font-size:34px;font-weight:900;letter-spacing:.08em}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="275.125" data-width="1080" data-height="1920">
+<video id="v0" class="clip fv" data-start="0.0" data-duration="14.8" data-track-index="0" src="clips/vert_intro.mp4" muted playsinline></video>
+<video id="v1" class="clip fv" data-start="14.8" data-duration="45.0" data-track-index="6" src="clips/vert_time.mp4" muted playsinline></video>
+<video id="v2" class="clip fv" data-start="59.8" data-duration="46.375" data-track-index="0" src="clips/vert_one.mp4" muted playsinline></video>
+<video id="v3" class="clip fv" data-start="106.175" data-duration="44.825" data-track-index="6" src="clips/vert_estate.mp4" muted playsinline></video>
+<video id="v4" class="clip fv" data-start="151.0" data-duration="46.175" data-track-index="0" src="clips/vert_copa.mp4" muted playsinline></video>
+<video id="v5" class="clip fv" data-start="197.175" data-duration="52.175" data-track-index="6" src="clips/vert_waka.mp4" muted playsinline></video>
+<video id="v6" class="clip fv" data-start="249.35" data-duration="25.775" data-track-index="0" src="clips/vert_outro.mp4" muted playsinline></video>
+<div id="scrim" class="clip " data-start="0.0" data-duration="275.125" data-track-index="1"></div>
+<div id="grain"></div>
+<div id="wipeA"></div><div id="wipeB"></div>
+<div id="cover" class="clip " data-start="0.0" data-duration="14.8" data-track-index="2"><div class="coverTop">官方歌曲 · 时代记忆 · 全球合唱</div><div class="coverTitle"><span>世界杯</span><b>最佳主题曲</b><em>TOP 5</em></div><div class="coverRule"></div><div class="coverSub">从闭幕式史诗，到全世界都会唱的副歌</div></div>
+<div id="card0" class="clip songCard" data-start="14.98" data-duration="14.7" data-track-index="2"><div class="rank">05</div><div class="meta">2006 德国世界杯</div><div class="song">The Time of Our Lives</div><div class="artist">Il Divo &amp; Toni Braxton</div><div class="tag">庄重收束 · 歌剧流行 + R&amp;B，把颁奖礼气质唱满</div></div>
+<div id="mini0" class="clip miniLabel" data-start="29.8" data-duration="30.0" data-track-index="4"><span class="rank">05</span><span class="song">The Time of Our Lives</span><span class="cup">2006 德国世界杯</span></div>
+<div id="card1" class="clip songCard" data-start="59.98" data-duration="14.075" data-track-index="2"><div class="rank">04</div><div class="meta">2014 巴西世界杯</div><div class="song">We Are One (Ole Ola)</div><div class="artist">Pitbull feat. Jennifer Lopez &amp; Claudia Leitte</div><div class="tag">开幕派对 · 明星阵容、鼓点、口号，全球一起开场</div></div>
+<div id="mini1" class="clip miniLabel" data-start="74.175" data-duration="32.0" data-track-index="4"><span class="rank">04</span><span class="song">We Are One (Ole Ola)</span><span class="cup">2014 巴西世界杯</span></div>
+<div id="card2" class="clip songCard" data-start="106.355" data-duration="13.525" data-track-index="2"><div class="rank">03</div><div class="meta">1990 意大利世界杯</div><div class="song">Un&#x27;estate italiana</div><div class="artist">Edoardo Bennato &amp; Gianna Nannini</div><div class="tag">老派浪漫 · 意大利之夏的辽阔感，足球变成回忆</div></div>
+<div id="mini2" class="clip miniLabel" data-start="120.0" data-duration="31.0" data-track-index="4"><span class="rank">03</span><span class="song">Un&#x27;estate italiana</span><span class="cup">1990 意大利世界杯</span></div>
+<div id="card3" class="clip songCard" data-start="151.18" data-duration="13.875" data-track-index="2"><div class="rank">02</div><div class="meta">1998 法国世界杯</div><div class="song">La Copa de la Vida</div><div class="artist">Ricky Martin</div><div class="tag">现代模板 · 拉丁节奏、体育口号、全场合唱的燃点</div></div>
+<div id="mini3" class="clip miniLabel" data-start="165.175" data-duration="32.0" data-track-index="4"><span class="rank">02</span><span class="song">La Copa de la Vida</span><span class="cup">1998 法国世界杯</span></div>
+<div id="card4" class="clip songCard first" data-start="197.355" data-duration="13.875" data-track-index="2"><div class="rank">01</div><div class="meta">2010 南非世界杯</div><div class="song">Waka Waka (This Time for Africa)</div><div class="artist">Shakira feat. Freshlyground</div><div class="tag">综合第一 · 主办地气质、传播度、感染力全部在线</div></div>
+<div id="mini4" class="clip miniLabel first" data-start="211.35" data-duration="38.0" data-track-index="4"><span class="rank">01</span><span class="song">Waka Waka (This Time for Africa)</span><span class="cup">2010 南非世界杯</span></div>
+<div id="outro" class="clip " data-start="249.7" data-duration="13.625" data-track-index="4"><div class="outroK">世界杯主题曲真正难的</div><div class="outroTitle">是让不同语言的人<br>同时跟上同一个节奏</div><div class="outroLine"></div></div>
+<div id="cta" class="clip " data-start="263.175" data-duration="11.95" data-track-index="5"><div class="ctaVote">你最想为哪一首投票？</div><div class="ctaFollow">点赞 · 收藏 · 关注</div></div>
+<audio id="master" class="clip" data-start="0" data-duration="275.125" data-track-index="3" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+window.__timelines=window.__timelines||{};
+const tl=gsap.timeline({paused:true});
+tl.set("#wipeA", {x:-1080}, 0);
+tl.set("#wipeB", {x:-1080}, 0);
+tl.fromTo("#grain", {x:0,y:0}, {x:-54,y:-38,duration:275.125,ease:"none"}, 0);
+tl.fromTo("#cover .coverTop", {x:-44,opacity:0}, {x:0,opacity:1,duration:.55,ease:"power3.out"}, .24);
+tl.fromTo("#cover .coverTitle span", {y:42,opacity:0}, {y:0,opacity:1,duration:.58,ease:"power4.out"}, .46);
+tl.fromTo("#cover .coverTitle b", {y:54,opacity:0}, {y:0,opacity:1,duration:.70,ease:"expo.out"}, .66);
+tl.fromTo("#cover .coverTitle em", {x:-72,opacity:0,scale:.94}, {x:0,opacity:1,scale:1,duration:.72,ease:"back.out(1.2)"}, .92);
+tl.fromTo("#cover .coverRule", {scaleX:0,transformOrigin:"left"}, {scaleX:1,duration:.50,ease:"power3.inOut"}, 1.38);
+tl.fromTo("#cover .coverSub", {y:24,opacity:0}, {y:0,opacity:1,duration:.54,ease:"power2.out"}, 1.58);
+tl.to("#cover", {opacity:0,duration:.36,ease:"power2.in"}, 14.38);
+tl.set("#cover", {opacity:0}, 14.8);
+tl.set("#wipeA", {x:-1080}, 14.79);tl.set("#wipeB", {x:-1080}, 14.79);tl.to("#wipeA", {x:0, duration:.22, ease:"power3.inOut"}, 14.8);tl.to("#wipeB", {x:0, duration:.22, ease:"power3.inOut"}, 14.85);tl.to("#wipeA", {x:1080, duration:.24, ease:"power3.inOut"}, 15.07);tl.to("#wipeB", {x:1080, duration:.24, ease:"power3.inOut"}, 15.13);
+tl.set("#wipeA", {x:-1080}, 59.79);tl.set("#wipeB", {x:-1080}, 59.79);tl.to("#wipeA", {x:0, duration:.22, ease:"power3.inOut"}, 59.8);tl.to("#wipeB", {x:0, duration:.22, ease:"power3.inOut"}, 59.85);tl.to("#wipeA", {x:1080, duration:.24, ease:"power3.inOut"}, 60.07);tl.to("#wipeB", {x:1080, duration:.24, ease:"power3.inOut"}, 60.13);
+tl.set("#wipeA", {x:-1080}, 106.165);tl.set("#wipeB", {x:-1080}, 106.165);tl.to("#wipeA", {x:0, duration:.22, ease:"power3.inOut"}, 106.175);tl.to("#wipeB", {x:0, duration:.22, ease:"power3.inOut"}, 106.225);tl.to("#wipeA", {x:1080, duration:.24, ease:"power3.inOut"}, 106.445);tl.to("#wipeB", {x:1080, duration:.24, ease:"power3.inOut"}, 106.505);
+tl.set("#wipeA", {x:-1080}, 150.99);tl.set("#wipeB", {x:-1080}, 150.99);tl.to("#wipeA", {x:0, duration:.22, ease:"power3.inOut"}, 151.0);tl.to("#wipeB", {x:0, duration:.22, ease:"power3.inOut"}, 151.05);tl.to("#wipeA", {x:1080, duration:.24, ease:"power3.inOut"}, 151.27);tl.to("#wipeB", {x:1080, duration:.24, ease:"power3.inOut"}, 151.33);
+tl.set("#wipeA", {x:-1080}, 197.165);tl.set("#wipeB", {x:-1080}, 197.165);tl.to("#wipeA", {x:0, duration:.22, ease:"power3.inOut"}, 197.175);tl.to("#wipeB", {x:0, duration:.22, ease:"power3.inOut"}, 197.225);tl.to("#wipeA", {x:1080, duration:.24, ease:"power3.inOut"}, 197.445);tl.to("#wipeB", {x:1080, duration:.24, ease:"power3.inOut"}, 197.505);
+tl.set("#wipeA", {x:-1080}, 249.34);tl.set("#wipeB", {x:-1080}, 249.34);tl.to("#wipeA", {x:0, duration:.22, ease:"power3.inOut"}, 249.35);tl.to("#wipeB", {x:0, duration:.22, ease:"power3.inOut"}, 249.4);tl.to("#wipeA", {x:1080, duration:.24, ease:"power3.inOut"}, 249.62);tl.to("#wipeB", {x:1080, duration:.24, ease:"power3.inOut"}, 249.68);
+tl.fromTo("#card0 .rank", {x:-70, opacity:0, scale:.94}, {x:0, opacity:1, scale:1, duration:.55, ease:"expo.out"}, 15.06);
+tl.fromTo("#card0 .meta", {y:28, opacity:0}, {y:0, opacity:1, duration:.45, ease:"power3.out"}, 15.22);
+tl.fromTo("#card0 .song", {y:42, opacity:0}, {y:0, opacity:1, duration:.62, ease:"power4.out"}, 15.36);
+tl.fromTo("#card0 .artist", {y:24, opacity:0}, {y:0, opacity:1, duration:.48, ease:"power2.out"}, 15.6);
+tl.fromTo("#card0 .tag", {x:38, opacity:0}, {x:0, opacity:1, duration:.45, ease:"back.out(1.25)"}, 15.8);
+tl.to("#card0", {opacity:0, duration:.34, ease:"power2.in"}, 29.32);
+tl.set("#card0", {opacity:0}, 29.68);
+tl.fromTo("#mini0", {x:-36, opacity:0}, {x:0, opacity:1, duration:.45, ease:"power3.out"}, 29.85);
+tl.fromTo("#card1 .rank", {x:-70, opacity:0, scale:.94}, {x:0, opacity:1, scale:1, duration:.55, ease:"expo.out"}, 60.06);
+tl.fromTo("#card1 .meta", {y:28, opacity:0}, {y:0, opacity:1, duration:.45, ease:"power3.out"}, 60.22);
+tl.fromTo("#card1 .song", {y:42, opacity:0}, {y:0, opacity:1, duration:.62, ease:"power4.out"}, 60.36);
+tl.fromTo("#card1 .artist", {y:24, opacity:0}, {y:0, opacity:1, duration:.48, ease:"power2.out"}, 60.6);
+tl.fromTo("#card1 .tag", {x:38, opacity:0}, {x:0, opacity:1, duration:.45, ease:"back.out(1.25)"}, 60.8);
+tl.to("#card1", {opacity:0, duration:.34, ease:"power2.in"}, 73.695);
+tl.set("#card1", {opacity:0}, 74.055);
+tl.fromTo("#mini1", {x:-36, opacity:0}, {x:0, opacity:1, duration:.45, ease:"power3.out"}, 74.225);
+tl.fromTo("#card2 .rank", {x:-70, opacity:0, scale:.94}, {x:0, opacity:1, scale:1, duration:.55, ease:"expo.out"}, 106.435);
+tl.fromTo("#card2 .meta", {y:28, opacity:0}, {y:0, opacity:1, duration:.45, ease:"power3.out"}, 106.595);
+tl.fromTo("#card2 .song", {y:42, opacity:0}, {y:0, opacity:1, duration:.62, ease:"power4.out"}, 106.735);
+tl.fromTo("#card2 .artist", {y:24, opacity:0}, {y:0, opacity:1, duration:.48, ease:"power2.out"}, 106.975);
+tl.fromTo("#card2 .tag", {x:38, opacity:0}, {x:0, opacity:1, duration:.45, ease:"back.out(1.25)"}, 107.175);
+tl.to("#card2", {opacity:0, duration:.34, ease:"power2.in"}, 119.52);
+tl.set("#card2", {opacity:0}, 119.88);
+tl.fromTo("#mini2", {x:-36, opacity:0}, {x:0, opacity:1, duration:.45, ease:"power3.out"}, 120.05);
+tl.fromTo("#card3 .rank", {x:-70, opacity:0, scale:.94}, {x:0, opacity:1, scale:1, duration:.55, ease:"expo.out"}, 151.26);
+tl.fromTo("#card3 .meta", {y:28, opacity:0}, {y:0, opacity:1, duration:.45, ease:"power3.out"}, 151.42);
+tl.fromTo("#card3 .song", {y:42, opacity:0}, {y:0, opacity:1, duration:.62, ease:"power4.out"}, 151.56);
+tl.fromTo("#card3 .artist", {y:24, opacity:0}, {y:0, opacity:1, duration:.48, ease:"power2.out"}, 151.8);
+tl.fromTo("#card3 .tag", {x:38, opacity:0}, {x:0, opacity:1, duration:.45, ease:"back.out(1.25)"}, 152.0);
+tl.to("#card3", {opacity:0, duration:.34, ease:"power2.in"}, 164.695);
+tl.set("#card3", {opacity:0}, 165.055);
+tl.fromTo("#mini3", {x:-36, opacity:0}, {x:0, opacity:1, duration:.45, ease:"power3.out"}, 165.225);
+tl.fromTo("#card4 .rank", {x:-70, opacity:0, scale:.94}, {x:0, opacity:1, scale:1, duration:.55, ease:"expo.out"}, 197.435);
+tl.fromTo("#card4 .meta", {y:28, opacity:0}, {y:0, opacity:1, duration:.45, ease:"power3.out"}, 197.595);
+tl.fromTo("#card4 .song", {y:42, opacity:0}, {y:0, opacity:1, duration:.62, ease:"power4.out"}, 197.735);
+tl.fromTo("#card4 .artist", {y:24, opacity:0}, {y:0, opacity:1, duration:.48, ease:"power2.out"}, 197.975);
+tl.fromTo("#card4 .tag", {x:38, opacity:0}, {x:0, opacity:1, duration:.45, ease:"back.out(1.25)"}, 198.175);
+tl.to("#card4", {opacity:0, duration:.34, ease:"power2.in"}, 210.87);
+tl.set("#card4", {opacity:0}, 211.23);
+tl.fromTo("#mini4", {x:-36, opacity:0}, {x:0, opacity:1, duration:.45, ease:"power3.out"}, 211.4);
+tl.fromTo("#outro .outroK", {x:-32,opacity:0}, {x:0,opacity:1,duration:.55,ease:"power3.out"}, 249.8);
+tl.fromTo("#outro .outroTitle", {y:44,opacity:0}, {y:0,opacity:1,duration:.76,ease:"expo.out"}, 250.12);
+tl.fromTo("#outro .outroLine", {scaleX:0,transformOrigin:"left"}, {scaleX:1,duration:.48,ease:"power3.inOut"}, 250.8);
+tl.to("#outro", {opacity:0,duration:.32,ease:"power2.in"}, 262.975);
+tl.set("#outro", {opacity:0}, 263.325);
+tl.fromTo("#cta .ctaVote", {y:32,opacity:0}, {y:0,opacity:1,duration:.58,ease:"power3.out"}, 263.325);
+tl.fromTo("#cta .ctaFollow", {x:-28,opacity:0}, {x:0,opacity:1,duration:.46,ease:"back.out(1.35)"}, 263.745);
+window.__timelines["main"]=tl;
+</script>
+</body>
+</html>

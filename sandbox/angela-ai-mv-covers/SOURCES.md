@@ -139,3 +139,63 @@
 - YouTube: https://www.youtube.com/watch?v=XyMq9UufGuc | `Timeless Music` | 1600x1080 | 4:34.65 | 官方完整版 MV
 - B站: https://www.bilibili.com/video/BV1nr4y1D7EH | `栗彻斯` | 4:35 | 1080P60 修复 MV；另查 https://www.bilibili.com/video/BV1oipGejEDm | `栗彻斯` | 9:10 | 4K 官方修复但时长不匹配，和 https://www.bilibili.com/video/BV1DpL46KEBm | `影悦荟` | 4:35 | Hi-Res MV
 - 选择：YouTube。版权方/官方频道源时长与训练音频 274.69s 精确对齐，抽帧无平台/UP 主水印；B站修复候选为非官方来源或时长不匹配。
+
+## 兜圈
+
+- YouTube: https://www.youtube.com/watch?v=Mqr-kjvXsk8 | `HIMservice` | 1920x1080 | 4:02 | 官方 MV
+- B站: https://www.bilibili.com/video/BV1QsQSYhETx | 4K Hi-Res 修复候选 | 4:05 | 非官方修复/搬运
+- 选择：YouTube。官方源 1080P 已够用，时长与训练音频 242.07s 对齐；B站候选虽更高分辨率但来源非官方且时长略长。源内 `HIM` 角标属于官方 MV 内容限制，抽最终帧无平台/UP 主水印。
+
+## 回家
+
+- YouTube: https://www.youtube.com/watch?v=LnCRFNbhJkw | `滚石唱片 ROCK RECORDS` | 640x480 | 4:59 | Official Music Video
+- B站: https://www.bilibili.com/video/BV1k8411T7ix | 1920x1080 | 4:59 | 搬运/修复候选，抽帧可见 `WG` 水印
+- 选择：YouTube。B站候选分辨率更高但有修复者水印；YouTube 滚石官方源虽只有 640x480，画面干净、时长与训练音频 298.68s 对齐。本首训练音频响度略低，最终 `audio_gain=1.08` 后 mean volume 约 `-17.2 dB`。
+
+## 我知道
+
+- YouTube: 未找到可用官方 MV；搜索结果多为歌词/静态/非官方搬运，未作为最终源。
+- B站: https://www.bilibili.com/video/BV14B4y1P791 | `太合音乐` 官方号 | 720x480 | 4:54 | 官方 MV；另查 https://www.bilibili.com/video/BV1Vh41117tT | 4K 修复候选，抽帧带修复/平台污染
+- 选择：B站官方源。官方 MV 总时长明显长于训练音频 246.04s，直接从 0 秒合成会错位；用原 MV 音轨与训练 WAV 做 RMS 包络相关性估算，最佳偏移约 `22.3s`，预切 `raw/wozhidao_aligned.mp4` 后合成。B站 4K 修复候选因水印/来源风险弃用。
+
+## 一个人想着一个人
+
+- YouTube: https://www.youtube.com/watch?v=olODk6jhMhM | `Timeless Music` | 1920x1080 | 4:04 | 官方完整版 MV
+- B站: https://www.bilibili.com/video/BV1Pp4y1K7fM | 4K 修复候选 | 4:04 | 抽帧可见 Bilibili/UP 主水印
+- 选择：YouTube。官方 1080P 源画面干净，时长与训练音频 244.20s 对齐；B站 4K 候选水印污染明显。本首训练音频响度偏低，最终 `audio_gain=1.22` 后 mean volume 约 `-17.5 dB`。
+
+## 孤单心事
+
+- YouTube: 未找到可用官方 MV；搜索结果以歌词/非官方转载为主。
+- B站: https://www.bilibili.com/video/BV1Uv411877Y | 1920x1080 | 4:28 | 同款 MV 候选，顶部有 `BGM` 字样、底部有歌词
+- 选择：B站。当前可用候选里画质和时长最稳，训练音频 268.59s 与视频轨对齐；最终用 `crop=1920:820:0:120` 同时去掉顶部 `BGM` 字样和底部歌词，抽最终帧确认主体未被裁坏。来源非官方，发布前需重新找授权/干净源。
+
+## 我爱你那么多
+
+- YouTube: https://www.youtube.com/watch?v=FSo03Rg9oPY | 官方/版权方候选 | 712x480 | 3:48 | MV
+- B站: https://www.bilibili.com/video/BV1YqW5e7EtG | 3840x2160 | 3:48 | 4K Hi-Res 修复候选
+- 选择：B站。B站候选实际抽帧更清晰且未见平台/UP 主水印，时长与训练音频 228.11s 对齐；YouTube 候选作为低清 fallback 保留。本首训练音频响度偏低，最终 `audio_gain=1.25` 后 mean volume 约 `-17.4 dB`。
+
+## 残酷月光
+
+- YouTube: https://www.youtube.com/watch?v=LgvBXXLC5AI | `HIMservice` | 1440x1080 | 4:30 | 官方 MV
+- B站: https://www.bilibili.com/video/BV1eh5B6iEZ2 | 4K 修复候选 | 4:30 | 非官方修复/搬运
+- 选择：YouTube。官方源已达到 1440x1080，时长与训练音频 269.96s 对齐；B站候选来源非官方，分辨率优势不足以覆盖来源风险。源内 `HIM` 角标属于官方 MV 内容限制。
+
+## 浪费
+
+- YouTube: https://www.youtube.com/watch?v=LTzy8NF3BDo | `HIMservice` | 1920x1080 | 5:06 | 官方 MV
+- B站: https://www.bilibili.com/video/BV1Xt4y1a7GD | 1080P 官方搬运/修复候选 | 5:06 | 非官方来源
+- 选择：YouTube。官方 1080P 源画面干净，时长与训练音频 305.95s 对齐；B站候选无明显画质优势且来源非官方。训练 WAV 自带多处间奏/尾部静音，成片 `silencedetect` 与本地 WAV 对照一致。
+
+## 说爱你
+
+- YouTube: https://www.youtube.com/watch?v=_Y_mlCbfn_Y | `Golden Era` 候选 | 648x480 | 3:48 | MV
+- B站: https://www.bilibili.com/video/BV1k642137C5 | 3840x2160 | 3:48 | 4K Hi-Res 修复候选；另查 https://www.bilibili.com/video/BV1rJ411x7jh | `索尼音乐中国` 官方号 | 低清官方 MV
+- 选择：B站 4K 候选。抽帧比 YouTube 候选和 B站官方低清源更清晰，未见平台/UP 主水印，时长与训练音频 228.39s 对齐；来源非官方修复，发布前需重新评估。
+
+## 飞鸟和蝉
+
+- YouTube: https://www.youtube.com/watch?v=Sdh16YlinNE | 1920x1080 | 4:54 | 同款 MV 候选，顶部有 logo/片头信息
+- B站: https://www.bilibili.com/video/BV1eL4y1W7bj | 任然/官方艺人候选 | 4:54 | 抽帧可见 Bilibili/艺人号角标
+- 选择：YouTube。B站官方艺人候选带平台角标；YouTube 候选可通过全宽 `crop=1920:760:0:280` 去掉顶部 logo/片头污染，保留主体画面，时长与训练音频 293.69s 对齐。本首训练音频响度略低，最终 `audio_gain=1.10` 后 mean volume 约 `-17.4 dB`。源内标题/歌词属于 MV 内容限制。

@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="zh"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=1080, height=1920"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700;800&family=Noto+Serif+SC:wght@500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#070A0E;
+  font-family:"Noto Sans SC",sans-serif;color:#F3EFE6;-webkit-font-smoothing:antialiased}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#070A0E}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:1;opacity:0;will-change:opacity,transform}
+#scrim{position:absolute;inset:0;z-index:3;background:linear-gradient(180deg,rgba(7,10,14,.78) 0%,rgba(7,10,14,.10) 31%,rgba(7,10,14,.18) 60%,rgba(7,10,14,.84) 100%)}
+#grain{position:absolute;inset:-20px;z-index:9;opacity:.08;mix-blend-mode:overlay;background:repeating-linear-gradient(0deg,rgba(255,255,255,.16) 0 1px,rgba(255,255,255,0) 1px 4px)}
+.vig{position:absolute;inset:0;z-index:8;pointer-events:none;background:radial-gradient(ellipse at 50% 42%,rgba(0,0,0,0) 50%,rgba(0,0,0,.54) 100%)}
+#cover{position:absolute;inset:0;z-index:40;overflow:hidden;background:#070A0E}
+#cover .cv-bg{position:absolute;inset:0;background-size:cover;background-position:50% 38%;filter:brightness(.48) saturate(1.02) contrast(1.04);transform:scale(1.06)}
+#cover .cv-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,10,14,.58) 0%,rgba(7,10,14,.24) 38%,rgba(7,10,14,.72) 74%,rgba(7,10,14,.96) 100%)}
+#cover .cv-wrap{position:absolute;left:82px;right:82px;bottom:142px}
+.cv-eyebrow{display:inline-flex;align-items:center;gap:18px;font-size:31px;font-weight:800;color:#8FB5C8;letter-spacing:.12em}
+.cv-eyebrow:before{content:"";width:54px;height:4px;background:#8FB5C8;border-radius:99px}
+.cv-h1{margin-top:30px;font-family:"Noto Serif SC",serif;font-weight:900;line-height:1.08;font-size:106px;letter-spacing:1px;text-shadow:0 6px 34px rgba(0,0,0,.62)}
+.cv-h1 .em{color:#F0C77B}
+.cv-sub{margin-top:30px;font-size:35px;line-height:1.55;color:#D9D2C6;font-weight:500;max-width:900px}
+.cv-chips{margin-top:34px;display:flex;flex-wrap:wrap;gap:14px}
+.cv-chips span{border:1px solid rgba(143,181,200,.5);color:#DDECF3;background:rgba(12,16,22,.48);font-size:28px;font-weight:700;padding:11px 20px;border-radius:8px}
+.reveal{position:absolute;inset:0;z-index:20;opacity:0;overflow:hidden;background:radial-gradient(ellipse at 50% 28%,#17202A 0%,#0A0E14 60%,#05070A 100%)}
+.rv-ghost{position:absolute;top:140px;left:-20px;right:0;text-align:center;font-family:"JetBrains Mono","Noto Sans SC",monospace;font-weight:800;font-size:520px;line-height:1;color:rgba(255,255,255,.055);letter-spacing:-18px}
+.rv-wrap{position:absolute;left:88px;right:88px;top:740px}
+.rv-rank{font-size:39px;font-weight:900;letter-spacing:.16em}
+.rv-rule{width:92px;height:4px;border-radius:99px;margin:26px 0 30px}
+.rv-title{font-family:"Noto Serif SC",serif;font-weight:900;font-size:124px;line-height:1.04;color:#FBF6EA;letter-spacing:1px}
+.rv-meta{margin-top:30px;font-size:31px;font-weight:600;color:#C7C0B2;letter-spacing:.02em}
+.rv-tag{margin-top:22px;font-size:42px;font-weight:900;letter-spacing:.01em}
+.chip{position:absolute;left:58px;bottom:150px;z-index:15;display:flex;align-items:center;gap:18px;padding:16px 28px 16px 20px;border-radius:14px;opacity:0;background:linear-gradient(135deg,rgba(8,10,15,.86),rgba(8,10,15,.52));border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.chip .cno{font-family:"JetBrains Mono","Noto Sans SC",monospace;font-weight:800;font-size:54px;line-height:.9}
+.chip .cnm{font-family:"Noto Serif SC",serif;font-weight:900;font-size:44px;color:#FBF6EA}
+.chip .cbar{width:3px;align-self:stretch;border-radius:2px;background:rgba(255,255,255,.30)}
+.src{position:absolute;right:54px;bottom:66px;z-index:15;font-size:21px;font-weight:500;color:rgba(240,236,224,.42);letter-spacing:.12em;opacity:0;text-align:right}
+#outro{position:absolute;inset:0;z-index:30;opacity:0;overflow:hidden;padding:148px 78px;display:flex;flex-direction:column;justify-content:center;background:radial-gradient(ellipse at 50% 24%,#17202A 0%,#0A0E14 58%,#05070A 100%)}
+#outro .ot-small{font-size:32px;font-weight:900;color:#8FB5C8;letter-spacing:.14em;opacity:0}
+#outro .ot-h{margin-top:22px;font-family:"Noto Serif SC",serif;font-weight:900;font-size:60px;line-height:1.22;color:#FBF6EA;max-width:920px;opacity:0}
+#outro ol{margin-top:42px;list-style:none;display:grid;gap:13px}
+#outro li{display:flex;align-items:center;justify-content:space-between;padding:17px 24px;background:rgba(10,14,20,.66);border:1px solid rgba(255,255,255,.10);border-radius:10px;opacity:0}
+#outro li .li-l{display:flex;align-items:baseline;gap:20px}
+#outro li .li-no{font-family:"JetBrains Mono","Noto Sans SC",monospace;font-size:36px;font-weight:800;color:#8FB5C8}
+#outro li .li-nm{font-family:"Noto Serif SC",serif;font-size:39px;font-weight:900}
+#outro li .li-tag{font-size:25px;font-weight:700;color:#A9A294}
+#outro li.top{border-color:rgba(240,199,123,.52);background:rgba(240,199,123,.08)}
+#outro li.top .li-no,#outro li.top .li-nm{color:#F0C77B}
+#cta{position:absolute;left:78px;right:78px;bottom:150px;z-index:32;text-align:center;opacity:0}
+#cta .q1{font-size:46px;font-weight:900;color:#F0C77B;line-height:1.25}
+#cta .q2{margin-top:20px;font-size:34px;font-weight:900;color:#D4A15F;letter-spacing:.16em}
+</style></head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="288.0" data-width="1080" data-height="1920">
+<video id="fv_p5_yinhe" class="fv clip" data-start="35.675" data-duration="30.5" data-track-index="0" src="clips_show/p5_yinhe.mp4" muted playsinline></video>
+<video id="fv_p4_beiguoshou" class="fv clip" data-start="80.925" data-duration="30.5" data-track-index="6" src="clips_show/p4_beiguoshou.mp4" muted playsinline></video>
+<video id="fv_p3_xiaohai" class="fv clip" data-start="126.775" data-duration="32.5" data-track-index="0" src="clips_show/p3_xiaohai.mp4" muted playsinline></video>
+<video id="fv_p2_deng" class="fv clip" data-start="175.45" data-duration="32.5" data-track-index="6" src="clips_show/p2_deng.mp4" muted playsinline></video>
+<video id="fv_p1_weibei" class="fv clip" data-start="224.6" data-duration="34.5" data-track-index="0" src="clips_show/p1_weibei.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="288.0" data-track-index="1"></div>
+<div id="rv_p5_yinhe" class="reveal clip" data-start="19.55" data-duration="16.525" data-track-index="20">
+  <div class="rv-ghost" id="ghost_p5_yinhe" data-layout-allow-overflow>05</div>
+  <div class="rv-wrap">
+    <div class="rv-rank" id="rank_p5_yinhe" style="color:#8FB5C8">第 5 名</div>
+    <div class="rv-rule" id="rule_p5_yinhe" style="background:#8FB5C8"></div>
+    <div class="rv-title" id="title_p5_yinhe">《银河少年》</div>
+    <div class="rv-meta" id="meta_p5_yinhe">薛之谦 · 2023　|　单曲</div>
+    <div class="rv-tag" id="tag_p5_yinhe" style="color:#8FB5C8">宇宙感和少年气</div>
+  </div>
+</div>
+<div id="rv_p4_beiguoshou" class="reveal clip" data-start="66.175" data-duration="15.15" data-track-index="21">
+  <div class="rv-ghost" id="ghost_p4_beiguoshou" data-layout-allow-overflow>04</div>
+  <div class="rv-wrap">
+    <div class="rv-rank" id="rank_p4_beiguoshou" style="color:#8FB5C8">第 4 名</div>
+    <div class="rv-rule" id="rule_p4_beiguoshou" style="background:#8FB5C8"></div>
+    <div class="rv-title" id="title_p4_beiguoshou">《背过手》</div>
+    <div class="rv-meta" id="meta_p4_beiguoshou">薛之谦 · 2017　|　专辑《渡》</div>
+    <div class="rv-tag" id="tag_p4_beiguoshou" style="color:#8FB5C8">把痛背过去</div>
+  </div>
+</div>
+<div id="rv_p3_xiaohai" class="reveal clip" data-start="111.425" data-duration="15.75" data-track-index="22">
+  <div class="rv-ghost" id="ghost_p3_xiaohai" data-layout-allow-overflow>03</div>
+  <div class="rv-wrap">
+    <div class="rv-rank" id="rank_p3_xiaohai" style="color:#8FB5C8">第 3 名</div>
+    <div class="rv-rule" id="rule_p3_xiaohai" style="background:#8FB5C8"></div>
+    <div class="rv-title" id="title_p3_xiaohai">《小孩》</div>
+    <div class="rv-meta" id="meta_p3_xiaohai">薛之谦 · 2016　|　专辑《初学者》</div>
+    <div class="rv-tag" id="tag_p3_xiaohai" style="color:#8FB5C8">脆弱和自尊</div>
+  </div>
+</div>
+<div id="rv_p2_deng" class="reveal clip" data-start="159.275" data-duration="16.575" data-track-index="23">
+  <div class="rv-ghost" id="ghost_p2_deng" data-layout-allow-overflow>02</div>
+  <div class="rv-wrap">
+    <div class="rv-rank" id="rank_p2_deng" style="color:#8FB5C8">第 2 名</div>
+    <div class="rv-rule" id="rule_p2_deng" style="background:#8FB5C8"></div>
+    <div class="rv-title" id="title_p2_deng">《等我回家》</div>
+    <div class="rv-meta" id="meta_p2_deng">薛之谦 · 2013　|　专辑《意外》</div>
+    <div class="rv-tag" id="tag_p2_deng" style="color:#8FB5C8">疲惫后的归属感</div>
+  </div>
+</div>
+<div id="rv_p1_weibei" class="reveal clip" data-start="207.95" data-duration="17.05" data-track-index="24">
+  <div class="rv-ghost" id="ghost_p1_weibei" data-layout-allow-overflow>01</div>
+  <div class="rv-wrap">
+    <div class="rv-rank" id="rank_p1_weibei" style="color:#F0C77B">第 1 名</div>
+    <div class="rv-rule" id="rule_p1_weibei" style="background:#F0C77B"></div>
+    <div class="rv-title" id="title_p1_weibei">《违背的青春》</div>
+    <div class="rv-meta" id="meta_p1_weibei">薛之谦 · 2018　|　专辑《怪咖》</div>
+    <div class="rv-tag" id="tag_p1_weibei" style="color:#F0C77B">回头看见青春</div>
+  </div>
+</div>
+<div id="chip_p5_yinhe" class="chip clip" data-start="38.175" data-duration="28.0" data-track-index="30">
+  <div class="cno" style="color:#8FB5C8">05</div><div class="cbar"></div><div class="cnm">《银河少年》</div>
+</div>
+<div id="src_p5_yinhe" class="src clip" data-start="38.175" data-duration="28.0" data-track-index="40">官方动态歌词版 · 腾讯音乐</div>
+<div id="chip_p4_beiguoshou" class="chip clip" data-start="83.425" data-duration="28.0" data-track-index="31">
+  <div class="cno" style="color:#8FB5C8">04</div><div class="cbar"></div><div class="cnm">《背过手》</div>
+</div>
+<div id="src_p4_beiguoshou" class="src clip" data-start="83.425" data-duration="28.0" data-track-index="41">官方动态歌词版 · 腾讯音乐</div>
+<div id="chip_p3_xiaohai" class="chip clip" data-start="129.275" data-duration="30.0" data-track-index="32">
+  <div class="cno" style="color:#8FB5C8">03</div><div class="cbar"></div><div class="cnm">《小孩》</div>
+</div>
+<div id="src_p3_xiaohai" class="src clip" data-start="129.275" data-duration="30.0" data-track-index="42">官方 MV · 薛之谦频道</div>
+<div id="chip_p2_deng" class="chip clip" data-start="177.95" data-duration="30.0" data-track-index="33">
+  <div class="cno" style="color:#8FB5C8">02</div><div class="cbar"></div><div class="cnm">《等我回家》</div>
+</div>
+<div id="src_p2_deng" class="src clip" data-start="177.95" data-duration="30.0" data-track-index="43">官方动态歌词版 · 腾讯音乐</div>
+<div id="chip_p1_weibei" class="chip clip" data-start="227.1" data-duration="32.0" data-track-index="34">
+  <div class="cno" style="color:#F0C77B">01</div><div class="cbar"></div><div class="cnm">《违背的青春》</div>
+</div>
+<div id="src_p1_weibei" class="src clip" data-start="227.1" data-duration="32.0" data-track-index="44">官方 MV · 薛之谦频道</div>
+<div id="cover" class="clip" data-start="0" data-duration="19.45" data-track-index="2">
+  <div class="cv-bg" data-layout-allow-overflow style="background-image:url('cover_assets/cover.jpg')"></div>
+  <div class="cv-shade"></div>
+  <div class="cv-wrap">
+    <div class="cv-eyebrow">华语遗珠盘点</div>
+    <div class="cv-h1">薛之谦<br>最被低估的<span class="em">5首歌</span></div>
+    <div class="cv-sub">不是最路人化的苦情歌，<br>而是那些越听越能看见人的作品。</div>
+    <div class="cv-chips"><span>青春</span><span>归属</span><span>脆弱</span><span>冷感</span><span>少年</span></div>
+  </div>
+</div>
+<div id="outro" class="clip" data-start="259.1" data-duration="28.9" data-track-index="3">
+  <div class="ot-small" id="ot_small">最终榜单 · 从第五到第一</div>
+  <div class="ot-h" id="ot_h">被低估的不是旋律，<br>是他把退让、疲惫和回望，<br>都写进歌里的能力。</div>
+  <ol><li class="" id="li_p5_yinhe"><div class="li-l"><span class="li-no">05</span><span class="li-nm">《银河少年》</span></div><span class="li-tag">少年</span></li><li class="" id="li_p4_beiguoshou"><div class="li-l"><span class="li-no">04</span><span class="li-nm">《背过手》</span></div><span class="li-tag">冷感</span></li><li class="" id="li_p3_xiaohai"><div class="li-l"><span class="li-no">03</span><span class="li-nm">《小孩》</span></div><span class="li-tag">脆弱</span></li><li class="" id="li_p2_deng"><div class="li-l"><span class="li-no">02</span><span class="li-nm">《等我回家》</span></div><span class="li-tag">归属</span></li><li class="top" id="li_p1_weibei"><div class="li-l"><span class="li-no">01</span><span class="li-nm">《违背的青春》</span></div><span class="li-tag">回望</span></li></ol>
+</div>
+<div id="cta" class="clip" data-start="275.725" data-duration="12.275" data-track-index="4">
+  <div class="q1">你最想为哪一首投票？</div>
+  <div class="q2">点赞 · 收藏 · 关注</div>
+</div>
+<div class="vig"></div>
+<div id="grain"></div>
+<audio id="master" class="clip" data-start="0" data-duration="288.0" data-track-index="5" src="master.wav" data-volume="1"></audio>
+</div>
+<script>
+window.__timelines=window.__timelines||{};
+const tl=gsap.timeline({paused:true});
+
+tl.set("#cover",{opacity:1},0);
+tl.to("#cover .cv-bg",{scale:1.12,duration:19.55,ease:"none"},0);
+tl.fromTo(".cv-eyebrow",{opacity:0,x:-24},{opacity:1,x:0,duration:.55,ease:"power2.out"},0.18);
+tl.fromTo(".cv-h1",{opacity:0,y:38},{opacity:1,y:0,duration:.8,ease:"power3.out"},0.45);
+tl.fromTo(".cv-sub",{opacity:0,y:22},{opacity:1,y:0,duration:.6,ease:"sine.out"},0.9);
+tl.fromTo(".cv-chips span",{opacity:0,y:16},{opacity:1,y:0,duration:.35,stagger:.07,ease:"power2.out"},1.2);
+tl.to("#cover",{opacity:0,duration:.5,ease:"power1.in"},19.05);
+tl.set("#cover",{opacity:0},19.55);
+
+// ---- 银河少年 ----
+tl.fromTo("#rv_p5_yinhe",{opacity:0,filter:"blur(12px)"},{opacity:1,filter:"blur(0px)",duration:.65,ease:"sine.out"},19.55);
+tl.fromTo("#ghost_p5_yinhe",{opacity:0,scale:.94},{opacity:1,scale:1,duration:1.2,ease:"power3.out"},19.65);
+tl.fromTo("#rank_p5_yinhe",{opacity:0,x:-24},{opacity:1,x:0,duration:.55,ease:"power2.out"},20.0);
+tl.fromTo("#rule_p5_yinhe",{scaleX:0,transformOrigin:"left center"},{scaleX:1,duration:.55,ease:"power3.out"},20.3);
+tl.fromTo("#title_p5_yinhe",{opacity:0,y:42},{opacity:1,y:0,duration:.85,ease:"power3.out"},20.5);
+tl.fromTo("#meta_p5_yinhe",{opacity:0,y:18},{opacity:1,y:0,duration:.55,ease:"sine.out"},21.1);
+tl.fromTo("#tag_p5_yinhe",{opacity:0,y:18},{opacity:1,y:0,duration:.65,ease:"power2.out"},21.45);
+tl.to("#rv_p5_yinhe",{opacity:0,filter:"blur(10px)",duration:.55,ease:"sine.in"},35.625);
+tl.set("#rv_p5_yinhe",{opacity:0},36.075);
+tl.fromTo("#fv_p5_yinhe",{opacity:0,scale:1.07},{opacity:1,scale:1,duration:1.8,ease:"power2.out"},35.675);
+tl.fromTo("#chip_p5_yinhe",{opacity:0,x:-30},{opacity:1,x:0,duration:.55,ease:"power2.out"},38.355);
+tl.fromTo("#src_p5_yinhe",{opacity:0},{opacity:1,duration:.55,ease:"sine.out"},38.625);
+tl.to("#chip_p5_yinhe",{opacity:0,duration:.45,ease:"power1.in"},64.975);
+tl.set("#chip_p5_yinhe",{opacity:0},66.175);
+tl.to("#src_p5_yinhe",{opacity:0,duration:.45,ease:"power1.in"},64.975);
+tl.set("#src_p5_yinhe",{opacity:0},66.175);
+tl.to("#fv_p5_yinhe",{opacity:0,duration:1.05,ease:"power1.in"},64.975);
+tl.set("#fv_p5_yinhe",{opacity:0},66.175);
+
+// ---- 背过手 ----
+tl.fromTo("#rv_p4_beiguoshou",{opacity:0,filter:"blur(12px)"},{opacity:1,filter:"blur(0px)",duration:.65,ease:"sine.out"},66.175);
+tl.fromTo("#ghost_p4_beiguoshou",{opacity:0,scale:.94},{opacity:1,scale:1,duration:1.2,ease:"power3.out"},66.275);
+tl.fromTo("#rank_p4_beiguoshou",{opacity:0,x:-24},{opacity:1,x:0,duration:.55,ease:"power2.out"},66.625);
+tl.fromTo("#rule_p4_beiguoshou",{scaleX:0,transformOrigin:"left center"},{scaleX:1,duration:.55,ease:"power3.out"},66.925);
+tl.fromTo("#title_p4_beiguoshou",{opacity:0,y:42},{opacity:1,y:0,duration:.85,ease:"power3.out"},67.125);
+tl.fromTo("#meta_p4_beiguoshou",{opacity:0,y:18},{opacity:1,y:0,duration:.55,ease:"sine.out"},67.725);
+tl.fromTo("#tag_p4_beiguoshou",{opacity:0,y:18},{opacity:1,y:0,duration:.65,ease:"power2.out"},68.075);
+tl.to("#rv_p4_beiguoshou",{opacity:0,filter:"blur(10px)",duration:.55,ease:"sine.in"},80.875);
+tl.set("#rv_p4_beiguoshou",{opacity:0},81.325);
+tl.fromTo("#fv_p4_beiguoshou",{opacity:0,scale:1.07},{opacity:1,scale:1,duration:1.8,ease:"power2.out"},80.925);
+tl.fromTo("#chip_p4_beiguoshou",{opacity:0,x:-30},{opacity:1,x:0,duration:.55,ease:"power2.out"},83.605);
+tl.fromTo("#src_p4_beiguoshou",{opacity:0},{opacity:1,duration:.55,ease:"sine.out"},83.875);
+tl.to("#chip_p4_beiguoshou",{opacity:0,duration:.45,ease:"power1.in"},110.225);
+tl.set("#chip_p4_beiguoshou",{opacity:0},111.425);
+tl.to("#src_p4_beiguoshou",{opacity:0,duration:.45,ease:"power1.in"},110.225);
+tl.set("#src_p4_beiguoshou",{opacity:0},111.425);
+tl.to("#fv_p4_beiguoshou",{opacity:0,duration:1.05,ease:"power1.in"},110.225);
+tl.set("#fv_p4_beiguoshou",{opacity:0},111.425);
+
+// ---- 小孩 ----
+tl.fromTo("#rv_p3_xiaohai",{opacity:0,filter:"blur(12px)"},{opacity:1,filter:"blur(0px)",duration:.65,ease:"sine.out"},111.425);
+tl.fromTo("#ghost_p3_xiaohai",{opacity:0,scale:.94},{opacity:1,scale:1,duration:1.2,ease:"power3.out"},111.525);
+tl.fromTo("#rank_p3_xiaohai",{opacity:0,x:-24},{opacity:1,x:0,duration:.55,ease:"power2.out"},111.875);
+tl.fromTo("#rule_p3_xiaohai",{scaleX:0,transformOrigin:"left center"},{scaleX:1,duration:.55,ease:"power3.out"},112.175);
+tl.fromTo("#title_p3_xiaohai",{opacity:0,y:42},{opacity:1,y:0,duration:.85,ease:"power3.out"},112.375);
+tl.fromTo("#meta_p3_xiaohai",{opacity:0,y:18},{opacity:1,y:0,duration:.55,ease:"sine.out"},112.975);
+tl.fromTo("#tag_p3_xiaohai",{opacity:0,y:18},{opacity:1,y:0,duration:.65,ease:"power2.out"},113.325);
+tl.to("#rv_p3_xiaohai",{opacity:0,filter:"blur(10px)",duration:.55,ease:"sine.in"},126.725);
+tl.set("#rv_p3_xiaohai",{opacity:0},127.175);
+tl.fromTo("#fv_p3_xiaohai",{opacity:0,scale:1.07},{opacity:1,scale:1,duration:1.8,ease:"power2.out"},126.775);
+tl.fromTo("#chip_p3_xiaohai",{opacity:0,x:-30},{opacity:1,x:0,duration:.55,ease:"power2.out"},129.455);
+tl.fromTo("#src_p3_xiaohai",{opacity:0},{opacity:1,duration:.55,ease:"sine.out"},129.725);
+tl.to("#chip_p3_xiaohai",{opacity:0,duration:.45,ease:"power1.in"},158.075);
+tl.set("#chip_p3_xiaohai",{opacity:0},159.275);
+tl.to("#src_p3_xiaohai",{opacity:0,duration:.45,ease:"power1.in"},158.075);
+tl.set("#src_p3_xiaohai",{opacity:0},159.275);
+tl.to("#fv_p3_xiaohai",{opacity:0,duration:1.05,ease:"power1.in"},158.075);
+tl.set("#fv_p3_xiaohai",{opacity:0},159.275);
+
+// ---- 等我回家 ----
+tl.fromTo("#rv_p2_deng",{opacity:0,filter:"blur(12px)"},{opacity:1,filter:"blur(0px)",duration:.65,ease:"sine.out"},159.275);
+tl.fromTo("#ghost_p2_deng",{opacity:0,scale:.94},{opacity:1,scale:1,duration:1.2,ease:"power3.out"},159.375);
+tl.fromTo("#rank_p2_deng",{opacity:0,x:-24},{opacity:1,x:0,duration:.55,ease:"power2.out"},159.725);
+tl.fromTo("#rule_p2_deng",{scaleX:0,transformOrigin:"left center"},{scaleX:1,duration:.55,ease:"power3.out"},160.025);
+tl.fromTo("#title_p2_deng",{opacity:0,y:42},{opacity:1,y:0,duration:.85,ease:"power3.out"},160.225);
+tl.fromTo("#meta_p2_deng",{opacity:0,y:18},{opacity:1,y:0,duration:.55,ease:"sine.out"},160.825);
+tl.fromTo("#tag_p2_deng",{opacity:0,y:18},{opacity:1,y:0,duration:.65,ease:"power2.out"},161.175);
+tl.to("#rv_p2_deng",{opacity:0,filter:"blur(10px)",duration:.55,ease:"sine.in"},175.4);
+tl.set("#rv_p2_deng",{opacity:0},175.85);
+tl.fromTo("#fv_p2_deng",{opacity:0,scale:1.07},{opacity:1,scale:1,duration:1.8,ease:"power2.out"},175.45);
+tl.fromTo("#chip_p2_deng",{opacity:0,x:-30},{opacity:1,x:0,duration:.55,ease:"power2.out"},178.13);
+tl.fromTo("#src_p2_deng",{opacity:0},{opacity:1,duration:.55,ease:"sine.out"},178.4);
+tl.to("#chip_p2_deng",{opacity:0,duration:.45,ease:"power1.in"},206.75);
+tl.set("#chip_p2_deng",{opacity:0},207.95);
+tl.to("#src_p2_deng",{opacity:0,duration:.45,ease:"power1.in"},206.75);
+tl.set("#src_p2_deng",{opacity:0},207.95);
+tl.to("#fv_p2_deng",{opacity:0,duration:1.05,ease:"power1.in"},206.75);
+tl.set("#fv_p2_deng",{opacity:0},207.95);
+
+// ---- 违背的青春 ----
+tl.fromTo("#rv_p1_weibei",{opacity:0,filter:"blur(12px)"},{opacity:1,filter:"blur(0px)",duration:.65,ease:"sine.out"},207.95);
+tl.fromTo("#ghost_p1_weibei",{opacity:0,scale:.94},{opacity:1,scale:1,duration:1.2,ease:"power3.out"},208.05);
+tl.fromTo("#rank_p1_weibei",{opacity:0,x:-24},{opacity:1,x:0,duration:.55,ease:"power2.out"},208.4);
+tl.fromTo("#rule_p1_weibei",{scaleX:0,transformOrigin:"left center"},{scaleX:1,duration:.55,ease:"power3.out"},208.7);
+tl.fromTo("#title_p1_weibei",{opacity:0,y:42},{opacity:1,y:0,duration:.85,ease:"power3.out"},208.9);
+tl.fromTo("#meta_p1_weibei",{opacity:0,y:18},{opacity:1,y:0,duration:.55,ease:"sine.out"},209.5);
+tl.fromTo("#tag_p1_weibei",{opacity:0,y:18},{opacity:1,y:0,duration:.65,ease:"power2.out"},209.85);
+tl.to("#rv_p1_weibei",{opacity:0,filter:"blur(10px)",duration:.55,ease:"sine.in"},224.55);
+tl.set("#rv_p1_weibei",{opacity:0},225.0);
+tl.fromTo("#fv_p1_weibei",{opacity:0,scale:1.07},{opacity:1,scale:1,duration:1.8,ease:"power2.out"},224.6);
+tl.fromTo("#chip_p1_weibei",{opacity:0,x:-30},{opacity:1,x:0,duration:.55,ease:"power2.out"},227.28);
+tl.fromTo("#src_p1_weibei",{opacity:0},{opacity:1,duration:.55,ease:"sine.out"},227.55);
+tl.to("#chip_p1_weibei",{opacity:0,duration:.45,ease:"power1.in"},257.9);
+tl.set("#chip_p1_weibei",{opacity:0},259.1);
+tl.to("#src_p1_weibei",{opacity:0,duration:.45,ease:"power1.in"},257.9);
+tl.set("#src_p1_weibei",{opacity:0},259.1);
+tl.to("#fv_p1_weibei",{opacity:0,duration:1.05,ease:"power1.in"},257.9);
+tl.set("#fv_p1_weibei",{opacity:0},259.1);
+
+// OUTRO
+tl.fromTo("#outro",{opacity:0,filter:"blur(8px)"},{opacity:1,filter:"blur(0px)",duration:.7,ease:"sine.out"},258.8);
+tl.fromTo("#ot_small",{opacity:0,y:20},{opacity:1,y:0,duration:.55,ease:"power2.out"},259.5);
+tl.fromTo("#ot_h",{opacity:0,y:30},{opacity:1,y:0,duration:.75,ease:"power3.out"},259.85);
+tl.fromTo("#li_p5_yinhe",{opacity:0,x:-24},{opacity:1,x:0,duration:.42,ease:"power2.out"},260.45);tl.fromTo("#li_p4_beiguoshou",{opacity:0,x:-24},{opacity:1,x:0,duration:.42,ease:"power2.out"},260.73);tl.fromTo("#li_p3_xiaohai",{opacity:0,x:-24},{opacity:1,x:0,duration:.42,ease:"power2.out"},261.01);tl.fromTo("#li_p2_deng",{opacity:0,x:-24},{opacity:1,x:0,duration:.42,ease:"power2.out"},261.29);tl.fromTo("#li_p1_weibei",{opacity:0,x:-24},{opacity:1,x:0,duration:.42,ease:"power2.out"},261.57);
+tl.fromTo("#cta",{opacity:0,y:20},{opacity:1,y:0,duration:.55,ease:"power2.out"},275.775);
+tl.to("#root",{opacity:0,duration:.8,ease:"sine.in"},287.2);
+
+window.__timelines["main"]=tl;
+</script></body></html>

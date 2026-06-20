@@ -1,0 +1,46 @@
+{
+  "yueguang_show_first_chorus": {
+    "name": "yueguang_show_first_chorus",
+    "duration": 38.0,
+    "vocal_segments": [
+      [
+        0.3,
+        3.13
+      ],
+      [
+        7.08,
+        12.84
+      ],
+      [
+        17.83,
+        20.74
+      ],
+      [
+        24.92,
+        31.11
+      ],
+      [
+        33.95,
+        37.01
+      ]
+    ]
+  },
+  "yueguang_show_auto_high": {
+    "name": "yueguang_show_auto_high",
+    "duration": 38.0,
+    "vocal_segments": [
+      [
+        3.46,
+        8.99
+      ],
+      [
+        12.72,
+        17.11
+      ],
+      [
+        30.19,
+        34.41
+      ]
+    ]
+  }
+}

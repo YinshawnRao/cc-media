@@ -1,0 +1,7 @@
+file 'seg_open.wav'
+file 'seg_zhizu.wav'
+file 'seg_sgj.wav'
+file 'seg_ganbei.wav'
+file 'seg_hldwm.wav'
+file 'seg_zyjs.wav'
+file 'seg_outro.wav'

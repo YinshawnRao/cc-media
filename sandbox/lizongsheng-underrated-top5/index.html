@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@500;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#0a0b12;font-family:"Noto Sans SC",sans-serif;color:#f3f0ea}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#0a0b12}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(8,9,16,.82),rgba(8,9,16,.12) 32%,rgba(8,9,16,.18) 56%,rgba(8,9,16,.84))}
+#grain{position:absolute;inset:-20px;z-index:2;opacity:.08;background:repeating-linear-gradient(0deg,rgba(220,225,255,.14) 0 1px,transparent 1px 4px);mix-blend-mode:overlay}
+#cover{position:absolute;inset:0;z-index:5;padding:150px 76px 144px;display:flex;flex-direction:column;justify-content:space-between}
+.eyebrow{display:inline-flex;align-items:center;gap:18px;font-size:31px;font-weight:800;color:#d8b06a;letter-spacing:.05em}
+.eyebrow:before{content:"";width:54px;height:4px;background:#d8b06a;border-radius:99px}
+#cover h1{font-family:"Noto Serif SC",serif;font-size:128px;line-height:1.05;font-weight:900;max-width:920px;text-wrap:balance;text-shadow:0 6px 40px rgba(0,0,0,.6)}
+#cover .sub{margin-top:30px;font-size:38px;line-height:1.5;color:#d6d0dd;font-weight:500;max-width:880px}
+.chips{display:flex;flex-wrap:wrap;gap:14px;max-width:900px}
+.chips span{border:1px solid rgba(216,176,106,.5);color:#ecd6a8;background:rgba(10,11,18,.46);font-size:29px;font-weight:600;padding:12px 20px;border-radius:9px}
+.fullLabel{position:absolute;z-index:5;left:70px;right:70px;bottom:196px;padding:36px 36px 40px;background:linear-gradient(135deg,rgba(10,11,18,.84),rgba(10,11,18,.42));border-left:8px solid #d8b06a;border-radius:4px;backdrop-filter:blur(2px)}
+.fullLabel .rank{font-size:31px;font-weight:800;color:#d8b06a;letter-spacing:.14em}
+.fullLabel h2{font-family:"Noto Serif SC",serif;margin-top:14px;font-size:88px;line-height:1.05;font-weight:900}
+.fullLabel .tag{margin-top:20px;font-size:43px;line-height:1.28;font-weight:700;color:#ecd0a0}
+.fullLabel .note{margin-top:12px;font-size:32px;line-height:1.4;font-weight:400;color:#cdc6d4}
+.fullLabel.topRank{border-left-color:#ffcf7a}
+.fullLabel.topRank .rank,.fullLabel.topRank .tag{color:#ffd98c}
+.miniLabel{position:absolute;z-index:5;top:92px;left:58px;display:flex;align-items:center;gap:16px;padding:13px 22px;background:rgba(10,11,18,.62);border:1px solid rgba(216,176,106,.55);border-radius:9px}
+.miniLabel span{font-size:44px;font-weight:900;color:#d8b06a}
+.miniLabel strong{font-family:"Noto Serif SC",serif;font-size:40px;font-weight:800}
+.miniLabel.topRank{border-color:rgba(255,207,122,.75)}
+.miniLabel.topRank span{color:#ffd98c}
+#outro{position:absolute;z-index:5;inset:0;padding:130px 76px;display:flex;flex-direction:column;justify-content:center}
+#outro .small{font-size:33px;font-weight:800;color:#d8b06a;letter-spacing:.14em}
+#outro h2{font-family:"Noto Serif SC",serif;margin-top:20px;font-size:66px;line-height:1.18;font-weight:900;max-width:920px}
+#outro ol{margin-top:40px;list-style:none;display:grid;gap:14px;width:100%}
+#outro li{display:flex;align-items:center;gap:26px;padding:17px 24px;background:rgba(10,11,18,.58);border:1px solid rgba(230,230,255,.12);border-radius:10px}
+#outro li span{font-size:35px;font-weight:900;color:#d8b06a;min-width:58px}
+#outro li:first-child{background:rgba(255,207,122,.12);border-color:rgba(255,207,122,.34)}
+#outro li:first-child span{color:#ffd98c}
+#outro li strong{font-family:"Noto Serif SC",serif;font-size:42px;font-weight:800}
+#cta{position:absolute;z-index:6;left:76px;right:76px;bottom:120px;text-align:center}
+#cta .v{font-size:46px;font-weight:900;color:#ffd98c;line-height:1.22}
+#cta .f{margin-top:16px;font-size:36px;font-weight:800;color:#d8b06a;letter-spacing:.1em}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="280.275" data-width="1080" data-height="1920">
+<video id="v0" class="fv" data-start="0.0" data-duration="21.8" data-track-index="0" src="clips/vert_cover.mp4" muted playsinline></video>
+<video id="v1" class="fv" data-start="21.8" data-duration="47.425" data-track-index="6" src="clips/vert_p5_yigeren.mp4" muted playsinline></video>
+<video id="v2" class="fv" data-start="69.225" data-duration="47.575" data-track-index="0" src="clips/vert_p4_xiwang.mp4" muted playsinline></video>
+<video id="v3" class="fv" data-start="116.8" data-duration="47.5" data-track-index="6" src="clips/vert_p3_yuanxing.mp4" muted playsinline></video>
+<video id="v4" class="fv" data-start="164.3" data-duration="42.525" data-track-index="0" src="clips/vert_p2_nixiang.mp4" muted playsinline></video>
+<video id="v5" class="fv" data-start="206.825" data-duration="41.15" data-track-index="6" src="clips/vert_p1_saipao.mp4" muted playsinline></video>
+<video id="v6" class="fv" data-start="247.975" data-duration="32.3" data-track-index="0" src="clips/vert_cover.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="280.275" data-track-index="1"></div>
+<div id="grain" class="clip" data-start="0" data-duration="280.275" data-track-index="7"></div>
+<section id="cover" class="clip" data-start="0.2" data-duration="21.45" data-track-index="2"><div><div class="eyebrow">华语遗珠 · 唱作盘点</div><h1>李宗盛最被低估的5首歌</h1><p class="sub">在《凡人歌》和《山丘》之外，这五首藏在专辑深处的歌，把普通人最难开口的心事，写得那么准。</p></div><div class="chips"><span>华语教父</span><span>人生叙事</span><span>唱作之神</span><span>专辑遗珠</span><span>越听越懂</span></div></section>
+<section id="full0" class="clip fullLabel" data-start="21.8" data-duration="20.425" data-track-index="2"><div class="rank">第 05 名</div><h2>《一个人》</h2><p class="tag">十七岁写下的少年迷茫</p><p class="note">蓝调摇滚的冲撞感，是他创作的一个源头</p></section>
+<section id="mini0" class="clip miniLabel" data-start="42.225" data-duration="27.0" data-track-index="4"><span>05</span><strong>一个人</strong></section>
+<section id="full1" class="clip fullLabel" data-start="69.225" data-duration="22.575" data-track-index="2"><div class="rank">第 04 名</div><h2>《希望》</h2><p class="tag">藏在小专辑里的家庭感</p><p class="note">希望不一定宏大，也可能是孩子眼里的光</p></section>
+<section id="mini1" class="clip miniLabel" data-start="91.8" data-duration="25.0" data-track-index="4"><span>04</span><strong>希望</strong></section>
+<section id="full2" class="clip fullLabel" data-start="116.8" data-duration="20.5" data-track-index="2"><div class="rank">第 03 名</div><h2>《远行》</h2><p class="tag">一封出发前写好的信</p><p class="note">离开前的整理感，想把过去慢慢放好</p></section>
+<section id="mini2" class="clip miniLabel" data-start="137.3" data-duration="27.0" data-track-index="4"><span>03</span><strong>远行</strong></section>
+<section id="full3" class="clip fullLabel" data-start="164.3" data-duration="21.525" data-track-index="2"><div class="rank">第 02 名</div><h2>《你像个孩子》</h2><p class="tag">早期那种半说半唱</p><p class="note">像坐你旁边讲心事，影响了后来很多词作者</p></section>
+<section id="mini3" class="clip miniLabel" data-start="185.825" data-duration="21.0" data-track-index="4"><span>02</span><strong>你像个孩子</strong></section>
+<section id="full4" class="clip fullLabel topRank" data-start="206.825" data-duration="21.15" data-track-index="2"><div class="rank">第 01 名</div><h2>《和自己赛跑的人》</h2><p class="tag">他最狠的人生叙事</p><p class="note">真正难赢的，从来不是别人，是你自己</p></section>
+<section id="mini4" class="clip miniLabel topRank" data-start="227.975" data-duration="20.0" data-track-index="4"><span>01</span><strong>和自己赛跑的人</strong></section>
+<section id="outro" class="clip" data-start="247.975" data-duration="32.3" data-track-index="2"><div class="small">完整榜单</div><h2>他最厉害的，不是最高的传唱度，而是把最难开口的心事，写得那么准。</h2><ol><li><span>01</span><strong>和自己赛跑的人</strong></li><li><span>02</span><strong>你像个孩子</strong></li><li><span>03</span><strong>远行</strong></li><li><span>04</span><strong>希望</strong></li><li><span>05</span><strong>一个人</strong></li></ol></section>
+<section id="cta" class="clip" data-start="267.95" data-duration="12.325" data-track-index="5"><div class="v">为你的第一名，评论区投票</div><div class="f">点赞 · 收藏 · 关注</div></section>
+<audio id="master" data-start="0" data-duration="280.275" data-track-index="3" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+tl.set("#cover",{opacity:1},0);
+tl.set("#cover .eyebrow",{opacity:1,x:0},0);
+tl.set("#cover h1",{opacity:1,y:0},0);
+tl.set("#cover .sub",{opacity:1,y:0},0);
+tl.set("#cover .chips span",{opacity:1,y:0},0);
+tl.fromTo("#cover h1",{scale:1},{scale:1.02,duration:3.4,yoyo:true,repeat:1,ease:"sine.inOut",transformOrigin:"0% 50%"},1.0);
+tl.to("#cover",{opacity:0,duration:.4,ease:"power1.in"},21.25);
+tl.set("#cover",{opacity:0},21.8);
+tl.from("#full0 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},21.98);
+tl.from("#full0 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},22.15);
+tl.from("#full0 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},22.52);
+tl.from("#full0 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},22.75);
+tl.to("#full0",{opacity:0,duration:.35,ease:"power1.in"},41.825);
+tl.set("#full0",{opacity:0},42.225);
+tl.from("#mini0",{x:-26,opacity:0,duration:.45,ease:"power2.out"},42.325);
+tl.from("#full1 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},69.405);
+tl.from("#full1 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},69.575);
+tl.from("#full1 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},69.945);
+tl.from("#full1 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},70.175);
+tl.to("#full1",{opacity:0,duration:.35,ease:"power1.in"},91.4);
+tl.set("#full1",{opacity:0},91.8);
+tl.from("#mini1",{x:-26,opacity:0,duration:.45,ease:"power2.out"},91.9);
+tl.from("#full2 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},116.98);
+tl.from("#full2 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},117.15);
+tl.from("#full2 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},117.52);
+tl.from("#full2 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},117.75);
+tl.to("#full2",{opacity:0,duration:.35,ease:"power1.in"},136.9);
+tl.set("#full2",{opacity:0},137.3);
+tl.from("#mini2",{x:-26,opacity:0,duration:.45,ease:"power2.out"},137.4);
+tl.from("#full3 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},164.48);
+tl.from("#full3 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},164.65);
+tl.from("#full3 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},165.02);
+tl.from("#full3 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},165.25);
+tl.to("#full3",{opacity:0,duration:.35,ease:"power1.in"},185.425);
+tl.set("#full3",{opacity:0},185.825);
+tl.from("#mini3",{x:-26,opacity:0,duration:.45,ease:"power2.out"},185.925);
+tl.from("#full4 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},207.005);
+tl.from("#full4 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},207.175);
+tl.from("#full4 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},207.545);
+tl.from("#full4 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},207.775);
+tl.to("#full4",{opacity:0,duration:.35,ease:"power1.in"},227.575);
+tl.set("#full4",{opacity:0},227.975);
+tl.from("#mini4",{x:-26,opacity:0,duration:.45,ease:"power2.out"},228.075);
+tl.from("#outro .small",{y:22,opacity:0,duration:.5,ease:"power2.out"},248.175);
+tl.from("#outro h2",{y:40,opacity:0,duration:.65,ease:"power3.out"},248.525);
+tl.from("#outro li",{x:-34,opacity:0,duration:.45,ease:"power2.out",stagger:.1},249.125);
+tl.from("#cta .v",{y:26,opacity:0,duration:.55,ease:"power2.out"},268.15);
+tl.from("#cta .f",{y:18,opacity:0,duration:.5,ease:"power2.out"},268.5);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

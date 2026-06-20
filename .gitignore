@@ -7,6 +7,9 @@
 
 # ---- 依赖 / 本地环境 ----
 node_modules/
+.hf-local/
+.hyperframes/
+hyperframes-local/
 venv/
 *.venv/
 __pycache__/
@@ -66,3 +69,4 @@ tmp/
 .DS_Store
 .claude/*.lock
 .claude/settings.local.json
+chrome_all_cookies.txt

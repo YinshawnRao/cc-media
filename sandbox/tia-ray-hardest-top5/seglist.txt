@@ -1,0 +1,7 @@
+file 'seg_intro.wav'
+file 'seg_p5_achu.wav'
+file 'seg_p4_chuntian.wav'
+file 'seg_p3_lvxing.wav'
+file 'seg_p2_biefeihua.wav'
+file 'seg_p1_starfall.wav'
+file 'seg_outro.wav'

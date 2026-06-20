@@ -1,0 +1,7 @@
+file 'seg_intro.wav'
+file 'seg_p5_letyougo.wav'
+file 'seg_p4_xiaoshi.wav'
+file 'seg_p3_zaowuzhe.wav'
+file 'seg_p2_weiguang.wav'
+file 'seg_p1_wligj.wav'
+file 'seg_outro.wav'

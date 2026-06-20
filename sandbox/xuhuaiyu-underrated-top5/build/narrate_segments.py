@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+"""Female narration for 徐怀钰最被低估的5首歌.
+
+Countdown order is 5 -> 1. The final CTA is imported from tools/video/outro_cta.py
+because it is a repo-level convention.
+"""
+import json
+import sys
+from pathlib import Path
+
+import numpy as np
+import soundfile as sf
+from kokoro import KPipeline
+
+ROOT = Path(__file__).resolve().parents[1]
+AUDIO = ROOT / "audio"
+sys.path.insert(0, str(ROOT.parents[1] / "tools" / "video"))
+from outro_cta import FIXED_OUTRO_CTA  # noqa: E402
+
+VOICE = "zf_xiaoyi"
+SR = 24000
+
+BLOCKS = {
+    "intro": "提到徐怀钰，很多人第一反应会是《我是女生》《向前冲》《踏浪》这些明亮的大热歌。但她的歌单里，也有一些更安静、更内向，或者更成熟的侧面，被那些国民记忆盖过去了。今天这期，我们从第五名倒数，重新听五首徐怀钰被低估的歌。",
+    "p5_noisy": "第五名，《不吵不闹》。这一首偏后期遗珠，气质已经不是早期少女偶像的明亮包装，而是关系冷下来之后的疲惫和体面。不再争，不再闹，也不再强求。它适合放在开场，让人先听见徐怀钰比较成熟、比较安静的一面。",
+    "p4_wait": "第四名，《等不及》。它来自《天使》，中英对唱的设定在徐怀钰作品里很特别。比起同名主打和几首更少女感的歌，它更像都市夜晚里的急切和思念，带一点夜色，也带一点当年 Y2K 的异国制作感。",
+    "p3_luan": "第三名，《乱了》。这首来自《Love》，但同张专辑里《分飞》和《踏浪》太强，路人记忆基本都被带走了。《乱了》其实很能代表她从古灵精怪少女，往更酷、更利落、更成熟方向转的一条线，有一点潇洒，也有一点电吉他衬出来的锋利感。",
+    "p2_friend": "第二名，《友情卡片》。这首来自《天使》，像藏在少女恋爱和舞曲之间的一张小纸条。它不是大苦情歌，却特别有校园感、朋友感和淡淡的遗憾，像那个年代很多没说出口的心事。越不声张，越容易突然击中人。",
+    "p1_wenxi": "第一名，《温习》。这首我会放第一。它不是徐怀钰最典型的元气快歌，也不是路人一听就会想到的代表作，而是一首更安静、更内向的情歌。它收在《欲望》里，被同张专辑那些更容易记住的歌盖住，可它的好处就是不抢，像一个人反复翻旧记忆，越听越有青春后知后觉的酸。",
+    "outro": "最后把榜单完整收一次。第五，不吵不闹；第四，等不及；第三，乱了；第二，友情卡片；第一，温习。徐怀钰最被低估的部分，也许正是这些不只靠明亮和元气成立的歌。它们让人听见，她也可以安静，可以锋利，也可以成熟。",
+    "outro_cta": FIXED_OUTRO_CTA,
+}
+
+
+def main():
+    AUDIO.mkdir(parents=True, exist_ok=True)
+    pipeline = KPipeline(lang_code="z")
+    meta = {}
+    for key, text in BLOCKS.items():
+        chunks = [audio for _, _, audio in pipeline(text, voice=VOICE, speed=1.0)]
+        audio = chunks[0] if len(chunks) == 1 else np.concatenate(chunks)
+        out = AUDIO / f"{key}.wav"
+        sf.write(out, audio, SR)
+        meta[key] = {"text": text, "dur": round(len(audio) / SR, 3)}
+        print(f"{key:15s} {meta[key]['dur']:6.2f}s  {out}")
+    (ROOT / "narration.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+    print("TOTAL narration", round(sum(item["dur"] for item in meta.values()), 2), "s")
+
+
+if __name__ == "__main__":
+    main()

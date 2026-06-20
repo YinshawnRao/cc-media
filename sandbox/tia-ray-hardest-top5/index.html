@@ -1,0 +1,120 @@
+<!doctype html><html lang="zh"><head><meta charset="UTF-8"/>
+<meta name="viewport" content="width=1080, height=1920"/>
+<script src="vendor/gsap.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#07070B;font-family:"Noto Sans SC","PingFang SC",sans-serif;color:#F7F1E8;-webkit-font-smoothing:antialiased}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#07070B}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(7,7,11,.82),rgba(7,7,11,.20) 32%,rgba(7,7,11,.28) 58%,rgba(7,7,11,.88))}
+#grain{position:absolute;inset:-20px;z-index:2;opacity:.11;background:repeating-linear-gradient(0deg,rgba(255,255,255,.15) 0 1px,transparent 1px 4px);mix-blend-mode:overlay}
+#cover{position:absolute;inset:0;z-index:5;padding:150px 74px 145px;display:flex;flex-direction:column;justify-content:space-between}
+.eyebrow{display:inline-flex;align-items:center;gap:18px;font-size:30px;font-weight:850;color:#D8A24C;letter-spacing:.12em}
+.eyebrow:before{content:"";width:54px;height:4px;background:#D8A24C;border-radius:99px}
+#cover h1{margin-top:28px;font-family:"Noto Serif SC","Songti SC",serif;font-size:126px;line-height:1.03;font-weight:900;max-width:930px;text-shadow:0 18px 58px rgba(0,0,0,.70)}
+#cover .sub{margin-top:28px;font-size:39px;line-height:1.45;color:#D8CED8;font-weight:650;max-width:900px}
+.chips{display:flex;flex-wrap:wrap;gap:14px;max-width:910px}
+.chips span{border:1px solid rgba(216,162,76,.58);color:#F5D49C;background:rgba(7,7,11,.56);font-size:28px;font-weight:780;padding:12px 18px;border-radius:8px}
+.fullLabel{position:absolute;z-index:5;left:68px;right:68px;bottom:178px;padding:35px 35px 39px;background:linear-gradient(135deg,rgba(7,7,11,.88),rgba(33,20,46,.56));border-left:8px solid #D8A24C;box-shadow:0 28px 88px rgba(0,0,0,.42)}
+.fullLabel .rank{font-family:"JetBrains Mono",monospace;font-size:30px;font-weight:900;color:#D8A24C}
+.fullLabel h2{margin-top:14px;font-family:"Noto Serif SC","Songti SC",serif;font-size:78px;line-height:1.08;font-weight:900}
+.fullLabel .tag{margin-top:18px;font-size:40px;line-height:1.28;font-weight:850;color:#F2CE91}
+.fullLabel .note{margin-top:12px;font-size:31px;line-height:1.42;font-weight:650;color:#D4C8D2}
+.fullLabel.topRank{border-left-color:#C43A54}
+.fullLabel.topRank .rank,.fullLabel.topRank .tag{color:#FF758C}
+.miniLabel{position:absolute;z-index:5;top:94px;left:56px;display:flex;align-items:center;gap:16px;padding:12px 18px;background:rgba(7,7,11,.72);border:1px solid rgba(216,162,76,.60);border-radius:8px;box-shadow:0 18px 52px rgba(0,0,0,.32)}
+.miniLabel span{font-family:"JetBrains Mono",monospace;font-size:44px;font-weight:950;color:#D8A24C}
+.miniLabel strong{font-size:38px;font-weight:900}
+.miniLabel.topRank{border-color:rgba(196,58,84,.86)}
+.miniLabel.topRank span{color:#FF758C}
+#outro{position:absolute;z-index:5;inset:0;padding:138px 74px;display:flex;flex-direction:column;justify-content:center}
+#outro .small{font-size:32px;font-weight:850;color:#D8A24C;letter-spacing:.12em}
+#outro h2{margin-top:20px;font-family:"Noto Serif SC","Songti SC",serif;font-size:63px;line-height:1.18;font-weight:900;max-width:930px}
+#outro ol{margin-top:38px;list-style:none;display:grid;gap:14px;width:100%}
+#outro li{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;background:rgba(7,7,11,.66);border:1px solid rgba(255,255,255,.12);border-radius:8px}
+#outro li span{font-family:"JetBrains Mono",monospace;font-size:34px;font-weight:950;color:#D8A24C}
+#outro li:first-child span{color:#FF758C}
+#outro li strong{font-size:34px;font-weight:900;text-align:right}
+#outro .close{margin-top:30px;font-size:32px;line-height:1.48;color:#D4C8D2;font-weight:650}
+#cta{position:absolute;z-index:6;left:74px;right:74px;bottom:92px;text-align:center}
+#cta .v{font-size:46px;font-weight:950;color:#FF758C;line-height:1.2}
+#cta .f{margin-top:16px;font-size:36px;font-weight:850;color:#D8A24C;letter-spacing:.1em}
+</style></head><body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="256.738" data-width="1080" data-height="1920">
+<video id="v0" class="fv" data-start="0.0" data-duration="12.125" data-track-index="0" src="clips/vert_starfall.mp4" muted playsinline></video>
+<video id="v1" class="fv" data-start="12.125" data-duration="44.35" data-track-index="6" src="clips/vert_achu.mp4" muted playsinline></video>
+<video id="v2" class="fv" data-start="56.475" data-duration="38.225" data-track-index="0" src="clips/vert_chuntian.mp4" muted playsinline></video>
+<video id="v3" class="fv" data-start="94.7" data-duration="44.325" data-track-index="6" src="clips/vert_lvxing.mp4" muted playsinline></video>
+<video id="v4" class="fv" data-start="139.025" data-duration="41.475" data-track-index="0" src="clips/vert_biefeihua.mp4" muted playsinline></video>
+<video id="v5" class="fv" data-start="180.5" data-duration="52.1" data-track-index="6" src="clips/vert_starfall.mp4" muted playsinline></video>
+<video id="v6" class="fv" data-start="232.6" data-duration="24.138" data-track-index="0" src="clips/vert_lvxing.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="256.738" data-track-index="1"></div>
+<div id="grain" class="clip" data-start="0" data-duration="256.738" data-track-index="7"></div>
+<section id="cover" class="clip" data-start="0" data-duration="12.125" data-track-index="2"><div><div class="eyebrow">声乐难度盘点</div><h1>袁娅维最难的5首歌</h1><p class="sub">不只是高音。真正难的是律动、转音、咬字、声压和情绪同时在线。</p></div><div class="chips"><span>R&B / Soul</span><span>高位爆发</span><span>华丽转音</span><span>律动控制</span><span>情绪层次</span></div></section>
+<section id="full0" class="clip fullLabel" data-start="12.125" data-duration="12.9" data-track-index="4"><div class="rank">第 05 名</div><h2>《阿楚姑娘》</h2><p class="tag">民谣底色里，放进灵魂乐厚度</p><p class="note">干净、真诚、有故事，还不能唱成普通抒情翻唱</p></section>
+<section id="mini0" class="clip miniLabel" data-start="25.025" data-duration="31.45" data-track-index="5"><span>05</span><strong>阿楚姑娘</strong></section>
+<section id="full1" class="clip fullLabel" data-start="56.475" data-duration="11.775" data-track-index="4"><div class="rank">第 04 名</div><h2>《开往春天的地铁》</h2><p class="tag">改编感、气息线、城市流动感</p><p class="note">前面要收，后面慢慢推开，太平和太满都不对</p></section>
+<section id="mini1" class="clip miniLabel" data-start="68.25" data-duration="26.45" data-track-index="5"><span>04</span><strong>开往春天的地铁</strong></section>
+<section id="full2" class="clip fullLabel" data-start="94.7" data-duration="12.875" data-track-index="4"><div class="rank">第 03 名</div><h2>《旅行中忘记》</h2><p class="tag">听起来松，里面全是控制</p><p class="note">groove、转音、气口都要像呼吸一样自然</p></section>
+<section id="mini2" class="clip miniLabel" data-start="107.575" data-duration="31.45" data-track-index="5"><span>03</span><strong>旅行中忘记</strong></section>
+<section id="full3" class="clip fullLabel" data-start="139.025" data-duration="12.025" data-track-index="4"><div class="rank">第 02 名</div><h2>《别废话》</h2><p class="tag">态度、节奏、声压一起走钢丝</p><p class="note">唱得拽但不能乱，爆发要狠但不能粗</p></section>
+<section id="mini3" class="clip miniLabel" data-start="151.05" data-duration="29.45" data-track-index="5"><span>02</span><strong>别废话</strong></section>
+<section id="full4" class="clip fullLabel topRank" data-start="180.5" data-duration="13.65" data-track-index="4"><div class="rank">第 01 名</div><h2>《Starfall》</h2><p class="tag">大动态、高位爆发、华丽转音</p><p class="note">不是喊上去就赢，而是又强又准，还要有灵魂乐弹性</p></section>
+<section id="mini4" class="clip miniLabel topRank" data-start="194.15" data-duration="38.45" data-track-index="5"><span>01</span><strong>Starfall</strong></section>
+<section id="outro" class="clip" data-start="232.6" data-duration="24.138" data-track-index="2"><div class="small">最终榜单</div><h2>袁娅维的难，不是单点炫技，是把技术、律动和情绪同时唱成自由。</h2><ol><li><span>01</span><strong>Starfall</strong></li><li><span>02</span><strong>别废话</strong></li><li><span>03</span><strong>旅行中忘记</strong></li><li><span>04</span><strong>开往春天的地铁</strong></li><li><span>05</span><strong>阿楚姑娘</strong></li></ol><p class="close">从《阿楚姑娘》的克制，到《Starfall》的大动态，这五首刚好把她最难复制的能力串起来。</p></section>
+<section id="cta" class="clip" data-start="245.1" data-duration="11.638" data-track-index="8"><div class="v">为你的第一名，评论区投票</div><div class="f">点赞 · 收藏 · 关注</div></section>
+<audio id="master" data-start="0" data-duration="256.738" data-track-index="3" src="master.wav" data-volume="1"></audio>
+</div>
+<script>
+window.__timelines=window.__timelines||{};
+const tl=gsap.timeline({paused:true});
+
+tl.from("#cover .chips span",{y:12,autoAlpha:0,duration:.42,ease:"power2.out",stagger:.08},1.0);
+tl.to("#cover",{autoAlpha:0,duration:.38,ease:"power1.in"},11.705);
+tl.set("#cover",{autoAlpha:0},12.125);
+tl.from("#full0 .rank",{y:28,autoAlpha:0,duration:.45,ease:"power2.out"},12.305);
+tl.from("#full0 h2",{y:44,autoAlpha:0,duration:.62,ease:"power3.out"},12.475);
+tl.from("#full0 .tag",{y:22,autoAlpha:0,duration:.45,ease:"power2.out"},12.845);
+tl.from("#full0 .note",{y:18,autoAlpha:0,duration:.45,ease:"power2.out"},13.085);
+tl.to("#full0",{autoAlpha:0,duration:.35,ease:"power1.in"},24.625);
+tl.set("#full0",{autoAlpha:0},25.025);
+tl.from("#mini0",{x:-26,autoAlpha:0,duration:.45,ease:"power2.out"},25.125);
+tl.from("#full1 .rank",{y:28,autoAlpha:0,duration:.45,ease:"power2.out"},56.655);
+tl.from("#full1 h2",{y:44,autoAlpha:0,duration:.62,ease:"power3.out"},56.825);
+tl.from("#full1 .tag",{y:22,autoAlpha:0,duration:.45,ease:"power2.out"},57.195);
+tl.from("#full1 .note",{y:18,autoAlpha:0,duration:.45,ease:"power2.out"},57.435);
+tl.to("#full1",{autoAlpha:0,duration:.35,ease:"power1.in"},67.85);
+tl.set("#full1",{autoAlpha:0},68.25);
+tl.from("#mini1",{x:-26,autoAlpha:0,duration:.45,ease:"power2.out"},68.35);
+tl.from("#full2 .rank",{y:28,autoAlpha:0,duration:.45,ease:"power2.out"},94.88);
+tl.from("#full2 h2",{y:44,autoAlpha:0,duration:.62,ease:"power3.out"},95.05);
+tl.from("#full2 .tag",{y:22,autoAlpha:0,duration:.45,ease:"power2.out"},95.42);
+tl.from("#full2 .note",{y:18,autoAlpha:0,duration:.45,ease:"power2.out"},95.66);
+tl.to("#full2",{autoAlpha:0,duration:.35,ease:"power1.in"},107.175);
+tl.set("#full2",{autoAlpha:0},107.575);
+tl.from("#mini2",{x:-26,autoAlpha:0,duration:.45,ease:"power2.out"},107.675);
+tl.from("#full3 .rank",{y:28,autoAlpha:0,duration:.45,ease:"power2.out"},139.205);
+tl.from("#full3 h2",{y:44,autoAlpha:0,duration:.62,ease:"power3.out"},139.375);
+tl.from("#full3 .tag",{y:22,autoAlpha:0,duration:.45,ease:"power2.out"},139.745);
+tl.from("#full3 .note",{y:18,autoAlpha:0,duration:.45,ease:"power2.out"},139.985);
+tl.to("#full3",{autoAlpha:0,duration:.35,ease:"power1.in"},150.65);
+tl.set("#full3",{autoAlpha:0},151.05);
+tl.from("#mini3",{x:-26,autoAlpha:0,duration:.45,ease:"power2.out"},151.15);
+tl.from("#full4 .rank",{y:28,autoAlpha:0,duration:.45,ease:"power2.out"},180.68);
+tl.from("#full4 h2",{y:44,autoAlpha:0,duration:.62,ease:"power3.out"},180.85);
+tl.from("#full4 .tag",{y:22,autoAlpha:0,duration:.45,ease:"power2.out"},181.22);
+tl.from("#full4 .note",{y:18,autoAlpha:0,duration:.45,ease:"power2.out"},181.46);
+tl.to("#full4",{autoAlpha:0,duration:.35,ease:"power1.in"},193.75);
+tl.set("#full4",{autoAlpha:0},194.15);
+tl.from("#mini4",{x:-26,autoAlpha:0,duration:.45,ease:"power2.out"},194.25);
+tl.from("#outro .small",{y:22,autoAlpha:0,duration:.45,ease:"power2.out"},232.85);
+tl.from("#outro h2",{y:40,autoAlpha:0,duration:.65,ease:"power3.out"},233.08);
+tl.from("#outro li",{y:24,autoAlpha:0,duration:.45,ease:"power2.out",stagger:.07},233.75);
+tl.from("#outro .close",{y:20,autoAlpha:0,duration:.45,ease:"power2.out"},234.35);
+tl.to("#outro",{autoAlpha:0,duration:.38,ease:"power1.in"},244.88);
+tl.set("#outro",{autoAlpha:0},245.25);
+tl.from("#cta .v",{y:28,autoAlpha:0,duration:.55,ease:"power2.out"},245.3);
+tl.from("#cta .f",{y:20,autoAlpha:0,duration:.5,ease:"power2.out"},245.65);
+
+window.__timelines["main"]=tl;
+</script></body></html>

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:transparent;font-family:sans-serif;color:#f6f4ef}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:transparent}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(0,0,0,.74),rgba(0,0,0,.08) 30%,rgba(0,0,0,.14) 56%,rgba(0,0,0,.82))}
+#grain{position:absolute;inset:-20px;z-index:2;opacity:.11;background:repeating-linear-gradient(0deg,rgba(255,255,255,.15) 0 1px,transparent 1px 4px);mix-blend-mode:overlay}
+#cover{position:absolute;inset:0;z-index:5;padding:158px 76px 150px;display:flex;flex-direction:column;justify-content:space-between}
+.eyebrow{display:inline-flex;align-items:center;gap:18px;font-size:30px;font-weight:850;color:#e6b07a}
+.eyebrow:before{content:"";width:52px;height:4px;background:#e6b07a;border-radius:99px}
+#cover h1{margin-top:30px;font-size:132px;line-height:1.02;font-weight:950;max-width:920px;text-wrap:balance;text-shadow:0 4px 38px rgba(0,0,0,.6)}
+#cover .sub{margin-top:30px;font-size:38px;line-height:1.46;color:#ddd6ca;font-weight:650;max-width:880px;text-shadow:0 2px 16px rgba(0,0,0,.7)}
+.chips{display:flex;flex-wrap:wrap;gap:14px;max-width:900px}
+.chips span{border:1px solid rgba(230,176,122,.55);color:#f3d7b0;background:rgba(8,9,13,.52);font-size:28px;font-weight:760;padding:12px 18px;border-radius:8px}
+.fullLabel{position:absolute;z-index:5;left:70px;right:70px;bottom:182px;padding:34px 34px 38px;background:linear-gradient(135deg,rgba(6,6,11,.84),rgba(6,6,11,.46));border-left:8px solid #e6b07a;backdrop-filter:blur(2px)}
+.fullLabel .rank{font-size:31px;font-weight:900;color:#e6b07a;letter-spacing:.04em}
+.fullLabel h2{margin-top:14px;font-size:82px;line-height:1.06;font-weight:950}
+.fullLabel .tag{margin-top:18px;font-size:42px;line-height:1.26;font-weight:850;color:#f1cf9c}
+.fullLabel .note{margin-top:12px;font-size:30px;line-height:1.4;font-weight:650;color:#cfc6ba}
+.fullLabel.topRank{border-left-color:#ff5c8a}
+.fullLabel.topRank .rank,.fullLabel.topRank .tag{color:#ff79a3}
+.miniLabel{position:absolute;z-index:5;top:96px;left:58px;display:flex;align-items:center;gap:16px;padding:12px 18px;background:rgba(6,6,11,.70);border:1px solid rgba(230,176,122,.58);border-radius:8px}
+.miniLabel span{font-size:44px;font-weight:950;color:#e6b07a}
+.miniLabel strong{font-size:38px;font-weight:900}
+.miniLabel.topRank{border-color:rgba(255,92,138,.78)}
+.miniLabel.topRank span{color:#ff79a3}
+#outro{position:absolute;z-index:5;inset:0;padding:140px 76px;display:flex;flex-direction:column;justify-content:center}
+#outro .small{font-size:32px;font-weight:850;color:#e6b07a;letter-spacing:.06em}
+#outro h2{margin-top:18px;font-size:66px;line-height:1.16;font-weight:950;max-width:920px}
+#outro ol{margin-top:40px;list-style:none;display:grid;gap:15px;width:100%}
+#outro li{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;background:rgba(6,6,11,.62);border:1px solid rgba(255,255,255,.12);border-radius:8px}
+#outro li span{font-size:34px;font-weight:950;color:#e6b07a}
+#outro li:first-child span{color:#ff79a3}
+#outro li strong{font-size:35px;font-weight:900;text-align:right}
+#outro .close{margin-top:32px;font-size:31px;line-height:1.46;color:#ddd6ca;font-weight:650}
+#cta{position:absolute;z-index:6;left:76px;right:76px;bottom:150px;text-align:center}
+#cta .v{font-size:48px;font-weight:950;color:#ff79a3;line-height:1.2}
+#cta .f{margin-top:16px;font-size:37px;font-weight:850;color:#e6b07a;letter-spacing:.12em}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="315.975" data-width="1080" data-height="1920">
+<div id="scrim" class="clip" data-start="0" data-duration="315.975" data-track-index="1"></div>
+<div id="grain" class="clip" data-start="0" data-duration="315.975" data-track-index="7"></div>
+<section id="cover" class="clip" data-start="0" data-duration="17.775" data-track-index="2"><div><div class="eyebrow">声乐难度盘点</div><h1>梁咏琪最难的5首歌</h1><p class="sub">高妹的另一面——清亮声线背后，是粤语咬字、气息控制，和唱稳了才显功力的分寸。</p></div><div class="chips"><span>粤语咬字</span><span>气息控制</span><span>清亮声线</span><span>情绪分寸</span><span>现场稳定</span></div></section>
+<section id="full0" class="clip fullLabel" data-start="17.925" data-duration="19.275" data-track-index="2"><div class="rank">第 05 名</div><h2>《高妹正传》</h2><p class="tag">看起来轻巧，最难举重若轻</p><p class="note">节奏、咬字、灵动感，一用力就笨</p></section>
+<section id="mini0" class="clip miniLabel" data-start="37.2" data-duration="34.0" data-track-index="4"><span>05</span><strong>高妹正传</strong></section>
+<section id="full1" class="clip fullLabel" data-start="71.2" data-duration="19.25" data-track-index="2"><div class="rank">第 04 名</div><h2>《嫌弃》</h2><p class="tag">越拧越难，藏着锋利</p><p class="note">粤语咬字要清，情绪不能喊成苦情</p></section>
+<section id="mini1" class="clip miniLabel" data-start="90.45" data-duration="34.0" data-track-index="4"><span>04</span><strong>嫌弃</strong></section>
+<section id="full2" class="clip fullLabel" data-start="124.45" data-duration="18.325" data-track-index="2"><div class="rank">第 03 名</div><h2>《烟雾弥漫》</h2><p class="tag">虚实之间，最吃气息</p><p class="note">前段要虚，副歌要撑，音准不能晃</p></section>
+<section id="mini2" class="clip miniLabel" data-start="142.775" data-duration="34.0" data-track-index="4"><span>03</span><strong>烟雾弥漫</strong></section>
+<section id="full3" class="clip fullLabel" data-start="176.775" data-duration="19.325" data-track-index="2"><div class="rank">第 02 名</div><h2>《花火》</h2><p class="tag">明亮、脆弱，又要飞起来</p><p class="note">清亮声线，飞得起还不能唱薄</p></section>
+<section id="mini3" class="clip miniLabel" data-start="196.1" data-duration="34.0" data-track-index="4"><span>02</span><strong>花火</strong></section>
+<section id="full4" class="clip fullLabel topRank" data-start="230.1" data-duration="19.8" data-track-index="2"><div class="rank">第 01 名</div><h2>《原来爱情这么伤》</h2><p class="tag">副歌一路走高，唱到崩塌</p><p class="note">声音要干净稳，情绪到了不能先阵亡</p></section>
+<section id="mini4" class="clip miniLabel topRank" data-start="249.9" data-duration="34.0" data-track-index="4"><span>01</span><strong>原来爱情这么伤</strong></section>
+<section id="outro" class="clip" data-start="283.9" data-duration="32.075" data-track-index="2"><div class="small">最终榜单</div><h2>梁咏琪的难，是把功夫，都藏进听起来很轻松的旋律里。</h2><ol><li><span>01</span><strong>原来爱情这么伤</strong></li><li><span>02</span><strong>花火</strong></li><li><span>03</span><strong>烟雾弥漫</strong></li><li><span>04</span><strong>嫌弃</strong></li><li><span>05</span><strong>高妹正传</strong></li></ol><p class="close">这一期按难度从第五到第一收束：高妹正传、嫌弃、烟雾弥漫、花火、原来爱情这么伤。</p></section>
+<section id="cta" class="clip" data-start="303.65" data-duration="12.325" data-track-index="5"><div class="v">你最想为哪一首投票？</div><div class="f">点赞 · 收藏 · 关注</div></section>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+tl.set("#cover",{opacity:1},0);
+tl.set("#cover .eyebrow,#cover h1,#cover .sub,#cover .chips span",{opacity:1,x:0,y:0},0);
+tl.from("#cover h1",{scale:1.045,duration:.9,ease:"power3.out",transformOrigin:"left top"},0);
+tl.from("#cover .eyebrow",{x:-20,duration:.6,ease:"power2.out"},0);
+tl.from("#cover .sub",{y:18,duration:.55,ease:"power2.out"},0.15);
+tl.from("#cover .chips span",{y:16,duration:.5,ease:"power2.out",stagger:.07},0.2);
+tl.to("#cover h1",{scale:1.02,duration:3.4,yoyo:true,repeat:1,ease:"sine.inOut",transformOrigin:"left top"},1.4);
+tl.to("#cover",{opacity:0,duration:.38,ease:"power1.in"},17.375);
+tl.from("#full0 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},18.105);
+tl.from("#full0 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},18.275);
+tl.from("#full0 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},18.645);
+tl.from("#full0 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},18.875);
+tl.to("#full0",{opacity:0,duration:.35,ease:"power1.in"},36.8);
+tl.set("#full0",{opacity:0},37.2);
+tl.from("#mini0",{x:-26,opacity:0,duration:.45,ease:"power2.out"},37.3);
+tl.from("#full1 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},71.38);
+tl.from("#full1 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},71.55);
+tl.from("#full1 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},71.92);
+tl.from("#full1 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},72.15);
+tl.to("#full1",{opacity:0,duration:.35,ease:"power1.in"},90.05);
+tl.set("#full1",{opacity:0},90.45);
+tl.from("#mini1",{x:-26,opacity:0,duration:.45,ease:"power2.out"},90.55);
+tl.from("#full2 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},124.63);
+tl.from("#full2 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},124.8);
+tl.from("#full2 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},125.17);
+tl.from("#full2 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},125.4);
+tl.to("#full2",{opacity:0,duration:.35,ease:"power1.in"},142.375);
+tl.set("#full2",{opacity:0},142.775);
+tl.from("#mini2",{x:-26,opacity:0,duration:.45,ease:"power2.out"},142.875);
+tl.from("#full3 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},176.955);
+tl.from("#full3 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},177.125);
+tl.from("#full3 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},177.495);
+tl.from("#full3 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},177.725);
+tl.to("#full3",{opacity:0,duration:.35,ease:"power1.in"},195.7);
+tl.set("#full3",{opacity:0},196.1);
+tl.from("#mini3",{x:-26,opacity:0,duration:.45,ease:"power2.out"},196.2);
+tl.from("#full4 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},230.28);
+tl.from("#full4 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},230.45);
+tl.from("#full4 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},230.82);
+tl.from("#full4 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},231.05);
+tl.to("#full4",{opacity:0,duration:.35,ease:"power1.in"},249.5);
+tl.set("#full4",{opacity:0},249.9);
+tl.from("#mini4",{x:-26,opacity:0,duration:.45,ease:"power2.out"},250.0);
+tl.from("#outro .small",{y:22,opacity:0,duration:.5,ease:"power2.out"},284.1);
+tl.from("#outro h2",{y:40,opacity:0,duration:.65,ease:"power3.out"},284.45);
+tl.from("#outro li",{x:-34,opacity:0,duration:.45,ease:"power2.out",stagger:.1},285.05);
+tl.from("#outro .close",{y:24,opacity:0,duration:.45,ease:"power2.out"},285.9);
+tl.from("#cta .v",{y:26,opacity:0,duration:.55,ease:"power2.out"},303.85);
+tl.from("#cta .f",{y:18,opacity:0,duration:.5,ease:"power2.out"},304.2);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

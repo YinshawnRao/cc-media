@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <script src="vendor/gsap.min.js"></script>
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#07090c;font-family:sans-serif;color:#f2eee6}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#07090c}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(7,9,12,.84),rgba(7,9,12,.12) 32%,rgba(7,9,12,.18) 56%,rgba(7,9,12,.86))}
+#grain{position:absolute;inset:-20px;z-index:2;opacity:.10;background:repeating-linear-gradient(0deg,rgba(242,238,230,.13) 0 1px,transparent 1px 4px);mix-blend-mode:overlay}
+#cover{position:absolute;inset:0;z-index:5;padding:146px 76px 132px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(180deg,rgba(7,9,12,.70),rgba(7,9,12,.18) 35%,rgba(7,9,12,.24) 60%,rgba(7,9,12,.86))}
+.eyebrow{display:inline-flex;align-items:center;gap:18px;font-size:30px;font-weight:800;color:#6fc3c0;letter-spacing:.08em}
+.eyebrow:before{content:"";width:54px;height:4px;background:#6fc3c0;border-radius:99px}
+#cover h1{margin-top:30px;font-family:serif;font-size:116px;line-height:1.08;font-weight:900;max-width:940px;text-shadow:0 6px 42px rgba(0,0,0,.62)}
+#cover .sub{margin-top:30px;font-size:38px;line-height:1.5;color:#d8d0c4;font-weight:500;max-width:895px}
+.chips{display:flex;flex-wrap:wrap;gap:14px;max-width:920px}
+.chips span{border:1px solid rgba(111,195,192,.52);color:#d9efed;background:rgba(7,9,12,.52);font-size:28px;font-weight:700;padding:12px 19px;border-radius:8px}
+.fullLabel{position:absolute;z-index:5;left:70px;right:70px;bottom:196px;padding:35px 36px 39px;background:linear-gradient(135deg,rgba(7,9,12,.86),rgba(7,9,12,.46));border-left:8px solid #6fc3c0;border-radius:4px;backdrop-filter:blur(2px)}
+.fullLabel .rank{font-size:31px;font-weight:900;color:#6fc3c0;letter-spacing:.12em}
+.fullLabel h2{font-family:serif;margin-top:14px;font-size:82px;line-height:1.08;font-weight:900}
+.fullLabel .tag{margin-top:19px;font-size:42px;line-height:1.28;font-weight:800;color:#d9efed}
+.fullLabel .note{margin-top:12px;font-size:31px;line-height:1.42;font-weight:500;color:#c7bdad}
+.fullLabel.topRank{border-left-color:#d6b36a;background:linear-gradient(135deg,rgba(10,9,7,.88),rgba(10,9,7,.48))}
+.fullLabel.topRank .rank,.fullLabel.topRank .tag{color:#d6b36a}
+.miniLabel{position:absolute;z-index:5;top:94px;left:58px;display:flex;align-items:center;gap:16px;padding:13px 21px;background:rgba(7,9,12,.66);border:1px solid rgba(111,195,192,.56);border-radius:8px}
+.miniLabel span{font-size:44px;font-weight:900;color:#6fc3c0}
+.miniLabel strong{font-family:serif;font-size:39px;font-weight:900}
+.miniLabel.topRank{border-color:rgba(214,179,106,.74)}
+.miniLabel.topRank span{color:#d6b36a}
+#outro{position:absolute;z-index:5;inset:0;padding:132px 76px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(180deg,rgba(7,9,12,.30),rgba(7,9,12,.80))}
+#outro .small{font-size:32px;font-weight:900;color:#6fc3c0;letter-spacing:.12em}
+#outro h2{font-family:serif;margin-top:20px;font-size:62px;line-height:1.22;font-weight:900;max-width:925px}
+#outro ol{margin-top:38px;list-style:none;display:grid;gap:14px;width:100%}
+#outro li{display:flex;align-items:center;justify-content:space-between;gap:22px;padding:17px 24px;background:rgba(7,9,12,.58);border:1px solid rgba(242,238,230,.12);border-radius:9px}
+#outro li span{font-size:35px;font-weight:900;color:#6fc3c0}
+#outro li:first-child{background:rgba(214,179,106,.12);border-color:rgba(214,179,106,.36)}
+#outro li:first-child span{color:#d6b36a}
+#outro li strong{font-family:serif;font-size:39px;font-weight:900;text-align:right}
+#outro .close{margin-top:32px;font-size:31px;line-height:1.52;color:#d8d0c4;font-weight:500}
+#cta{position:absolute;z-index:6;left:76px;right:76px;bottom:102px;text-align:center;padding:22px 20px;background:rgba(7,9,12,.66);border:1px solid rgba(214,179,106,.40);border-radius:10px}
+#cta .v{font-size:45px;font-weight:900;color:#d6b36a;line-height:1.22}
+#cta .f{margin-top:16px;font-size:35px;font-weight:800;color:#6fc3c0;letter-spacing:.12em}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="304.55" data-width="1080" data-height="1920">
+<video id="v0" class="clip fv" data-start="0.0" data-duration="16.775" data-track-index="0" src="clips/vert_p1_yigeren.mp4" muted playsinline></video>
+<video id="v1" class="clip fv" data-start="16.775" data-duration="51.125" data-track-index="6" src="clips/vert_p5_xianzhe.mp4" muted playsinline></video>
+<video id="v2" class="clip fv" data-start="67.9" data-duration="50.125" data-track-index="0" src="clips/vert_p4_bianzheng.mp4" muted playsinline></video>
+<video id="v3" class="clip fv" data-start="118.025" data-duration="51.95" data-track-index="6" src="clips/vert_p3_sanshiwu.mp4" muted playsinline></video>
+<video id="v4" class="clip fv" data-start="169.975" data-duration="50.8" data-track-index="0" src="clips/vert_p2_zhuifeng.mp4" muted playsinline></video>
+<video id="v5" class="clip fv" data-start="220.775" data-duration="54.575" data-track-index="6" src="clips/vert_p1_yigeren.mp4" muted playsinline></video>
+<video id="v6" class="clip fv" data-start="275.35" data-duration="29.2" data-track-index="0" src="clips/vert_p5_xianzhe.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="304.55" data-track-index="1"></div>
+<div id="grain" class="clip" data-start="0" data-duration="304.55" data-track-index="7"></div>
+<section id="cover" class="clip" data-start="0" data-duration="16.625" data-track-index="2"><div><div class="eyebrow">华语遗珠 · 创作男声</div><h1>陈楚生最被低估的5首歌</h1><p class="sub">在那些更容易被记住的大歌之外，他还有一些安静、内向、成熟，又带着少年感的作品。</p></div><div class="chips"><span>冬去春来</span><span>瘾</span><span>侦探C</span><span>SPY.C</span><span>真爱粉向</span></div></section>
+<section id="full0" class="clip fullLabel" data-start="16.775" data-duration="19.125" data-track-index="2"><div class="rank">第 05 名</div><h2>《先这样吧》</h2><p class="tag">成年人感和分寸感</p><p class="note">不激烈，不狗血，只是轻轻收住</p></section>
+<section id="mini0" class="clip miniLabel" data-start="35.9" data-duration="32.0" data-track-index="4"><span>05</span><strong>先这样吧</strong></section>
+<section id="full1" class="clip fullLabel" data-start="67.9" data-duration="18.125" data-track-index="2"><div class="rank">第 04 名</div><h2>《辩证关系》</h2><p class="tag">关系里的矛盾与自我拆解</p><p class="note">《侦探C》里最能体现实验表达的一首</p></section>
+<section id="mini1" class="clip miniLabel" data-start="86.025" data-duration="32.0" data-track-index="4"><span>04</span><strong>辩证关系</strong></section>
+<section id="full2" class="clip fullLabel" data-start="118.025" data-duration="17.95" data-track-index="2"><div class="rank">第 03 名</div><h2>《35》</h2><p class="tag">成熟、迷离、有年龄感</p><p class="note">SPY.C 合成器气质里的自我观察</p></section>
+<section id="mini2" class="clip miniLabel" data-start="135.975" data-duration="34.0" data-track-index="4"><span>03</span><strong>35</strong></section>
+<section id="full3" class="clip fullLabel" data-start="169.975" data-duration="16.8" data-track-index="2"><div class="rank">第 02 名</div><h2>《追风筝的孩子》</h2><p class="tag">风、远方和少年感</p><p class="note">不是热血冲刺，而是不肯长大的执拗</p></section>
+<section id="mini3" class="clip miniLabel" data-start="186.775" data-duration="34.0" data-track-index="4"><span>02</span><strong>追风筝的孩子</strong></section>
+<section id="full4" class="clip fullLabel topRank" data-start="220.775" data-duration="18.575" data-track-index="2"><div class="rank">第 01 名</div><h2>《一个人唱情歌》</h2><p class="tag">专辑开头的一盏小灯</p><p class="note">安静、松弛，带一点孤独感</p></section>
+<section id="mini4" class="clip miniLabel topRank" data-start="239.35" data-duration="36.0" data-track-index="4"><span>01</span><strong>一个人唱情歌</strong></section>
+<section id="outro" class="clip" data-start="275.35" data-duration="29.2" data-track-index="2"><div class="small">最终榜单</div><h2>真正完整的陈楚生，往往不只在最大众的代表作里，也在这些安静、内向、越听越有余味的歌里。</h2><ol><li><span>01</span><strong>一个人唱情歌</strong></li><li><span>02</span><strong>追风筝的孩子</strong></li><li><span>03</span><strong>35</strong></li><li><span>04</span><strong>辩证关系</strong></li><li><span>05</span><strong>先这样吧</strong></li></ol><p class="close">从第五到第一：先这样吧、辩证关系、35、追风筝的孩子、一个人唱情歌。</p></section>
+<section id="cta" class="clip" data-start="292.225" data-duration="12.325" data-track-index="5"><div class="v">为你的第一名，评论区投票</div><div class="f">点赞 · 收藏 · 关注</div></section>
+<audio id="master" class="clip" data-start="0" data-duration="304.55" data-track-index="3" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+tl.set("#cover",{opacity:1},0);
+tl.set("#cover .eyebrow, #cover h1, #cover .sub, #cover .chips span",{opacity:1,x:0,y:0},0);
+tl.fromTo("#cover h1",{scale:1.0},{scale:1.018,duration:3.2,ease:"sine.inOut",yoyo:true,repeat:1},0.3);
+tl.to("#cover",{opacity:0,duration:.4,ease:"power1.in"},16.225);
+tl.set("#cover",{opacity:0},16.775);
+tl.fromTo("#full0 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},16.955);
+tl.fromTo("#full0 h2",{y:44,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},17.125);
+tl.fromTo("#full0 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},17.495);
+tl.fromTo("#full0 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.45,ease:"power1.out"},17.725);
+tl.to("#full0",{opacity:0,duration:.35,ease:"power1.in"},35.5);
+tl.set("#full0",{opacity:0},35.9);
+tl.fromTo("#mini0",{x:-26,opacity:0},{x:0,opacity:1,duration:.45,ease:"power2.out"},36.0);
+tl.fromTo("#full1 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},68.08);
+tl.fromTo("#full1 h2",{y:44,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},68.25);
+tl.fromTo("#full1 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},68.62);
+tl.fromTo("#full1 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.45,ease:"power1.out"},68.85);
+tl.to("#full1",{opacity:0,duration:.35,ease:"power1.in"},85.625);
+tl.set("#full1",{opacity:0},86.025);
+tl.fromTo("#mini1",{x:-26,opacity:0},{x:0,opacity:1,duration:.45,ease:"power2.out"},86.125);
+tl.fromTo("#full2 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},118.205);
+tl.fromTo("#full2 h2",{y:44,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},118.375);
+tl.fromTo("#full2 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},118.745);
+tl.fromTo("#full2 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.45,ease:"power1.out"},118.975);
+tl.to("#full2",{opacity:0,duration:.35,ease:"power1.in"},135.575);
+tl.set("#full2",{opacity:0},135.975);
+tl.fromTo("#mini2",{x:-26,opacity:0},{x:0,opacity:1,duration:.45,ease:"power2.out"},136.075);
+tl.fromTo("#full3 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},170.155);
+tl.fromTo("#full3 h2",{y:44,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},170.325);
+tl.fromTo("#full3 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},170.695);
+tl.fromTo("#full3 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.45,ease:"power1.out"},170.925);
+tl.to("#full3",{opacity:0,duration:.35,ease:"power1.in"},186.375);
+tl.set("#full3",{opacity:0},186.775);
+tl.fromTo("#mini3",{x:-26,opacity:0},{x:0,opacity:1,duration:.45,ease:"power2.out"},186.875);
+tl.fromTo("#full4 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},220.955);
+tl.fromTo("#full4 h2",{y:44,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},221.125);
+tl.fromTo("#full4 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},221.495);
+tl.fromTo("#full4 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.45,ease:"power1.out"},221.725);
+tl.to("#full4",{opacity:0,duration:.35,ease:"power1.in"},238.95);
+tl.set("#full4",{opacity:0},239.35);
+tl.fromTo("#mini4",{x:-26,opacity:0},{x:0,opacity:1,duration:.45,ease:"power2.out"},239.45);
+tl.fromTo("#outro .small",{y:22,opacity:0},{y:0,opacity:1,duration:.5,ease:"power2.out"},275.55);
+tl.fromTo("#outro h2",{y:40,opacity:0},{y:0,opacity:1,duration:.65,ease:"power3.out"},275.9);
+tl.fromTo("#outro li",{x:-34,opacity:0},{x:0,opacity:1,duration:.45,ease:"power2.out",stagger:.1},276.53);
+tl.fromTo("#outro .close",{y:24,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},277.53);
+tl.fromTo("#cta .v",{y:26,opacity:0},{y:0,opacity:1,duration:.55,ease:"power2.out"},292.425);
+tl.fromTo("#cta .f",{y:18,opacity:0},{y:0,opacity:1,duration:.5,ease:"power1.out"},292.775);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

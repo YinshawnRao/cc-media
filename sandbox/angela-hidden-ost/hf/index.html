@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="UTF-8"/><meta name="viewport" content="width=1080, height=1920"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#120D0A;font-family:"Noto Serif SC","Songti SC",serif;color:#F2E6D2;-webkit-font-smoothing:antialiased;}
+.clip{position:absolute;inset:0;}
+.fv{width:1080px;height:1920px;object-fit:cover;z-index:1;opacity:0;}
+.tint{z-index:2;opacity:0;background:linear-gradient(180deg, rgba(40,22,10,.30) 0%, rgba(18,13,10,.30) 42%, rgba(8,5,3,.74) 100%);mix-blend-mode:multiply;}
+.chrome{z-index:5;pointer-events:none;}
+.gfx-scan{position:absolute;inset:0;z-index:44;pointer-events:none;opacity:.10;background:repeating-linear-gradient(0deg, rgba(0,0,0,.9) 0 1px, transparent 1px 3px);}
+.gfx-grain{position:absolute;inset:0;z-index:44;pointer-events:none;opacity:.06;mix-blend-mode:overlay;background-image:radial-gradient(circle at 12% 28%, #fff 0 .5px, transparent 1px),radial-gradient(circle at 67% 71%, #fff 0 .5px, transparent 1px),radial-gradient(circle at 39% 53%, #fff 0 .4px, transparent 1px),radial-gradient(circle at 85% 18%, #fff 0 .5px, transparent 1px);background-size:140px 140px,180px 180px,120px 120px,160px 160px;}
+.gfx-vig{position:absolute;inset:0;z-index:43;pointer-events:none;background:radial-gradient(ellipse 75% 62% at 50% 46%, transparent 0%, transparent 55%, rgba(0,0,0,.55) 100%);}
+.sc-scan{position:absolute;inset:0;opacity:.10;pointer-events:none;background:repeating-linear-gradient(0deg, rgba(0,0,0,.9) 0 1px, transparent 1px 3px);}
+.sc-grain{position:absolute;inset:0;opacity:.07;mix-blend-mode:overlay;pointer-events:none;background-image:radial-gradient(circle at 20% 30%, #fff 0 .5px, transparent 1px),radial-gradient(circle at 75% 65%, #fff 0 .5px, transparent 1px);background-size:150px 150px,170px 170px;}
+.sc-vig{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 78% 64% at 50% 44%, transparent 0 56%, rgba(0,0,0,.6) 100%);}
+
+/* 封面 */
+.cover{z-index:50;background:radial-gradient(ellipse at 50% 42%, #28180d 0%, #120D0A 74%);overflow:hidden;}
+.cv-frag{position:absolute;background-size:cover;background-position:center;opacity:.30;filter:saturate(.5);}
+.cv-frag1{left:-7%;top:6%;width:46%;height:26%;background-image:url("cover_assets/frag1.jpg");transform:rotate(-3deg);}
+.cv-frag2{right:-8%;top:12%;width:48%;height:25%;background-image:url("cover_assets/frag2.jpg");transform:rotate(2.5deg);}
+.cv-frag3{right:0%;bottom:5%;width:50%;height:22%;background-image:url("cover_assets/frag3.jpg");transform:rotate(-1.5deg);opacity:.22;}
+.cv-veil{position:absolute;inset:0;background:linear-gradient(180deg, rgba(18,13,10,.55) 0%, rgba(18,13,10,.28) 36%, rgba(18,13,10,.55) 66%, rgba(10,6,3,.9) 100%);}
+.cv-tvtag{position:absolute;top:400px;left:0;right:0;text-align:center;font-family:"JetBrains Mono",monospace;font-size:30px;font-weight:700;letter-spacing:.42em;color:#D8A55A;opacity:.85;}
+.cv-face-wrap{position:absolute;top:490px;left:0;right:0;display:flex;justify-content:center;}
+.cv-face{width:380px;height:380px;border-radius:50%;background-image:url("cover_assets/zsh_face.jpg");background-size:cover;background-position:center 38%;filter:saturate(.92) contrast(1.04) brightness(1.0);box-shadow:0 30px 90px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.1);}
+.cv-face-ring{position:absolute;top:-13px;left:50%;transform:translateX(-50%);width:406px;height:406px;border-radius:50%;border:3px solid rgba(216,165,90,.85);box-shadow:0 0 50px rgba(216,165,90,.3);}
+.cv-title{position:absolute;top:930px;left:0;right:0;text-align:center;}
+.cv-name{font-size:150px;font-weight:800;letter-spacing:.06em;color:#F2E6D2;text-shadow:0 6px 30px rgba(0,0,0,.65);line-height:1.0;}
+.cv-sub{font-size:92px;font-weight:700;letter-spacing:.04em;margin-top:16px;color:#D8A55A;text-shadow:0 4px 24px rgba(0,0,0,.55);}
+.cv-badge{position:absolute;top:1330px;left:0;right:0;text-align:center;font-family:"Noto Sans SC",sans-serif;font-size:39px;font-weight:500;line-height:1.5;color:rgba(242,230,210,.82);letter-spacing:.04em;}
+
+/* intro / trans 场景 */
+.scene{z-index:41;background:#120D0A;overflow:hidden;}
+.sc-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%, #251509 0%, #120D0A 72%);}
+.in-kick{position:absolute;top:600px;left:0;right:0;text-align:center;font-family:"JetBrains Mono",monospace;font-size:34px;font-weight:700;letter-spacing:.5em;color:#D8A55A;opacity:0;}
+.in-line{position:absolute;left:80px;right:80px;text-align:center;font-weight:700;color:#F2E6D2;opacity:0;}
+.in-l1{top:800px;font-size:74px;color:#D8A55A;letter-spacing:.06em;}
+.in-l2{top:1010px;font-size:56px;} .in-l3{top:1140px;font-size:56px;}
+.trcard{z-index:38;}
+.tr-no{position:absolute;top:760px;left:0;right:0;text-align:center;font-family:"JetBrains Mono",monospace;font-size:46px;font-weight:700;letter-spacing:.4em;color:#C2563B;opacity:0;}
+.tr-line{position:absolute;top:880px;left:90px;right:90px;text-align:center;font-size:76px;font-weight:800;line-height:1.34;color:#F2E6D2;opacity:0;}
+.tr-rule{position:absolute;top:1190px;left:50%;width:0;height:3px;background:#D8A55A;transform:translateX(-50%);opacity:.9;}
+.tr-tvline{position:absolute;left:0;right:0;top:50%;height:3px;background:rgba(242,230,210,.9);opacity:0;box-shadow:0 0 30px rgba(242,230,210,.8);}
+
+/* 标题卡 / 绑定 / 关键词 */
+.title-card{position:absolute;top:560px;left:80px;right:80px;text-align:center;opacity:0;}
+.tc-no{font-family:"JetBrains Mono",monospace;font-size:36px;font-weight:700;letter-spacing:.46em;color:#D8A55A;margin-bottom:24px;}
+.tc-name{font-size:164px;font-weight:800;line-height:1.0;color:#F2E6D2;text-shadow:0 8px 40px rgba(0,0,0,.7);}
+.tc-drama{font-size:60px;font-weight:600;color:rgba(242,230,210,.9);margin-top:18px;letter-spacing:.04em;}
+.tc-stamp{display:inline-block;margin-top:32px;font-family:"Noto Sans SC",sans-serif;font-size:40px;font-weight:700;color:#C2563B;border:3px solid #C2563B;border-radius:10px;padding:10px 28px;transform:rotate(-4deg);letter-spacing:.08em;box-shadow:0 6px 24px rgba(0,0,0,.4);}
+.bind{position:absolute;left:60px;bottom:148px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;max-width:840px;opacity:0;}
+.bind-song{font-size:58px;font-weight:800;color:#F2E6D2;text-shadow:0 4px 18px rgba(0,0,0,.85);}
+.bind-sep{font-size:44px;color:#D8A55A;}
+.bind-drama{font-size:52px;font-weight:600;color:rgba(242,230,210,.92);text-shadow:0 4px 18px rgba(0,0,0,.85);}
+.bind-badge{font-family:"Noto Sans SC",sans-serif;font-size:28px;font-weight:700;color:#D8A55A;border:2px solid rgba(216,165,90,.7);border-radius:999px;padding:7px 20px;letter-spacing:.08em;background:rgba(18,13,10,.5);width:100%;max-width:max-content;}
+.kwtag{position:absolute;left:60px;bottom:330px;font-family:"Noto Sans SC",sans-serif;font-size:50px;font-weight:800;color:#F2E6D2;padding:16px 30px;background:linear-gradient(90deg, rgba(194,86,59,.92), rgba(160,60,40,.55));border-left:6px solid #D8A55A;border-radius:6px;letter-spacing:.03em;opacity:0;text-shadow:0 3px 14px rgba(0,0,0,.6);box-shadow:0 10px 36px rgba(0,0,0,.5);}
+
+/* outro */
+.outroblk{z-index:47;}
+.fb{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;}
+.fb1{background-image:url("cover_assets/fb1.jpg");}.fb2{background-image:url("cover_assets/fb2.jpg");}
+.fb3{background-image:url("cover_assets/fb3.jpg");}.fb4{background-image:url("cover_assets/fb4.jpg");}
+.fb5{background-image:url("cover_assets/fb5.jpg");}
+.ot-veil{position:absolute;inset:0;background:linear-gradient(180deg, rgba(10,6,3,.6) 0%, rgba(10,6,3,.4) 40%, rgba(10,6,3,.92) 100%);opacity:0;}
+.ot-flabel{position:absolute;top:560px;left:0;right:0;text-align:center;font-family:"JetBrains Mono",monospace;font-size:32px;font-weight:700;letter-spacing:.34em;color:#D8A55A;opacity:0;}
+.ot-h{position:absolute;top:680px;left:80px;right:80px;text-align:center;font-size:84px;font-weight:800;line-height:1.28;color:#F2E6D2;opacity:0;text-shadow:0 6px 30px rgba(0,0,0,.7);}
+.ot-cta{position:absolute;top:1230px;left:0;right:0;text-align:center;opacity:0;}
+.cta-row{font-family:"Noto Sans SC",sans-serif;font-size:52px;font-weight:800;color:#F2E6D2;letter-spacing:.06em;display:flex;justify-content:center;align-items:center;gap:18px;}
+.cta-ic{color:#D8A55A;font-size:46px;} .cta-dot{color:rgba(242,230,210,.4);}
+.cta-sub{margin-top:26px;font-size:42px;font-weight:600;color:#D8A55A;letter-spacing:.04em;}
+</style></head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="381.2" data-width="1080" data-height="1920">
+    <video id="fv_butong" class="fv clip" data-start="33.925" data-duration="56.8" data-track-index="0" src="clips_seg/butong.mp4" muted playsinline></video>
+<video id="fv_baibaide" class="fv clip" data-start="95.2" data-duration="57.525" data-track-index="6" src="clips_seg/baibaide.mp4" muted playsinline></video>
+<video id="fv_zhende" class="fv clip" data-start="158.725" data-duration="55.425" data-track-index="0" src="clips_seg/zhende.mp4" muted playsinline></video>
+<video id="fv_qishi" class="fv clip" data-start="220.975" data-duration="57.375" data-track-index="6" src="clips_seg/qishi.mp4" muted playsinline></video>
+<video id="fv_yinxing" class="fv clip" data-start="285.875" data-duration="63.975" data-track-index="0" src="clips_seg/yinxing.mp4" muted playsinline></video>
+    <div id="tint_butong" class="clip tint" data-start="33.925" data-duration="56.8" data-track-index="11"></div>
+<div id="tint_baibaide" class="clip tint" data-start="95.2" data-duration="57.525" data-track-index="12"></div>
+<div id="tint_zhende" class="clip tint" data-start="158.725" data-duration="55.425" data-track-index="13"></div>
+<div id="tint_qishi" class="clip tint" data-start="220.975" data-duration="57.375" data-track-index="14"></div>
+<div id="tint_yinxing" class="clip tint" data-start="285.875" data-duration="63.975" data-track-index="15"></div>
+    <div id="chrome_butong" class="clip chrome" data-start="33.925" data-duration="56.8" data-track-index="20">
+  <div class="title-card" id="tc_butong">
+    <div class="tc-no">OST · 01</div>
+    <div class="tc-name">不痛</div>
+    <div class="tc-drama">《你来自哪颗星》</div>
+    <div class="tc-stamp">原来它也是 OST</div>
+  </div>
+  <div class="bind" id="bind_butong">
+    <span class="bind-song">不痛</span><span class="bind-sep">·</span><span class="bind-drama">你来自哪颗星</span>
+    <span class="bind-badge">片尾曲｜八大戲劇台</span>
+  </div>
+  <div class="kwtag" id="kw_butong_0">明明很痛，却说不痛</div><div class="kwtag" id="kw_butong_1">韩剧感拉满</div><div class="kwtag" id="kw_butong_2">张韶涵早期 OST 隐藏大招</div>
+</div>
+<div id="chrome_baibaide" class="clip chrome" data-start="95.2" data-duration="57.525" data-track-index="21">
+  <div class="title-card" id="tc_baibaide">
+    <div class="tc-no">OST · 02</div>
+    <div class="tc-name">白白的</div>
+    <div class="tc-drama">《贝多芬病毒》</div>
+    <div class="tc-stamp">原来它也是 OST</div>
+  </div>
+  <div class="bind" id="bind_baibaide">
+    <span class="bind-song">白白的</span><span class="bind-sep">·</span><span class="bind-drama">贝多芬病毒</span>
+    <span class="bind-badge">片尾曲｜韩剧</span>
+  </div>
+  <div class="kwtag" id="kw_baibaide_0">被忽略的韩剧片尾</div><div class="kwtag" id="kw_baibaide_1">白白的，不是空白</div><div class="kwtag" id="kw_baibaide_2">情绪被抽走后的安静</div>
+</div>
+<div id="chrome_zhende" class="clip chrome" data-start="158.725" data-duration="55.425" data-track-index="22">
+  <div class="title-card" id="tc_zhende">
+    <div class="tc-no">OST · 03</div>
+    <div class="tc-name">真的</div>
+    <div class="tc-drama">《风尘三侠之红拂女》</div>
+    <div class="tc-stamp">原来它也是 OST</div>
+  </div>
+  <div class="bind" id="bind_zhende">
+    <span class="bind-song">真的</span><span class="bind-sep">·</span><span class="bind-drama">风尘三侠之红拂女</span>
+    <span class="bind-badge">片尾曲｜古装剧</span>
+  </div>
+  <div class="kwtag" id="kw_zhende_0">冷门神曲</div><div class="kwtag" id="kw_zhende_1">古装剧片尾曲氛围拉满</div><div class="kwtag" id="kw_zhende_2">故事结束，遗憾开始</div>
+</div>
+<div id="chrome_qishi" class="clip chrome" data-start="220.975" data-duration="57.375" data-track-index="23">
+  <div class="title-card" id="tc_qishi">
+    <div class="tc-no">OST · 04</div>
+    <div class="tc-name">其实很爱你</div>
+    <div class="tc-drama">《屋顶上的绿宝石》</div>
+    <div class="tc-stamp">原来它也是 OST</div>
+  </div>
+  <div class="bind" id="bind_qishi">
+    <span class="bind-song">其实很爱你</span><span class="bind-sep">·</span><span class="bind-drama">屋顶上的绿宝石</span>
+    <span class="bind-badge">片头曲｜偶像剧</span>
+  </div>
+  <div class="kwtag" id="kw_qishi_0">早年偶像剧遗珠</div><div class="kwtag" id="kw_qishi_1">嘴上放下，心里全是你</div><div class="kwtag" id="kw_qishi_2">原来它是片头曲</div>
+</div>
+<div id="chrome_yinxing" class="clip chrome" data-start="285.875" data-duration="63.975" data-track-index="24">
+  <div class="title-card" id="tc_yinxing">
+    <div class="tc-no">OST · 05</div>
+    <div class="tc-name">隐形的翅膀</div>
+    <div class="tc-drama">《爱杀17》</div>
+    <div class="tc-stamp">原来它也是 OST</div>
+  </div>
+  <div class="bind" id="bind_yinxing">
+    <span class="bind-song">隐形的翅膀</span><span class="bind-sep">·</span><span class="bind-drama">爱杀17</span>
+    <span class="bind-badge">片尾曲｜偶像剧</span>
+  </div>
+  <div class="kwtag" id="kw_yinxing_0">不是只有励志</div><div class="kwtag" id="kw_yinxing_1">也是《爱杀17》的青春伤口</div><div class="kwtag" id="kw_yinxing_2">越长大，越听懂那双翅膀</div>
+</div>
+    <div class="gfx-scan"></div><div class="gfx-grain"></div><div class="gfx-vig"></div>
+    <div id="trans_butong" class="clip scene trcard" data-start="26.625" data-duration="8.4" data-track-index="30">
+  <div class="sc-bg"></div><div class="sc-scan"></div><div class="sc-grain"></div><div class="sc-vig"></div>
+  <div class="tr-no" id="trno_butong">第 1 首</div>
+  <div class="tr-line" id="trln_butong">听过副歌，<br>却未必知道它的出处</div>
+  <div class="tr-rule" id="trru_butong"></div>
+  <div class="tr-tvline" id="trtv_butong"></div>
+</div>
+<div id="trans_baibaide" class="clip scene trcard" data-start="90.425" data-duration="5.875" data-track-index="31">
+  <div class="sc-bg"></div><div class="sc-scan"></div><div class="sc-grain"></div><div class="sc-vig"></div>
+  <div class="tr-no" id="trno_baibaide">第 2 首</div>
+  <div class="tr-line" id="trln_baibaide">名字很轻，<br>情绪却一点都不轻</div>
+  <div class="tr-rule" id="trru_baibaide"></div>
+  <div class="tr-tvline" id="trtv_baibaide"></div>
+</div>
+<div id="trans_zhende" class="clip scene trcard" data-start="152.425" data-duration="7.4" data-track-index="32">
+  <div class="sc-bg"></div><div class="sc-scan"></div><div class="sc-grain"></div><div class="sc-vig"></div>
+  <div class="tr-no" id="trno_zhende">第 3 首</div>
+  <div class="tr-line" id="trln_zhende">老粉心里的<br>冷门神曲</div>
+  <div class="tr-rule" id="trru_zhende"></div>
+  <div class="tr-tvline" id="trtv_zhende"></div>
+</div>
+<div id="trans_qishi" class="clip scene trcard" data-start="213.85" data-duration="8.225" data-track-index="33">
+  <div class="sc-bg"></div><div class="sc-scan"></div><div class="sc-grain"></div><div class="sc-vig"></div>
+  <div class="tr-no" id="trno_qishi">第 4 首</div>
+  <div class="tr-line" id="trln_qishi">早年偶像剧里，<br>被忘掉的那首</div>
+  <div class="tr-rule" id="trru_qishi"></div>
+  <div class="tr-tvline" id="trtv_qishi"></div>
+</div>
+<div id="trans_yinxing" class="clip scene trcard" data-start="278.05" data-duration="8.925" data-track-index="34">
+  <div class="sc-bg"></div><div class="sc-scan"></div><div class="sc-grain"></div><div class="sc-vig"></div>
+  <div class="tr-no" id="trno_yinxing">第 5 首</div>
+  <div class="tr-line" id="trln_yinxing">你只记得励志，<br>却忘了它的来路</div>
+  <div class="tr-rule" id="trru_yinxing"></div>
+  <div class="tr-tvline" id="trtv_yinxing"></div>
+</div>
+    <div id="intro" class="clip scene" data-start="5.0" data-duration="21.625" data-track-index="46">
+  <div class="sc-bg"></div><div class="sc-scan"></div><div class="sc-grain"></div><div class="sc-vig"></div>
+  <div class="in-kick">影视歌曲考古</div>
+  <div class="in-line in-l1">片头 · 片尾 · 主题曲</div>
+  <div class="in-line in-l2">有些歌，你听了很多年</div>
+  <div class="in-line in-l3">却不知道，它来自哪部剧</div>
+</div>
+    <div id="outro" class="clip scene outroblk" data-start="349.55" data-duration="31.65" data-track-index="47">
+  <div class="sc-bg"></div>
+  <div class="fb fb1" id="fb_1"></div><div class="fb fb2" id="fb_2"></div><div class="fb fb3" id="fb_3"></div><div class="fb fb4" id="fb_4"></div><div class="fb fb5" id="fb_5"></div>
+  <div class="ot-veil" id="ot_veil"></div>
+  <div class="sc-scan"></div><div class="sc-grain"></div><div class="sc-vig"></div>
+  <div class="ot-flabel" id="ot_flabel">5 部剧 · 5 首被忘记的 OST</div>
+  <h2 class="ot-h" id="ot_h">原来她的声音，<br>陪过这么多<br>电视剧的结尾</h2>
+  <div class="ot-cta" id="ot_cta">
+    <div class="cta-row"><span class="cta-ic">♡</span>投票<span class="cta-dot">·</span><span class="cta-ic">☆</span>收藏<span class="cta-dot">·</span><span class="cta-ic">+</span>关注</div>
+    <div class="cta-sub">你最想为哪一首投票？</div>
+  </div>
+</div>
+    <div id="cover" class="clip cover" data-start="0" data-duration="5.0" data-track-index="48">
+  <div class="cv-frag cv-frag1"></div><div class="cv-frag cv-frag2"></div><div class="cv-frag cv-frag3"></div>
+  <div class="cv-veil"></div><div class="cv-scan"></div><div class="cv-grain"></div>
+  <div class="cv-tvtag">CH&nbsp;OST&nbsp;·&nbsp;典藏</div>
+  <div class="cv-face-wrap"><div class="cv-face"></div><div class="cv-face-ring"></div></div>
+  <div class="cv-title"><div class="cv-name">张韶涵</div><div class="cv-sub">隐藏 OST 名场面</div></div>
+  <div class="cv-badge">这些歌你可能听过，<br>但未必知道出处</div>
+  <div class="cv-vig"></div>
+</div>
+    <audio id="master" data-start="0" data-duration="381.2" data-track-index="60" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({paused:true});
+    tl.set("#cover",{opacity:1},0);
+    tl.set(".cv-tvtag,.cv-face-wrap,.cv-title,.cv-badge",{opacity:1},0);
+    tl.to(".cv-face",{scale:1.03,duration:3.4,ease:"sine.inOut",yoyo:true,repeat:1},1.0);
+    tl.to("#cover",{opacity:0,duration:.6,ease:"power2.in"},4.45);
+    tl.set("#cover",{opacity:0},5.0);
+    tl.set("#intro",{opacity:1},5.0);
+    tl.fromTo(".in-kick",{opacity:0,y:18},{opacity:.9,y:0,duration:.7},5.5);
+    tl.fromTo(".in-l1",{opacity:0,y:24},{opacity:1,y:0,duration:.7},7.5);
+    tl.fromTo(".in-l2",{opacity:0,y:24},{opacity:.96,y:0,duration:.7},14.8);
+    tl.fromTo(".in-l3",{opacity:0,y:24},{opacity:.96,y:0,duration:.7},19.3);
+    tl.to("#intro",{opacity:0,duration:.6,ease:"power2.in"},26.125);
+    tl.set("#intro",{opacity:0},26.625);
+    tl.set("#trans_butong",{opacity:1},26.625);
+    tl.fromTo("#trno_butong",{opacity:0,y:16},{opacity:1,y:0,duration:.5},27.025);
+    tl.fromTo("#trln_butong",{opacity:0,y:22},{opacity:1,y:0,duration:.7},27.425);
+    tl.fromTo("#trru_butong",{width:0},{width:280,duration:.9,ease:"power2.out"},28.025);
+    tl.fromTo("#trtv_butong",{opacity:0,scaleY:1},{opacity:1,duration:.16},34.525);
+    tl.to("#trno_butong,#trln_butong,#trru_butong",{opacity:0,duration:.2},34.575);
+    tl.to("#trtv_butong",{scaleY:60,opacity:0,duration:.32,ease:"power2.in",overwrite:"auto"},34.695);
+    tl.set("#trtv_butong",{opacity:0},35.025);
+    tl.to("#trans_butong",{opacity:0,duration:.2},34.975);
+    tl.set("#trans_butong",{opacity:0},35.025);
+    tl.fromTo("#fv_butong",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0,ease:"power2.out"},33.925);
+    tl.to("#tint_butong",{opacity:1,duration:1.0},33.925);
+    tl.fromTo("#tc_butong",{opacity:0,y:28},{opacity:1,y:0,duration:.8,ease:"power3.out"},34.425);
+    tl.to("#tc_butong",{opacity:0,y:-18,duration:.6,ease:"power2.in"},36.125);
+    tl.fromTo("#bind_butong",{opacity:0,x:-30},{opacity:1,x:0,duration:.7},36.525);
+    tl.fromTo("#kw_butong_0",{opacity:0,x:-26},{opacity:1,x:0,duration:.5},39.525);
+    tl.to("#kw_butong_0",{opacity:0,x:14,duration:.45},56.625);
+    tl.fromTo("#kw_butong_1",{opacity:0,x:-26},{opacity:1,x:0,duration:.5},56.825);
+    tl.to("#kw_butong_1",{opacity:0,x:14,duration:.45},65.825);
+    tl.fromTo("#kw_butong_2",{opacity:0,x:-26},{opacity:1,x:0,duration:.5},66.025);
+    tl.to("#kw_butong_2",{opacity:0,x:14,duration:.45},89.225);
+    tl.to("#fv_butong",{opacity:0,duration:1.2,ease:"power1.in"},89.025);
+    tl.set("#fv_butong",{opacity:0},90.425);
+    tl.to("#tint_butong",{opacity:0,duration:1.2,ease:"power1.in"},89.025);
+    tl.set("#tint_butong",{opacity:0},90.425);
+    tl.to("#bind_butong",{opacity:0,duration:1.2,ease:"power1.in"},89.025);
+    tl.set("#bind_butong",{opacity:0},90.425);
+    tl.set("#trans_baibaide",{opacity:1},90.425);
+    tl.fromTo("#trno_baibaide",{opacity:0,y:16},{opacity:1,y:0,duration:.5},90.825);
+    tl.fromTo("#trln_baibaide",{opacity:0,y:22},{opacity:1,y:0,duration:.7},91.225);
+    tl.fromTo("#trru_baibaide",{width:0},{width:280,duration:.9,ease:"power2.out"},91.825);
+    tl.fromTo("#trtv_baibaide",{opacity:0,scaleY:1},{opacity:1,duration:.16},95.8);
+    tl.to("#trno_baibaide,#trln_baibaide,#trru_baibaide",{opacity:0,duration:.2},95.85);
+    tl.to("#trtv_baibaide",{scaleY:60,opacity:0,duration:.32,ease:"power2.in",overwrite:"auto"},95.97);
+    tl.set("#trtv_baibaide",{opacity:0},96.3);
+    tl.to("#trans_baibaide",{opacity:0,duration:.2},96.25);
+    tl.set("#trans_baibaide",{opacity:0},96.3);
+    tl.fromTo("#fv_baibaide",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0,ease:"power2.out"},95.2);
+    tl.to("#tint_baibaide",{opacity:1,duration:1.0},95.2);
+    tl.fromTo("#tc_baibaide",{opacity:0,y:28},{opacity:1,y:0,duration:.8,ease:"power3.out"},95.7);
+    tl.to("#tc_baibaide",{opacity:0,y:-18,duration:.6,ease:"power2.in"},97.4);
+    tl.fromTo("#bind_baibaide",{opacity:0,x:-30},{opacity:1,x:0,duration:.7},97.8);
+    tl.fromTo("#kw_baibaide_0",{opacity:0,x:-26},{opacity:1,x:0,duration:.5},100.8);
+    tl.to("#kw_baibaide_0",{opacity:0,x:14,duration:.45},118.625);
+    tl.fromTo("#kw_baibaide_1",{opacity:0,x:-26},{opacity:1,x:0,duration:.5},118.825);
+    tl.to("#kw_baibaide_1",{opacity:0,x:14,duration:.45},127.825);
+    tl.fromTo("#kw_baibaide_2",{opacity:0,x:-26},{opacity:1,x:0,duration:.5},128.025);
+    tl.to("#kw_baibaide_2",{opacity:0,x:14,duration:.45},151.225);
+    tl.to("#fv_baibaide",{opacity:0,duration:1.2,ease:"power1.in"},151.025);
+    tl.set("#fv_baibaide",{opacity:0},152.425);
+    tl.to("#tint_baibaide",{opacity:0,duration:1.2,ease:"power1.in"},151.025);
+    tl.set("#tint_baibaide",{opacity:0},152.425);
+    tl.to("#bind_baibaide",{opacity:0,duration:1.2,ease:"power1.in"},151.025);
+    tl.set("#bind_baibaide",{opacity:0},152.425);
+    tl.set("#trans_zhende",{opacity:1},152.425);
+    tl.fromTo("#trno_zhende",{opacity:0,y:16},{opacity:1,y:0,duration:.5},152.825);
+    tl.fromTo("#trln_zhende",{opacity:0,y:22},{opacity:1,y:0,duration:.7},153.225);
+    tl.fromTo("#trru_zhende",{width:0},{width:280,duration:.9,ease:"power2.out"},153.825);
+    tl.fromTo("#trtv_zhende",{opacity:0,scaleY:1},{opacity:1,duration:.16},159.325);
+    tl.to("#trno_zhende,#trln_zhende,#trru_zhende",{opacity:0,duration:.2},159.375);
+    tl.to("#trtv_zhende",{scaleY:60,opacity:0,duration:.32,ease:"power2.in",overwrite:"auto"},159.495);
+    tl.set("#trtv_zhende",{opacity:0},159.825);
+    tl.to("#trans_zhende",{opacity:0,duration:.2},159.775);
+    tl.set("#trans_zhende",{opacity:0},159.825);
+    tl.fromTo("#fv_zhende",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0,ease:"power2.out"},158.725);
+    tl.to("#tint_zhende",{opacity:1,duration:1.0},158.725);
+    tl.fromTo("#tc_zhende",{opacity:0,y:28},{opacity:1,y:0,duration:.8,ease:"power3.out"},159.225);
+    tl.to("#tc_zhende",{opacity:0,y:-18,duration:.6,ease:"power2.in"},160.925);
+    tl.fromTo("#bind_zhende",{opacity:0,x:-30},{opacity:1,x:0,duration:.7},161.325);
+    tl.fromTo("#kw_zhende_0",{opacity:0,x:-26},{opacity:1,x:0,duration:.5},164.325);
+    tl.to("#kw_zhende_0",{opacity:0,x:14,duration:.45},182.05);
+    tl.fromTo("#kw_zhende_1",{opacity:0,x:-26},{opacity:1,x:0,duration:.5},182.25);
+    tl.to("#kw_zhende_1",{opacity:0,x:14,duration:.45},191.25);
+    tl.fromTo("#kw_zhende_2",{opacity:0,x:-26},{opacity:1,x:0,duration:.5},191.45);
+    tl.to("#kw_zhende_2",{opacity:0,x:14,duration:.45},212.65);
+    tl.to("#fv_zhende",{opacity:0,duration:1.2,ease:"power1.in"},212.45);
+    tl.set("#fv_zhende",{opacity:0},213.85);
+    tl.to("#tint_zhende",{opacity:0,duration:1.2,ease:"power1.in"},212.45);
+    tl.set("#tint_zhende",{opacity:0},213.85);
+    tl.to("#bind_zhende",{opacity:0,duration:1.2,ease:"power1.in"},212.45);
+    tl.set("#bind_zhende",{opacity:0},213.85);
+    tl.set("#trans_qishi",{opacity:1},213.85);
+    tl.fromTo("#trno_qishi",{opacity:0,y:16},{opacity:1,y:0,duration:.5},214.25);
+    tl.fromTo("#trln_qishi",{opacity:0,y:22},{opacity:1,y:0,duration:.7},214.65);
+    tl.fromTo("#trru_qishi",{width:0},{width:280,duration:.9,ease:"power2.out"},215.25);
+    tl.fromTo("#trtv_qishi",{opacity:0,scaleY:1},{opacity:1,duration:.16},221.575);
+    tl.to("#trno_qishi,#trln_qishi,#trru_qishi",{opacity:0,duration:.2},221.625);
+    tl.to("#trtv_qishi",{scaleY:60,opacity:0,duration:.32,ease:"power2.in",overwrite:"auto"},221.745);
+    tl.set("#trtv_qishi",{opacity:0},222.075);
+    tl.to("#trans_qishi",{opacity:0,duration:.2},222.025);
+    tl.set("#trans_qishi",{opacity:0},222.075);
+    tl.fromTo("#fv_qishi",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0,ease:"power2.out"},220.975);
+    tl.to("#tint_qishi",{opacity:1,duration:1.0},220.975);
+    tl.fromTo("#tc_qishi",{opacity:0,y:28},{opacity:1,y:0,duration:.8,ease:"power3.out"},221.475);
+    tl.to("#tc_qishi",{opacity:0,y:-18,duration:.6,ease:"power2.in"},223.175);
+    tl.fromTo("#bind_qishi",{opacity:0,x:-30},{opacity:1,x:0,duration:.7},223.575);
+    tl.fromTo("#kw_qishi_0",{opacity:0,x:-26},{opacity:1,x:0,duration:.5},226.575);
+    tl.to("#kw_qishi_0",{opacity:0,x:14,duration:.45},244.25);
+    tl.fromTo("#kw_qishi_1",{opacity:0,x:-26},{opacity:1,x:0,duration:.5},244.45);
+    tl.to("#kw_qishi_1",{opacity:0,x:14,duration:.45},253.45);
+    tl.fromTo("#kw_qishi_2",{opacity:0,x:-26},{opacity:1,x:0,duration:.5},253.65);
+    tl.to("#kw_qishi_2",{opacity:0,x:14,duration:.45},276.85);
+    tl.to("#fv_qishi",{opacity:0,duration:1.2,ease:"power1.in"},276.65);
+    tl.set("#fv_qishi",{opacity:0},278.05);
+    tl.to("#tint_qishi",{opacity:0,duration:1.2,ease:"power1.in"},276.65);
+    tl.set("#tint_qishi",{opacity:0},278.05);
+    tl.to("#bind_qishi",{opacity:0,duration:1.2,ease:"power1.in"},276.65);
+    tl.set("#bind_qishi",{opacity:0},278.05);
+    tl.set("#trans_yinxing",{opacity:1},278.05);
+    tl.fromTo("#trno_yinxing",{opacity:0,y:16},{opacity:1,y:0,duration:.5},278.45);
+    tl.fromTo("#trln_yinxing",{opacity:0,y:22},{opacity:1,y:0,duration:.7},278.85);
+    tl.fromTo("#trru_yinxing",{width:0},{width:280,duration:.9,ease:"power2.out"},279.45);
+    tl.fromTo("#trtv_yinxing",{opacity:0,scaleY:1},{opacity:1,duration:.16},286.475);
+    tl.to("#trno_yinxing,#trln_yinxing,#trru_yinxing",{opacity:0,duration:.2},286.525);
+    tl.to("#trtv_yinxing",{scaleY:60,opacity:0,duration:.32,ease:"power2.in",overwrite:"auto"},286.645);
+    tl.set("#trtv_yinxing",{opacity:0},286.975);
+    tl.to("#trans_yinxing",{opacity:0,duration:.2},286.925);
+    tl.set("#trans_yinxing",{opacity:0},286.975);
+    tl.fromTo("#fv_yinxing",{opacity:0,scale:1.05},{opacity:1,scale:1.0,duration:1.0,ease:"power2.out"},285.875);
+    tl.to("#tint_yinxing",{opacity:1,duration:1.0},285.875);
+    tl.fromTo("#tc_yinxing",{opacity:0,y:28},{opacity:1,y:0,duration:.8,ease:"power3.out"},286.375);
+    tl.to("#tc_yinxing",{opacity:0,y:-18,duration:.6,ease:"power2.in"},288.075);
+    tl.fromTo("#bind_yinxing",{opacity:0,x:-30},{opacity:1,x:0,duration:.7},288.475);
+    tl.fromTo("#kw_yinxing_0",{opacity:0,x:-26},{opacity:1,x:0,duration:.5},291.475);
+    tl.to("#kw_yinxing_0",{opacity:0,x:14,duration:.45},307.75);
+    tl.fromTo("#kw_yinxing_1",{opacity:0,x:-26},{opacity:1,x:0,duration:.5},307.95);
+    tl.to("#kw_yinxing_1",{opacity:0,x:14,duration:.45},316.95);
+    tl.fromTo("#kw_yinxing_2",{opacity:0,x:-26},{opacity:1,x:0,duration:.5},317.15);
+    tl.to("#kw_yinxing_2",{opacity:0,x:14,duration:.45},348.35);
+    tl.to("#fv_yinxing",{opacity:0,duration:1.2,ease:"power1.in"},348.15);
+    tl.set("#fv_yinxing",{opacity:0},349.55);
+    tl.to("#tint_yinxing",{opacity:0,duration:1.2,ease:"power1.in"},348.15);
+    tl.set("#tint_yinxing",{opacity:0},349.55);
+    tl.to("#bind_yinxing",{opacity:0,duration:1.2,ease:"power1.in"},348.15);
+    tl.set("#bind_yinxing",{opacity:0},349.55);
+    tl.set("#outro",{opacity:1},349.55);
+    tl.fromTo("#fb_1",{opacity:0},{opacity:.9,duration:.12},349.75);
+    tl.to("#fb_1",{opacity:0,duration:.12},350.75);
+    tl.set("#fb_1",{opacity:0},350.8);
+    tl.fromTo("#fb_2",{opacity:0},{opacity:.9,duration:.12},350.9);
+    tl.to("#fb_2",{opacity:0,duration:.12},351.9);
+    tl.set("#fb_2",{opacity:0},351.95);
+    tl.fromTo("#fb_3",{opacity:0},{opacity:.9,duration:.12},352.05);
+    tl.to("#fb_3",{opacity:0,duration:.12},353.05);
+    tl.set("#fb_3",{opacity:0},353.1);
+    tl.fromTo("#fb_4",{opacity:0},{opacity:.9,duration:.12},353.2);
+    tl.to("#fb_4",{opacity:0,duration:.12},354.2);
+    tl.set("#fb_4",{opacity:0},354.25);
+    tl.fromTo("#fb_5",{opacity:0},{opacity:.9,duration:.12},354.35);
+    tl.to("#fb_5",{opacity:0,duration:.12},355.35);
+    tl.set("#fb_5",{opacity:0},355.4);
+    tl.fromTo("#ot_veil",{opacity:0},{opacity:1,duration:.8},355.6);
+    tl.fromTo("#ot_flabel",{opacity:0,y:14},{opacity:.9,y:0,duration:.7},356.0);
+    tl.fromTo("#ot_h",{opacity:0,y:34},{opacity:1,y:0,duration:1.0,ease:"power3.out"},356.6);
+    tl.fromTo("#ot_cta",{opacity:0,y:16},{opacity:1,y:0,duration:.7},369.675);
+    tl.to("#outro",{opacity:1,duration:.1},381.0);
+    window.__timelines["main"] = tl;
+  </script>
+</body></html>

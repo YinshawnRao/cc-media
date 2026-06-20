@@ -7,11 +7,13 @@ import re
 import subprocess
 import sys
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
 WATERMARK_TEXT = "AI训练，仅供娱乐"
+FINAL_DATE_ENV = "ANGELA_MV_FINAL_DATE"
 
 
 @dataclass(frozen=True)
@@ -216,6 +218,92 @@ SONGS = [
         intro_voice="voice/yujizhong_intro.wav",
         output="final/雨季中_AI训练张韶涵音色MV.mp4",
     ),
+    Song(
+        key="douquan",
+        title="兜圈",
+        video="raw/douquan.mp4",
+        song_audio="audio/douquan_20260608.wav",
+        intro_voice="voice/douquan_intro.wav",
+        output="final/兜圈_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="huijia",
+        title="回家",
+        video="raw/huijia_youtube_candidate.mp4",
+        song_audio="audio/huijia_20260608.wav",
+        intro_voice="voice/huijia_intro.wav",
+        output="final/回家_AI训练张韶涵音色MV.mp4",
+        audio_gain=1.08,
+    ),
+    Song(
+        key="wozhidao",
+        title="我知道",
+        video="raw/wozhidao_aligned.mp4",
+        song_audio="audio/wozhidao_20260608.wav",
+        intro_voice="voice/wozhidao_intro.wav",
+        output="final/我知道_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="yigerenxiangzheyigeren",
+        title="一个人想着一个人",
+        video="raw/yigerenxiangzheyigeren_youtube_candidate.mp4",
+        song_audio="audio/yigerenxiangzheyigeren_20260605.wav",
+        intro_voice="voice/yigerenxiangzheyigeren_intro.wav",
+        output="final/一个人想着一个人_AI训练张韶涵音色MV.mp4",
+        audio_gain=1.22,
+    ),
+    Song(
+        key="gudanxinshi",
+        title="孤单心事",
+        video="raw/gudanxinshi.mp4",
+        song_audio="audio/gudanxinshi_20260605.wav",
+        intro_voice="voice/gudanxinshi_intro.wav",
+        output="final/孤单心事_AI训练张韶涵音色MV.mp4",
+        crop=(1920, 820, 0, 120),
+    ),
+    Song(
+        key="woaininameyiduo",
+        title="我爱你那么多",
+        video="raw/woaininameyiduo.mp4",
+        song_audio="audio/woaininameyiduo_20260605.wav",
+        intro_voice="voice/woaininameyiduo_intro.wav",
+        output="final/我爱你那么多_AI训练张韶涵音色MV.mp4",
+        audio_gain=1.25,
+    ),
+    Song(
+        key="cankuyueguang",
+        title="残酷月光",
+        video="raw/cankuyueguang.mp4",
+        song_audio="audio/cankuyueguang_20260605.wav",
+        intro_voice="voice/cankuyueguang_intro.wav",
+        output="final/残酷月光_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="langfei",
+        title="浪费",
+        video="raw/langfei.mp4",
+        song_audio="audio/langfei_20260605.wav",
+        intro_voice="voice/langfei_intro.wav",
+        output="final/浪费_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="shuoaini",
+        title="说爱你",
+        video="raw/shuoaini.mp4",
+        song_audio="audio/shuoaini_20260605.wav",
+        intro_voice="voice/shuoaini_intro.wav",
+        output="final/说爱你_AI训练张韶涵音色MV.mp4",
+    ),
+    Song(
+        key="feiniaohechan",
+        title="飞鸟和蝉",
+        video="raw/feiniaohechan_youtube_candidate.mp4",
+        song_audio="audio/feiniaohechan_20260605.wav",
+        intro_voice="voice/feiniaohechan_intro.wav",
+        output="final/飞鸟和蝉_AI训练张韶涵音色MV.mp4",
+        crop=(1920, 760, 0, 280),
+        audio_gain=1.10,
+    ),
 ]
 
 
@@ -283,6 +371,14 @@ def make_watermark(renderer: Path, song: Song, out_w: int) -> Path:
     output = ROOT / "build" / f"{song.key}_watermark.png"
     run([str(renderer), str(output), WATERMARK_TEXT, str(font_size)])
     return output
+
+
+def final_output_path(song: Song) -> Path:
+    output = Path(song.output)
+    if not output.is_absolute() and len(output.parts) == 2 and output.parts[0] == "final":
+        final_date = os.environ.get(FINAL_DATE_ENV) or date.today().isoformat()
+        return ROOT / "final" / final_date / output.name
+    return ROOT / output
 
 
 def speech_window(path: Path) -> tuple[float, float]:
@@ -403,7 +499,7 @@ def main() -> None:
             raise SystemExit(f"Unknown song key(s): {', '.join(unknown)}")
     songs = [song for song in SONGS if not requested or song.key in requested]
     for song in songs:
-        output = ROOT / song.output
+        output = final_output_path(song)
         output.parent.mkdir(parents=True, exist_ok=True)
         out_w, _ = filtered_video_size(song)
         voice = trim_intro_voice(song)

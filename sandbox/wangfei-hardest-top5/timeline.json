@@ -1,0 +1,58 @@
+{
+  "total": 309.45,
+  "intro_end": 16.2,
+  "outro_start": 282.5,
+  "cta_voice": 297.525,
+  "blocks": [
+    {
+      "key": "p5_kaidao",
+      "no": "05",
+      "name": "开到荼蘼",
+      "start": 16.2,
+      "full_start": 31.825,
+      "show_end": 67.825,
+      "end": 68.475,
+      "music_offset": 73.375
+    },
+    {
+      "key": "p4_bianhua",
+      "no": "04",
+      "name": "彼岸花",
+      "start": 68.475,
+      "full_start": 84.725,
+      "show_end": 120.725,
+      "end": 121.375,
+      "music_offset": 132.75
+    },
+    {
+      "key": "p3_hanwuji",
+      "no": "03",
+      "name": "寒武纪",
+      "start": 121.375,
+      "full_start": 138.55,
+      "show_end": 172.55,
+      "end": 173.2,
+      "music_offset": 199.525
+    },
+    {
+      "key": "p2_duodeta",
+      "no": "02",
+      "name": "多得他",
+      "start": 173.2,
+      "full_start": 189.675,
+      "show_end": 225.675,
+      "end": 226.325,
+      "music_offset": 173.525
+    },
+    {
+      "key": "p1_face",
+      "no": "01",
+      "name": "脸",
+      "start": 226.325,
+      "full_start": 243.85,
+      "show_end": 281.85,
+      "end": 282.5,
+      "music_offset": 108.475
+    }
+  ]
+}

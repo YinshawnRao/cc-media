@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@500;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#0a0805;font-family:"Noto Sans SC",sans-serif;color:#f7f1e8}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#0a0805}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(8,6,4,.80),rgba(8,6,4,.10) 32%,rgba(8,6,4,.16) 56%,rgba(8,6,4,.82))}
+#grain{position:absolute;inset:-20px;z-index:2;opacity:.10;background:repeating-linear-gradient(0deg,rgba(255,236,200,.14) 0 1px,transparent 1px 4px);mix-blend-mode:overlay}
+#cover{position:absolute;inset:0;z-index:5;padding:150px 76px 140px;display:flex;flex-direction:column;justify-content:space-between}
+.eyebrow{display:inline-flex;align-items:center;gap:18px;font-size:31px;font-weight:800;color:#e9b35a;letter-spacing:.06em}
+.eyebrow:before{content:"";width:54px;height:4px;background:#e9b35a;border-radius:99px}
+#cover h1{font-family:"Noto Serif SC",serif;font-size:130px;line-height:1.05;font-weight:900;max-width:920px;text-wrap:balance;text-shadow:0 6px 40px rgba(0,0,0,.6)}
+#cover .sub{margin-top:32px;font-size:39px;line-height:1.5;color:#ddd2c2;font-weight:500;max-width:880px}
+.chips{display:flex;flex-wrap:wrap;gap:14px;max-width:900px}
+.chips span{border:1px solid rgba(233,179,90,.5);color:#f3dcab;background:rgba(10,8,5,.46);font-size:29px;font-weight:600;padding:12px 20px;border-radius:9px}
+.fullLabel{position:absolute;z-index:5;left:70px;right:70px;bottom:200px;padding:36px 36px 40px;background:linear-gradient(135deg,rgba(10,8,5,.82),rgba(10,8,5,.40));border-left:8px solid #e9b35a;border-radius:4px;backdrop-filter:blur(2px)}
+.fullLabel .rank{font-size:31px;font-weight:800;color:#e9b35a;letter-spacing:.14em}
+.fullLabel h2{font-family:"Noto Serif SC",serif;margin-top:14px;font-size:90px;line-height:1.05;font-weight:900}
+.fullLabel .tag{margin-top:20px;font-size:43px;line-height:1.28;font-weight:700;color:#f4d59c}
+.fullLabel .note{margin-top:12px;font-size:32px;line-height:1.4;font-weight:400;color:#d2c6b6}
+.fullLabel.topRank{border-left-color:#ff9a3c}
+.fullLabel.topRank .rank,.fullLabel.topRank .tag{color:#ffb05a}
+.miniLabel{position:absolute;z-index:5;top:92px;left:58px;display:flex;align-items:center;gap:16px;padding:13px 22px;background:rgba(10,8,5,.62);border:1px solid rgba(233,179,90,.55);border-radius:9px}
+.miniLabel span{font-size:44px;font-weight:900;color:#e9b35a}
+.miniLabel strong{font-family:"Noto Serif SC",serif;font-size:40px;font-weight:800}
+.miniLabel.topRank{border-color:rgba(255,154,60,.75)}
+.miniLabel.topRank span{color:#ffb05a}
+#outro{position:absolute;z-index:5;inset:0;padding:140px 76px;display:flex;flex-direction:column;justify-content:center}
+#outro .small{font-size:33px;font-weight:800;color:#e9b35a;letter-spacing:.14em}
+#outro h2{font-family:"Noto Serif SC",serif;margin-top:20px;font-size:72px;line-height:1.16;font-weight:900;max-width:920px}
+#outro ol{margin-top:46px;list-style:none;display:grid;gap:15px;width:100%}
+#outro li{display:flex;align-items:center;gap:26px;padding:18px 24px;background:rgba(10,8,5,.56);border:1px solid rgba(255,236,200,.12);border-radius:10px}
+#outro li span{font-size:35px;font-weight:900;color:#e9b35a;min-width:58px}
+#outro li:first-child{background:rgba(255,154,60,.12);border-color:rgba(255,154,60,.34)}
+#outro li:first-child span{color:#ffb05a}
+#outro li strong{font-family:"Noto Serif SC",serif;font-size:42px;font-weight:800}
+#outro .close{margin-top:36px;font-size:33px;line-height:1.5;color:#ddd2c2;font-weight:500}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="304.43" data-width="1080" data-height="1920">
+<video id="v0" class="fv" data-start="0.0" data-duration="17.675" data-track-index="0" src="clips/vert_cover.mp4" muted playsinline></video>
+<video id="v1" class="fv" data-start="17.675" data-duration="50.625" data-track-index="6" src="clips/vert_over.mp4" muted playsinline></video>
+<video id="v2" class="fv" data-start="68.3" data-duration="52.275" data-track-index="0" src="clips/vert_nuan.mp4" muted playsinline></video>
+<video id="v3" class="fv" data-start="120.575" data-duration="53.55" data-track-index="6" src="clips/vert_heidongli.mp4" muted playsinline></video>
+<video id="v4" class="fv" data-start="174.125" data-duration="53.375" data-track-index="0" src="clips/vert_orangemoon.mp4" muted playsinline></video>
+<video id="v5" class="fv" data-start="227.5" data-duration="55.8" data-track-index="6" src="clips/vert_takeme.mp4" muted playsinline></video>
+<video id="v6" class="fv" data-start="283.3" data-duration="21.13" data-track-index="0" src="clips/vert_takeme.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="304.43" data-track-index="1"></div>
+<div id="grain" class="clip" data-start="0" data-duration="304.43" data-track-index="7"></div>
+<section id="cover" class="clip" data-start="0" data-duration="17.525" data-track-index="2"><div><div class="eyebrow">华语遗珠 · 唱作盘点</div><h1>方大同最被低估的5首歌</h1><p class="sub">传唱度最高的那几首之外，这五首遗珠，把他最高级的功夫，藏在最不张扬的地方。</p></div><div class="chips"><span>灵魂乐</span><span>节奏蓝调</span><span>唱作全才</span><span>内行才懂</span><span>专辑遗珠</span></div></section>
+<section id="full0" class="clip fullLabel" data-start="17.675" data-duration="16.625" data-track-index="2"><div class="rank">第 05 名</div><h2>《Over》</h2><p class="tag">歌迷越听越懂的隐藏款</p><p class="note">灵魂乐的律动，松弛、细腻、耐听</p></section>
+<section id="mini0" class="clip miniLabel" data-start="34.3" data-duration="34.0" data-track-index="4"><span>05</span><strong>《Over》</strong></section>
+<section id="full1" class="clip fullLabel" data-start="68.3" data-duration="18.275" data-track-index="2"><div class="rank">第 04 名</div><h2>《暖》</h2><p class="tag">非典型情歌里的一束光</p><p class="note">写的不只是爱情，还有关怀与温度</p></section>
+<section id="mini1" class="clip miniLabel" data-start="86.575" data-duration="34.0" data-track-index="4"><span>04</span><strong>《暖》</strong></section>
+<section id="full2" class="clip fullLabel" data-start="120.575" data-duration="19.55" data-track-index="2"><div class="rank">第 03 名</div><h2>《黑洞里》</h2><p class="tag">被忽略的高级情歌</p><p class="note">把灵魂乐的和声自然放进华语歌</p></section>
+<section id="mini2" class="clip miniLabel" data-start="140.125" data-duration="34.0" data-track-index="4"><span>03</span><strong>《黑洞里》</strong></section>
+<section id="full3" class="clip fullLabel" data-start="174.125" data-duration="19.375" data-track-index="2"><div class="rank">第 02 名</div><h2>《Orange Moon》</h2><p class="tag">彩蛋级的遗珠</p><p class="note">一人一把吉他，《倒带人生》最早的雏形</p></section>
+<section id="mini3" class="clip miniLabel" data-start="193.5" data-duration="34.0" data-track-index="4"><span>02</span><strong>《Orange Moon》</strong></section>
+<section id="full4" class="clip fullLabel topRank" data-start="227.5" data-duration="21.8" data-track-index="2"><div class="rank">第 01 名</div><h2>《Take Me》</h2><p class="tag">被主打盖住的那股爽感</p><p class="note">不靠苦情，用律动把人带起来</p></section>
+<section id="mini4" class="clip miniLabel topRank" data-start="249.3" data-duration="34.0" data-track-index="4"><span>01</span><strong>《Take Me》</strong></section>
+<section id="outro" class="clip" data-start="283.3" data-duration="21.13" data-track-index="2"><div class="small">完整榜单</div><h2>方大同的厉害，是把功夫藏进最不张扬的歌里。</h2><ol><li><span>01</span><strong>《Take Me》</strong></li><li><span>02</span><strong>《Orange Moon》</strong></li><li><span>03</span><strong>《黑洞里》</strong></li><li><span>04</span><strong>《暖》</strong></li><li><span>05</span><strong>《Over》</strong></li></ol><p class="close">从第五到第一：Over、暖、黑洞里、Orange Moon、Take Me。</p></section>
+<audio id="master" data-start="0" data-duration="304.43" data-track-index="3" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+/* Cover must be COMPLETE at frame 0 (it is the thumbnail) -> no opacity fade-in.
+   Elements are visible from t=0; motion comes from the live footage + a subtle h1 breath. */
+tl.set("#cover",{opacity:1},0);
+tl.set("#cover .eyebrow, #cover h1, #cover .sub, #cover .chips span",{opacity:1,x:0,y:0},0);
+tl.fromTo("#cover h1",{scale:1.0},{scale:1.02,duration:3.0,ease:"sine.inOut",yoyo:true,repeat:1},0.3);
+tl.to("#cover",{opacity:0,duration:.4,ease:"power1.in"},17.125);
+tl.set("#cover",{opacity:0},17.675);
+tl.from("#full0 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},17.855);
+tl.from("#full0 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},18.025);
+tl.from("#full0 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},18.395);
+tl.from("#full0 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},18.625);
+tl.to("#full0",{opacity:0,duration:.35,ease:"power1.in"},33.9);
+tl.set("#full0",{opacity:0},34.3);
+tl.from("#mini0",{x:-26,opacity:0,duration:.45,ease:"power2.out"},34.4);
+tl.from("#full1 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},68.48);
+tl.from("#full1 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},68.65);
+tl.from("#full1 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},69.02);
+tl.from("#full1 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},69.25);
+tl.to("#full1",{opacity:0,duration:.35,ease:"power1.in"},86.175);
+tl.set("#full1",{opacity:0},86.575);
+tl.from("#mini1",{x:-26,opacity:0,duration:.45,ease:"power2.out"},86.675);
+tl.from("#full2 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},120.755);
+tl.from("#full2 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},120.925);
+tl.from("#full2 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},121.295);
+tl.from("#full2 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},121.525);
+tl.to("#full2",{opacity:0,duration:.35,ease:"power1.in"},139.725);
+tl.set("#full2",{opacity:0},140.125);
+tl.from("#mini2",{x:-26,opacity:0,duration:.45,ease:"power2.out"},140.225);
+tl.from("#full3 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},174.305);
+tl.from("#full3 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},174.475);
+tl.from("#full3 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},174.845);
+tl.from("#full3 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},175.075);
+tl.to("#full3",{opacity:0,duration:.35,ease:"power1.in"},193.1);
+tl.set("#full3",{opacity:0},193.5);
+tl.from("#mini3",{x:-26,opacity:0,duration:.45,ease:"power2.out"},193.6);
+tl.from("#full4 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},227.68);
+tl.from("#full4 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},227.85);
+tl.from("#full4 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},228.22);
+tl.from("#full4 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},228.45);
+tl.to("#full4",{opacity:0,duration:.35,ease:"power1.in"},248.9);
+tl.set("#full4",{opacity:0},249.3);
+tl.from("#mini4",{x:-26,opacity:0,duration:.45,ease:"power2.out"},249.4);
+tl.from("#outro .small",{y:22,opacity:0,duration:.5,ease:"power2.out"},283.5);
+tl.from("#outro h2",{y:40,opacity:0,duration:.65,ease:"power3.out"},283.85);
+tl.from("#outro li",{x:-34,opacity:0,duration:.45,ease:"power2.out",stagger:.1},284.45);
+tl.from("#outro .close",{y:24,opacity:0,duration:.45,ease:"power2.out"},285.3);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

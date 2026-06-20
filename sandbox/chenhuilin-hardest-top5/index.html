@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#08070a;font-family:sans-serif;color:#f8f3ec}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#08070a}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(0,0,0,.76),rgba(0,0,0,.12) 32%,rgba(0,0,0,.18) 58%,rgba(0,0,0,.82))}
+#grain{position:absolute;inset:-20px;z-index:2;opacity:.12;background:repeating-linear-gradient(0deg,rgba(255,255,255,.15) 0 1px,transparent 1px 4px);mix-blend-mode:overlay}
+.lyricMask{position:absolute;left:0;right:0;top:930px;height:500px;z-index:3;background:rgba(8,7,10,.99);box-shadow:0 -18px 54px rgba(0,0,0,.80),0 18px 54px rgba(0,0,0,.70)}
+#cover{position:absolute;inset:0;z-index:5;padding:164px 76px 150px;display:flex;flex-direction:column;justify-content:space-between}
+.eyebrow{display:inline-flex;align-items:center;gap:18px;font-size:30px;font-weight:850;color:#d6b16a}
+.eyebrow:before{content:"";width:52px;height:4px;background:#d6b16a;border-radius:99px}
+#cover h1{margin-top:28px;font-size:132px;line-height:1.03;font-weight:950;max-width:900px;text-wrap:balance}
+#cover .sub{margin-top:28px;font-size:38px;line-height:1.45;color:#d7cfc2;font-weight:650;max-width:860px}
+.chips{display:flex;flex-wrap:wrap;gap:14px;max-width:880px}
+.chips span{border:1px solid rgba(214,177,106,.55);color:#f4dcae;background:rgba(10,10,14,.52);font-size:28px;font-weight:760;padding:12px 18px;border-radius:8px}
+.fullLabel{position:absolute;z-index:5;left:70px;right:70px;bottom:190px;padding:34px 34px 38px;background:linear-gradient(135deg,rgba(5,5,8,.82),rgba(5,5,8,.50));border-left:8px solid #d6b16a}
+.fullLabel .rank{font-size:30px;font-weight:900;color:#d6b16a}
+.fullLabel h2{margin-top:14px;font-size:84px;line-height:1.06;font-weight:950}
+.fullLabel .tag{margin-top:18px;font-size:41px;line-height:1.28;font-weight:850;color:#f0d19a}
+.fullLabel .note{margin-top:12px;font-size:31px;line-height:1.38;font-weight:650;color:#cec4b8}
+.fullLabel.topRank{border-left-color:#c7333f}
+.fullLabel.topRank .rank,.fullLabel.topRank .tag{color:#ff727d}
+.miniLabel{position:absolute;z-index:5;top:96px;left:58px;display:flex;align-items:center;gap:16px;padding:12px 18px;background:rgba(5,5,8,.70);border:1px solid rgba(214,177,106,.58);border-radius:8px}
+.miniLabel span{font-size:44px;font-weight:950;color:#d6b16a}
+.miniLabel strong{font-size:38px;font-weight:900}
+.miniLabel.topRank{border-color:rgba(199,51,63,.78)}
+.miniLabel.topRank span{color:#ff727d}
+#outro{position:absolute;z-index:5;inset:0;padding:150px 76px;display:flex;flex-direction:column;justify-content:center}
+#outro .small{font-size:32px;font-weight:850;color:#d6b16a}
+#outro h2{margin-top:18px;font-size:72px;line-height:1.13;font-weight:950;max-width:900px}
+#outro ol{margin-top:44px;list-style:none;display:grid;gap:16px;width:100%}
+#outro li{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;background:rgba(5,5,8,.62);border:1px solid rgba(255,255,255,.12);border-radius:8px}
+#outro li span{font-size:34px;font-weight:950;color:#d6b16a}
+#outro li:first-child span{color:#ff727d}
+#outro li strong{font-size:35px;font-weight:900;text-align:right}
+#outro .close{margin-top:34px;font-size:32px;line-height:1.45;color:#d7cfc2;font-weight:650}
+#cta{position:absolute;z-index:6;left:76px;right:76px;bottom:96px;text-align:center}
+#cta .v{font-size:46px;font-weight:950;color:#ff727d;line-height:1.2}
+#cta .f{margin-top:16px;font-size:36px;font-weight:850;color:#d6b16a;letter-spacing:.1em}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="340.128" data-width="1080" data-height="1920">
+<video id="v0" class="fv" data-start="0.0" data-duration="21.4" data-track-index="0" src="clips/vert_huahua.mp4" muted playsinline></video>
+<video id="v1" class="fv" data-start="21.4" data-duration="57.8" data-track-index="6" src="clips/vert_shuiyuan.mp4" muted playsinline></video>
+<video id="v2" class="fv" data-start="79.2" data-duration="57.2" data-track-index="0" src="clips/vert_darizi.mp4" muted playsinline></video>
+<video id="v3" class="fv" data-start="136.4" data-duration="57.525" data-track-index="6" src="clips/vert_buru.mp4" muted playsinline></video>
+<video id="v4" class="fv" data-start="193.925" data-duration="57.35" data-track-index="0" src="clips/vert_shiyi.mp4" muted playsinline></video>
+<video id="v5" class="fv" data-start="251.275" data-duration="57.975" data-track-index="6" src="clips/vert_huahua.mp4" muted playsinline></video>
+<video id="v6" class="fv" data-start="309.25" data-duration="30.878" data-track-index="0" src="clips/vert_huahua.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="340.128" data-track-index="1"></div>
+<div id="grain" class="clip" data-start="0" data-duration="340.128" data-track-index="7"></div>
+
+<section id="cover" class="clip" data-start="0.2" data-duration="21.05" data-track-index="2"><div><div class="eyebrow">声乐难度盘点</div><h1>陈慧琳最难的5首歌</h1><p class="sub">她是公认的电音舞曲女王。可越是轻快好唱的快歌，越难——难的不是飙高音，而是在又快又密的节奏里，气息、律动和控制能不能同时稳住。</p></div><div class="chips"><span>电音舞曲</span><span>气息律动</span><span>密集咬字</span><span>边唱边跳</span><span>慢歌控制</span></div></section>
+<section id="full0" class="clip fullLabel" data-start="21.4" data-duration="19.8" data-track-index="2"><div class="rank">第 05 名</div><h2>《谁愿放手》</h2><p class="tag">慢歌的稳，最考控制</p><p class="note">长线条、粤语尾音、真假声边缘都要稳</p></section>
+<section id="mini0" class="clip miniLabel" data-start="41.2" data-duration="38.0" data-track-index="4"><span>05</span><strong>谁愿放手</strong></section>
+<section id="full1" class="clip fullLabel" data-start="79.2" data-duration="19.2" data-track-index="2"><div class="rank">第 04 名</div><h2>《大日子》</h2><p class="tag">喜庆快歌，气息要一直推</p><p class="note">唱出大场面，但不能靠喊</p></section>
+<section id="mini1" class="clip miniLabel" data-start="98.4" data-duration="38.0" data-track-index="4"><span>04</span><strong>大日子</strong></section>
+<section id="full2" class="clip fullLabel" data-start="136.4" data-duration="19.525" data-track-index="2"><div class="rank">第 03 名</div><h2>《不如跳舞》</h2><p class="tag">轻、准、稳的松弛感</p><p class="note">林夕词·雷颂德曲；太用力就土，没劲又撑不起</p></section>
+<section id="mini2" class="clip miniLabel" data-start="155.925" data-duration="38.0" data-track-index="4"><span>03</span><strong>不如跳舞</strong></section>
+<section id="full3" class="clip fullLabel" data-start="193.925" data-duration="19.35" data-track-index="2"><div class="rank">第 02 名</div><h2>《失忆周末》</h2><p class="tag">密集咬字的肺活量考核</p><p class="note">节奏密、气口窄，还要边唱边跳</p></section>
+<section id="mini3" class="clip miniLabel" data-start="213.275" data-duration="38.0" data-track-index="4"><span>02</span><strong>失忆周末</strong></section>
+<section id="full4" class="clip fullLabel topRank" data-start="251.275" data-duration="19.975" data-track-index="2"><div class="rank">第 01 名</div><h2>《花花宇宙》</h2><p class="tag">舞曲女王的代名词</p><p class="note">电音快节奏里，气息·律动·状态全程顶住</p></section>
+<section id="mini4" class="clip miniLabel topRank" data-start="271.25" data-duration="38.0" data-track-index="4"><span>01</span><strong>花花宇宙</strong></section>
+<section id="outro" class="clip" data-start="309.25" data-duration="30.878" data-track-index="2"><div class="small">最终榜单</div><h2>陈慧琳的难，是把气息、律动和控制，稳稳唱在又快又密的节奏里。</h2><ol><li><span>01</span><strong>花花宇宙</strong></li><li><span>02</span><strong>失忆周末</strong></li><li><span>03</span><strong>不如跳舞</strong></li><li><span>04</span><strong>大日子</strong></li><li><span>05</span><strong>谁愿放手</strong></li></ol><p class="close">这一期按难度从第五到第一收束：谁愿放手、大日子、不如跳舞、失忆周末、花花宇宙。</p></section>
+<section id="cta" class="clip" data-start="328.25" data-duration="11.878" data-track-index="5"><div class="v">为你的第一名，评论区投票</div><div class="f">点赞 · 收藏 · 关注</div></section>
+<audio id="master" data-start="0" data-duration="340.128" data-track-index="3" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+tl.from("#cover .eyebrow",{x:-24,opacity:0,duration:.55,ease:"power2.out"},0.35);
+tl.from("#cover h1",{y:52,opacity:0,duration:.75,ease:"power4.out"},0.65);
+tl.from("#cover .sub",{y:28,opacity:0,duration:.55,ease:"power2.out"},1.15);
+tl.from("#cover .chips span",{y:22,opacity:0,duration:.45,ease:"power2.out",stagger:.08},1.55);
+tl.to("#cover",{opacity:0,duration:.38,ease:"power1.in"},20.85);
+tl.from("#full0 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},21.58);
+tl.from("#full0 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},21.75);
+tl.from("#full0 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},22.12);
+tl.from("#full0 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},22.35);
+tl.to("#full0",{opacity:0,duration:.35,ease:"power1.in"},40.8);
+tl.set("#full0",{opacity:0},41.2);
+tl.from("#mini0",{x:-26,opacity:0,duration:.45,ease:"power2.out"},41.3);
+tl.from("#full1 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},79.38);
+tl.from("#full1 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},79.55);
+tl.from("#full1 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},79.92);
+tl.from("#full1 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},80.15);
+tl.to("#full1",{opacity:0,duration:.35,ease:"power1.in"},98.0);
+tl.set("#full1",{opacity:0},98.4);
+tl.from("#mini1",{x:-26,opacity:0,duration:.45,ease:"power2.out"},98.5);
+tl.from("#full2 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},136.58);
+tl.from("#full2 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},136.75);
+tl.from("#full2 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},137.12);
+tl.from("#full2 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},137.35);
+tl.to("#full2",{opacity:0,duration:.35,ease:"power1.in"},155.525);
+tl.set("#full2",{opacity:0},155.925);
+tl.from("#mini2",{x:-26,opacity:0,duration:.45,ease:"power2.out"},156.025);
+tl.from("#full3 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},194.105);
+tl.from("#full3 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},194.275);
+tl.from("#full3 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},194.645);
+tl.from("#full3 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},194.875);
+tl.to("#full3",{opacity:0,duration:.35,ease:"power1.in"},212.875);
+tl.set("#full3",{opacity:0},213.275);
+tl.from("#mini3",{x:-26,opacity:0,duration:.45,ease:"power2.out"},213.375);
+tl.from("#full4 .rank",{y:28,opacity:0,duration:.45,ease:"power2.out"},251.455);
+tl.from("#full4 h2",{y:44,opacity:0,duration:.6,ease:"power3.out"},251.625);
+tl.from("#full4 .tag",{y:22,opacity:0,duration:.45,ease:"power2.out"},251.995);
+tl.from("#full4 .note",{y:18,opacity:0,duration:.45,ease:"power2.out"},252.225);
+tl.to("#full4",{opacity:0,duration:.35,ease:"power1.in"},270.85);
+tl.set("#full4",{opacity:0},271.25);
+tl.from("#mini4",{x:-26,opacity:0,duration:.45,ease:"power2.out"},271.35);
+tl.from("#outro .small",{y:22,opacity:0,duration:.5,ease:"power2.out"},309.45);
+tl.from("#outro h2",{y:40,opacity:0,duration:.65,ease:"power3.out"},309.8);
+tl.from("#outro li",{x:-34,opacity:0,duration:.45,ease:"power2.out",stagger:.1},310.4);
+tl.from("#outro .close",{y:24,opacity:0,duration:.45,ease:"power2.out"},311.25);
+tl.from("#cta .v",{y:26,opacity:0,duration:.55,ease:"power2.out"},328.45);
+tl.from("#cta .f",{y:18,opacity:0,duration:.5,ease:"power2.out"},328.8);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>
