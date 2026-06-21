@@ -7,7 +7,7 @@ yt-dlp 的 BiliBili extractor 会被 B站对其请求签名做 412 风控，但*
 
 用法：
     python tools/video/bili_dl.py <bvid> <out.mp4> [--max-h 1080] [--cookies path]
-读 sandbox/www.bilibili.com_cookies.txt（默认）。优先 AVC(h264) ≤max-h，便于下游重剪。
+默认读取仓库根目录 www.bilibili.com_cookies.txt。优先 AVC(h264) ≤max-h，便于下游重剪。
 """
 import sys, re, json, subprocess, argparse, tempfile, os
 from pathlib import Path
@@ -15,7 +15,7 @@ from pathlib import Path
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
 REPO = Path(__file__).resolve().parents[2]
-DEF_CK = REPO / "sandbox" / "www.bilibili.com_cookies.txt"
+DEF_CK = REPO / "www.bilibili.com_cookies.txt"
 
 
 def cookie_header(ck_path: Path) -> str:

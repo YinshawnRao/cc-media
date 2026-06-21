@@ -89,9 +89,9 @@
 ## yt-dlp 规范
 
 - **Cookie 文件**（两个平台都需要，登录态文件含敏感凭据，已 gitignore）：
-  - YouTube：`sandbox/www.youtube.com_cookies.txt`
-  - B站：`sandbox/www.bilibili.com_cookies.txt`
-  - 导出方式：浏览器装 "Get cookies.txt LOCALLY" → 登录该站 → 导出 Netscape 格式 → 保存到 `sandbox/`。
+  - **唯一有效位置是仓库根目录**：YouTube `www.youtube.com_cookies.txt`；B站 `www.bilibili.com_cookies.txt`。
+  - **不得在 `sandbox/` 下创建、复制、覆盖第二份 cookie 文件**。所有脚本、下载命令、校验命令都必须直接读取根目录文件；发现 `sandbox/**/www.*_cookies.txt` 视为过期副本，应删除而不是继续使用。
+  - 导出方式：浏览器装 "Get cookies.txt LOCALLY" → 登录该站 → 导出 Netscape 格式 → 保存/覆盖到仓库根目录。
   - `document.cookie` 复制串拿不到 HttpOnly 凭据，不可用。
 - **YouTube cookie**（反爬：不带会报 "Sign in to confirm you're not a bot"）：
   - 文件须含 HttpOnly 认证 cookie（SAPISID / `__Secure-3PSID` / HSID / SSID）。
@@ -102,12 +102,12 @@
   - 文件须含 `SESSDATA`、`bili_jct`、`DedeUserID` 等。
   - 过期更新比 YT 更频繁（几周）；触发信号：清晰度被压回 720P 或 4K 选项消失 → 重新导出。
   - **B站搜索 yt-dlp 不能解析**，要用 API：`https://api.bilibili.com/x/web-interface/wbi/search/type?search_type=video&keyword=<关键词>`，response 里 `data.result[].bvid` 即视频 ID，URL 拼为 `https://www.bilibili.com/video/<bvid>`。
-    - **必须 WBI 签名**（2026 验证）：普通 search 端点 + `yt-dlp bilisearchN:` 现在都返回 **HTTP 412 风控**。要先 GET `https://api.bilibili.com/x/web-interface/nav` 取 `wbi_img.img_url/sub_url` 的文件名 → mixin_key（固定 64 位重排表取前 32 位）→ 参数加 `wts` 排序 urlencode 后 `md5(query+mixin_key)` 得 `w_rid`，带 cookie + 桌面 UA 才通。**复用脚本 `tools/video/bili_search.py`**（用法 `python tools/video/bili_search.py "关键词" [n]`，读 `sandbox/www.bilibili.com_cookies.txt`），输出 `bvid | 时长 | up主 | 标题`。
+    - **必须 WBI 签名**（2026 验证）：普通 search 端点 + `yt-dlp bilisearchN:` 现在都返回 **HTTP 412 风控**。要先 GET `https://api.bilibili.com/x/web-interface/nav` 取 `wbi_img.img_url/sub_url` 的文件名 → mixin_key（固定 64 位重排表取前 32 位）→ 参数加 `wts` 排序 urlencode 后 `md5(query+mixin_key)` 得 `w_rid`，带 cookie + 桌面 UA 才通。**复用脚本 `tools/video/bili_search.py`**（用法 `python tools/video/bili_search.py "关键词" [n]`，读根目录 `www.bilibili.com_cookies.txt`），输出 `bvid | 时长 | up主 | 标题`。
   - **B站下载 yt-dlp 报 HTTP 412 风控的救场（2026-06 验证）**：`yt-dlp` 的 BiliBili extractor 走的 webpage/playurl 端点会被 412 风控（即使 cookie 有效、search 与 `--skip-download --print` 偶尔能过），重试也基本恒 412。但**普通浏览器式 `curl --compressed` + 桌面 UA + `referer:https://www.bilibili.com/` + cookie 头能取到视频页**，页里内嵌 `window.__playinfo__`（DASH `baseUrl` m4s 直链）。**复用脚本 `tools/video/bili_dl.py`**（用法 `python tools/video/bili_dl.py <bvid> <out.mp4> [--max-h 1080]`）：curl 取页 → 解析 playinfo → 取 ≤max-h 优先 AVC 的 video + 最佳 audio 直链 → curl 下载 → ffmpeg mux 成 mp4。这是 B站下载被 412 挡住时的首选下载法。
 - **切片**用 `--download-sections "*HH:MM:SS-HH:MM:SS"`，避免下整片（已验证：635s 视频只取 10s）。
 - 已验证可用的切片命令（YouTube 同款，B站把 cookie 文件名换掉即可）：
   ```bash
-  yt-dlp "<URL>" --cookies "sandbox/www.youtube.com_cookies.txt" \
+  yt-dlp "<URL>" --cookies "www.youtube.com_cookies.txt" \
     --download-sections "*00:00:30-00:00:40" --no-playlist \
     -f "bv*[height<=1080]+ba/b[height<=1080]" \
     -o "downloads/%(id)s_%(section_start)s-%(section_end)s.%(ext)s"

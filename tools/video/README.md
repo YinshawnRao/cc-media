@@ -12,7 +12,7 @@
 ## 0. 启动自检
 - 确认在 `cc-media/` 仓库内；读根 `CLAUDE.md` 和 `CONVENTIONS.md`。
 - 依赖：`ffmpeg`、`yt-dlp`、`node>=22`、`tools/tts/venv`（缺则按 tts/README 建）。
-- YouTube cookie：`sandbox/www.youtube.com_cookies.txt`（Netscape 格式，含 HttpOnly 认证 cookie）。失效会报 "Sign in to confirm you're not a bot"，让用户重新导出。
+- Cookie 文件唯一来源：仓库根目录 `www.youtube.com_cookies.txt` / `www.bilibili.com_cookies.txt`（Netscape 格式，含 HttpOnly 认证 cookie）。不要在 `sandbox/` 下复制第二份；失效会报 "Sign in to confirm you're not a bot"，让用户重新导出并覆盖根目录文件。
 - 所有产物写 `sandbox/<项目slug>/`（可丢弃）；正式留存才进 `production/`。
 
 ## 1. 解析 brief
