@@ -3,7 +3,9 @@
 
 模板，非通用程序。按每条 brief 复制到项目目录后改：songs（每首 旁白key/vert片段/序号/歌名/标签）、
 时长常量（SHOW/DIG/GAP_A）、MGAIN（暗调安静歌补偿）、开场 chips/title 与 outro 文案。
-前置：audio/<key>.wav（narrate_segments.py）、clips/vert_<song>.mp4（vfill.sh）。
+前置：audio/<key>.wav（narrate_segments.py）、clips/vert_<song>.mp4（vfill.sh）、
+      **probe/vocal_analysis.json**（先跑 `vocal_segments.py clips/vert_*.mp4 -o probe/vocal_analysis.json`，
+      供下方展示段对齐闸门校验"副歌入点 vs 旁白收尾 / 结尾不切半句"，见 CONVENTIONS「展示段硬规则 (C)」）。
 之后：npx hyperframes lint → render → ffmpeg mux master.wav（见 tools/video/README.md 第 8 步）。
 """
 import subprocess, wave, contextlib
@@ -52,7 +54,7 @@ blocks = []  # (key, clip, start, end, narr_start, narr_end, full_start, no, nam
 blocks.append(dict(key="A", clip="vert_pandora", start=0.0, end=A_end,
                    narr_start=p1_start, narr_end=p1_end, full_start=A_full,
                    no="01", name="《潘朵拉》", tag="天使嗓音，也能打开<b>暗黑魔盒</b>",
-                   vid_start=CUT))  # 潘朵拉画面从 3.5 起
+                   vid_start=CUT, mseek=-CUT))  # 潘朵拉画面从 3.5 起；mseek=-CUT：音乐在段内延后 CUT 对齐 clip-0
 # Blocks B-E: 其余 4 首
 t = A_end
 for key, clip, no, name, tag in songs[1:]:
@@ -62,7 +64,7 @@ for key, clip, no, name, tag in songs[1:]:
     end = round(fs + SHOW, 3)
     blocks.append(dict(key=key, clip=clip, start=t, end=end,
                        narr_start=ns, narr_end=ne, full_start=fs,
-                       no=no, name=name, tag=tag, vid_start=t))
+                       no=no, name=name, tag=tag, vid_start=t, mseek=0.0))
     t = end
 # Block F: outro（回到隐形的翅膀=光）：升华 → 消化位 → 固定 CTA → 片尾余量
 F_start = t
@@ -72,6 +74,19 @@ F_cta = round(F_voice_end + DIGEST_O, 3)      # 固定 CTA 起点
 F_cta_end = round(F_cta + d["outro_cta"], 3)
 F_end = round(F_cta_end + OUTRO_TAIL, 3)
 TOTAL = F_end
+
+# ---------- 展示段对齐闸门（硬规则，违规不出 master）----------
+# 机械校验每首：① 副歌人声在转场旁白收尾时正好进来、贯穿展示段（问题1：旁白别盖副歌）；
+#               ② 展示段结尾落在唱完一句之后 / 器乐 gap，不切半句（问题2：别暴力裁切）。
+# 依据各 clip 的人声段（probe/vocal_analysis.json）。误报时设 SHOWCASE_OVERRIDE=1 跳过。
+import sys as _sys
+_repo = Path(__file__).resolve()
+while _repo != _repo.parent and not (_repo / "tools" / "video" / "showcase_align.py").exists():
+    _repo = _repo.parent
+_sys.path.insert(0, str(_repo))
+from tools.video import showcase_align  # noqa: E402
+showcase_align.gate(blocks, "probe/vocal_analysis.json",
+                    consts=dict(POST=0.2, DIG=DIG), plan_path="probe/showcase_plan.json")
 
 # ---------- 构建音频分段 ----------
 def vol_envelope(narr_local_start, narr_local_end, full_start, seg_dur):

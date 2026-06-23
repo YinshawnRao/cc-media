@@ -194,18 +194,47 @@
 - **「歌手镜头蒙太奇」仅作救场**：当连续段实在不可用（全程拍不到主体 / 大量空镜 / 烧字裁不净）时才拼，且救场段也要够长、并逐镜抽帧验证。
 - QA：抽帧确认长 clip **播放到末尾无黑屏 / 冻结**（`<video> data-duration ≤ clip 实际时长`，clip 切到 SHOW+余量）；各首副歌响度一致（~-15dB）。
 
-**(C) 展示段（full-music 段）必须"正在唱"，且唱声入点要对齐转场配音收尾 — ⚠️ 用户实测反馈，反复犯。**
+**(C) 展示段两条入/出对齐硬规则 — ⚠️ 用户实测反馈，反复犯，已机械化闸门强制（见文末「展示段对齐闸门」）。**
 
-切片时**必须把转场配音的时间差算进去**。每首结构是：`转场旁白（音乐 duck 成床）→ 消化位/swell → full-music 展示段`。旁白会盖住片段开头约 `LEAD + voice_dur` 秒（≈15-19s）。**最大的坑：把唱的副歌放在了片段开头，结果整段副歌都被旁白盖住，旁白一结束、音量推满的展示段反而落在了间奏/前奏/outro 纯器乐段——观众真正想听的"炸点"全程没人声，只剩背景乐。**（华晨宇期 斗牛九周年：副歌"野性坦露"在旁白下，展示段是管弦 outro；烟火：展示段落在 30s 间奏。用户一耳听出。）
+> **入点（问题1）**：副歌人声要在**转场配音快收尾时正好进来**并贯穿展示段，别让副歌被旁白盖走、推满音量的展示段落到纯器乐。
+> **出点（问题2）**：展示段结尾要落在**唱完一句之后或纯器乐 gap**，**绝不因时长限制把一句唱到半路硬切**（人声戛然而止，观感最差）。
+
+切片时**必须把转场配音的时间差算进去**。每首结构是：`转场旁白（音乐 duck 成床）→ 消化位/swell → full-music 展示段`。旁白会盖住片段开头约 `LEAD + voice_dur` 秒（≈15-19s）。**问题1 的坑：把唱的副歌放在了片段开头，结果整段副歌都被旁白盖住，旁白一结束、音量推满的展示段反而落在了间奏/前奏/outro 纯器乐段——观众真正想听的"炸点"全程没人声，只剩背景乐。**（华晨宇期 斗牛九周年：副歌"野性坦露"在旁白下，展示段是管弦 outro；烟火：展示段落在 30s 间奏。用户一耳听出。）
 
 - **对齐原则（理想）**：让一段连续唱的副歌 **在转场旁白结束前约 2 秒入声**（vocal onset），唱声先在旁白尾巴下起来，再随 swell 推满进展示段——既丝滑、展示段又全程有唱。
 - **切片公式**：`clip_start_src = vocal_onset_src − (LEAD + voice_dur − 2)`。即把"副歌入声"对到 segment-local 时间 `narr_end_local − 2`。（`full_start_local = LEAD + voice_dur + 0.25 + DIG`；展示段 = `clip_start + full_start_local` 起的 `SHOW` 秒，必须整段落在唱的区间。）
 - **副歌不够长就缩 SHOW**：不少歌单段连唱只有 ~22-26s，硬铺 38s 会把尾巴拖进器乐。这种把 `SHOW` 调到刚好盖住连唱段（≥25s 即可），别让展示段尾段变纯器乐。
+- **变量命名防误用**：如果 build 脚本使用 `show_start` / `W` / `highlight_start` 这类字段，它必须表示**成片 full-music 展示段开始时对应的源时间码**，不是"这首歌从哪开始切"，也不是"副歌大概从哪开始"。实际预切起点应由脚本倒推：`media_seek = show_start - full_start_local`。改完必须抽成片 `full_start` 后 20-30s 的 contact sheet，确认画面歌词/口型已经进入人声段。
 - **怎么判"在唱"（关键，单一方法都不可靠）**：
   - `vocal_segments.py` 对**慢歌/民谣可靠**（人声清晰），对**响摇滚/满编曲管弦乐会漏报**（人声频带被乐器淹没 → 整段被判无人声，华晨宇《我管你》整首漏）。
   - 这类源用**烧死卡拉OK歌词是否在"逐句推进"**当可靠指示：歌词逐行换 = 在唱；同一行**静止不动十几秒** = 唱过一次后歌词 lingering、实际是器乐/holding（华晨宇斗牛"野性坦露"静止42s即此坑）。
   - 拿不准 / 是用户重点曲：**导 26s showcase mp3 给用户耳听确认**（`ffmpeg -ss <local> -t 26 -i clip.mp4 -vn -af loudnorm out.mp3`），别只靠工具下结论。
-- QA 收尾：成片对每首展示段（旁白结束后那 30s）抽查确实有人声，不是只有伴奏。
+- **出点对齐（问题2，硬规则）**：展示段结尾 `show_end_src` **不得落在某句人声的半路**。允许落在：① 一句人声段结束后 ~1.2s 内（唱完整句再切），或 ② 两句之间的器乐 gap。**副歌不够长就缩 SHOW 对齐到最近的句末/gap，宁可短一点也别切半句**；副歌够长但 SHOW 设过头会把结尾顶进下一句开头（同样违规）——把 `show` 调到落在句末。
+- QA 收尾：成片对每首展示段（旁白结束后那 30s）抽查确实有人声，不是只有伴奏；并核展示段最后 2s 是收在句末/器乐，不是切在唱字中间。
+
+**🔒 展示段对齐闸门（机械化强制，build 不过就不出 master）— 反复犯 → 不再靠人肉算。**
+
+`tools/video/showcase_align.py`：用各 clip 的人声段（`vocal_segments.py` 产出的 `vocal_analysis.json`）机械校验上面两条，**违规 `raise SystemExit`**。它把"凭感觉填 `ch_off`/`show`"变成可验证的闸门。
+
+- **接入（build 算完 blocks、建 master 之前，一行）**——`countdown_build.py` 模板已内置，复用 `full_build.py` 时照抄：
+  ```python
+  import sys; sys.path.insert(0, str(ROOT.parents[2]))   # 让 tools 可 import（ROOT=项目目录）
+  from tools.video import showcase_align
+  showcase_align.gate(blocks, ROOT/"probe"/"vocal_analysis.json",
+                      consts=dict(POST=POST, DIG=DIG), plan_path=ROOT/"probe"/"showcase_plan.json")
+  ```
+  `blocks` 每首需含 `clip/start/narr_end/full_start/end`（可选 `mseek`=预切 `-ss`）。闸门自动换算源时间码：
+  `narr_end_src=mseek+(narr_end-start)`、`show_start_src=mseek+(full_start-start)`、`show_end_src=mseek+(end-start)`。
+- **前置**：build 前先跑 `tools/tts/venv/bin/python tools/video/vocal_segments.py clips/vert_*.mp4 -o probe/vocal_analysis.json`（人声段基准 = 各 vert clip 源时间，与 `ch_off` 同基准）。
+- **反推切点（别手填）**：拿不准 `ch_off`/`show` 就让工具算：
+  ```bash
+  tools/tts/venv/bin/python tools/video/showcase_align.py plan \
+      --vocals probe/vocal_analysis.json --clip vert_p4_wait --voice-dur 14.0 --near 105
+  ```
+  它按"人声入点 = 旁白收尾前 2s"给 `ch_off`，按"结尾落句末/gap 且 ≥25s"给 `show`。
+- **单独复核**（QA 阶段，不接 build 也能跑）：`showcase_align.py check --plan probe/showcase_plan.json --vocals probe/vocal_analysis.json`，违规 exit 1。
+- **降级而非误杀**：响摇滚/满编曲人声检测不可靠（`vocal_segments` 漏报）→ 闸门判 `WARN` 不阻断，但**必须导 26s mp3 人工耳验**（命令工具会打印）。慢歌/民谣检测可靠，照 FAIL 阻断。
+- **误报逃生**：确属工具误判时 `SHOWCASE_OVERRIDE=1 python build/full_build.py` 跳过，但要在交付里说明为何跳过。
 
 > 验证项目：`sandbox/zwtl-duet-pk/`（周王陶林男女合唱PK，4:25）。早期用竖裁放大→双人被裁半、副歌 14s 太短被吐槽；改 letterbox 全宽 + 连续 27–32s 副歌后达标。
 > 验证项目：`sandbox/huachenyu-hardest-top5/`（华晨宇最难5首）。初版 4/5 首展示段落在器乐段（唱声全被转场旁白盖住），按 (C) 重对齐 vocal onset 到旁白收尾前 2s 后修复。
