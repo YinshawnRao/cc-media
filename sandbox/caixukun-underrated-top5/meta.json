@@ -1,0 +1,64 @@
+{
+  "id": "main",
+  "name": "caixukun-underrated-top5",
+  "total": 272.4,
+  "intro_end": 18.325,
+  "outro_start": 242.8,
+  "blocks": [
+    {
+      "no": "05",
+      "plain": "没有意外",
+      "start": 18.325,
+      "narr_start": 18.675,
+      "narr_end": 36.325,
+      "full_start": 38.025,
+      "end": 64.025,
+      "mseek": 169.75,
+      "ch_off": 189.45
+    },
+    {
+      "no": "04",
+      "plain": "RIDE OR DIE",
+      "start": 64.025,
+      "narr_start": 64.375,
+      "narr_end": 83.5,
+      "full_start": 85.2,
+      "end": 110.2,
+      "mseek": 111.825,
+      "ch_off": 133.0
+    },
+    {
+      "no": "03",
+      "plain": "感受她",
+      "start": 110.2,
+      "narr_start": 110.55,
+      "narr_end": 128.65,
+      "full_start": 130.35,
+      "end": 153.35,
+      "mseek": 166.85,
+      "ch_off": 187.0
+    },
+    {
+      "no": "02",
+      "plain": "Hug me",
+      "start": 153.35,
+      "narr_start": 153.7,
+      "narr_end": 170.875,
+      "full_start": 172.575,
+      "end": 192.575,
+      "mseek": 94.775,
+      "ch_off": 114.0
+    },
+    {
+      "no": "01",
+      "plain": "Home",
+      "start": 192.575,
+      "narr_start": 192.925,
+      "narr_end": 211.1,
+      "full_start": 212.8,
+      "end": 242.8,
+      "mseek": 43.775,
+      "ch_off": 64.0
+    }
+  ]
+}
