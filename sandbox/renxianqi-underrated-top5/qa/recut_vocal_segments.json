@@ -1,0 +1,56 @@
+{
+  "p4_yuedinglantian": {
+    "name": "p4_yuedinglantian",
+    "duration": 27.71,
+    "vocal_segments": [
+      [
+        12.1,
+        20.46
+      ],
+      [
+        22.52,
+        27.38
+      ]
+    ]
+  },
+  "p2_bieku": {
+    "name": "p2_bieku",
+    "duration": 27.75,
+    "vocal_segments": [
+      [
+        13.84,
+        17.04
+      ],
+      [
+        18.83,
+        22.18
+      ],
+      [
+        24.57,
+        27.33
+      ]
+    ]
+  },
+  "p1_anjing": {
+    "name": "p1_anjing",
+    "duration": 43.73,
+    "vocal_segments": [
+      [
+        11.52,
+        18.34
+      ],
+      [
+        19.9,
+        26.54
+      ],
+      [
+        28.14,
+        31.0
+      ],
+      [
+        33.92,
+        43.03
+      ]
+    ]
+  }
+}

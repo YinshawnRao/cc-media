@@ -1,0 +1,30 @@
+{
+  "p2_bieku": {
+    "name": "p2_bieku",
+    "duration": 51.75,
+    "vocal_segments": [
+      [
+        17.18,
+        22.18
+      ],
+      [
+        29.12,
+        31.3
+      ],
+      [
+        39.1,
+        51.57
+      ]
+    ]
+  },
+  "p1_anjing": {
+    "name": "p1_anjing",
+    "duration": 76.74,
+    "vocal_segments": [
+      [
+        12.38,
+        45.44
+      ]
+    ]
+  }
+}
