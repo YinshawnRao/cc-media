@@ -88,26 +88,26 @@
 
 ## yt-dlp 规范
 
-- **Cookie 文件**（两个平台都需要，登录态文件含敏感凭据，已 gitignore）：
-  - **唯一有效位置是仓库根目录**：YouTube `www.youtube.com_cookies.txt`；B站 `www.bilibili.com_cookies.txt`。
-  - **不得在 `sandbox/` 下创建、复制、覆盖第二份 cookie 文件**。所有脚本、下载命令、校验命令都必须直接读取根目录文件；发现 `sandbox/**/www.*_cookies.txt` 视为过期副本，应删除而不是继续使用。
-  - 导出方式：浏览器装 "Get cookies.txt LOCALLY" → 登录该站 → 导出 Netscape 格式 → 保存/覆盖到仓库根目录。
-  - `document.cookie` 复制串拿不到 HttpOnly 凭据，不可用。
-- **YouTube cookie**（反爬：不带会报 "Sign in to confirm you're not a bot"）：
-  - 文件须含 HttpOnly 认证 cookie（SAPISID / `__Secure-3PSID` / HSID / SSID）。
-  - **过期与更新**：标称过期约 1 年（静态 SID 家族 ~2027-07，轮换 `*SIDCC`/`*SIDTS` ~2027-05），但**实际寿命短得多**——YouTube 服务端频繁轮换 `*SIDCC`/`*SIDTS`，实践中常几天～几周失效。
-    - 让其更耐用：用**无痕窗口**登录 → 导出 → **直接关窗口、别登出**（避免主会话把快照轮换掉）。
-    - 更新触发信号：再次出现 `Sign in to confirm you're not a bot` → 重新导出覆盖同名文件即可。
-- **B站 cookie**（无登录态只能拿到 ≤720P；大会员/番剧/4K 必须）：
-  - 文件须含 `SESSDATA`、`bili_jct`、`DedeUserID` 等。
-  - 过期更新比 YT 更频繁（几周）；触发信号：清晰度被压回 720P 或 4K 选项消失 → 重新导出。
+- **Cookie 文件（统一约定，2026-06 起）**：单一全量文件 **仓库根目录 `all_cookies.txt`**（一份浏览器**全量** cookie 导出，同时含 YouTube + Google + B站 三套登录态），YouTube 和 B站下载 / 搜索 / 校验全部读它。登录态文件含敏感凭据，已 gitignore。
+  - **为什么是全量文件**：YT 过 bot 检查依赖登录态 cookie，其中 `LOGIN_INFO/SID/HSID/SSID/SAPISID` 等常落在 **`.google.com`** 域上，只导 youtube 标签页会漏 → 仍被 bot 拦（即便 `__Secure-3PSID` 在）。导"全部 cookie"才稳。
+  - **唯一有效位置是仓库根目录**；**不得在 `sandbox/` 下创建、复制、覆盖第二份 cookie 文件**。所有脚本、下载命令、校验命令都必须直接读根目录 `all_cookies.txt`；发现 `sandbox/**/*cookies*.txt` 视为过期副本，应删除而不是继续使用。
+  - 导出方式：浏览器装 "Get cookies.txt LOCALLY" → **导出"全部 cookie / All cookies"**（不要只导当前站）→ Netscape 格式 → 保存/覆盖到仓库根目录 `all_cookies.txt`。`document.cookie` 复制串拿不到 HttpOnly 凭据，不可用。
+  - **向后兼容**：复用脚本（`check_yt_cookie.py`/`bili_search.py`/`bili_dl.py`）默认读 `all_cookies.txt`，缺失时才回退旧的 `www.youtube.com_cookies.txt` / `www.bilibili.com_cookies.txt`。新项目一律用 `all_cookies.txt`。
+- **YouTube 登录态**（反爬：不带或缺登录态会报 "Sign in to confirm you're not a bot"）：
+  - `all_cookies.txt` 须含 HttpOnly 认证 cookie（`LOGIN_INFO` + `SID/HSID/SSID/SAPISID/APISID` + `__Secure-3PSID`），其中多个在 `.google.com` 域 —— 全量导出才齐。`python3 tools/video/check_yt_cookie.py` 秒判。
+  - **过期与更新**：标称过期约 1 年，但**实际寿命短得多**——YouTube 服务端频繁轮换 `*SIDCC`/`*SIDTS`，实践中常几天～几周失效。`check_yt_cookie.py` 只验**存在**不验**新鲜度**：cookie token 都在却仍 bot 拦 = 服务端已轮换、快照过期。
+    - **bot 拦排查顺序（2026-06 实战）**：① 先 `brew upgrade yt-dlp`（旧版跟不上 YT player 改动也会恒 bot 拦，与 cookie 无关，本次从 2026.3.17→2026.6.9）；② 仍拦再判 cookie 过期 → 让用户**重新导出全量 cookie** 覆盖 `all_cookies.txt`。换 `--extractor-args player_client` 对登录态失效无效。
+    - 让 cookie 更耐用：用**无痕窗口**登录 → 导出全部 → **直接关窗口、别登出**（避免主会话把快照轮换掉）。
+- **B站登录态**（无登录态只能拿到 ≤720P；大会员/番剧/4K 必须）：
+  - `all_cookies.txt` 须含 `SESSDATA`、`bili_jct`、`DedeUserID` 等（全量导出自带）。
+  - 过期更新比 YT 更频繁（几周）；触发信号：清晰度被压回 720P 或 4K 选项消失 → 重新导出全量覆盖。
   - **B站搜索 yt-dlp 不能解析**，要用 API：`https://api.bilibili.com/x/web-interface/wbi/search/type?search_type=video&keyword=<关键词>`，response 里 `data.result[].bvid` 即视频 ID，URL 拼为 `https://www.bilibili.com/video/<bvid>`。
-    - **必须 WBI 签名**（2026 验证）：普通 search 端点 + `yt-dlp bilisearchN:` 现在都返回 **HTTP 412 风控**。要先 GET `https://api.bilibili.com/x/web-interface/nav` 取 `wbi_img.img_url/sub_url` 的文件名 → mixin_key（固定 64 位重排表取前 32 位）→ 参数加 `wts` 排序 urlencode 后 `md5(query+mixin_key)` 得 `w_rid`，带 cookie + 桌面 UA 才通。**复用脚本 `tools/video/bili_search.py`**（用法 `python tools/video/bili_search.py "关键词" [n]`，读根目录 `www.bilibili.com_cookies.txt`），输出 `bvid | 时长 | up主 | 标题`。
+    - **必须 WBI 签名**（2026 验证）：普通 search 端点 + `yt-dlp bilisearchN:` 现在都返回 **HTTP 412 风控**。要先 GET `https://api.bilibili.com/x/web-interface/nav` 取 `wbi_img.img_url/sub_url` 的文件名 → mixin_key（固定 64 位重排表取前 32 位）→ 参数加 `wts` 排序 urlencode 后 `md5(query+mixin_key)` 得 `w_rid`，带 cookie + 桌面 UA 才通。**复用脚本 `tools/video/bili_search.py`**（用法 `python tools/video/bili_search.py "关键词" [n]`，读根目录 `all_cookies.txt`），输出 `bvid | 时长 | up主 | 标题`。
   - **B站下载 yt-dlp 报 HTTP 412 风控的救场（2026-06 验证）**：`yt-dlp` 的 BiliBili extractor 走的 webpage/playurl 端点会被 412 风控（即使 cookie 有效、search 与 `--skip-download --print` 偶尔能过），重试也基本恒 412。但**普通浏览器式 `curl --compressed` + 桌面 UA + `referer:https://www.bilibili.com/` + cookie 头能取到视频页**，页里内嵌 `window.__playinfo__`（DASH `baseUrl` m4s 直链）。**复用脚本 `tools/video/bili_dl.py`**（用法 `python tools/video/bili_dl.py <bvid> <out.mp4> [--max-h 1080]`）：curl 取页 → 解析 playinfo → 取 ≤max-h 优先 AVC 的 video + 最佳 audio 直链 → curl 下载 → ffmpeg mux 成 mp4。这是 B站下载被 412 挡住时的首选下载法。
 - **切片**用 `--download-sections "*HH:MM:SS-HH:MM:SS"`，避免下整片（已验证：635s 视频只取 10s）。
-- 已验证可用的切片命令（YouTube 同款，B站把 cookie 文件名换掉即可）：
+- 已验证可用的切片命令（YouTube 与 B站同用一份 `all_cookies.txt`）：
   ```bash
-  yt-dlp "<URL>" --cookies "www.youtube.com_cookies.txt" \
+  yt-dlp "<URL>" --cookies "all_cookies.txt" \
     --download-sections "*00:00:30-00:00:40" --no-playlist \
     -f "bv*[height<=1080]+ba/b[height<=1080]" \
     -o "downloads/%(id)s_%(section_start)s-%(section_end)s.%(ext)s"
@@ -177,6 +177,7 @@
 - **配音**：默认男声 `zm_yunxi`，女声 `zf_xiaoyi` 仅在要求时（见配音规范）。
 - **审美**：开期先定一份 `design.md`（配色/字体/动效基调）并全期统一，参考 `/hyperframes` 的 design 流程。默认"干净高级、暗底 + 单一强调色"，除非指定综艺花字等其他风格。
 - **结构通用件**：footage（`<video muted>`）打底 + 大字标题/信息 + 解说字幕 + 片头片尾；原声可作 BGM 并按下面 ducking 处理。
+- **信息层级去重**：同一个语义只保留一个主标识源，尤其是排名 / 序号 / 歌名。若画面已有"第X首 + 歌名"标题，就不要再叠右上角流水号、左上角浮层 bug、二级角标等同类元素；进入 full-music 展示段后，除非用户明确要常驻信息条，否则排名/歌名浮层应淡出，避免压住 MV 也避免重复标记。QA contact sheet 必须专门看一遍是否有同义元素堆砌。
 
 ### 展示段硬规则（竖屏画面比例 + 副歌时长）— ⚠️ 用户多次反馈，**默认必须遵守，不要再犯**
 
@@ -328,8 +329,9 @@
   ```
 - **`<video>` 不能控 `currentTime`**：HF 渲染期间会把 video 元素的 currentTime 锁到合成时间。要让 footage 从源的某个时间码起播，**必须 ffmpeg 输出端预切**（`-ss S -i in -t L -c:v libx264 -g 30 -keyint_min 30 -an out.mp4`），切完的视频从 0 开始播。
 - **同轨 footage 不能贴边**：相邻 footage 片段交替放在 track 0/6（详见上文）。
+- **⚠ 多段 footage 长片：拼成单条 footage_track，HTML 只挂 1 个 `<video>`（硬规则，2026-06 柯南TOP10 验证）**：一条竖屏长片若挂 **多个 `<video>` 元素**（如 12 段 footage 各一个），HF 渲染会在页面初始化时**同时为每个 video 建 frame-player**，Chrome 直接挂死——报 `Runtime.callFunctionOn timed out / protocolTimeout`，**帧 0 就超时**，多 worker（-w4）会 thrash 更快崩、**单 worker（-w1）也卡在 setup 不出帧**。**解法**：把所有 footage 段按时间线顺序 ffmpeg concat 成**一条连续 `footage_track.mp4`**（与各段时长对齐），HTML 只挂**一个** `<video data-start=0 data-duration=total src="footage_track.mp4">`。单 video = 已验证的 clip-demo 轻量模式，一次过（16110 帧 -w2 约 11min）。叠加层（scrim/卡片/字幕）照常多 track。**`HYPERFRAMES_EXTRACT_CACHE_DIR` 环境变量**可缓存抽帧、重试不重抽。
 - **GSAP exit hard kill**：每个 `tl.to(..., {opacity:0})` 后要加 `tl.set("...", {opacity:0}, end_time)`；否则非线性 seek 时 footage / overlay 可能残留可见——lint 会以 `gsap_exit_missing_hard_kill` 告警。
-- **font auto-fetch**：CSS 直接写 `font-family: "Noto Serif SC"` 等常用字体，HF compile 阶段会从 Google Fonts 自动拉 .woff2 并缓存（`~/.cache/hyperframes/fonts/`）。不需要手动 @font-face。本机 Chrome 联网即可。中文衬线推荐 `Noto Serif SC`，无衬线 `Noto Sans SC`。
+- **字体：用本机 @font-face local()，别指望 Noto auto-fetch（0.6.69 验证）**：`hyperframes@0.6.69` 的 lint 把 `Noto Serif/Sans SC/JP` 判为**不在 auto-resolve 列表**→ 渲染回退默认字体、字形错。**改用本机系统字体 + `@font-face{src:local(...)}`**：中文无衬线 `PingFang SC`、中文衬线 `Songti SC`、**日文（含片假名，如クロノスタシス/スピッツ）用 `Hiragino Mincho ProN`/`Hiragino Sans`**；等宽 `JetBrains Mono` 仍可 auto-fetch。headless Chrome 能正常渲染这些 local 字体。
 - **`composition_file_too_large` warning 可忽略**：单线性长片（330+ 行）不适合拆 sub-composition；这条 warning 是文档建议不是 error。
 
 ### 长篇叙事盘点 / 音乐时间线的实战补充（李荣浩×杨丞琳时间线验证）
@@ -482,6 +484,11 @@ voice_rms = np.sqrt(np.mean(S[voice_mask] ** 2, axis=0))
 ### 首屏封面（首帧可作封面，硬约束）
 
 **第 0 秒第一帧必须可作为静态封面图。** 不要给封面元素加 `fade-in` 入场动画（否则 t=0 时 opacity 仍是 0，整张封面黑屏）。
+
+**短视频 TOP / 音乐盘点封面底片**：
+- **默认优先歌手本人出镜**：封面背景不要默认用空镜、抽象景、剧情演员或纯舞台灯；先从本期素材里抽 6-12 张候选帧，优先选歌手本人正脸/半身/演唱动作清楚的段落。找不到本人清晰帧时，再用主题性强的空镜，并在交付里说明取舍。
+- **标题区默认居中靠上**：竖屏封面标题和描述默认放在上半屏或中上区域，避免压在底部像普通字幕卡，也给下半屏保留歌手脸/身体辨识度。只有当真人主体稳定在上半屏时，才把标题区下移。
+- **封面底片可与第一首展示段不同窗**：开场可单独预切 `intro_<song>.mp4`，选更有辨识度的人像段；不要因为 intro 音乐来自某首歌开头，就被迫使用该歌开头空镜。
 
 正确做法：
 ```js

@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """B站视频搜索（WBI 签名）。用法: python bili_search.py "关键词" [n]
-读仓库根目录 www.bilibili.com_cookies.txt (Netscape) 做登录态 + 风控通过。"""
+读仓库根目录 all_cookies.txt (Netscape，含 B站登录态)；缺则回退旧 www.bilibili.com_cookies.txt。"""
 import sys, time, hashlib, urllib.parse, urllib.request, json, http.cookiejar
 from pathlib import Path
 
-CK = Path(__file__).resolve().parents[2] / "www.bilibili.com_cookies.txt"
+_REPO = Path(__file__).resolve().parents[2]
+CK = _REPO / "all_cookies.txt"
+if not CK.exists():
+    CK = _REPO / "www.bilibili.com_cookies.txt"
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
 

@@ -7,7 +7,7 @@ yt-dlp 的 BiliBili extractor 会被 B站对其请求签名做 412 风控，但*
 
 用法：
     python tools/video/bili_dl.py <bvid> <out.mp4> [--max-h 1080] [--cookies path]
-默认读取仓库根目录 www.bilibili.com_cookies.txt。优先 AVC(h264) ≤max-h，便于下游重剪。
+默认读取仓库根目录 all_cookies.txt（含 B站登录态）；缺则回退旧 www.bilibili.com_cookies.txt。优先 AVC(h264) ≤max-h，便于下游重剪。
 """
 import sys, re, json, subprocess, argparse, tempfile, os
 from pathlib import Path
@@ -15,16 +15,20 @@ from pathlib import Path
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
 REPO = Path(__file__).resolve().parents[2]
-DEF_CK = REPO / "www.bilibili.com_cookies.txt"
+DEF_CK = REPO / "all_cookies.txt"
+if not DEF_CK.exists():
+    DEF_CK = REPO / "www.bilibili.com_cookies.txt"
 
 
 def cookie_header(ck_path: Path) -> str:
+    # 只取 bilibili 域 cookie：all_cookies.txt 是浏览器全量导出(上千条跨域),
+    # 全塞进一个 Cookie 头会超长被 curl/B站拒。按域名过滤。
     parts = []
     for ln in ck_path.read_text(encoding="utf-8").splitlines():
         if ln.startswith("#") or not ln.strip():
             continue
         f = ln.split("\t")
-        if len(f) >= 7:
+        if len(f) >= 7 and "bilibili" in f[0]:
             parts.append(f"{f[5]}={f[6]}")
     return "; ".join(parts)
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """校验 YouTube cookies.txt 是否含有效登录态（不用跑 yt-dlp 就能秒判）。
-用法: python3 tools/video/check_yt_cookie.py [cookie文件]  (默认仓库根目录 www.youtube.com_cookies.txt)
+用法: python3 tools/video/check_yt_cookie.py [cookie文件]  (默认仓库根目录 all_cookies.txt，缺则回退旧 www.youtube.com_cookies.txt)
 
 判定逻辑（基于实战）：
 - yt-dlp 过 YouTube bot 检查需要"已登录"的 cookie 集合。
@@ -27,7 +27,8 @@ def load(path):
     return rows
 
 def main():
-    path = sys.argv[1] if len(sys.argv) > 1 else "www.youtube.com_cookies.txt"
+    default = "all_cookies.txt" if Path("all_cookies.txt").exists() else "www.youtube.com_cookies.txt"
+    path = sys.argv[1] if len(sys.argv) > 1 else default
     if not Path(path).exists():
         print(f"✗ 文件不存在: {path}"); return 2
     rows = load(path)
