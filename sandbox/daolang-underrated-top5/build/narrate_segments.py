@@ -1,0 +1,52 @@
+#!/usr/bin/env python3
+"""Male narration for 刀郎最被低估的5首歌.
+
+Countdown order is 5 -> 1. The final CTA is imported from tools/video/outro_cta.py
+(repo-level convention). Roman numeral 刀郎Ⅲ is spoken as 《刀郎三》 (Kokoro mishandles
+Ⅲ); on-screen meta keeps the proper form. No English in spoken text.
+"""
+import json
+import sys
+from pathlib import Path
+
+import numpy as np
+import soundfile as sf
+from kokoro import KPipeline
+
+ROOT = Path(__file__).resolve().parents[1]
+AUDIO = ROOT / "audio"
+sys.path.insert(0, str(ROOT.parents[1] / "tools" / "video"))
+from outro_cta import FIXED_OUTRO_CTA  # noqa: E402
+
+VOICE = "zm_yunxi"
+SR = 24000
+
+BLOCKS = {
+    "intro": "提到刀郎，很多人脑子里就剩下《二零零二年的第一场雪》《西海情歌》，还有那首全网刷屏的《罗刹海市》。可在这些爆款的光环之外，他还藏着一批被严重低估的歌。今天这期，我们从第五名倒数，盘一盘刀郎最被低估的五首歌。",
+    "p5_fengxiang": "第五名，《风向朝西》。它来自专辑《世间的每个人》。这张专辑没有《罗刹海市》那样的全网话题，所以里面很多好歌，都被顺手忽略了。《风向朝西》最特别的，是一种往远处走的孤独感。它不像早期刀郎那么粗粝直接，也不靠话题取胜，而是更成熟、更内收，像一个人走了很久很久，才终于安静下来，开始看风往哪个方向吹。",
+    "p4_guazhou": "第四名，《瓜洲渡》。它来自专辑《弹词话本》。这张专辑把苏州评弹、江南小调和说书人的叙事揉在一起，跟我们熟悉的那个西域苍凉的刀郎，几乎像是两个人。《瓜洲渡》不靠大副歌来炸你，而是用唱腔、场景和故事感，一层一层慢慢铺开。它特别能说明，刀郎的野心，早就从西北的荒原，走到了江南的水岸边。",
+    "p3_erdao": "第三名，《关于二道桥》。它和标题曲出自同一张《喀什噶尔胡杨》，可标题曲太显眼，把它衬成了一段藏在街巷里的旧事。这首歌的好，在于画面特别具体，一个地名、一条街、一段惦念，全被唱进了歌里。刀郎最打动人的地方，有时候不是嗓子多沧桑，而是他能把一个普通人的等待，唱得那么有生活气、有地域感。",
+    "p2_deling": "第二名，《德令哈一夜》。它收在专辑《刀郎三》里，可同一张专辑站着《西海情歌》这种大热门，它就很容易被路人错过。但它的气质太特别了，不是普通的失恋情歌，而是带着诗意和荒原感的远方。德令哈这个地名，本身就自带孤独。刀郎把它唱得像一段夜路，人在风里慢慢走，话不多，可心事很重。这是真正适合老粉，一个人反复听的遗珠。",
+    "p1_kashi": "第一名，《喀什噶尔胡杨》。它不是刀郎最路人化的那一首，却几乎是他整个音乐世界的地基。苍凉、辽阔、粗粝，还有特别深的西域叙事感。当年这张同名专辑，被《二零零二年的第一场雪》的巨大光环死死压住，大家的记忆，又都跑去了《冲动的惩罚》和《西海情歌》。可《喀什噶尔胡杨》是那种长、厚、重的歌，不是第一耳的爆款，却越听越能听见土地，听见时间。把它放在第一名，是因为它最能代表，那个被低估的刀郎。",
+    "outro": "五首歌盘完。第五，风向朝西；第四，瓜洲渡；第三，关于二道桥；第二，德令哈一夜；第一，喀什噶尔胡杨。从西域的荒原，到江南的水岸，刀郎远不止那几首传遍大街小巷的爆款。这些被光环盖住的遗珠，才藏着他真正辽阔的那一面。",
+    "outro_cta": FIXED_OUTRO_CTA,
+}
+
+
+def main():
+    AUDIO.mkdir(parents=True, exist_ok=True)
+    pipeline = KPipeline(lang_code="z")
+    meta = {}
+    for key, text in BLOCKS.items():
+        chunks = [audio for _, _, audio in pipeline(text, voice=VOICE, speed=1.0)]
+        audio = chunks[0] if len(chunks) == 1 else np.concatenate(chunks)
+        out = AUDIO / f"{key}.wav"
+        sf.write(out, audio, SR)
+        meta[key] = {"text": text, "dur": round(len(audio) / SR, 3)}
+        print(f"{key:18s} {meta[key]['dur']:6.2f}s  {out}")
+    (ROOT / "narration.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+    print("TOTAL narration", round(sum(item["dur"] for item in meta.values()), 2), "s")
+
+
+if __name__ == "__main__":
+    main()
