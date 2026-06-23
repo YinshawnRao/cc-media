@@ -1,0 +1,75 @@
+{
+  "id": "main",
+  "name": "xuruyun-underrated-top5",
+  "sample": false,
+  "total": 301.26,
+  "intro_end": 19.325,
+  "outro_start": 269.735,
+  "blocks": [
+    {
+      "no": "05",
+      "plain": "半首歌",
+      "aud": "p5",
+      "start": 19.325,
+      "narr_start": 19.675,
+      "narr_end": 37.475,
+      "full_start": 39.175,
+      "end": 76.535,
+      "mseek": 115.09,
+      "ch_off": 134.94,
+      "show": 37.36
+    },
+    {
+      "no": "04",
+      "plain": "白纸黑字",
+      "aud": "p4",
+      "start": 76.535,
+      "narr_start": 76.885,
+      "narr_end": 94.36,
+      "full_start": 96.06,
+      "end": 127.36,
+      "mseek": 154.075,
+      "ch_off": 173.6,
+      "show": 31.3
+    },
+    {
+      "no": "03",
+      "plain": "忘",
+      "aud": "p3",
+      "start": 127.36,
+      "narr_start": 127.71,
+      "narr_end": 145.285,
+      "full_start": 146.985,
+      "end": 176.315,
+      "mseek": 142.225,
+      "ch_off": 161.85,
+      "show": 29.33
+    },
+    {
+      "no": "02",
+      "plain": "透气",
+      "aud": "p2",
+      "start": 176.315,
+      "narr_start": 176.665,
+      "narr_end": 193.69,
+      "full_start": 195.39,
+      "end": 223.16,
+      "mseek": 106.835,
+      "ch_off": 125.91,
+      "show": 27.77
+    },
+    {
+      "no": "01",
+      "plain": "学琴的孩子",
+      "aud": "p1",
+      "start": 223.16,
+      "narr_start": 223.51,
+      "narr_end": 241.535,
+      "full_start": 243.235,
+      "end": 269.735,
+      "mseek": 159.525,
+      "ch_off": 179.6,
+      "show": 26.5
+    }
+  ]
+}
