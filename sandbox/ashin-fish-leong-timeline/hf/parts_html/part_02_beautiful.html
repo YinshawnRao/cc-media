@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1080, height=1920">
+  <base href="../">
+  <script src="vendor/gsap.min.js"></script>
+  <style>
+@font-face { font-family: "SongtiLocal"; src: url("fonts/Songti.ttc") format("truetype-collection"); font-weight: 400 900; font-style: normal; }
+@font-face { font-family: "HeitiLocal"; src: url("fonts/STHeiti-Medium.ttc") format("truetype-collection"); font-weight: 400 900; font-style: normal; }
+@font-face { font-family: "MonoLocal"; src: url("fonts/Menlo.ttc") format("truetype-collection"); font-weight: 400 900; font-style: normal; }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: #06070b; color: #f7efe2; font-family: "SongtiLocal", serif; }
+#root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #06070b; }
+.footage { position: absolute; inset: 0; width: 1080px; height: 1920px; object-fit: cover; opacity: 0; z-index: 1; }
+.song-card { position: absolute; inset: 0; z-index: 5; pointer-events: none; overflow: hidden; }
+.song-card::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.10), rgba(0,0,0,.38) 54%, rgba(0,0,0,.72)); z-index: -1; }
+.song-card::after { content: ""; position: absolute; inset: -20%; background: radial-gradient(circle at 18% 22%, color-mix(in srgb, var(--accent) 28%, transparent), transparent 34%), radial-gradient(circle at 85% 72%, color-mix(in srgb, var(--accent2) 18%, transparent), transparent 30%); opacity: .75; z-index: -1; }
+.side-rail { position: absolute; left: 76px; top: 132px; bottom: 170px; width: 4px; background: linear-gradient(180deg, transparent, rgba(255,255,255,.34), transparent); opacity: 0; }
+.side-rail span { position: absolute; top: 0; left: -24px; width: 52px; height: 52px; border-radius: 999px; display: grid; place-items: center; color: #fff8ea; background: rgba(6,7,11,.82); border: 2px solid var(--accent); font: 800 22px/1 "HeitiLocal", sans-serif; }
+.info-card { position: absolute; top: 122px; right: 56px; width: 670px; padding: 44px 46px 42px; border: 1.5px solid rgba(255,255,255,.20); border-radius: 24px; background: linear-gradient(135deg, rgba(10,10,14,.70), rgba(10,10,14,.38)); backdrop-filter: blur(28px); box-shadow: 0 26px 80px rgba(0,0,0,.48); opacity: 0; }
+.meta { display: flex; gap: 18px; align-items: center; font: 800 24px/1.2 "HeitiLocal", sans-serif; letter-spacing: .18em; color: var(--accent); margin-bottom: 22px; }
+.meta span + span { color: rgba(247,239,226,.62); letter-spacing: .08em; }
+.info-card h2 { margin: 0 0 20px; font-size: 86px; line-height: 1.02; letter-spacing: 0; font-weight: 900; color: #fff8ea; }
+.credit { margin: 0 0 22px; font: 500 28px/1.45 "HeitiLocal", sans-serif; color: rgba(255,255,255,.78); }
+.tag { margin: 0; display: inline-block; padding: 12px 18px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 18%, transparent); color: #fff9ea; font: 800 30px/1.2 "HeitiLocal", sans-serif; }
+.keyword { position: absolute; left: 0; right: 0; bottom: 292px; text-align: center; font-size: 180px; line-height: .92; font-weight: 900; color: var(--accent); opacity: 0; text-shadow: 0 0 52px color-mix(in srgb, var(--accent) 45%, transparent); }
+.motif { position: absolute; left: 76px; bottom: 150px; font: 800 30px/1 "HeitiLocal", sans-serif; letter-spacing: .28em; color: rgba(255,255,255,.62); opacity: 0; }
+.intro { position: absolute; inset: 0; z-index: 20; background: radial-gradient(circle at 20% 24%, rgba(72,111,160,.42), transparent 28%), radial-gradient(circle at 84% 60%, rgba(229,111,55,.22), transparent 34%), linear-gradient(180deg, #07101b, #080709 70%); overflow: hidden; }
+.intro::after { content: ""; position: absolute; inset: 0; background-image: radial-gradient(circle at 10% 20%, rgba(255,255,255,.08) 0 1px, transparent 1.3px), radial-gradient(circle at 70% 60%, rgba(255,255,255,.07) 0 1px, transparent 1.4px); background-size: 150px 160px, 210px 190px; opacity: .58; }
+.vinyl { position: absolute; width: 760px; height: 760px; border-radius: 50%; right: -250px; top: 120px; background: repeating-radial-gradient(circle, rgba(255,255,255,.13) 0 2px, rgba(255,255,255,.02) 2px 8px), radial-gradient(circle, #111 0 16%, #08080b 17% 100%); opacity: .72; }
+.cover-left, .cover-right { position: absolute; top: 160px; width: 420px; height: 560px; border: 1.5px solid rgba(255,255,255,.18); border-radius: 24px; overflow: hidden; display: flex; align-items: end; padding: 30px; font: 800 22px/1.2 "MonoLocal", monospace; letter-spacing: .08em; color: rgba(255,255,255,.78); text-transform: uppercase; box-shadow: 0 30px 80px rgba(0,0,0,.42); }
+.cover-left { left: 70px; background: linear-gradient(145deg, rgba(41,96,170,.50), rgba(8,10,16,.72)); }
+.cover-right { right: 70px; background: linear-gradient(145deg, rgba(218,151,75,.42), rgba(8,10,16,.74)); }
+.cover-left::after, .cover-right::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(4,6,10,.02) 0%, rgba(4,6,10,.20) 48%, rgba(4,6,10,.76) 100%); }
+.cover-left img, .cover-right img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: saturate(.92) contrast(1.06); }
+.cover-left img { object-position: 50% 38%; }
+.cover-right img { object-position: 50% 28%; }
+.cover-left span, .cover-right span { position: relative; z-index: 2; text-shadow: 0 2px 16px rgba(0,0,0,.70); }
+.intro h1 { position: absolute; left: 72px; right: 72px; top: 790px; margin: 0; font-size: 112px; line-height: 1.08; font-weight: 900; letter-spacing: 0; z-index: 2; }
+.intro-sub { position: absolute; left: 76px; right: 76px; top: 1070px; margin: 0; font: 600 34px/1.5 "HeitiLocal", sans-serif; color: rgba(255,255,255,.72); z-index: 2; }
+.motif-grid { position: absolute; left: 76px; right: 76px; bottom: 238px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; z-index: 2; }
+.motif-grid b { padding: 18px 10px; text-align: center; border: 1.5px solid rgba(255,255,255,.18); border-radius: 16px; background: rgba(255,255,255,.06); font: 800 30px/1 "HeitiLocal", sans-serif; color: rgba(255,255,255,.76); opacity: 0; }
+.listen-title { position: absolute; left: 76px; right: 76px; bottom: 132px; padding: 22px 0 10px; border-top: 2px solid rgba(255,255,255,.24); font: 900 38px/1.2 "HeitiLocal", sans-serif; letter-spacing: .12em; color: #f2d08a; opacity: 0; z-index: 2; }
+.outro { position: absolute; inset: 0; z-index: 19; background: radial-gradient(circle at 50% 40%, rgba(191,231,208,.18), transparent 34%), linear-gradient(180deg, #08120f, #070708); overflow: hidden; opacity: 0; }
+.bubble-field { position: absolute; inset: 0; background-image: radial-gradient(circle at 15% 88%, rgba(191,231,208,.24) 0 9px, transparent 10px), radial-gradient(circle at 35% 78%, rgba(232,182,106,.18) 0 6px, transparent 7px), radial-gradient(circle at 70% 86%, rgba(191,231,208,.20) 0 12px, transparent 13px); }
+.outro h2 { position: absolute; left: 72px; right: 72px; top: 430px; font-size: 66px; line-height: 1.6; margin: 0; color: #fff7e8; opacity: 0; }
+.outro-copy { position: absolute; left: 76px; right: 76px; top: 980px; margin: 0; font: 600 44px/1.5 "HeitiLocal", sans-serif; color: rgba(255,255,255,.74); opacity: 0; }
+.cta-card { position: absolute; left: 76px; right: 76px; bottom: 300px; padding: 34px 40px; border-radius: 24px; background: rgba(191,231,208,.14); border: 1.5px solid rgba(191,231,208,.35); font: 900 44px/1.2 "HeitiLocal", sans-serif; color: #bfe7d0; text-align: center; opacity: 0; }
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="72.15" data-width="1080" data-height="1920">
+    <video id="video_beautiful" class="clip footage" data-start="0" data-duration="72.15" data-track-index="0" src="clips_seg/beautiful.mp4" muted playsinline></video>
+<section id="card_beautiful" class="clip song-card" data-start="0" data-duration="72.15" data-track-index="20" style="--bg:#142017;--accent:#DDE8BE;--accent2:#F0B7C8">
+  <div class="side-rail"><span>02</span></div>
+  <div class="info-card">
+    <div class="meta"><span>2003</span><span>美丽人生</span></div>
+    <h2>Beautiful</h2>
+    <p class="credit">作词：阿信｜作曲：蔡健雅</p>
+    <p class="tag">开始看见自己</p>
+  </div>
+  <div class="keyword">漂亮</div>
+  <div class="motif">镜面反光</div>
+</section>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+tl.fromTo('#video_beautiful', { opacity: 0, scale: 1.045 }, { opacity: 1, scale: 1.0, duration: 1.2, ease: 'power2.out' }, 0);
+tl.fromTo('#card_beautiful .side-rail', { opacity: 0 }, { opacity: 1, duration: .65, ease: 'power1.out' }, .25);
+tl.fromTo('#card_beautiful .info-card', { opacity: 0, x: 54, y: -18 }, { opacity: 1, x: 0, y: 0, duration: .8, ease: 'power3.out' }, .55);
+tl.fromTo('#card_beautiful .motif', { opacity: 0, x: -24 }, { opacity: .85, x: 0, duration: .55, ease: 'power2.out' }, 1.05);
+tl.to('#card_beautiful .info-card', { opacity: 0, y: -12, duration: .5, ease: 'power2.in' }, 17.35);
+tl.fromTo('#card_beautiful .keyword', { opacity: 0, scale: .9 }, { opacity: .48, scale: 1, duration: 1.1, ease: 'power3.out' }, 18.6);
+tl.to('#card_beautiful .keyword', { opacity: .58, duration: 1.0, ease: 'sine.inOut' }, 19.95);
+tl.to('#card_beautiful .keyword', { opacity: 0, duration: .9, ease: 'power1.in' }, 69.95);
+tl.to('#video_beautiful', { opacity: 0, duration: .85, ease: 'power1.in' }, 71.3);
+tl.set('#video_beautiful', { opacity: 0 }, 72.15);
+tl.to('#card_beautiful .side-rail, #card_beautiful .motif', { opacity: 0, duration: .55, ease: 'power1.in' }, 71.5);
+window.__timelines['main'] = tl;
+  </script>
+</body>
+</html>

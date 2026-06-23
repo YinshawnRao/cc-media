@@ -1,0 +1,160 @@
+{
+  "total": 574.675,
+  "starts": {
+    "intro": [
+      0.0,
+      20.0
+    ],
+    "rainbow": [
+      20.0,
+      79.60000000000001
+    ],
+    "beautiful": [
+      99.60000000000001,
+      72.15
+    ],
+    "cant_hear": [
+      171.75,
+      71.125
+    ],
+    "swallowtail": [
+      242.875,
+      75.425
+    ],
+    "innocence": [
+      318.3,
+      78.60000000000001
+    ],
+    "silkroad": [
+      396.90000000000003,
+      80.5
+    ],
+    "coke_ring": [
+      477.40000000000003,
+      69.925
+    ],
+    "outro": [
+      547.325,
+      27.349999999999998
+    ]
+  },
+  "songs": [
+    {
+      "key": "rainbow",
+      "title": "彩虹",
+      "year": "1999",
+      "album": "一夜长大",
+      "credit": "作曲：阿信｜作词：阿信、梁伯君",
+      "raw": "rainbow_bili.mp4",
+      "crop": "1920:760:0:130",
+      "onset": 219.34,
+      "show": 58.0,
+      "mseek": 203.64,
+      "section_start": 20.0,
+      "section_duration": 79.60000000000001,
+      "full_start_abs": 40.4,
+      "full_end_abs": 98.4
+    },
+    {
+      "key": "beautiful",
+      "title": "Beautiful",
+      "year": "2003",
+      "album": "美丽人生",
+      "credit": "作词：阿信｜作曲：蔡健雅",
+      "raw": "beautiful_bili.mp4",
+      "crop": "1920:760:0:130",
+      "onset": 120.51,
+      "show": 52.0,
+      "mseek": 106.26,
+      "section_start": 99.60000000000001,
+      "section_duration": 72.15,
+      "full_start_abs": 118.55000000000001,
+      "full_end_abs": 170.55
+    },
+    {
+      "key": "cant_hear",
+      "title": "听不到",
+      "year": "2003",
+      "album": "恋爱的力量",
+      "credit": "词曲：阿信",
+      "raw": "cant_hear_bili.mp4",
+      "crop": "1920:820:0:100",
+      "onset": 135.67,
+      "show": 52.0,
+      "mseek": 122.445,
+      "section_start": 171.75,
+      "section_duration": 71.125,
+      "full_start_abs": 189.675,
+      "full_end_abs": 241.675
+    },
+    {
+      "key": "swallowtail",
+      "title": "燕尾蝶",
+      "year": "2004",
+      "album": "燕尾蝶 下定爱的决心",
+      "credit": "词曲：阿信",
+      "raw": "swallowtail_bili.mp4",
+      "crop": "1920:560:0:220",
+      "onset": 149.77,
+      "show": 55.0,
+      "mseek": 135.245,
+      "section_start": 242.875,
+      "section_duration": 75.425,
+      "full_start_abs": 262.1,
+      "full_end_abs": 317.1
+    },
+    {
+      "key": "innocence",
+      "title": "纯真",
+      "year": "2004",
+      "album": "燕尾蝶 下定爱的决心",
+      "credit": "词曲：阿信｜五月天旧作再演绎",
+      "raw": "innocence_bili.mp4",
+      "crop": "926:440:0:110",
+      "onset": 248.85,
+      "show": 58.0,
+      "mseek": 234.15,
+      "section_start": 318.3,
+      "section_duration": 78.60000000000001,
+      "full_start_abs": 337.7,
+      "full_end_abs": 395.70000000000005
+    },
+    {
+      "key": "silkroad",
+      "title": "丝路",
+      "year": "2005",
+      "album": "丝路 通往爱的路途",
+      "credit": "作词：阿信｜作曲、制作：王力宏",
+      "raw": "silkroad_bili.mp4",
+      "crop": "1920:740:0:150",
+      "onset": 123.69,
+      "show": 60.0,
+      "mseek": 109.09,
+      "section_start": 396.90000000000003,
+      "section_duration": 80.5,
+      "full_start_abs": 416.20000000000005,
+      "full_end_abs": 476.20000000000005
+    },
+    {
+      "key": "coke_ring",
+      "title": "可乐戒指",
+      "year": "2006",
+      "album": "亲亲",
+      "credit": "作词：阿信｜作曲：Jasemaine",
+      "raw": "coke_ring_bili_alt1.mp4",
+      "crop": "1920:780:0:150",
+      "onset": 72.03,
+      "show": 50.0,
+      "mseek": 58.005,
+      "section_start": 477.40000000000003,
+      "section_duration": 69.925,
+      "full_start_abs": 496.12500000000006,
+      "full_end_abs": 546.125
+    }
+  ],
+  "outro": {
+    "start": 547.325,
+    "duration": 27.349999999999998,
+    "cta_at": 563.0500000000001
+  }
+}
