@@ -1,0 +1,109 @@
+{
+  "id": "main",
+  "name": "conan-theme-top10",
+  "total": 615.35,
+  "intro_end": 19.45,
+  "outro_start": 584.15,
+  "blocks": [
+    {
+      "no": "10",
+      "jp": "TWILIGHT!!!",
+      "start": 19.45,
+      "full_start": 39.425,
+      "end": 79.425,
+      "aud_start": 44.025,
+      "ch_off": 60.3,
+      "seg_dur": 59.975
+    },
+    {
+      "no": "09",
+      "jp": "恋はスリル、ショック、サスペンス",
+      "start": 79.425,
+      "full_start": 100.1,
+      "end": 135.1,
+      "aud_start": 129.325,
+      "ch_off": 146.3,
+      "seg_dur": 55.675
+    },
+    {
+      "no": "08",
+      "jp": "相思相愛",
+      "start": 135.1,
+      "full_start": 153.875,
+      "end": 193.875,
+      "aud_start": 136.225,
+      "ch_off": 151.3,
+      "seg_dur": 58.775
+    },
+    {
+      "no": "07",
+      "jp": "運命のルーレット廻して",
+      "start": 193.875,
+      "full_start": 214.275,
+      "end": 251.275,
+      "aud_start": 151.6,
+      "ch_off": 168.3,
+      "seg_dur": 57.4
+    },
+    {
+      "no": "06",
+      "jp": "Time after time ～花舞う街で～",
+      "start": 251.275,
+      "full_start": 269.6,
+      "end": 303.6,
+      "aud_start": 121.675,
+      "ch_off": 136.3,
+      "seg_dur": 52.325
+    },
+    {
+      "no": "05",
+      "jp": "クロノスタシス",
+      "start": 303.6,
+      "full_start": 322.975,
+      "end": 360.975,
+      "aud_start": 169.625,
+      "ch_off": 185.3,
+      "seg_dur": 57.375
+    },
+    {
+      "no": "04",
+      "jp": "謎",
+      "start": 360.975,
+      "full_start": 379.425,
+      "end": 417.425,
+      "aud_start": 194.55,
+      "ch_off": 209.3,
+      "seg_dur": 56.45
+    },
+    {
+      "no": "03",
+      "jp": "Secret of my heart",
+      "start": 417.425,
+      "full_start": 437.9,
+      "end": 477.9,
+      "aud_start": 121.525,
+      "ch_off": 138.3,
+      "seg_dur": 60.475
+    },
+    {
+      "no": "02",
+      "jp": "渡月橋 ～君 想ふ～",
+      "start": 477.9,
+      "full_start": 497.0,
+      "end": 529.0,
+      "aud_start": 155.9,
+      "ch_off": 171.3,
+      "seg_dur": 51.1
+    },
+    {
+      "no": "01",
+      "jp": "美しい鰭",
+      "start": 529.0,
+      "full_start": 550.15,
+      "end": 584.15,
+      "aud_start": 174.85,
+      "ch_off": 192.3,
+      "seg_dur": 55.15
+    }
+  ]
+}
