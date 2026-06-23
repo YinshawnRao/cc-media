@@ -16,7 +16,7 @@ C = ROOT / "clips"
 CS = ROOT / "clips_seg"
 CS.mkdir(exist_ok=True)
 
-P5_SOURCE_CONFIRMED = False
+P5_SOURCE_CONFIRMED = True
 
 LEAD = 0.35
 POST = 0.25
@@ -45,16 +45,16 @@ def run(cmd):
 
 items = [
     {
-        "key": "p5_noisy",
-        "clip": "vert_p5_badgirl",
+        "key": "p5_wobuyao",
+        "clip": "vert_p5_wobuyao",
         "no": "05",
-        "name": "《不吵不闹》",
-        "plain": "不吵不闹",
-        "meta": "Bad Girl · 2007",
-        "show": 30.0,
-        "ch_off": 98.82,
-        "tag": "不争不闹之后的体面和疲惫",
-        "note": "后期成熟侧写，关系冷下来之后仍保持体面",
+        "name": "《我不要》",
+        "plain": "我不要",
+        "meta": "向前冲 · 1998",
+        "show": 32.0,
+        "ch_off": 73.70,
+        "tag": "早期态度感，直接说我不要",
+        "note": "被同专大热快歌盖住的倔强切面",
     },
     {
         "key": "p4_wait",
@@ -108,8 +108,7 @@ items = [
 
 if not P5_SOURCE_CONFIRMED:
     raise SystemExit(
-        "Blocked: 未找到可确认的徐怀钰《不吵不闹》音视频源。"
-        " 当前 vert_p5_badgirl 只是《Bad Girl》占位素材，不能用于最终成片。"
+        "Blocked: 第五首素材未确认，不能用于最终成片。"
     )
 
 d_intro = dur(A / "intro.wav")
@@ -293,7 +292,7 @@ for i, block in enumerate(blocks):
 ranking_rows = "".join(
     f'<li><span>{n}</span><strong>{name}</strong></li>'
     for n, name in [
-        ("05", "不吵不闹"),
+        ("05", "我不要"),
         ("04", "等不及"),
         ("03", "乱了"),
         ("02", "友情卡片"),
@@ -357,8 +356,8 @@ body += "\n" + "\n".join(transition_divs)
 body += (
     f'\n<section id="cover" class="clip" data-start="0" data-duration="{q(intro_end-.12)}" data-track-index="2">'
     '<div><div class="eyebrow">华语遗珠 · 少女时代的背面</div><h1>徐怀钰<br><b>最被低估</b>的5首歌</h1>'
-    '<p class="sub">不提前公布完整名单。从第五名开始，听见那些不只靠元气和大热成立的徐怀钰。</p></div>'
-    '<div class="chips"><span>旧记忆</span><span>Y2K 少女感</span><span>转型线索</span><span>夜色情歌</span><span>成熟侧写</span></div></section>'
+    '<p class="sub">从元气少女之外，听见她更安静、更锋利、也更有后劲的一面。</p></div>'
+    '<div class="chips"><span>旧记忆</span><span>Y2K 少女感</span><span>转型线索</span><span>夜色情歌</span><span>早期态度</span></div></section>'
 )
 body += "\n" + "\n".join(labels)
 body += (
@@ -412,6 +411,26 @@ html = f"""<!doctype html>
 """
 
 (ROOT / "index.html").write_text(html, encoding="utf-8")
-(ROOT / "meta.json").write_text(json.dumps({"id": "main", "name": "xuhuaiyu-underrated-top5"}, ensure_ascii=False), encoding="utf-8")
+(ROOT / "meta.json").write_text(json.dumps({
+    "id": "main",
+    "name": "xuhuaiyu-underrated-top5",
+    "total": total,
+    "intro_end": intro_end,
+    "outro_start": outro_start,
+    "blocks": [
+        {
+            "no": b["no"],
+            "plain": b["plain"],
+            "start": b["start"],
+            "narr_start": b["narr_start"],
+            "narr_end": b["narr_end"],
+            "full_start": b["full_start"],
+            "end": b["end"],
+            "mseek": b["mseek"],
+            "ch_off": b["ch_off"],
+        }
+        for b in blocks
+    ],
+}, ensure_ascii=False, indent=2), encoding="utf-8")
 print("TOTAL:", total, "intro_end:", intro_end, "outro_start:", outro_start)
 print("blocks:", [(b["no"], b["plain"], b["start"], b["full_start"], b["end"], b["mseek"]) for b in blocks])

@@ -1,0 +1,7 @@
+file 'seg_intro.wav'
+file 'seg_p5_wobuyao.wav'
+file 'seg_p4_wait.wav'
+file 'seg_p3_luan.wav'
+file 'seg_p2_friend.wav'
+file 'seg_p1_wenxi.wav'
+file 'seg_outro.wav'
