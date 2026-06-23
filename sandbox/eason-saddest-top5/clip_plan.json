@@ -1,0 +1,65 @@
+{
+  "intro": {
+    "source": "raw/fushi_alt_dual.mp4",
+    "start": 197.0,
+    "length": 13.975,
+    "crop": "1920:900:0:0"
+  },
+  "items": [
+    {
+      "key": "putao",
+      "source": "raw/putao.mp4",
+      "bvid": "BV1sE411c7Cy",
+      "clip_start": 182.29,
+      "length": 49.5,
+      "vocal_onset": 193.24,
+      "full_start_local": 14.7,
+      "show": 34.0,
+      "crop": "1920:900:0:0"
+    },
+    {
+      "key": "sunyou",
+      "source": "raw/sunyou.mp4",
+      "bvid": "BV1qS4y1S7BN",
+      "clip_start": 49.61,
+      "length": 47.05,
+      "vocal_onset": 61.11,
+      "full_start_local": 15.25,
+      "show": 31.0,
+      "crop": "1902:1080:0:0"
+    },
+    {
+      "key": "renlai",
+      "source": "raw/renlai_live.mp4",
+      "bvid": "BV1F34y177xc",
+      "clip_start": 120.245,
+      "length": 57.125,
+      "vocal_onset": 130.82,
+      "full_start_local": 14.325,
+      "show": 42.0,
+      "crop": "1920:620:0:180"
+    },
+    {
+      "key": "mingnian",
+      "source": "raw/mingnian.mp4",
+      "bvid": "BV1T3411T7RN",
+      "clip_start": 109.945,
+      "length": 55.025,
+      "vocal_onset": 120.42,
+      "full_start_local": 14.225,
+      "show": 40.0,
+      "crop": "2470:930:0:0"
+    },
+    {
+      "key": "fushi",
+      "source": "raw/fushi_alt_dual.mp4",
+      "bvid": "BV1LNsbe8ECx",
+      "clip_start": 172.74,
+      "length": 47.85,
+      "vocal_onset": 184.04,
+      "full_start_local": 15.05,
+      "show": 32.0,
+      "crop": "1920:900:0:0"
+    }
+  ]
+}
