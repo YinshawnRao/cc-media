@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.25,
+    "DIG": 1.45
+  },
+  "songs": [
+    {
+      "key": "p5_zhongguo",
+      "clip": "vert_p5_zhongguo",
+      "narr_end_src": 119.35,
+      "show_start_src": 121.05,
+      "show_end_src": 148.32
+    },
+    {
+      "key": "p4_tianlai",
+      "clip": "vert_p4_tianlai",
+      "narr_end_src": 190.34,
+      "show_start_src": 192.04,
+      "show_end_src": 219.0
+    },
+    {
+      "key": "p3_kangding",
+      "clip": "vert_p3_kangding",
+      "narr_end_src": 216.99,
+      "show_start_src": 218.69,
+      "show_end_src": 249.42
+    },
+    {
+      "key": "p2_chuanqi",
+      "clip": "vert_p2_chuanqi",
+      "narr_end_src": 315.84,
+      "show_start_src": 317.54,
+      "show_end_src": 352.54
+    },
+    {
+      "key": "p1_damo",
+      "clip": "vert_p1_damo",
+      "narr_end_src": 214.58,
+      "show_start_src": 216.28,
+      "show_end_src": 244.98
+    }
+  ]
+}

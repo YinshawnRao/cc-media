@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <script src="vendor/gsap.min.js"></script>
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+@font-face{font-family:"PingFang SC";src:local("PingFang SC");font-weight:400 900}
+@font-face{font-family:"Songti SC";src:local("Songti SC");font-weight:400 900}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#081018;
+  font-family:"PingFang SC",system-ui,sans-serif;color:#f2f8fb;-webkit-font-smoothing:antialiased}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#081018}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(7,13,20,.86),rgba(7,13,20,.10) 32%,rgba(7,13,20,.18) 56%,rgba(4,7,11,.93))}
+#glow{position:absolute;inset:-260px;z-index:1;opacity:.48;background:radial-gradient(42% 28% at 16% 18%,rgba(111,195,226,.44),rgba(111,195,226,0) 66%),radial-gradient(48% 30% at 84% 82%,rgba(228,111,143,.34),rgba(228,111,143,0) 68%)}
+#grain{position:absolute;inset:-20px;z-index:9;opacity:.055;mix-blend-mode:soft-light;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(242,248,251,.13) 0 1px,rgba(242,248,251,0) 1px 4px)}
+.trans{position:absolute;left:0;right:0;top:0;bottom:0;z-index:8;background:linear-gradient(90deg,rgba(111,195,226,0),rgba(111,195,226,.54),rgba(228,111,143,0));transform-origin:center}
+#cover{position:absolute;inset:0;z-index:5;opacity:1;padding:126px 72px 122px;display:flex;flex-direction:column;justify-content:space-between}
+.eyebrow{display:inline-flex;align-items:center;gap:18px;font-size:30px;font-weight:900;color:#8bd7ff;letter-spacing:.12em}
+.eyebrow:before{content:"";width:58px;height:4px;background:#8bd7ff;border-radius:99px;box-shadow:0 0 18px rgba(139,215,255,.62)}
+#cover h1{margin-top:30px;font-family:"Songti SC",serif;font-size:112px;line-height:1.07;font-weight:900;max-width:944px;text-shadow:0 6px 42px rgba(0,0,0,.66)}
+#cover h1 b{color:#ff8eaa;font-weight:900}
+#cover .sub{margin-top:32px;font-size:36px;line-height:1.5;color:#d1dde4;font-weight:600;max-width:920px}
+.chips{display:flex;flex-wrap:wrap;gap:14px;max-width:932px}
+.chips span{border:1.5px solid rgba(139,215,255,.50);color:#eff8fb;background:rgba(7,13,20,.62);font-size:27px;font-weight:800;padding:12px 18px;border-radius:8px}
+.fullLabel{position:absolute;z-index:5;left:64px;right:64px;bottom:166px;padding:34px 36px 38px;background:linear-gradient(135deg,rgba(7,13,20,.91),rgba(24,34,42,.58));border-left:8px solid #e46f8f;border-radius:6px;backdrop-filter:blur(2px);box-shadow:0 22px 70px rgba(0,0,0,.36)}
+.fullLabel .rank{font-family:"Menlo","Monaco",monospace;font-size:31px;font-weight:900;color:#8bd7ff;letter-spacing:.14em}
+.fullLabel .meta{margin-top:14px;font-size:27px;font-weight:700;color:#a8bac3;letter-spacing:.05em}
+.fullLabel h2{font-family:"Songti SC",serif;margin-top:12px;font-size:78px;line-height:1.12;font-weight:900;color:#f2f8fb}
+.fullLabel .tag{margin-top:19px;font-size:38px;line-height:1.28;font-weight:900;color:#ff9db5}
+.fullLabel .note{margin-top:12px;font-size:30px;line-height:1.42;font-weight:600;color:#d1dde4}
+.fullLabel.topRank{border-left-color:#8bd7ff;background:linear-gradient(135deg,rgba(10,20,30,.93),rgba(7,13,20,.60))}
+.fullLabel.topRank .rank,.fullLabel.topRank .tag{color:#9fe3ff}
+.miniLabel{position:absolute;z-index:5;top:92px;left:58px;display:flex;align-items:center;gap:16px;padding:13px 21px;background:rgba(7,13,20,.70);border:1.5px solid rgba(139,215,255,.58);border-radius:8px}
+.miniLabel span{font-family:"Menlo","Monaco",monospace;font-size:44px;font-weight:900;color:#f2f8fb;background:#081018;border:1px solid rgba(139,215,255,.52);border-radius:6px;padding:2px 8px;line-height:1.1}
+.miniLabel strong{font-family:"Songti SC",serif;font-size:38px;font-weight:900;max-width:790px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.miniLabel.topRank{border-color:rgba(255,157,181,.76)}
+.miniLabel.topRank span{border-color:rgba(255,157,181,.70)}
+#outro{position:absolute;z-index:5;inset:0;padding:112px 72px 152px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(180deg,rgba(7,13,20,.34),rgba(7,13,20,.90))}
+#outro .small{font-family:"Menlo","Monaco",monospace;font-size:31px;font-weight:900;color:#8bd7ff;letter-spacing:.14em}
+#outro h2{font-family:"Songti SC",serif;margin-top:20px;font-size:55px;line-height:1.28;font-weight:900;max-width:932px}
+#outro ol{margin-top:38px;list-style:none;display:grid;gap:13px;width:100%}
+#outro li{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:16px 20px;background:rgba(7,13,20,.64);border:1px solid rgba(242,248,251,.14);border-radius:8px}
+#outro li span{font-family:"Menlo","Monaco",monospace;font-size:32px;font-weight:900;color:#f2f8fb;background:#081018;border:1px solid rgba(139,215,255,.45);border-radius:6px;padding:4px 8px;line-height:1.1;min-width:58px;text-align:center}
+#outro li:last-child{background:rgba(255,157,181,.14);border-color:rgba(255,157,181,.48)}
+#outro li:last-child span{border-color:rgba(255,157,181,.66)}
+#outro li strong{font-family:"Songti SC",serif;font-size:35px;font-weight:900;text-align:right}
+#outro .close{margin-top:30px;font-size:30px;line-height:1.5;color:#d1dde4;font-weight:600}
+#cta{position:absolute;z-index:6;left:72px;right:72px;bottom:90px;text-align:center;padding:20px;background:rgba(7,13,20,.74);border:1.5px solid rgba(255,157,181,.46);border-radius:9px}
+#cta .v{font-size:42px;font-weight:900;color:#ff9db5;line-height:1.22}
+#cta .f{margin-top:14px;font-size:33px;font-weight:900;color:#8bd7ff;letter-spacing:.14em}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="308.25" data-width="1080" data-height="1920">
+<video id="v0" class="clip fv" data-start="0.0" data-duration="15.475" data-track-index="0" src="clips_seg/intro.mp4" muted playsinline></video>
+<video id="v1" class="clip fv" data-start="15.475" data-duration="57.5" data-track-index="6" src="clips_seg/p5_aishenguozuoren.mp4" muted playsinline></video>
+<video id="v2" class="clip fv" data-start="72.975" data-duration="55.0" data-track-index="0" src="clips_seg/p4_tabuguanbeiai.mp4" muted playsinline></video>
+<video id="v3" class="clip fv" data-start="127.975" data-duration="58.375" data-track-index="6" src="clips_seg/p3_aimyoujiashe.mp4" muted playsinline></video>
+<video id="v4" class="clip fv" data-start="186.35" data-duration="41.95" data-track-index="0" src="clips_seg/p2_zaji.mp4" muted playsinline></video>
+<video id="v5" class="clip fv" data-start="228.3" data-duration="52.1" data-track-index="6" src="clips_seg/p1_rushui.mp4" muted playsinline></video>
+<video id="v6" class="clip fv" data-start="280.4" data-duration="27.85" data-track-index="0" src="clips_seg/outro.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="308.25" data-track-index="1"></div>
+<div id="glow" class="clip" data-start="0" data-duration="308.25" data-track-index="7"></div>
+<div id="grain" class="clip" data-start="0" data-duration="308.25" data-track-index="10"></div>
+<div id="tr0" class="clip trans" data-start="15.355" data-duration="0.84" data-track-index="8"></div>
+<div id="tr1" class="clip trans" data-start="72.855" data-duration="0.84" data-track-index="8"></div>
+<div id="tr2" class="clip trans" data-start="127.855" data-duration="0.84" data-track-index="8"></div>
+<div id="tr3" class="clip trans" data-start="186.23" data-duration="0.84" data-track-index="8"></div>
+<div id="tr4" class="clip trans" data-start="228.18" data-duration="0.84" data-track-index="8"></div>
+<section id="cover" class="clip" data-start="0" data-duration="15.355" data-track-index="2"><div><div class="eyebrow">华语遗珠 · 轻声里的深情</div><h1>卫兰<br><b>最被低估</b>的5首歌</h1><p class="sub">不是只听大热代表作。这五首歌，藏着她最轻、最深，也最耐听的情绪处理。</p></div><div class="chips"><span>港乐遗珠</span><span>关系失衡</span><span>退潮式遗憾</span><span>轻声高压</span><span>倒数揭晓</span></div></section>
+<section id="full0" class="clip fullLabel" data-start="15.475" data-duration="17.0" data-track-index="2"><div class="rank">第 05 名</div><div class="meta">Serving You · 2008</div><h2>《爱深过做人》</h2><p class="tag">夸张、宿命，也有一点不清醒</p><p class="note">早期情歌里那种明知会沉下去、还是沉下去的声音质感</p></section>
+<section id="mini0" class="clip miniLabel" data-start="32.475" data-duration="40.5" data-track-index="4"><span>05</span><strong>爱深过做人</strong></section>
+<section id="full1" class="clip fullLabel" data-start="72.975" data-duration="17.0" data-track-index="2"><div class="rank">第 04 名</div><div class="meta">Imagine · 2012</div><h2>《他不惯被爱》</h2><p class="tag">不是控诉，是复杂的理解</p><p class="note">把一个不懂接受爱的人，唱得可怜，也可气</p></section>
+<section id="mini1" class="clip miniLabel" data-start="89.975" data-duration="38.0" data-track-index="4"><span>04</span><strong>他不惯被爱</strong></section>
+<section id="full2" class="clip fullLabel" data-start="127.975" data-duration="17.375" data-track-index="2"><div class="rank">第 03 名</div><div class="meta">Imagine · 2012</div><h2>《爱没有假如》</h2><p class="tag">知道没得回头，却还是忍不住想</p><p class="note">港乐旋律很直接，但没有被唱成苦情大戏</p></section>
+<section id="mini2" class="clip miniLabel" data-start="145.35" data-duration="41.0" data-track-index="4"><span>03</span><strong>爱没有假如</strong></section>
+<section id="full3" class="clip fullLabel" data-start="186.35" data-duration="16.75" data-track-index="2"><div class="rank">第 02 名</div><div class="meta">Serving You · 2008</div><h2>《杂技》</h2><p class="tag">关系失衡里的危险动作</p><p class="note">明明快撑不住，还要装作稳住</p></section>
+<section id="mini3" class="clip miniLabel" data-start="203.1" data-duration="25.2" data-track-index="4"><span>02</span><strong>杂技</strong></section>
+<section id="full4" class="clip fullLabel topRank" data-start="228.3" data-duration="17.1" data-track-index="2"><div class="rank">第 01 名</div><div class="meta">Serving You · 2008</div><h2>《如水》</h2><p class="tag">声音很轻，情绪很深</p><p class="note">不能哭腔太满，也不能唱得太淡</p></section>
+<section id="mini4" class="clip miniLabel topRank" data-start="245.4" data-duration="35.0" data-track-index="4"><span>01</span><strong>如水</strong></section>
+<section id="outro" class="clip" data-start="280.4" data-duration="27.85" data-track-index="2"><div class="small">最终榜单</div><h2>卫兰被低估的，不是音色，而是她总能把遗憾、忍耐和退潮后的空白，唱得特别轻，却特别痛。</h2><ol><li><span>05</span><strong>爱深过做人</strong></li><li><span>04</span><strong>他不惯被爱</strong></li><li><span>03</span><strong>爱没有假如</strong></li><li><span>02</span><strong>杂技</strong></li><li><span>01</span><strong>如水</strong></li></ol><p class="close">轻，不代表淡；安静，也可以很重。</p></section>
+<section id="cta" class="clip" data-start="296.3" data-duration="11.95" data-track-index="5"><div class="v">为你的第一名，评论区投票</div><div class="f">点赞 · 收藏 · 关注</div></section>
+<audio id="master" class="clip" data-start="0" data-duration="307.953" data-track-index="3" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+tl.set("#cover .eyebrow, #cover h1, #cover .sub, #cover .chips span",{opacity:1,x:0,y:0},0);
+tl.fromTo("#cover h1",{scale:1.0},{scale:1.018,duration:3.1,ease:"sine.inOut",yoyo:true,repeat:1},0.12);
+tl.fromTo("#glow",{x:-18,y:0},{x:20,y:-14,duration:308.25,ease:"none"},0);
+tl.to("#cover > div",{opacity:0,duration:.42,ease:"power1.in"},14.975);
+tl.set("#cover > div",{opacity:0},15.395);
+tl.fromTo("#tr0",{opacity:.58,scaleY:.035},{opacity:0,scaleY:1,duration:.74,ease:"power2.out"},15.355);
+tl.fromTo("#tr1",{opacity:.58,scaleY:.035},{opacity:0,scaleY:1,duration:.74,ease:"power2.out"},72.855);
+tl.fromTo("#tr2",{opacity:.58,scaleY:.035},{opacity:0,scaleY:1,duration:.74,ease:"power2.out"},127.855);
+tl.fromTo("#tr3",{opacity:.58,scaleY:.035},{opacity:0,scaleY:1,duration:.74,ease:"power2.out"},186.23);
+tl.fromTo("#tr4",{opacity:.58,scaleY:.035},{opacity:0,scaleY:1,duration:.74,ease:"power2.out"},228.18);
+tl.fromTo("#full0 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},15.655);
+tl.fromTo("#full0 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.46,ease:"sine.out"},15.815);
+tl.fromTo("#full0 h2",{y:48,opacity:0},{y:0,opacity:1,duration:.66,ease:"power3.out"},15.995);
+tl.fromTo("#full0 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"expo.out"},16.355);
+tl.fromTo("#full0 .note",{x:18,opacity:0},{x:0,opacity:1,duration:.44,ease:"power1.out"},16.595);
+tl.fromTo("#mini0",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},32.575);
+tl.fromTo("#full1 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},73.155);
+tl.fromTo("#full1 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.46,ease:"sine.out"},73.315);
+tl.fromTo("#full1 h2",{y:48,opacity:0},{y:0,opacity:1,duration:.66,ease:"power3.out"},73.495);
+tl.fromTo("#full1 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"expo.out"},73.855);
+tl.fromTo("#full1 .note",{x:18,opacity:0},{x:0,opacity:1,duration:.44,ease:"power1.out"},74.095);
+tl.fromTo("#mini1",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},90.075);
+tl.fromTo("#full2 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},128.155);
+tl.fromTo("#full2 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.46,ease:"sine.out"},128.315);
+tl.fromTo("#full2 h2",{y:48,opacity:0},{y:0,opacity:1,duration:.66,ease:"power3.out"},128.495);
+tl.fromTo("#full2 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"expo.out"},128.855);
+tl.fromTo("#full2 .note",{x:18,opacity:0},{x:0,opacity:1,duration:.44,ease:"power1.out"},129.095);
+tl.fromTo("#mini2",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},145.45);
+tl.fromTo("#full3 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},186.53);
+tl.fromTo("#full3 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.46,ease:"sine.out"},186.69);
+tl.fromTo("#full3 h2",{y:48,opacity:0},{y:0,opacity:1,duration:.66,ease:"power3.out"},186.87);
+tl.fromTo("#full3 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"expo.out"},187.23);
+tl.fromTo("#full3 .note",{x:18,opacity:0},{x:0,opacity:1,duration:.44,ease:"power1.out"},187.47);
+tl.fromTo("#mini3",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},203.2);
+tl.fromTo("#full4 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},228.48);
+tl.fromTo("#full4 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.46,ease:"sine.out"},228.64);
+tl.fromTo("#full4 h2",{y:48,opacity:0},{y:0,opacity:1,duration:.66,ease:"power3.out"},228.82);
+tl.fromTo("#full4 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"expo.out"},229.18);
+tl.fromTo("#full4 .note",{x:18,opacity:0},{x:0,opacity:1,duration:.44,ease:"power1.out"},229.42);
+tl.fromTo("#mini4",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},245.5);
+tl.fromTo("#outro .small",{y:22,opacity:0},{y:0,opacity:1,duration:.5,ease:"power2.out"},280.6);
+tl.fromTo("#outro h2",{y:40,opacity:0},{y:0,opacity:1,duration:.65,ease:"power3.out"},280.95);
+tl.fromTo("#outro li",{x:-34,opacity:0},{x:0,opacity:1,duration:.45,ease:"power2.out",stagger:.1},281.58);
+tl.fromTo("#outro .close",{y:24,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},282.58);
+tl.fromTo("#cta .v",{y:26,opacity:0},{y:0,opacity:1,duration:.55,ease:"power2.out"},296.45);
+tl.fromTo("#cta .f",{y:18,opacity:0},{y:0,opacity:1,duration:.5,ease:"power1.out"},296.8);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

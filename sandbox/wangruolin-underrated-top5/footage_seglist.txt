@@ -1,0 +1,7 @@
+file 'clips_seg/intro.mp4'
+file 'clips_seg/p5_guicai.mp4'
+file 'clips_seg/p4_liaobagua.mp4'
+file 'clips_seg/p3_moguanxin.mp4'
+file 'clips_seg/p2_fuchou.mp4'
+file 'clips_seg/p1_dajia.mp4'
+file 'clips_seg/outro.mp4'

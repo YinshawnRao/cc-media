@@ -1,0 +1,70 @@
+{
+  "id": "main",
+  "name": "liuruoying-underrated-top5",
+  "sample": false,
+  "total": 261.44,
+  "intro_end": 14.05,
+  "outro_start": 235.19,
+  "blocks": [
+    {
+      "no": "05",
+      "plain": "我曾爱过一个男孩",
+      "start": 14.05,
+      "narr_start": 14.4,
+      "narr_end": 30.95,
+      "full_start": 32.65,
+      "end": 63.32,
+      "mseek": 37.4,
+      "ch_off": 56.0,
+      "show": 30.67
+    },
+    {
+      "no": "04",
+      "plain": "阁楼",
+      "start": 63.32,
+      "narr_start": 63.67,
+      "narr_end": 79.395,
+      "full_start": 81.095,
+      "end": 106.795,
+      "mseek": 6.225,
+      "ch_off": 24.0,
+      "show": 25.7
+    },
+    {
+      "no": "03",
+      "plain": "透明",
+      "start": 106.795,
+      "narr_start": 107.145,
+      "narr_end": 123.07,
+      "full_start": 124.77,
+      "end": 143.67,
+      "mseek": 6.335,
+      "ch_off": 24.31,
+      "show": 18.9
+    },
+    {
+      "no": "02",
+      "plain": "点亮橘子树",
+      "start": 143.67,
+      "narr_start": 144.02,
+      "narr_end": 159.545,
+      "full_start": 161.245,
+      "end": 188.915,
+      "mseek": 2.955,
+      "ch_off": 20.53,
+      "show": 27.67
+    },
+    {
+      "no": "01",
+      "plain": "打了一把钥匙给你",
+      "start": 188.915,
+      "narr_start": 189.265,
+      "narr_end": 207.49,
+      "full_start": 209.19,
+      "end": 235.19,
+      "mseek": 1.725,
+      "ch_off": 22.0,
+      "show": 26.0
+    }
+  ]
+}

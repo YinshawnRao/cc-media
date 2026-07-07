@@ -1,7 +1,0 @@
-file 'seg_open.wav'
-file 'seg_p1.wav'
-file 'seg_p2.wav'
-file 'seg_p3.wav'
-file 'seg_p4.wav'
-file 'seg_p5.wav'
-file 'seg_outro.wav'

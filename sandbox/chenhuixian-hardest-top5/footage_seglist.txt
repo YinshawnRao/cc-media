@@ -1,0 +1,7 @@
+file 'clips_seg/intro.mp4'
+file 'clips_seg/guilai.mp4'
+file 'clips_seg/yeji.mp4'
+file 'clips_seg/piaoxue.mp4'
+file 'clips_seg/qianqian.mp4'
+file 'clips_seg/yueliang.mp4'
+file 'clips_seg/outro.mp4'

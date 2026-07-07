@@ -1,0 +1,66 @@
+{
+  "id": "main",
+  "name": "liyuchun-underrated-top5",
+  "total": 298.725,
+  "master_duration": 298.453,
+  "intro_end": 15.6,
+  "intro_seek": 68.87,
+  "outro_start": 270.075,
+  "blocks": [
+    {
+      "no": "05",
+      "plain": "小宇宙",
+      "start": 15.6,
+      "narr_start": 15.95,
+      "narr_end": 29.35,
+      "full_start": 31.05,
+      "end": 56.55,
+      "mseek": 84.47,
+      "ch_off": 99.92
+    },
+    {
+      "no": "04",
+      "plain": "冷暖",
+      "start": 56.55,
+      "narr_start": 56.9,
+      "narr_end": 71.05,
+      "full_start": 72.75,
+      "end": 106.75,
+      "mseek": 59.68,
+      "ch_off": 75.88
+    },
+    {
+      "no": "03",
+      "plain": "似火年华",
+      "start": 106.75,
+      "narr_start": 107.1,
+      "narr_end": 121.075,
+      "full_start": 122.775,
+      "end": 160.275,
+      "mseek": 199.205,
+      "ch_off": 215.23
+    },
+    {
+      "no": "02",
+      "plain": "一而再再而三地喜欢你",
+      "start": 160.275,
+      "narr_start": 160.625,
+      "narr_end": 175.325,
+      "full_start": 177.025,
+      "end": 205.825,
+      "mseek": 34.12,
+      "ch_off": 50.87
+    },
+    {
+      "no": "01",
+      "plain": "西门少年",
+      "start": 205.825,
+      "narr_start": 206.175,
+      "narr_end": 222.375,
+      "full_start": 224.075,
+      "end": 270.075,
+      "mseek": 166.28,
+      "ch_off": 184.53
+    }
+  ]
+}

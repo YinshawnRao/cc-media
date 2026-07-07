@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.25,
+    "DIG": 1.45
+  },
+  "songs": [
+    {
+      "key": "p5_aiwodeqingjushou",
+      "clip": "vert_p5_aiwodeqingjushou",
+      "narr_end_src": 46.53,
+      "show_start_src": 48.23,
+      "show_end_src": 87.23
+    },
+    {
+      "key": "p4_beijiguang",
+      "clip": "vert_p4_beijiguang",
+      "narr_end_src": 105.6,
+      "show_start_src": 107.3,
+      "show_end_src": 139.8
+    },
+    {
+      "key": "p3_qishiwo",
+      "clip": "vert_p3_qishiwo",
+      "narr_end_src": 197.83,
+      "show_start_src": 199.53,
+      "show_end_src": 224.53
+    },
+    {
+      "key": "p2_landeguan",
+      "clip": "vert_p2_landeguan",
+      "narr_end_src": 56.67,
+      "show_start_src": 58.37,
+      "show_end_src": 81.37
+    },
+    {
+      "key": "p1_yuedie",
+      "clip": "vert_p1_yuedie",
+      "narr_end_src": 176.7,
+      "show_start_src": 178.4,
+      "show_end_src": 237.9
+    }
+  ]
+}

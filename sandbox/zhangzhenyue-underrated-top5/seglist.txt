@@ -1,0 +1,7 @@
+file 'seg_intro.wav'
+file 'seg_p5_meiyu.wav'
+file 'seg_p4_liangshou.wav'
+file 'seg_p3_hennan.wav'
+file 'seg_p2_lukou.wav'
+file 'seg_p1_pojita.wav'
+file 'seg_outro.wav'

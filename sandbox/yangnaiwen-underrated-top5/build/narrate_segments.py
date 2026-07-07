@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+"""Male narration for 杨乃文最被低估的5首歌.
+
+Countdown 5 -> 1 (#1 = 不要来找我, the climax). 倒数揭晓。
+事实口径（已 web 交叉核实，避免文案出错）：
+- 不要来找我 / 我给的爱 = 同收于《Silence》(1999)，都由【张震岳】词曲（一快一慢）。
+- 未接来电 = 《ZERO》(2013，非 2003)；郑文华 词 / 张震岳 曲。
+- 路痴 = 《越美丽越看不见》(2019)；谢金林 词 / 羽田 曲。
+- 如今 = 《越美丽越看不见》(2019)；李亮辰 词曲。
+- 金曲奖：杨乃文凭【《Silence》整张专辑】拿下第 11 届(2000 颁)最佳国语女演唱人——是专辑得歌手奖，
+  不是某首单曲得奖；文案措辞已注意。
+- 这 5 首杨乃文【本人均未参与词曲创作】→ 文案不得说"她写的歌"。
+- 英文专辑名(Silence / ZERO)一律不进配音(Kokoro 中英混读差)，只进屏幕字幕。
+固定结尾 CTA 由 tools/video/outro_cta.py 提供，永远是最后一句。
+"""
+import json
+import sys
+from pathlib import Path
+
+import numpy as np
+import soundfile as sf
+from kokoro import KPipeline
+
+ROOT = Path(__file__).resolve().parents[1]
+AUDIO = ROOT / "audio"
+sys.path.insert(0, str(ROOT.parents[1] / "tools" / "video"))
+from outro_cta import FIXED_OUTRO_CTA  # noqa: E402
+
+VOICE = "zm_yunxi"
+SR = 24000
+
+BLOCKS = {
+    "intro": "提到杨乃文，你大概会先想到《星星堆满天》《推开世界的门》，那个冷峻、中性、带着颗粒感的摇滚女声。可在这些代表作的光环之外，她还藏着不少被盖住的好歌，安静、疏离，越听越有味道。今天这期，我们从第五名倒数，盘一盘杨乃文最被低估的五首歌。",
+    "p5_ruijin": "第五名，《如今》。它收在二零一九年的《越美丽越看不见》里，那是一张更偏电子、也更实验的专辑。歌名只有两个字，却有很强的时间感：如今的自己，如今的关系，还有如今回头，才慢慢看懂的那些事。它不靠大副歌抓人，而是用一点点疏离和迷失，慢慢把你留住。杨乃文唱这种成熟之后的清醒，不需要多余的修饰，声音一出来，就有一种我已经看懂了的淡定。",
+    "p4_luchi": "第四名，《路痴》。它同样来自《越美丽越看不见》。这个歌名很有意思：不是单纯地迷路，而是在人和关系里，都找不到方向。这首歌不靠大副歌，而是靠氛围、靠节奏，还有那一点点慢慢蔓延的迷失感，把你一点点留在原地。它让你听见，杨乃文不只会唱冷摇滚，在电子的质地里，她一样能保持那份疏离和锋利。",
+    "p3_weijie": "第三名，《未接来电》。它来自杨乃文二零一三年的专辑。歌名很现代，也很杨乃文：不是撕心裂肺的失联，而是一通没有接起来的电话，背后藏着关系里的距离、错过和沉默。它没有传统大情歌那种爆发点，氛围却很强，像手机屏幕亮了一下，又重新暗了下去。她唱这种没说出口的情绪，特别有画面，不煽情，却很扎人。",
+    "p2_wogei": "第二名，《我给的爱》。它收在一九九九年那张专辑里，由张震岳一手包办词曲。也正是这张专辑，帮杨乃文拿下了金曲奖最佳国语女演唱人，奠定了她在华语女声里的独特位置。比起《静止》《证据》这些更常被提起的歌，《我给的爱》更像一首暗伤型的作品：不是大声喊我受伤了，而是把给出去的爱、收不回的心，都唱得特别冷静。越冷，越痛。",
+    "p1_buyao": "第一名，《不要来找我》。它和《我给的爱》收在同一张专辑里，也都是张震岳写给她的，一快一慢，正好是一体两面。如果说《我给的爱》是往里收的暗伤，那《不要来找我》就是往外推的锋利。它不哭诉、也不撒娇，而是把一段关系里的疲惫和拒绝，唱得又冷又干脆。杨乃文的声音，天生就适合这种别再靠近：冷感里有刺，克制里有狠。这一面的她，最被低估，也最不好惹。",
+    "outro": "五首歌盘完。第五，如今；第四，路痴；第三，未接来电；第二，我给的爱；第一，不要来找我。杨乃文从来不是那种用力讨好的女声，她更像一个冷静的旁观者，把疲惫、疏离和不肯低头，都唱得克制又锋利。这些被代表作盖过的遗珠，刚好补全了她最冷、也最被低估的另一面。",
+    "outro_cta": FIXED_OUTRO_CTA,
+}
+
+
+def main():
+    AUDIO.mkdir(parents=True, exist_ok=True)
+    pipeline = KPipeline(lang_code="z")
+    meta = {}
+    for key, text in BLOCKS.items():
+        chunks = [audio for _, _, audio in pipeline(text, voice=VOICE, speed=1.0)]
+        audio = chunks[0] if len(chunks) == 1 else np.concatenate(chunks)
+        out = AUDIO / f"{key}.wav"
+        sf.write(out, audio, SR)
+        meta[key] = {"text": text, "dur": round(len(audio) / SR, 3)}
+        print(f"{key:14s} {meta[key]['dur']:6.2f}s  {out}")
+    (ROOT / "narration.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+    print("TOTAL narration", round(sum(item["dur"] for item in meta.values()), 2), "s")
+
+
+if __name__ == "__main__":
+    main()

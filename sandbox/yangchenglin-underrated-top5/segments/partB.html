@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>杨丞琳最被低估的5首歌</title>
+  <script src="../vendor/gsap.min.js"></script>
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#0a0710;color:#f5eef0;font-family:sans-serif}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#0a0710}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(8,5,12,.82),rgba(8,5,12,.05) 30%,rgba(8,5,12,.16) 56%,rgba(8,5,12,.90))}
+#vig{position:absolute;inset:0;z-index:1;background:radial-gradient(122% 78% at 50% 42%,rgba(0,0,0,0) 45%,rgba(0,0,0,.58) 100%)}
+#grain{position:absolute;inset:-20px;z-index:2;opacity:.06;background:repeating-linear-gradient(0deg,rgba(255,255,255,.14) 0 1px,transparent 1px 4px);mix-blend-mode:overlay}
+#cover{position:absolute;z-index:8;inset:0;padding:184px 76px 0;display:flex;flex-direction:column;justify-content:flex-start;align-items:center;text-align:center}
+.kicker{font-size:31px;font-weight:800;letter-spacing:.22em;color:#e6b6c8;text-shadow:0 6px 24px rgba(0,0,0,.7)}
+#cover h1{margin-top:22px;font-family:serif;font-size:150px;line-height:1.0;font-weight:900;letter-spacing:.04em;text-shadow:0 8px 42px rgba(0,0,0,.74)}
+.h1sub{margin-top:14px;font-family:serif;font-size:78px;line-height:1.06;font-weight:900;color:#f7f1f3;text-shadow:0 8px 36px rgba(0,0,0,.7)}
+.h1sub em{font-style:normal;color:#e6b6c8}
+#cover p{margin-top:30px;max-width:880px;font-size:37px;line-height:1.5;font-weight:550;color:#ecdfe4;text-shadow:0 6px 24px rgba(0,0,0,.7)}
+#hook{position:absolute;z-index:5;left:76px;right:76px;top:320px}
+.hookK{font-size:31px;font-weight:800;letter-spacing:.18em;color:#e6b6c8}
+.hookK:before{content:"";display:inline-block;width:54px;height:3px;background:#e6b6c8;border-radius:3px;margin-right:18px;vertical-align:middle}
+.hookT{margin-top:34px;font-family:serif;font-size:80px;line-height:1.28;font-weight:800;color:#f7f1f3}
+#bridge{position:absolute;z-index:5;left:76px;right:76px;top:50%;transform:translateY(-50%);text-align:center}
+#bridge small{display:block;font-size:40px;font-weight:800;letter-spacing:.24em;color:#cbb1bd;margin-bottom:24px}
+#bridge strong{display:block;font-family:serif;font-size:104px;line-height:1.08;color:#e6b6c8;text-shadow:0 8px 44px rgba(0,0,0,.55)}
+.labelFull{position:absolute;z-index:5;left:70px;right:70px;bottom:182px;padding:34px 40px 40px;background:linear-gradient(135deg,rgba(14,8,16,.88),rgba(14,8,16,.42));border-left:7px solid #e6b6c8;border-radius:8px;backdrop-filter:blur(3px)}
+.labelFull .rank{display:flex;align-items:flex-end;gap:20px}
+.labelFull .no{font-size:120px;line-height:.82;font-weight:900;color:#f0cdd9;font-family:sans-serif}
+.labelFull .lab{font-size:30px;font-weight:800;letter-spacing:.16em;color:#cbb1bd;padding-bottom:14px}
+.labelFull h2{font-family:serif;margin-top:16px;font-size:82px;line-height:1.05;font-weight:900;color:#fff}
+.labelFull .yr{margin-top:12px;font-size:27px;font-weight:600;letter-spacing:.04em;color:#c2a6b2}
+.labelFull .credit{margin-top:8px;font-size:26px;font-weight:500;letter-spacing:.02em;color:#a892a0}
+.labelFull .tag{margin-top:18px;font-size:42px;line-height:1.24;font-weight:850;color:#e6b6c8}
+.labelFull .note{margin-top:14px;font-size:31px;line-height:1.42;font-weight:520;color:#e3d6db}
+.labelFull.topRank{border-left-color:#ffd27a}
+.labelFull.topRank .no,.labelFull.topRank .tag{color:#ffd27a}
+.labelMini{position:absolute;z-index:5;top:96px;left:60px;display:flex;align-items:center;gap:16px;padding:12px 22px;background:rgba(14,8,16,.66);border:1px solid rgba(230,182,200,.55);border-radius:999px}
+.labelMini span{font-size:42px;font-weight:900;color:#e6b6c8}
+.labelMini strong{font-family:serif;font-size:38px;font-weight:850;color:#fff}
+.labelMini.topRank{border-color:rgba(255,210,122,.72)}
+.labelMini.topRank span{color:#ffd27a}
+#outro{position:absolute;z-index:9;inset:0;padding:122px 72px;display:flex;flex-direction:column;justify-content:center}
+#outro .small{font-size:32px;font-weight:850;letter-spacing:.20em;color:#e6b6c8}
+#outro h2{font-family:serif;margin-top:20px;font-size:66px;line-height:1.2;font-weight:850;max-width:920px}
+#outro ol{margin-top:42px;list-style:none;display:grid;gap:14px}
+#outro li{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:rgba(14,8,16,.64);border:1px solid rgba(255,255,255,.12);border-radius:9px}
+#outro li span{font-size:34px;font-weight:900;color:#e6b6c8}
+#outro li strong{font-family:serif;font-size:40px;font-weight:850;color:#fff}
+#outro li.gold{border-color:rgba(255,210,122,.58);background:rgba(46,38,18,.55)}
+#outro li.gold span{color:#ffd27a}
+#ctaBar{position:absolute;z-index:10;left:60px;right:60px;bottom:118px;padding:34px 40px 38px;text-align:center;background:linear-gradient(135deg,rgba(230,182,200,.20),rgba(14,8,16,.90));border:1px solid rgba(230,182,200,.62);border-radius:14px;box-shadow:0 18px 60px rgba(0,0,0,.52)}
+#ctaBar div{font-size:48px;line-height:1.22;font-weight:900;color:#fff}
+#ctaBar p{margin-top:20px;font-size:36px;font-weight:850;letter-spacing:.12em;color:#f0cdd9}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="157.375" data-width="1080" data-height="1920">
+    <video id="v0" class="fv" data-start="0.0" data-duration="41.425" data-track-index="0" src="clips_seg/p3_zhediee.mp4" muted playsinline></video>
+<video id="v1" class="fv" data-start="41.425" data-duration="45.225" data-track-index="6" src="clips_seg/p2_zizuozishou.mp4" muted playsinline></video>
+<video id="v2" class="fv" data-start="86.65" data-duration="43.625" data-track-index="0" src="clips_seg/p1_lengzhan.mp4" muted playsinline></video>
+<video id="v3" class="fv" data-start="130.275" data-duration="27.1" data-track-index="6" src="clips_seg/p1_lengzhan.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="157.375" data-track-index="1"></div>
+<div id="vig" class="clip" data-start="0" data-duration="157.375" data-track-index="11"></div>
+<div id="grain" class="clip" data-start="0" data-duration="157.375" data-track-index="12"></div>
+
+<section id="lf03" class="clip labelFull" data-start="0.25" data-duration="16.175" data-track-index="2"><div class="rank"><span class="no">03</span><span class="lab">被低估 TOP 5</span></div><h2>《折叠式爱情》</h2><p class="yr">2010 · 雨爱</p><p class="credit">词 姚若龙 / 曲 佳芳同学</p><p class="tag">被抱在怀里，却还要提防对方</p><p class="note">姚若龙写透了困在假象里的不安。</p></section>
+<section id="lm03" class="clip labelMini" data-start="16.425" data-duration="25.0" data-track-index="4"><span>03</span><strong>折叠式爱情</strong></section>
+<section id="lf02" class="clip labelFull" data-start="41.675" data-duration="15.275" data-track-index="2"><div class="rank"><span class="no">02</span><span class="lab">被低估 TOP 5</span></div><h2>《自作自受》</h2><p class="yr">2012 · 想幸福的人</p><p class="credit">词 蒋笃全 / 曲 饶善强</p><p class="tag">明知是错，还替你找理由</p><p class="note">从不甘到崩溃，一整段情绪的塌方。</p></section>
+<section id="lm02" class="clip labelMini" data-start="56.95" data-duration="29.7" data-track-index="4"><span>02</span><strong>自作自受</strong></section>
+<section id="lf01" class="clip labelFull topRank" data-start="86.9" data-duration="15.875" data-track-index="2"><div class="rank"><span class="no">01</span><span class="lab">被低估 TOP 5</span></div><h2>《冷战》</h2><p class="yr">2008 · 半熟宣言</p><p class="credit">词 蒋笃全 / 曲 韦景云</p><p class="tag">都不说，都不退，都等对方先低头</p><p class="note">成年人爱情里，最难熬的那种沉默。</p></section>
+<section id="lm01" class="clip labelMini topRank" data-start="102.775" data-duration="27.5" data-track-index="4"><span>01</span><strong>冷战</strong></section>
+
+<section id="outro" class="clip" data-start="130.575" data-duration="26.8" data-track-index="9">
+  <div class="small">完整榜单</div>
+  <h2>被低估的不是唱功，<br>是她敢把脆弱，唱得这么轻。</h2>
+  <ol><li class="gold" id="rr01"><span>01</span><strong>冷战</strong></li><li class="" id="rr02"><span>02</span><strong>自作自受</strong></li><li class="" id="rr03"><span>03</span><strong>折叠式爱情</strong></li><li class="" id="rr04"><span>04</span><strong>鱼鳃</strong></li><li class="" id="rr05"><span>05</span><strong>怕</strong></li></ol>
+</section>
+<section id="ctaBar" class="clip" data-start="145.525" data-duration="11.85" data-track-index="10">
+  <div>你最想为哪一首投票？</div>
+  <p>点赞 · 收藏 · 关注</p>
+</section>
+
+
+  </div>
+  <script>const tl = gsap.timeline({ paused: true });
+tl.from("#lf03 .no",{y:52,opacity:0,duration:.62,ease:"power3.out"},0.31);
+tl.from("#lf03 .lab",{x:-20,opacity:0,duration:.45,ease:"power2.out"},0.53);
+tl.from("#lf03 h2",{y:42,opacity:0,duration:.62,ease:"power3.out"},0.63);
+tl.from("#lf03 .yr",{y:16,opacity:0,duration:.42,ease:"power2.out"},0.87);
+tl.from("#lf03 .credit",{y:14,opacity:0,duration:.42,ease:"power2.out"},1.05);
+tl.from("#lf03 .tag",{y:22,opacity:0,duration:.5,ease:"power2.out"},1.23);
+tl.from("#lf03 .note",{y:18,opacity:0,duration:.5,ease:"power2.out"},1.45);
+tl.to("#lf03",{opacity:0,duration:.38,ease:"power1.in"},16.025);
+tl.set("#lf03",{opacity:0},16.425);
+tl.from("#lm03",{x:-26,opacity:0,duration:.48,ease:"power2.out"},16.525);
+tl.to("#lm03",{opacity:0,duration:.35,ease:"power1.in"},41.005);
+tl.set("#lm03",{opacity:0},41.425);
+tl.from("#lf02 .no",{y:52,opacity:0,duration:.62,ease:"power3.out"},41.735);
+tl.from("#lf02 .lab",{x:-20,opacity:0,duration:.45,ease:"power2.out"},41.955);
+tl.from("#lf02 h2",{y:42,opacity:0,duration:.62,ease:"power3.out"},42.055);
+tl.from("#lf02 .yr",{y:16,opacity:0,duration:.42,ease:"power2.out"},42.295);
+tl.from("#lf02 .credit",{y:14,opacity:0,duration:.42,ease:"power2.out"},42.475);
+tl.from("#lf02 .tag",{y:22,opacity:0,duration:.5,ease:"power2.out"},42.655);
+tl.from("#lf02 .note",{y:18,opacity:0,duration:.5,ease:"power2.out"},42.875);
+tl.to("#lf02",{opacity:0,duration:.38,ease:"power1.in"},56.55);
+tl.set("#lf02",{opacity:0},56.95);
+tl.from("#lm02",{x:-26,opacity:0,duration:.48,ease:"power2.out"},57.05);
+tl.to("#lm02",{opacity:0,duration:.35,ease:"power1.in"},86.23);
+tl.set("#lm02",{opacity:0},86.65);
+tl.from("#lf01 .no",{y:52,opacity:0,duration:.62,ease:"power3.out"},86.96);
+tl.from("#lf01 .lab",{x:-20,opacity:0,duration:.45,ease:"power2.out"},87.18);
+tl.from("#lf01 h2",{y:42,opacity:0,duration:.62,ease:"power3.out"},87.28);
+tl.from("#lf01 .yr",{y:16,opacity:0,duration:.42,ease:"power2.out"},87.52);
+tl.from("#lf01 .credit",{y:14,opacity:0,duration:.42,ease:"power2.out"},87.7);
+tl.from("#lf01 .tag",{y:22,opacity:0,duration:.5,ease:"power2.out"},87.88);
+tl.from("#lf01 .note",{y:18,opacity:0,duration:.5,ease:"power2.out"},88.1);
+tl.to("#lf01",{opacity:0,duration:.38,ease:"power1.in"},102.375);
+tl.set("#lf01",{opacity:0},102.775);
+tl.from("#lm01",{x:-26,opacity:0,duration:.48,ease:"power2.out"},102.875);
+tl.to("#lm01",{opacity:0,duration:.35,ease:"power1.in"},129.855);
+tl.set("#lm01",{opacity:0},130.275);
+tl.from("#outro .small",{x:-22,opacity:0,duration:.45,ease:"power2.out"},130.975);
+tl.from("#outro h2",{y:30,opacity:0,duration:.65,ease:"power3.out"},131.375);
+tl.from("#rr05",{x:-30,opacity:0,duration:.48,ease:"power3.out"},136.075);
+tl.from("#rr04",{x:-30,opacity:0,duration:.48,ease:"power3.out"},136.855);
+tl.from("#rr03",{x:-30,opacity:0,duration:.48,ease:"power3.out"},137.635);
+tl.from("#rr02",{x:-30,opacity:0,duration:.48,ease:"power3.out"},138.415);
+tl.from("#rr01",{x:-30,opacity:0,duration:.48,ease:"power3.out"},139.195);
+tl.from("#ctaBar",{y:30,opacity:0,duration:.55,ease:"power3.out"},145.675);
+window.__timelines = window.__timelines || {};
+window.__timelines["main"] = tl;</script>
+</body>
+</html>

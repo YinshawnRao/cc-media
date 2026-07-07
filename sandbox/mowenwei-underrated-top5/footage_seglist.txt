@@ -1,0 +1,7 @@
+file 'clips_seg/intro.mp4'
+file 'clips_seg/p5_aiwodeqingjushou.mp4'
+file 'clips_seg/p4_beijiguang.mp4'
+file 'clips_seg/p3_qishiwo.mp4'
+file 'clips_seg/p2_landeguan.mp4'
+file 'clips_seg/p1_yuedie.mp4'
+file 'clips_seg/outro.mp4'

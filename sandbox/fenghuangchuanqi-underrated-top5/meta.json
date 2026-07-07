@@ -1,0 +1,75 @@
+{
+  "id": "main",
+  "name": "fenghuangchuanqi-underrated-top5",
+  "sample": false,
+  "total": 287.91,
+  "intro_end": 17.35,
+  "outro_start": 261.36,
+  "blocks": [
+    {
+      "no": "05",
+      "plain": "中国味道",
+      "aud": "p5",
+      "start": 17.35,
+      "narr_start": 17.7,
+      "narr_end": 35.3,
+      "full_start": 37.0,
+      "end": 64.27,
+      "mseek": 101.4,
+      "ch_off": 121.05,
+      "show": 27.27
+    },
+    {
+      "no": "04",
+      "plain": "天籁传奇",
+      "aud": "p4",
+      "start": 64.27,
+      "narr_start": 64.62,
+      "narr_end": 80.245,
+      "full_start": 81.945,
+      "end": 108.905,
+      "mseek": 174.365,
+      "ch_off": 192.04,
+      "show": 26.96
+    },
+    {
+      "no": "03",
+      "plain": "康定情缘",
+      "aud": "p3",
+      "start": 108.905,
+      "narr_start": 109.255,
+      "narr_end": 126.43,
+      "full_start": 128.13,
+      "end": 158.86,
+      "mseek": 199.465,
+      "ch_off": 218.69,
+      "show": 30.73
+    },
+    {
+      "no": "02",
+      "plain": "传奇",
+      "aud": "p2",
+      "start": 158.86,
+      "narr_start": 159.21,
+      "narr_end": 176.085,
+      "full_start": 177.785,
+      "end": 212.785,
+      "mseek": 298.615,
+      "ch_off": 317.54,
+      "show": 35.0
+    },
+    {
+      "no": "01",
+      "plain": "大漠情人",
+      "aud": "p1",
+      "start": 212.785,
+      "narr_start": 213.135,
+      "narr_end": 230.96,
+      "full_start": 232.66,
+      "end": 261.36,
+      "mseek": 196.405,
+      "ch_off": 216.28,
+      "show": 28.7
+    }
+  ]
+}

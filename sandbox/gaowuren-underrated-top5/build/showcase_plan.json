@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.2,
+    "DIG": 1.6
+  },
+  "songs": [
+    {
+      "key": "p5_aizaixiatian",
+      "clip": "vert_aizaixiatian",
+      "narr_end_src": 14.2,
+      "show_start_src": 16.0,
+      "show_end_src": 56.0
+    },
+    {
+      "key": "p4_yeliwuxing",
+      "clip": "vert_yeliwuxing",
+      "narr_end_src": 14.2,
+      "show_start_src": 16.0,
+      "show_end_src": 58.0
+    },
+    {
+      "key": "p3_tongyang",
+      "clip": "vert_tongyang",
+      "narr_end_src": 14.2,
+      "show_start_src": 16.0,
+      "show_end_src": 55.0
+    },
+    {
+      "key": "p2_dainifei",
+      "clip": "vert_dainifei",
+      "narr_end_src": 14.2,
+      "show_start_src": 16.0,
+      "show_end_src": 54.0
+    },
+    {
+      "key": "p1_hami",
+      "clip": "vert_hami",
+      "narr_end_src": 16.2,
+      "show_start_src": 18.0,
+      "show_end_src": 52.0
+    }
+  ]
+}

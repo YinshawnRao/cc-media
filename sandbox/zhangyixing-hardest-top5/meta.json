@@ -1,0 +1,75 @@
+{
+  "id": "main",
+  "name": "zhangyixing-hardest-top5",
+  "sample": false,
+  "total": 280.155,
+  "intro_end": 16.525,
+  "outro_start": 250.905,
+  "blocks": [
+    {
+      "no": "05",
+      "plain": "酒",
+      "aud": "jiu",
+      "start": 16.525,
+      "narr_start": 16.875,
+      "narr_end": 32.7,
+      "full_start": 34.4,
+      "end": 56.3,
+      "mseek": 33.505,
+      "ch_off": 51.38,
+      "show": 21.9
+    },
+    {
+      "no": "04",
+      "plain": "面纱",
+      "aud": "mianshan",
+      "start": 56.3,
+      "narr_start": 56.65,
+      "narr_end": 72.225,
+      "full_start": 73.925,
+      "end": 98.925,
+      "mseek": 134.645,
+      "ch_off": 152.27,
+      "show": 25.0
+    },
+    {
+      "no": "03",
+      "plain": "梦不落雨林",
+      "aud": "menglin",
+      "start": 98.925,
+      "narr_start": 99.275,
+      "narr_end": 116.575,
+      "full_start": 118.275,
+      "end": 147.585,
+      "mseek": 170.06,
+      "ch_off": 189.41,
+      "show": 29.31
+    },
+    {
+      "no": "02",
+      "plain": "飞天",
+      "aud": "feitian",
+      "start": 147.585,
+      "narr_start": 147.935,
+      "narr_end": 164.835,
+      "full_start": 166.535,
+      "end": 198.795,
+      "mseek": 136.09,
+      "ch_off": 155.04,
+      "show": 32.26
+    },
+    {
+      "no": "01",
+      "plain": "莲",
+      "aud": "lian",
+      "start": 198.795,
+      "narr_start": 199.145,
+      "narr_end": 217.595,
+      "full_start": 219.295,
+      "end": 250.905,
+      "mseek": 140.23,
+      "ch_off": 160.73,
+      "show": 31.61
+    }
+  ]
+}

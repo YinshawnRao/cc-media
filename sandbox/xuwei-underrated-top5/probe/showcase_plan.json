@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.25,
+    "DIG": 1.45
+  },
+  "songs": [
+    {
+      "key": "p5_gushi",
+      "clip": "vert_p5_gushi",
+      "narr_end_src": 161.43,
+      "show_start_src": 163.13,
+      "show_end_src": 190.39
+    },
+    {
+      "key": "p4_xiari",
+      "clip": "vert_p4_xiari",
+      "narr_end_src": 94.53,
+      "show_start_src": 96.23,
+      "show_end_src": 130.55
+    },
+    {
+      "key": "p3_jiandan",
+      "clip": "vert_p3_jiandan",
+      "narr_end_src": 161.94,
+      "show_start_src": 163.64,
+      "show_end_src": 199.8
+    },
+    {
+      "key": "p2_jiuyue",
+      "clip": "vert_p2_jiuyue",
+      "narr_end_src": 137.33,
+      "show_start_src": 139.03,
+      "show_end_src": 181.64
+    },
+    {
+      "key": "p1_tianee",
+      "clip": "vert_p1_tianee",
+      "narr_end_src": 184.02,
+      "show_start_src": 185.72,
+      "show_end_src": 218.14
+    }
+  ]
+}

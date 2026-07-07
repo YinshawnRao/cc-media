@@ -1,0 +1,75 @@
+{
+  "id": "main",
+  "name": "mowenwei-underrated-top5",
+  "sample": false,
+  "total": 327.075,
+  "intro_end": 19.275,
+  "outro_start": 295.075,
+  "blocks": [
+    {
+      "no": "05",
+      "plain": "爱我的请举手",
+      "aud": "p5",
+      "start": 19.275,
+      "narr_start": 19.625,
+      "narr_end": 36.15,
+      "full_start": 37.85,
+      "end": 76.85,
+      "mseek": 29.655,
+      "ch_off": 48.23,
+      "show": 39.0
+    },
+    {
+      "no": "04",
+      "plain": "北极光",
+      "aud": "p4",
+      "start": 76.85,
+      "narr_start": 77.2,
+      "narr_end": 94.9,
+      "full_start": 96.6,
+      "end": 129.1,
+      "mseek": 87.55,
+      "ch_off": 107.3,
+      "show": 32.5
+    },
+    {
+      "no": "03",
+      "plain": "其实我一直都想对你说",
+      "aud": "p3",
+      "start": 129.1,
+      "narr_start": 129.45,
+      "narr_end": 146.7,
+      "full_start": 148.4,
+      "end": 173.4,
+      "mseek": 180.23,
+      "ch_off": 199.53,
+      "show": 25.0
+    },
+    {
+      "no": "02",
+      "plain": "懒得管",
+      "aud": "p2",
+      "start": 173.4,
+      "narr_start": 173.75,
+      "narr_end": 191.075,
+      "full_start": 192.775,
+      "end": 215.775,
+      "mseek": 38.995,
+      "ch_off": 58.37,
+      "show": 23.0
+    },
+    {
+      "no": "01",
+      "plain": "月蚀",
+      "aud": "p1",
+      "start": 215.775,
+      "narr_start": 216.125,
+      "narr_end": 233.875,
+      "full_start": 235.575,
+      "end": 295.075,
+      "mseek": 158.6,
+      "ch_off": 178.4,
+      "show": 59.5
+    }
+  ]
+}

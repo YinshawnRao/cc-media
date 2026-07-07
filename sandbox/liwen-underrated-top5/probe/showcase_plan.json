@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.25,
+    "DIG": 1.45
+  },
+  "songs": [
+    {
+      "key": "p5_dmf",
+      "clip": "vert_p5_dmf",
+      "narr_end_src": 148.7,
+      "show_start_src": 150.4,
+      "show_end_src": 182.8
+    },
+    {
+      "key": "p4_buai",
+      "clip": "vert_p4_buai",
+      "narr_end_src": 192.54,
+      "show_start_src": 194.24,
+      "show_end_src": 228.12
+    },
+    {
+      "key": "p3_daan",
+      "clip": "vert_p3_daan",
+      "narr_end_src": 158.11,
+      "show_start_src": 159.81,
+      "show_end_src": 201.42
+    },
+    {
+      "key": "p2_guodong",
+      "clip": "vert_p2_guodong",
+      "narr_end_src": 201.97,
+      "show_start_src": 203.67,
+      "show_end_src": 235.0
+    },
+    {
+      "key": "p1_momo",
+      "clip": "vert_p1_momo",
+      "narr_end_src": 132.45,
+      "show_start_src": 134.15,
+      "show_end_src": 164.64
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "id": "main",
+  "name": "yangqianhua-underrated-top5",
+  "sample": false,
+  "total": 308.08,
+  "intro_end": 19.575,
+  "outro_start": 276.205,
+  "blocks": [
+    {
+      "no": "05",
+      "plain": "吵我",
+      "aud": "p5",
+      "start": 19.575,
+      "narr_start": 19.925,
+      "narr_end": 37.45,
+      "full_start": 39.15,
+      "end": 70.61,
+      "mseek": 52.765,
+      "fseek": 19.575,
+      "ch_off": 72.34,
+      "show": 31.46
+    },
+    {
+      "no": "04",
+      "plain": "电光幻影",
+      "aud": "p4",
+      "start": 70.61,
+      "narr_start": 70.96,
+      "narr_end": 88.635,
+      "full_start": 90.335,
+      "end": 118.625,
+      "mseek": 105.645,
+      "fseek": 105.645,
+      "ch_off": 125.37,
+      "show": 28.29
+    },
+    {
+      "no": "03",
+      "plain": "小飞侠",
+      "aud": "p3",
+      "start": 118.625,
+      "narr_start": 118.975,
+      "narr_end": 138.425,
+      "full_start": 140.125,
+      "end": 175.885,
+      "mseek": 49.4,
+      "fseek": 49.4,
+      "ch_off": 70.9,
+      "show": 35.76
+    },
+    {
+      "no": "02",
+      "plain": "照相本子",
+      "aud": "p2",
+      "start": 175.885,
+      "narr_start": 176.235,
+      "narr_end": 193.985,
+      "full_start": 195.685,
+      "end": 226.275,
+      "mseek": 131.97,
+      "fseek": 131.97,
+      "ch_off": 151.77,
+      "show": 30.59
+    },
+    {
+      "no": "01",
+      "plain": "只要为我好",
+      "aud": "p1",
+      "start": 226.275,
+      "narr_start": 226.625,
+      "narr_end": 245.075,
+      "full_start": 246.775,
+      "end": 276.205,
+      "mseek": 154.28,
+      "fseek": 0.0,
+      "ch_off": 174.78,
+      "show": 29.43
+    }
+  ]
+}

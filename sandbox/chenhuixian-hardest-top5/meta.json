@@ -1,0 +1,70 @@
+{
+  "id": "main",
+  "name": "chenhuixian-hardest-top5",
+  "sample": false,
+  "total": 290.8,
+  "intro_end": 17.275,
+  "outro_start": 261.15,
+  "blocks": [
+    {
+      "no": "05",
+      "plain": "归来吧",
+      "start": 17.275,
+      "narr_start": 17.625,
+      "narr_end": 35.325,
+      "full_start": 37.025,
+      "end": 69.025,
+      "mseek": 86.25,
+      "ch_off": 106.0,
+      "show": 32.0
+    },
+    {
+      "no": "04",
+      "plain": "夜机",
+      "start": 69.025,
+      "narr_start": 69.375,
+      "narr_end": 87.25,
+      "full_start": 88.95,
+      "end": 122.95,
+      "mseek": 184.075,
+      "ch_off": 204.0,
+      "show": 34.0
+    },
+    {
+      "no": "03",
+      "plain": "飘雪",
+      "start": 122.95,
+      "narr_start": 123.3,
+      "narr_end": 141.475,
+      "full_start": 143.175,
+      "end": 167.175,
+      "mseek": 64.775,
+      "ch_off": 85.0,
+      "show": 24.0
+    },
+    {
+      "no": "02",
+      "plain": "千千阙歌",
+      "start": 167.175,
+      "narr_start": 167.525,
+      "narr_end": 184.3,
+      "full_start": 186.0,
+      "end": 215.5,
+      "mseek": 245.175,
+      "ch_off": 264.0,
+      "show": 29.5
+    },
+    {
+      "no": "01",
+      "plain": "月亮",
+      "start": 215.5,
+      "narr_start": 215.85,
+      "narr_end": 233.45,
+      "full_start": 235.15,
+      "end": 261.15,
+      "mseek": 214.35,
+      "ch_off": 234.0,
+      "show": 26.0
+    }
+  ]
+}

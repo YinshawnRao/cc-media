@@ -1,0 +1,7 @@
+file 'clips_seg/intro.mp4'
+file 'clips_seg/p5_ruijin.mp4'
+file 'clips_seg/p4_luchi.mp4'
+file 'clips_seg/p3_weijie.mp4'
+file 'clips_seg/p2_wogei.mp4'
+file 'clips_seg/p1_buyao.mp4'
+file 'clips_seg/outro.mp4'

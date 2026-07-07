@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.25,
+    "DIG": 1.45
+  },
+  "songs": [
+    {
+      "key": "p5_aishenguozuoren",
+      "clip": "vert_aishenguozuoren",
+      "narr_end_src": 128.8,
+      "show_start_src": 130.5,
+      "show_end_src": 171.0
+    },
+    {
+      "key": "p4_tabuguanbeiai",
+      "clip": "vert_tabuguanbeiai",
+      "narr_end_src": 145.1,
+      "show_start_src": 146.8,
+      "show_end_src": 184.8
+    },
+    {
+      "key": "p3_aimyoujiashe",
+      "clip": "vert_aimyoujiashe",
+      "narr_end_src": 108.3,
+      "show_start_src": 110.0,
+      "show_end_src": 151.0
+    },
+    {
+      "key": "p2_zaji",
+      "clip": "vert_zaji",
+      "narr_end_src": 99.8,
+      "show_start_src": 101.5,
+      "show_end_src": 126.7
+    },
+    {
+      "key": "p1_rushui",
+      "clip": "vert_rushui",
+      "narr_end_src": 158.3,
+      "show_start_src": 160.0,
+      "show_end_src": 195.0
+    }
+  ]
+}

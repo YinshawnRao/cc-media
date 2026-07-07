@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.25,
+    "DIG": 1.45
+  },
+  "songs": [
+    {
+      "key": "p5_aini",
+      "clip": "vert_p5_aini",
+      "narr_end_src": 184.3,
+      "show_start_src": 186.0,
+      "show_end_src": 210.0
+    },
+    {
+      "key": "p4_buxiayu",
+      "clip": "vert_p4_buxiayu",
+      "narr_end_src": 51.1,
+      "show_start_src": 52.8,
+      "show_end_src": 81.8
+    },
+    {
+      "key": "p3_shouyu",
+      "clip": "vert_p3_shouyu",
+      "narr_end_src": 197.8,
+      "show_start_src": 199.5,
+      "show_end_src": 224.6
+    },
+    {
+      "key": "p2_caihong",
+      "clip": "vert_p2_caihong",
+      "narr_end_src": 80.1,
+      "show_start_src": 81.8,
+      "show_end_src": 99.6
+    },
+    {
+      "key": "p1_qingyuan",
+      "clip": "vert_p1_qingyuan",
+      "narr_end_src": 106.6,
+      "show_start_src": 108.3,
+      "show_end_src": 137.8
+    }
+  ]
+}

@@ -1,9 +1,0 @@
-{
-  "name": "4d3x-kuaige-pk",
-  "private": true,
-  "scripts": {
-    "lint": "hyperframes lint",
-    "check": "hyperframes lint",
-    "render": "hyperframes render"
-  }
-}

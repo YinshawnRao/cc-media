@@ -1,0 +1,7 @@
+file 'seg_intro.wav'
+file 'seg_p5_pinlv.wav'
+file 'seg_p4_bdwolf.wav'
+file 'seg_p3_baowei.wav'
+file 'seg_p2_yanwo.wav'
+file 'seg_p1_wuyan.wav'
+file 'seg_outro.wav'

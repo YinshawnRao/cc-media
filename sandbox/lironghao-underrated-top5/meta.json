@@ -1,0 +1,75 @@
+{
+  "id": "main",
+  "name": "lironghao-underrated-top5",
+  "sample": false,
+  "total": 301.625,
+  "intro_end": 16.3,
+  "outro_start": 277.725,
+  "blocks": [
+    {
+      "no": "05",
+      "plain": "成长之重量",
+      "aud": "p5",
+      "start": 16.3,
+      "narr_start": 16.65,
+      "narr_end": 35.0,
+      "full_start": 36.7,
+      "end": 70.07,
+      "mseek": 262.43,
+      "ch_off": 282.83,
+      "show": 33.37
+    },
+    {
+      "no": "04",
+      "plain": "王牌冤家",
+      "aud": "p4",
+      "start": 70.07,
+      "narr_start": 70.42,
+      "narr_end": 89.02,
+      "full_start": 90.72,
+      "end": 125.37,
+      "mseek": 146.31,
+      "ch_off": 166.96,
+      "show": 34.65
+    },
+    {
+      "no": "03",
+      "plain": "落俗",
+      "aud": "p3",
+      "start": 125.37,
+      "narr_start": 125.72,
+      "narr_end": 143.845,
+      "full_start": 145.545,
+      "end": 175.875,
+      "mseek": 134.985,
+      "ch_off": 155.16,
+      "show": 30.33
+    },
+    {
+      "no": "02",
+      "plain": "满座",
+      "aud": "p2",
+      "start": 175.875,
+      "narr_start": 176.225,
+      "narr_end": 193.65,
+      "full_start": 195.35,
+      "end": 225.19,
+      "mseek": 100.165,
+      "ch_off": 119.64,
+      "show": 29.84
+    },
+    {
+      "no": "01",
+      "plain": "野生动物",
+      "aud": "p1",
+      "start": 225.19,
+      "narr_start": 225.54,
+      "narr_end": 243.865,
+      "full_start": 245.565,
+      "end": 277.725,
+      "mseek": 173.385,
+      "ch_off": 193.76,
+      "show": 32.16
+    }
+  ]
+}

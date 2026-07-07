@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.25,
+    "DIG": 1.45
+  },
+  "songs": [
+    {
+      "key": "p5_ruijin",
+      "clip": "vert_p5_ruijin",
+      "narr_end_src": 242.3,
+      "show_start_src": 244.0,
+      "show_end_src": 271.0
+    },
+    {
+      "key": "p4_luchi",
+      "clip": "vert_p4_luchi",
+      "narr_end_src": 211.2,
+      "show_start_src": 212.9,
+      "show_end_src": 242.9
+    },
+    {
+      "key": "p3_weijie",
+      "clip": "vert_p3_weijie",
+      "narr_end_src": 148.3,
+      "show_start_src": 150.0,
+      "show_end_src": 183.0
+    },
+    {
+      "key": "p2_wogei",
+      "clip": "vert_p2_wogei",
+      "narr_end_src": 165.96,
+      "show_start_src": 167.66,
+      "show_end_src": 200.33
+    },
+    {
+      "key": "p1_buyao",
+      "clip": "vert_p1_buyao",
+      "narr_end_src": 87.91,
+      "show_start_src": 89.61,
+      "show_end_src": 116.69
+    }
+  ]
+}

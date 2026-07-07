@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <script src="vendor/gsap.min.js"></script>
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+@font-face{font-family:"PingFang SC";src:local("PingFang SC");font-weight:100 900}
+@font-face{font-family:"Songti SC";src:local("Songti SC");font-weight:400 900}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#08060d;
+  font-family:"PingFang SC",system-ui,sans-serif;color:#f4f0ea;-webkit-font-smoothing:antialiased}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#08060d}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(8,6,13,.86),rgba(8,6,13,.10) 30%,rgba(8,6,13,.28) 60%,rgba(5,3,9,.95))}
+#vig{position:absolute;inset:0;z-index:1;box-shadow:inset 0 0 360px rgba(0,0,0,.80)}
+#glow{position:absolute;inset:-260px;z-index:1;opacity:.5;background:radial-gradient(40% 24% at 18% 16%,rgba(255,101,133,.40),rgba(255,101,133,0) 66%),radial-gradient(46% 30% at 82% 82%,rgba(124,159,206,.26),rgba(124,159,206,0) 70%)}
+#grain{position:absolute;inset:-20px;z-index:9;opacity:.06;mix-blend-mode:soft-light;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(244,240,234,.13) 0 1px,rgba(244,240,234,0) 1px 4px)}
+.trans{position:absolute;left:0;right:0;top:0;bottom:0;z-index:8;background:linear-gradient(90deg,rgba(255,101,133,0),rgba(255,101,133,.6),rgba(124,159,206,0));transform-origin:center}
+
+#cover{position:absolute;inset:0;z-index:5;padding:150px 76px 140px;display:flex;flex-direction:column;justify-content:space-between;
+  background:linear-gradient(180deg,rgba(8,6,13,.74),rgba(8,6,13,.18) 32%,rgba(8,6,13,.24) 58%,rgba(5,3,9,.92))}
+.brandline{display:inline-flex;align-items:center;gap:18px;font-size:30px;font-weight:900;color:#ff6585;letter-spacing:.32em}
+.brandline:before{content:"";width:64px;height:4px;background:#ff6585;border-radius:99px;box-shadow:0 0 20px rgba(255,101,133,.7)}
+#cover h1{margin-top:28px;font-family:"Songti SC",serif;font-size:118px;line-height:1.1;font-weight:900;text-shadow:0 6px 44px rgba(0,0,0,.66)}
+#cover h1 b{color:#ff6585}
+#cover .toptag{display:inline-block;margin-top:26px;font-family:"JetBrains Mono",monospace;font-size:44px;font-weight:900;color:#f4f0ea;
+  letter-spacing:.14em;border:2px solid rgba(255,101,133,.6);border-radius:10px;padding:10px 26px;background:rgba(8,6,13,.5)}
+#cover .sub{margin-top:30px;font-size:35px;line-height:1.5;color:#e6dde6;font-weight:600;max-width:930px}
+.chips{display:flex;flex-wrap:wrap;gap:14px;max-width:940px}
+.chips span{border:1.5px solid rgba(124,159,206,.5);color:#eee7f1;background:rgba(8,6,13,.55);font-size:27px;font-weight:800;padding:11px 18px;border-radius:8px}
+
+.card{position:absolute;z-index:5;left:60px;right:60px;bottom:172px;padding:34px 38px 40px;
+  background:linear-gradient(135deg,rgba(10,7,16,.92),rgba(24,16,30,.62));border-left:9px solid #ff6585;border-radius:8px;
+  backdrop-filter:blur(3px);box-shadow:0 24px 74px rgba(0,0,0,.44)}
+.card .rank{font-family:"JetBrains Mono",monospace;font-size:32px;font-weight:800;color:#ff6585;letter-spacing:.16em}
+.card .rank b{font-size:60px;font-weight:900;vertical-align:-6px;margin-left:4px}
+.card .singer{margin-top:14px;font-size:46px;font-weight:900;color:#f7f1ec;letter-spacing:.04em}
+.card .song{font-family:"Songti SC",serif;margin-top:6px;font-size:70px;line-height:1.12;font-weight:900;color:#f7f1ec}
+.card .meta{margin-top:12px;font-size:28px;font-weight:700;color:#b6a6bf;letter-spacing:.02em}
+.card .tag{margin-top:20px;font-size:39px;line-height:1.3;font-weight:900;color:#ff6585}
+.card .note{margin-top:11px;font-size:29px;line-height:1.44;font-weight:600;color:#e6dde6}
+.card.topRank{border-left-color:#ffce5a;background:linear-gradient(135deg,rgba(16,12,6,.94),rgba(10,7,16,.66))}
+.card.topRank .rank,.card.topRank .tag{color:#ffce5a}
+
+.mini{position:absolute;z-index:5;top:92px;left:56px;display:flex;align-items:center;gap:16px;padding:13px 22px;
+  background:rgba(8,6,13,.72);border:1.5px solid rgba(255,101,133,.6);border-radius:9px}
+.mini span{font-family:"JetBrains Mono",monospace;font-size:42px;font-weight:900;color:#f4f0ea;background:#08060d;border:1px solid rgba(255,101,133,.55);border-radius:6px;padding:2px 10px;line-height:1.1}
+.mini strong{font-family:"Songti SC",serif;font-size:33px;font-weight:900;max-width:820px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini.topRank{border-color:rgba(255,206,90,.78)}
+.mini.topRank span{border-color:rgba(255,206,90,.72);color:#ffce5a}
+
+#outro{position:absolute;z-index:5;inset:0;padding:104px 64px 150px;display:flex;flex-direction:column;justify-content:center;
+  background:linear-gradient(180deg,rgba(8,6,13,.42),rgba(5,3,9,.9))}
+#outro .small{font-family:"JetBrains Mono",monospace;font-size:31px;font-weight:900;color:#ff6585;letter-spacing:.2em}
+#outro h2{font-family:"Songti SC",serif;margin-top:20px;font-size:56px;line-height:1.26;font-weight:900;max-width:940px}
+#outro ol{margin-top:26px;list-style:none;display:grid;gap:9px;width:100%}
+#outro li{display:flex;align-items:center;gap:18px;padding:12px 18px;background:rgba(10,7,16,.66);border:1px solid rgba(244,240,234,.12);border-radius:8px}
+#outro li span{font-family:"JetBrains Mono",monospace;font-size:29px;font-weight:900;color:#f4f0ea;background:#08060d;border:1px solid rgba(255,101,133,.45);border-radius:6px;padding:3px 9px;min-width:54px;text-align:center}
+#outro li strong{font-family:"Songti SC",serif;font-size:30px;font-weight:900;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#outro li.top{background:rgba(255,206,90,.14);border-color:rgba(255,206,90,.5)}
+#outro li.top span{border-color:rgba(255,206,90,.65);color:#ffce5a}
+#outro .close{margin-top:24px;font-size:30px;line-height:1.5;color:#e6dde6;font-weight:600}
+
+#cta{position:absolute;z-index:6;left:72px;right:72px;bottom:96px;text-align:center;padding:22px;background:rgba(8,6,13,.74);border:1.5px solid rgba(255,206,90,.42);border-radius:10px}
+#cta .v{font-size:44px;font-weight:900;color:#ffce5a;line-height:1.22}
+#cta .f{margin-top:14px;font-size:33px;font-weight:900;color:#ff6585;letter-spacing:.16em}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="476.175" data-width="1080" data-height="1920">
+<video id="footage" class="clip fv" data-start="0" data-duration="476.175" data-track-index="0" src="clips_seg/footage_track.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="476.175" data-track-index="1"></div>
+<div id="vig" class="clip" data-start="0" data-duration="476.175" data-track-index="11"></div>
+<div id="glow" class="clip" data-start="0" data-duration="476.175" data-track-index="7"></div>
+<div id="grain" class="clip" data-start="0" data-duration="476.175" data-track-index="10"></div>
+<div id="tr0" class="clip trans" data-start="19.125" data-duration="0.9" data-track-index="8"></div>
+<div id="tr1" class="clip trans" data-start="62.425" data-duration="0.9" data-track-index="8"></div>
+<div id="tr2" class="clip trans" data-start="109.15" data-duration="0.9" data-track-index="8"></div>
+<div id="tr3" class="clip trans" data-start="143.35" data-duration="0.9" data-track-index="8"></div>
+<div id="tr4" class="clip trans" data-start="176.55" data-duration="0.9" data-track-index="8"></div>
+<div id="tr5" class="clip trans" data-start="216.375" data-duration="0.9" data-track-index="8"></div>
+<div id="tr6" class="clip trans" data-start="259.325" data-duration="0.9" data-track-index="8"></div>
+<div id="tr7" class="clip trans" data-start="303.35" data-duration="0.9" data-track-index="8"></div>
+<div id="tr8" class="clip trans" data-start="358.2" data-duration="0.9" data-track-index="8"></div>
+<div id="tr9" class="clip trans" data-start="398.675" data-duration="0.9" data-track-index="8"></div>
+<section id="cover" class="clip" data-start="0" data-duration="19.155" data-track-index="2"><div><div class="brandline">伍佰 · 幕后创作盘点</div><h1>伍佰写给<br>女歌手的<b>10</b>首歌</h1><div class="toptag">10 → 1 倒数揭晓</div></div><div><p class="sub">写浪人情歌的摇滚浪子，把最细腻的一面，悄悄写进了别人的歌里。</p><div class="chips"><span>王菲</span><span>那英</span><span>苏慧伦</span><span>王心凌</span><span>莫文蔚</span></div></div></section>
+<section id="full0" class="clip card" data-start="19.275" data-duration="17.3" data-track-index="2"><div class="rank">NO.<b>10</b></div><div class="singer">黄小琥</div><h2 class="song">《突然的自我》</h2><div class="meta">2004 · 专辑《The Voice 3》 · 伍佰 词曲</div><p class="tag">潇洒里，藏着过来人的认命</p><p class="note">大众更熟伍佰原版，这次换黄小琥的沧桑嗓</p></section>
+<section id="mini0" class="clip mini" data-start="36.575" data-duration="26.0" data-track-index="4"><span>10</span><strong>黄小琥《突然的自我》</strong></section>
+<section id="full1" class="clip card" data-start="62.575" data-duration="14.725" data-track-index="2"><div class="rank">NO.<b>09</b></div><div class="singer">郁可唯</div><h2 class="song">《你不要我了吗》</h2><div class="meta">2012 · 专辑《微加幸福》 · 伍佰 词曲</div><p class="tag">最不敢问的那句话，成了歌名</p><p class="note">伍佰难得的一道柔软伤口</p></section>
+<section id="mini1" class="clip mini" data-start="77.3" data-duration="32.0" data-track-index="4"><span>09</span><strong>郁可唯《你不要我了吗》</strong></section>
+<section id="full2" class="clip card" data-start="109.3" data-duration="15.2" data-track-index="2"><div class="rank">NO.<b>08</b></div><div class="singer">杨乃文</div><h2 class="song">《一个人》</h2><div class="meta">1997 · 专辑《One》 · 伍佰 作词</div><p class="tag">又冷又硬，和伍佰天生一对</p><p class="note">曲 林暐哲／词 伍佰，二人对唱</p></section>
+<section id="mini2" class="clip mini" data-start="124.5" data-duration="19.0" data-track-index="4"><span>08</span><strong>杨乃文《一个人》</strong></section>
+<section id="full3" class="clip card" data-start="143.5" data-duration="15.7" data-track-index="2"><div class="rank">NO.<b>07</b></div><div class="singer">刘若英</div><h2 class="song">《最初的地方》</h2><div class="meta">1998 · 专辑《很爱很爱你》 · 伍佰 作曲</div><p class="tag">民谣摇滚里的一点率性</p><p class="note">代表作太多，这首常被盖过去</p></section>
+<section id="mini3" class="clip mini" data-start="159.2" data-duration="17.5" data-track-index="4"><span>07</span><strong>刘若英《最初的地方》</strong></section>
+<section id="full4" class="clip card" data-start="176.7" data-duration="14.325" data-track-index="2"><div class="rank">NO.<b>06</b></div><div class="singer">万芳</div><h2 class="song">《夜照亮了夜》</h2><div class="meta">伍佰 作曲（词 王中言）</div><p class="tag">一盏暗处的灯，不刺眼</p><p class="note">不爆发，却把整个夜慢慢照亮</p></section>
+<section id="mini4" class="clip mini" data-start="191.025" data-duration="25.5" data-track-index="4"><span>06</span><strong>万芳《夜照亮了夜》</strong></section>
+<section id="full5" class="clip card" data-start="216.525" data-duration="13.95" data-track-index="2"><div class="rank">NO.<b>05</b></div><div class="singer">那英</div><h2 class="song">《我不是天使》</h2><div class="meta">伍佰 作曲 · 制作（词 那英）</div><p class="tag">天后少见的脆弱</p><p class="note">大嗓的那英，被写出了不逞强的一面</p></section>
+<section id="mini5" class="clip mini" data-start="230.475" data-duration="29.0" data-track-index="4"><span>05</span><strong>那英《我不是天使》</strong></section>
+<section id="full6" class="clip card" data-start="259.475" data-duration="16.725" data-track-index="2"><div class="rank">NO.<b>04</b></div><div class="singer">王菲</div><h2 class="song">《单行道》</h2><div class="meta">伍佰 作曲 · China Blue 编曲演奏</div><p class="tag">冷知识：王菲也唱过伍佰</p><p class="note">慵懒又疏离，意外地合</p></section>
+<section id="mini6" class="clip mini" data-start="276.2" data-duration="27.3" data-track-index="4"><span>04</span><strong>王菲《单行道》</strong></section>
+<section id="full7" class="clip card" data-start="303.5" data-duration="14.85" data-track-index="2"><div class="rank">NO.<b>03</b></div><div class="singer">莫文蔚</div><h2 class="song">《坚强的理由》</h2><div class="meta">伍佰 词曲 · 合唱</div><p class="tag">把坚强，写成快要塌掉</p><p class="note">伍佰 × 莫文蔚 对唱，都市废墟感</p></section>
+<section id="mini7" class="clip mini" data-start="318.35" data-duration="40.0" data-track-index="4"><span>03</span><strong>莫文蔚《坚强的理由》</strong></section>
+<section id="full8" class="clip card" data-start="358.35" data-duration="15.475" data-track-index="2"><div class="rank">NO.<b>02</b></div><div class="singer">苏慧伦</div><h2 class="song">《被动》</h2><div class="meta">1996 · 专辑《Lemon Tree》 · 伍佰 作曲</div><p class="tag">听起来温柔，骨子里很倔</p><p class="note">女声唱伍佰，最成功的一次</p></section>
+<section id="mini8" class="clip mini" data-start="373.825" data-duration="25.0" data-track-index="4"><span>02</span><strong>苏慧伦《被动》</strong></section>
+<section id="full9" class="clip card topRank" data-start="398.825" data-duration="16.55" data-track-index="2"><div class="rank">NO.<b>01</b></div><div class="singer">王心凌</div><h2 class="song">《我会好好的》</h2><div class="meta">2005 · 专辑《Cyndi With U》 · 伍佰 词曲</div><p class="tag">甜心体系里，最反甜的一首</p><p class="note">我快不行了，但我会好好的</p></section>
+<section id="mini9" class="clip mini topRank" data-start="415.375" data-duration="32.7" data-track-index="4"><span>01</span><strong>王心凌《我会好好的》</strong></section>
+<section id="outro" class="clip" data-start="448.075" data-duration="28.1" data-track-index="2"><div class="small">FINAL RANKING</div><h2>十个女声，<br>背后是同一个伍佰。</h2><ol><li><span>10</span><strong>黄小琥《突然的自我》</strong></li><li><span>09</span><strong>郁可唯《你不要我了吗》</strong></li><li><span>08</span><strong>杨乃文《一个人》</strong></li><li><span>07</span><strong>刘若英《最初的地方》</strong></li><li><span>06</span><strong>万芳《夜照亮了夜》</strong></li><li><span>05</span><strong>那英《我不是天使》</strong></li><li><span>04</span><strong>王菲《单行道》</strong></li><li><span>03</span><strong>莫文蔚《坚强的理由》</strong></li><li><span>02</span><strong>苏慧伦《被动》</strong></li><li class=top><span>01</span><strong>王心凌《我会好好的》</strong></li></ol><p class="close">他从来不只是那个嘶吼的伍佰。</p></section>
+<section id="cta" class="clip" data-start="464.225" data-duration="11.95" data-track-index="5"><div class="v">为你的第一名，评论区投票</div><div class="f">点赞 · 收藏 · 关注</div></section>
+<audio id="master" class="clip" data-start="0" data-duration="476.175" data-track-index="3" src="silent.m4a" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+tl.set("#cover",{opacity:1},0);
+tl.set("#cover .brandline, #cover h1, #cover .toptag, #cover .sub, #cover .chips span",{opacity:1,x:0,y:0},0);
+tl.fromTo("#cover h1",{scale:1.0},{scale:1.02,duration:3.4,ease:"sine.inOut",yoyo:true,repeat:1},0.2);
+tl.fromTo("#glow",{x:-18,y:0},{x:22,y:-14,duration:476.175,ease:"none"},0);
+tl.to("#cover",{opacity:0,duration:.45,ease:"power1.in"},18.725);
+tl.set("#cover",{opacity:0},19.275);
+tl.fromTo("#tr0",{opacity:.6,scaleY:.05},{opacity:0,scaleY:1,duration:.8,ease:"power2.out"},19.125);
+tl.fromTo("#tr1",{opacity:.6,scaleY:.05},{opacity:0,scaleY:1,duration:.8,ease:"power2.out"},62.425);
+tl.fromTo("#tr2",{opacity:.6,scaleY:.05},{opacity:0,scaleY:1,duration:.8,ease:"power2.out"},109.15);
+tl.fromTo("#tr3",{opacity:.6,scaleY:.05},{opacity:0,scaleY:1,duration:.8,ease:"power2.out"},143.35);
+tl.fromTo("#tr4",{opacity:.6,scaleY:.05},{opacity:0,scaleY:1,duration:.8,ease:"power2.out"},176.55);
+tl.fromTo("#tr5",{opacity:.6,scaleY:.05},{opacity:0,scaleY:1,duration:.8,ease:"power2.out"},216.375);
+tl.fromTo("#tr6",{opacity:.6,scaleY:.05},{opacity:0,scaleY:1,duration:.8,ease:"power2.out"},259.325);
+tl.fromTo("#tr7",{opacity:.6,scaleY:.05},{opacity:0,scaleY:1,duration:.8,ease:"power2.out"},303.35);
+tl.fromTo("#tr8",{opacity:.6,scaleY:.05},{opacity:0,scaleY:1,duration:.8,ease:"power2.out"},358.2);
+tl.fromTo("#tr9",{opacity:.6,scaleY:.05},{opacity:0,scaleY:1,duration:.8,ease:"power2.out"},398.675);
+tl.fromTo("#full0 .rank",{x:-30,opacity:0},{x:0,opacity:1,duration:.5,ease:"power3.out"},19.455);
+tl.fromTo("#full0 .singer",{x:-20,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},19.675);
+tl.fromTo("#full0 .song",{y:42,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},19.815);
+tl.fromTo("#full0 .meta",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power1.out"},20.075);
+tl.fromTo("#full0 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},20.275);
+tl.fromTo("#full0 .note",{y:16,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},20.515);
+tl.to("#full0",{opacity:0,duration:.4,ease:"power1.in"},36.125);
+tl.set("#full0",{opacity:0},36.575);
+tl.fromTo("#mini0",{x:-26,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},36.695);
+tl.to("#mini0",{opacity:0,duration:.35,ease:"power1.in"},62.175);
+tl.set("#mini0",{opacity:0},62.575);
+tl.fromTo("#full1 .rank",{x:-30,opacity:0},{x:0,opacity:1,duration:.5,ease:"power3.out"},62.755);
+tl.fromTo("#full1 .singer",{x:-20,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},62.975);
+tl.fromTo("#full1 .song",{y:42,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},63.115);
+tl.fromTo("#full1 .meta",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power1.out"},63.375);
+tl.fromTo("#full1 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},63.575);
+tl.fromTo("#full1 .note",{y:16,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},63.815);
+tl.to("#full1",{opacity:0,duration:.4,ease:"power1.in"},76.85);
+tl.set("#full1",{opacity:0},77.3);
+tl.fromTo("#mini1",{x:-26,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},77.42);
+tl.to("#mini1",{opacity:0,duration:.35,ease:"power1.in"},108.9);
+tl.set("#mini1",{opacity:0},109.3);
+tl.fromTo("#full2 .rank",{x:-30,opacity:0},{x:0,opacity:1,duration:.5,ease:"power3.out"},109.48);
+tl.fromTo("#full2 .singer",{x:-20,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},109.7);
+tl.fromTo("#full2 .song",{y:42,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},109.84);
+tl.fromTo("#full2 .meta",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power1.out"},110.1);
+tl.fromTo("#full2 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},110.3);
+tl.fromTo("#full2 .note",{y:16,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},110.54);
+tl.to("#full2",{opacity:0,duration:.4,ease:"power1.in"},124.05);
+tl.set("#full2",{opacity:0},124.5);
+tl.fromTo("#mini2",{x:-26,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},124.62);
+tl.to("#mini2",{opacity:0,duration:.35,ease:"power1.in"},143.1);
+tl.set("#mini2",{opacity:0},143.5);
+tl.fromTo("#full3 .rank",{x:-30,opacity:0},{x:0,opacity:1,duration:.5,ease:"power3.out"},143.68);
+tl.fromTo("#full3 .singer",{x:-20,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},143.9);
+tl.fromTo("#full3 .song",{y:42,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},144.04);
+tl.fromTo("#full3 .meta",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power1.out"},144.3);
+tl.fromTo("#full3 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},144.5);
+tl.fromTo("#full3 .note",{y:16,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},144.74);
+tl.to("#full3",{opacity:0,duration:.4,ease:"power1.in"},158.75);
+tl.set("#full3",{opacity:0},159.2);
+tl.fromTo("#mini3",{x:-26,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},159.32);
+tl.to("#mini3",{opacity:0,duration:.35,ease:"power1.in"},176.3);
+tl.set("#mini3",{opacity:0},176.7);
+tl.fromTo("#full4 .rank",{x:-30,opacity:0},{x:0,opacity:1,duration:.5,ease:"power3.out"},176.88);
+tl.fromTo("#full4 .singer",{x:-20,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},177.1);
+tl.fromTo("#full4 .song",{y:42,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},177.24);
+tl.fromTo("#full4 .meta",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power1.out"},177.5);
+tl.fromTo("#full4 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},177.7);
+tl.fromTo("#full4 .note",{y:16,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},177.94);
+tl.to("#full4",{opacity:0,duration:.4,ease:"power1.in"},190.575);
+tl.set("#full4",{opacity:0},191.025);
+tl.fromTo("#mini4",{x:-26,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},191.145);
+tl.to("#mini4",{opacity:0,duration:.35,ease:"power1.in"},216.125);
+tl.set("#mini4",{opacity:0},216.525);
+tl.fromTo("#full5 .rank",{x:-30,opacity:0},{x:0,opacity:1,duration:.5,ease:"power3.out"},216.705);
+tl.fromTo("#full5 .singer",{x:-20,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},216.925);
+tl.fromTo("#full5 .song",{y:42,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},217.065);
+tl.fromTo("#full5 .meta",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power1.out"},217.325);
+tl.fromTo("#full5 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},217.525);
+tl.fromTo("#full5 .note",{y:16,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},217.765);
+tl.to("#full5",{opacity:0,duration:.4,ease:"power1.in"},230.025);
+tl.set("#full5",{opacity:0},230.475);
+tl.fromTo("#mini5",{x:-26,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},230.595);
+tl.to("#mini5",{opacity:0,duration:.35,ease:"power1.in"},259.075);
+tl.set("#mini5",{opacity:0},259.475);
+tl.fromTo("#full6 .rank",{x:-30,opacity:0},{x:0,opacity:1,duration:.5,ease:"power3.out"},259.655);
+tl.fromTo("#full6 .singer",{x:-20,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},259.875);
+tl.fromTo("#full6 .song",{y:42,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},260.015);
+tl.fromTo("#full6 .meta",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power1.out"},260.275);
+tl.fromTo("#full6 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},260.475);
+tl.fromTo("#full6 .note",{y:16,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},260.715);
+tl.to("#full6",{opacity:0,duration:.4,ease:"power1.in"},275.75);
+tl.set("#full6",{opacity:0},276.2);
+tl.fromTo("#mini6",{x:-26,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},276.32);
+tl.to("#mini6",{opacity:0,duration:.35,ease:"power1.in"},303.1);
+tl.set("#mini6",{opacity:0},303.5);
+tl.fromTo("#full7 .rank",{x:-30,opacity:0},{x:0,opacity:1,duration:.5,ease:"power3.out"},303.68);
+tl.fromTo("#full7 .singer",{x:-20,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},303.9);
+tl.fromTo("#full7 .song",{y:42,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},304.04);
+tl.fromTo("#full7 .meta",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power1.out"},304.3);
+tl.fromTo("#full7 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},304.5);
+tl.fromTo("#full7 .note",{y:16,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},304.74);
+tl.to("#full7",{opacity:0,duration:.4,ease:"power1.in"},317.9);
+tl.set("#full7",{opacity:0},318.35);
+tl.fromTo("#mini7",{x:-26,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},318.47);
+tl.to("#mini7",{opacity:0,duration:.35,ease:"power1.in"},357.95);
+tl.set("#mini7",{opacity:0},358.35);
+tl.fromTo("#full8 .rank",{x:-30,opacity:0},{x:0,opacity:1,duration:.5,ease:"power3.out"},358.53);
+tl.fromTo("#full8 .singer",{x:-20,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},358.75);
+tl.fromTo("#full8 .song",{y:42,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},358.89);
+tl.fromTo("#full8 .meta",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power1.out"},359.15);
+tl.fromTo("#full8 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},359.35);
+tl.fromTo("#full8 .note",{y:16,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},359.59);
+tl.to("#full8",{opacity:0,duration:.4,ease:"power1.in"},373.375);
+tl.set("#full8",{opacity:0},373.825);
+tl.fromTo("#mini8",{x:-26,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},373.945);
+tl.to("#mini8",{opacity:0,duration:.35,ease:"power1.in"},398.425);
+tl.set("#mini8",{opacity:0},398.825);
+tl.fromTo("#full9 .rank",{x:-30,opacity:0},{x:0,opacity:1,duration:.5,ease:"power3.out"},399.005);
+tl.fromTo("#full9 .singer",{x:-20,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},399.225);
+tl.fromTo("#full9 .song",{y:42,opacity:0},{y:0,opacity:1,duration:.62,ease:"power3.out"},399.365);
+tl.fromTo("#full9 .meta",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power1.out"},399.625);
+tl.fromTo("#full9 .tag",{y:22,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},399.825);
+tl.fromTo("#full9 .note",{y:16,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},400.065);
+tl.to("#full9",{opacity:0,duration:.4,ease:"power1.in"},414.925);
+tl.set("#full9",{opacity:0},415.375);
+tl.fromTo("#mini9",{x:-26,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},415.495);
+tl.to("#mini9",{opacity:0,duration:.35,ease:"power1.in"},447.675);
+tl.set("#mini9",{opacity:0},448.075);
+tl.fromTo("#outro .small",{y:22,opacity:0},{y:0,opacity:1,duration:.5,ease:"power2.out"},448.275);
+tl.fromTo("#outro h2",{y:40,opacity:0},{y:0,opacity:1,duration:.66,ease:"power3.out"},448.625);
+tl.fromTo("#outro li",{x:-30,opacity:0},{x:0,opacity:1,duration:.4,ease:"power2.out",stagger:.08},449.225);
+tl.fromTo("#outro .close",{y:22,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},450.475);
+tl.fromTo("#cta .v",{y:26,opacity:0},{y:0,opacity:1,duration:.55,ease:"power2.out"},464.375);
+tl.fromTo("#cta .f",{y:18,opacity:0},{y:0,opacity:1,duration:.5,ease:"power1.out"},464.725);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

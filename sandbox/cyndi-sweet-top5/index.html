@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <script src="vendor/gsap.min.js"></script>
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+@font-face{font-family:"PingFang SC";src:local("PingFang SC");font-weight:400 900}
+@font-face{font-family:"Songti SC";src:local("Songti SC");font-weight:400 900}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#120816;
+  font-family:"PingFang SC",system-ui,sans-serif;color:#fff3f8;-webkit-font-smoothing:antialiased}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#120816}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(18,8,22,.88),rgba(18,8,22,.06) 32%,rgba(18,8,22,.16) 56%,rgba(18,8,22,.92))}
+#glow{position:absolute;inset:-260px;z-index:1;opacity:.44;background:radial-gradient(42% 28% at 18% 18%,rgba(255,209,102,.42),rgba(255,209,102,0) 66%),radial-gradient(45% 30% at 84% 80%,rgba(94,228,194,.32),rgba(94,228,194,0) 68%),radial-gradient(50% 32% at 70% 22%,rgba(255,90,165,.34),rgba(255,90,165,0) 68%)}
+#grain{position:absolute;inset:-20px;z-index:9;opacity:.055;mix-blend-mode:soft-light;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,243,248,.13) 0 1px,rgba(255,243,248,0) 1px 4px)}
+.trans{position:absolute;left:0;right:0;top:0;bottom:0;z-index:8;background:linear-gradient(90deg,rgba(255,209,102,0),rgba(255,90,165,.60),rgba(94,228,194,0));transform-origin:center}
+#cover{position:absolute;inset:0;z-index:5;opacity:0;padding:128px 72px 124px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(180deg,rgba(18,8,22,.82),rgba(18,8,22,.10) 32%,rgba(18,8,22,.22) 58%,rgba(18,8,22,.92))}
+.eyebrow{display:inline-flex;align-items:center;gap:18px;font-size:30px;font-weight:900;color:#5ee4c2;letter-spacing:.12em}
+.eyebrow:before{content:"";width:58px;height:4px;background:#5ee4c2;border-radius:99px;box-shadow:0 0 18px rgba(94,228,194,.62)}
+#cover h1{margin-top:30px;font-family:"Songti SC",serif;font-size:116px;line-height:1.06;font-weight:900;max-width:944px;text-shadow:0 6px 42px rgba(0,0,0,.66)}
+#cover h1 b{color:#ff5aa5;font-weight:900}
+#cover .sub{margin-top:32px;font-size:36px;line-height:1.5;color:#ffe4ef;font-weight:700;max-width:920px}
+.chips{display:flex;flex-wrap:wrap;gap:14px;max-width:932px}
+.chips span{border:1.5px solid rgba(94,228,194,.52);color:#fff3f8;background:rgba(18,8,22,.62);font-size:27px;font-weight:900;padding:12px 18px;border-radius:8px}
+.fullLabel{position:absolute;z-index:5;left:64px;right:64px;bottom:170px;padding:34px 36px 38px;background:linear-gradient(135deg,rgba(18,8,22,.91),rgba(39,18,47,.62));border-left:8px solid #ff5aa5;border-radius:6px;backdrop-filter:blur(2px);box-shadow:0 22px 70px rgba(0,0,0,.36)}
+.fullLabel .rank{font-family:"Menlo","Monaco",monospace;font-size:31px;font-weight:900;color:#5ee4c2;letter-spacing:.14em}
+.fullLabel .meta{margin-top:14px;font-size:27px;font-weight:800;color:#ffc9dc;letter-spacing:.05em}
+.fullLabel h2{font-family:"Songti SC",serif;margin-top:12px;font-size:78px;line-height:1.12;font-weight:900;color:#fff3f8}
+.fullLabel .tag{margin-top:19px;font-size:38px;line-height:1.28;font-weight:900;color:#ffd166}
+.fullLabel .note{margin-top:12px;font-size:30px;line-height:1.42;font-weight:700;color:#ffe4ef}
+.fullLabel.topRank{border-left-color:#ffd166;background:linear-gradient(135deg,rgba(39,18,47,.94),rgba(18,8,22,.62))}
+.fullLabel.topRank .rank,.fullLabel.topRank .tag{color:#ffd166}
+.miniLabel{position:absolute;z-index:5;top:92px;left:58px;display:flex;align-items:center;gap:16px;padding:13px 21px;background:rgba(18,8,22,.72);border:1.5px solid rgba(94,228,194,.58);border-radius:8px}
+.miniLabel span{font-family:"Menlo","Monaco",monospace;font-size:44px;font-weight:900;color:#fff3f8;background:#120816;border:1px solid rgba(94,228,194,.52);border-radius:6px;padding:2px 8px;line-height:1.1}
+.miniLabel strong{font-family:"Songti SC",serif;font-size:38px;font-weight:900;max-width:790px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.miniLabel.topRank{border-color:rgba(255,209,102,.78)}
+.miniLabel.topRank span{border-color:rgba(255,209,102,.72)}
+#outro{position:absolute;z-index:5;inset:0;padding:112px 72px 152px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(180deg,rgba(18,8,22,.32),rgba(18,8,22,.90))}
+#outro .small{font-family:"Menlo","Monaco",monospace;font-size:31px;font-weight:900;color:#5ee4c2;letter-spacing:.14em}
+#outro h2{font-family:"Songti SC",serif;margin-top:20px;font-size:56px;line-height:1.28;font-weight:900;max-width:932px}
+#outro ol{margin-top:38px;list-style:none;display:grid;gap:13px;width:100%}
+#outro li{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:16px 20px;background:rgba(18,8,22,.64);border:1px solid rgba(255,243,248,.16);border-radius:8px}
+#outro li span{font-family:"Menlo","Monaco",monospace;font-size:32px;font-weight:900;color:#fff3f8;background:#120816;border:1px solid rgba(94,228,194,.45);border-radius:6px;padding:4px 8px;line-height:1.1;min-width:58px;text-align:center}
+#outro li:last-child{background:rgba(255,209,102,.16);border-color:rgba(255,209,102,.50)}
+#outro li:last-child span{border-color:rgba(255,209,102,.72)}
+#outro li strong{font-family:"Songti SC",serif;font-size:35px;font-weight:900;text-align:right}
+#outro .close{margin-top:30px;font-size:30px;line-height:1.5;color:#ffe4ef;font-weight:700}
+#cta{position:absolute;z-index:6;left:72px;right:72px;bottom:90px;text-align:center;padding:20px;background:rgba(18,8,22,.76);border:1.5px solid rgba(255,209,102,.50);border-radius:9px}
+#cta .v{font-size:42px;font-weight:900;color:#ffd166;line-height:1.22}
+#cta .f{margin-top:14px;font-size:33px;font-weight:900;color:#5ee4c2;letter-spacing:.14em}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="309.94" data-width="1080" data-height="1920">
+<video id="v0" class="clip fv" data-start="0.0" data-duration="16.25" data-track-index="0" src="clips_seg/intro.mp4" muted playsinline></video>
+<video id="v1" class="clip fv" data-start="16.25" data-duration="53.425" data-track-index="6" src="clips_seg/p5_taocan.mp4" muted playsinline></video>
+<video id="v2" class="clip fv" data-start="69.675" data-duration="52.945" data-track-index="0" src="clips_seg/p4_rainbow.mp4" muted playsinline></video>
+<video id="v3" class="clip fv" data-start="122.62" data-duration="51.705" data-track-index="6" src="clips_seg/p3_jiewanwan.mp4" muted playsinline></video>
+<video id="v4" class="clip fv" data-start="174.325" data-duration="51.065" data-track-index="0" src="clips_seg/p2_aini.mp4" muted playsinline></video>
+<video id="v5" class="clip fv" data-start="225.39" data-duration="58.645" data-track-index="6" src="clips_seg/p1_honey.mp4" muted playsinline></video>
+<video id="v6" class="clip fv" data-start="284.035" data-duration="25.905" data-track-index="0" src="clips_seg/outro.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="309.94" data-track-index="1"></div>
+<div id="glow" class="clip" data-start="0" data-duration="309.94" data-track-index="7"></div>
+<div id="grain" class="clip" data-start="0" data-duration="309.94" data-track-index="10"></div>
+<div id="tr0" class="clip trans" data-start="16.13" data-duration="0.84" data-track-index="8"></div>
+<div id="tr1" class="clip trans" data-start="69.555" data-duration="0.84" data-track-index="8"></div>
+<div id="tr2" class="clip trans" data-start="122.5" data-duration="0.84" data-track-index="8"></div>
+<div id="tr3" class="clip trans" data-start="174.205" data-duration="0.84" data-track-index="8"></div>
+<div id="tr4" class="clip trans" data-start="225.27" data-duration="0.84" data-track-index="8"></div>
+<section id="cover" class="clip" data-start="0" data-duration="16.13" data-track-index="2"><div><div class="eyebrow">甜心歌单 · 倒数揭晓</div><h1>王心凌<br><b>最甜</b>的5首歌</h1><p class="sub">不是只比谁最可爱，而是从轻快、阳光、俏皮、青春记忆和满糖招牌里，找出最甜的答案。</p></div><div class="chips"><span>恋爱甜点</span><span>偶像剧阳光</span><span>俏皮舞步</span><span>青春告白</span><span>满糖招牌</span></div></section>
+<section id="full0" class="clip fullLabel" data-start="16.25" data-duration="12.625" data-track-index="2"><div class="rank">第 05 名</div><div class="meta">Magic Cyndi · 2007</div><h2>《爱的套餐》</h2><p class="tag">恋爱甜点菜单，轻快又可爱</p><p class="note">甜度不靠大嗓门，而是靠小心思堆起来</p></section>
+<section id="mini0" class="clip miniLabel" data-start="28.875" data-duration="40.8" data-track-index="4"><span>05</span><strong>爱的套餐</strong></section>
+<section id="full1" class="clip fullLabel" data-start="69.675" data-duration="12.375" data-track-index="2"><div class="rank">第 04 名</div><div class="meta">微笑Pasta 片头曲 · 2006</div><h2>《彩虹的微笑》</h2><p class="tag">偶像剧阳光感，一响起就放晴</p><p class="note">明朗、童话、带着青春滤镜的甜</p></section>
+<section id="mini1" class="clip miniLabel" data-start="82.05" data-duration="40.57" data-track-index="4"><span>04</span><strong>彩虹的微笑</strong></section>
+<section id="full2" class="clip fullLabel" data-start="122.62" data-duration="13.275" data-track-index="2"><div class="rank">第 03 名</div><div class="meta">Cyndi With U · 2005</div><h2>《睫毛弯弯》</h2><p class="tag">眨眼、舞步和少女感</p><p class="note">不是腻人的甜，是灵动又会撒娇的甜</p></section>
+<section id="mini2" class="clip miniLabel" data-start="135.895" data-duration="38.43" data-track-index="4"><span>03</span><strong>睫毛弯弯</strong></section>
+<section id="full3" class="clip fullLabel" data-start="174.325" data-duration="13.475" data-track-index="2"><div class="rank">第 02 名</div><div class="meta">爱你 · 2004</div><h2>《爱你》</h2><p class="tag">校园告白和甜心舞步的集体记忆</p><p class="note">副歌直接，动作标志，甜得很有年代感</p></section>
+<section id="mini3" class="clip miniLabel" data-start="187.8" data-duration="37.59" data-track-index="4"><span>02</span><strong>爱你</strong></section>
+<section id="full4" class="clip fullLabel topRank" data-start="225.39" data-duration="15.275" data-track-index="2"><div class="rank">第 01 名</div><div class="meta">Honey · 2005</div><h2>《Honey》</h2><p class="tag">满糖招牌，甜心教主的浓缩答案</p><p class="note">轻快、明亮、黏人，而且辨识度很高</p></section>
+<section id="mini4" class="clip miniLabel topRank" data-start="240.665" data-duration="43.37" data-track-index="4"><span>01</span><strong>Honey</strong></section>
+<section id="outro" class="clip" data-start="284.035" data-duration="25.905" data-track-index="2"><div class="small">最终榜单</div><h2>王心凌的甜，不只是可爱，而是一种能把青春记忆重新点亮的声音。</h2><ol><li><span>05</span><strong>爱的套餐</strong></li><li><span>04</span><strong>彩虹的微笑</strong></li><li><span>03</span><strong>睫毛弯弯</strong></li><li><span>02</span><strong>爱你</strong></li><li><span>01</span><strong>Honey</strong></li></ol><p class="close">甜心教主的答案，最后还是要回到这些旋律里。</p></section>
+<section id="cta" class="clip" data-start="297.415" data-duration="12.525" data-track-index="5"><div class="v">为你的第一名，评论区投票</div><div class="f">点赞 · 收藏 · 关注</div></section>
+<audio id="master" class="clip" data-start="0" data-duration="309.682" data-track-index="3" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+tl.set("#cover",{opacity:0},0);
+tl.fromTo("#cover",{opacity:0},{opacity:1,duration:.5,ease:"power2.out"},0.12);
+tl.set("#cover .eyebrow, #cover h1, #cover .sub, #cover .chips span",{opacity:1,x:0,y:0},0);
+tl.fromTo("#cover h1",{scale:1.0},{scale:1.018,duration:3.1,ease:"sine.inOut",yoyo:true,repeat:1},0.25);
+tl.fromTo("#glow",{x:-18,y:0},{x:20,y:-14,duration:309.94,ease:"none"},0);
+tl.to("#cover",{opacity:0,duration:.42,ease:"power1.in"},15.75);
+tl.set("#cover",{opacity:0},16.17);
+tl.fromTo("#tr0",{opacity:.64,scaleY:.035},{opacity:0,scaleY:1,duration:.74,ease:"power2.out"},16.13);
+tl.fromTo("#tr1",{opacity:.64,scaleY:.035},{opacity:0,scaleY:1,duration:.74,ease:"power2.out"},69.555);
+tl.fromTo("#tr2",{opacity:.64,scaleY:.035},{opacity:0,scaleY:1,duration:.74,ease:"power2.out"},122.5);
+tl.fromTo("#tr3",{opacity:.64,scaleY:.035},{opacity:0,scaleY:1,duration:.74,ease:"power2.out"},174.205);
+tl.fromTo("#tr4",{opacity:.64,scaleY:.035},{opacity:0,scaleY:1,duration:.74,ease:"power2.out"},225.27);
+tl.fromTo("#full0 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},16.43);
+tl.fromTo("#full0 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.46,ease:"sine.out"},16.59);
+tl.fromTo("#full0 h2",{y:48,opacity:0},{y:0,opacity:1,duration:.66,ease:"power3.out"},16.77);
+tl.fromTo("#full0 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"expo.out"},17.13);
+tl.fromTo("#full0 .note",{x:18,opacity:0},{x:0,opacity:1,duration:.44,ease:"power1.out"},17.37);
+tl.fromTo("#mini0",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},28.975);
+tl.fromTo("#full1 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},69.855);
+tl.fromTo("#full1 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.46,ease:"sine.out"},70.015);
+tl.fromTo("#full1 h2",{y:48,opacity:0},{y:0,opacity:1,duration:.66,ease:"power3.out"},70.195);
+tl.fromTo("#full1 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"expo.out"},70.555);
+tl.fromTo("#full1 .note",{x:18,opacity:0},{x:0,opacity:1,duration:.44,ease:"power1.out"},70.795);
+tl.fromTo("#mini1",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},82.15);
+tl.fromTo("#full2 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},122.8);
+tl.fromTo("#full2 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.46,ease:"sine.out"},122.96);
+tl.fromTo("#full2 h2",{y:48,opacity:0},{y:0,opacity:1,duration:.66,ease:"power3.out"},123.14);
+tl.fromTo("#full2 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"expo.out"},123.5);
+tl.fromTo("#full2 .note",{x:18,opacity:0},{x:0,opacity:1,duration:.44,ease:"power1.out"},123.74);
+tl.fromTo("#mini2",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},135.995);
+tl.fromTo("#full3 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},174.505);
+tl.fromTo("#full3 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.46,ease:"sine.out"},174.665);
+tl.fromTo("#full3 h2",{y:48,opacity:0},{y:0,opacity:1,duration:.66,ease:"power3.out"},174.845);
+tl.fromTo("#full3 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"expo.out"},175.205);
+tl.fromTo("#full3 .note",{x:18,opacity:0},{x:0,opacity:1,duration:.44,ease:"power1.out"},175.445);
+tl.fromTo("#mini3",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},187.9);
+tl.fromTo("#full4 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},225.57);
+tl.fromTo("#full4 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.46,ease:"sine.out"},225.73);
+tl.fromTo("#full4 h2",{y:48,opacity:0},{y:0,opacity:1,duration:.66,ease:"power3.out"},225.91);
+tl.fromTo("#full4 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"expo.out"},226.27);
+tl.fromTo("#full4 .note",{x:18,opacity:0},{x:0,opacity:1,duration:.44,ease:"power1.out"},226.51);
+tl.fromTo("#mini4",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},240.765);
+tl.fromTo("#outro .small",{y:22,opacity:0},{y:0,opacity:1,duration:.5,ease:"power2.out"},284.235);
+tl.fromTo("#outro h2",{y:40,opacity:0},{y:0,opacity:1,duration:.65,ease:"power3.out"},284.585);
+tl.fromTo("#outro li",{x:-34,opacity:0},{x:0,opacity:1,duration:.45,ease:"power2.out",stagger:.1},285.215);
+tl.fromTo("#outro .close",{y:24,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},286.215);
+tl.fromTo("#cta .v",{y:26,opacity:0},{y:0,opacity:1,duration:.55,ease:"power2.out"},297.565);
+tl.fromTo("#cta .f",{y:18,opacity:0},{y:0,opacity:1,duration:.5,ease:"power1.out"},297.915);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

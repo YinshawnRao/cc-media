@@ -1,0 +1,75 @@
+{
+  "id": "main",
+  "name": "wangruolin-underrated-top5",
+  "sample": false,
+  "total": 256.325,
+  "intro_end": 20.7,
+  "outro_start": 225.625,
+  "blocks": [
+    {
+      "no": "05",
+      "plain": "鬼才出道",
+      "aud": "p5",
+      "start": 20.7,
+      "narr_start": 21.05,
+      "narr_end": 38.5,
+      "full_start": 40.2,
+      "end": 58.2,
+      "mseek": 143.3,
+      "ch_off": 162.8,
+      "show": 18.0
+    },
+    {
+      "no": "04",
+      "plain": "聊八卦",
+      "aud": "p4",
+      "start": 58.2,
+      "narr_start": 58.55,
+      "narr_end": 76.05,
+      "full_start": 77.75,
+      "end": 93.75,
+      "mseek": 48.45,
+      "ch_off": 68.0,
+      "show": 16.0
+    },
+    {
+      "no": "03",
+      "plain": "漠不关心",
+      "aud": "p3",
+      "start": 93.75,
+      "narr_start": 94.1,
+      "narr_end": 111.525,
+      "full_start": 113.225,
+      "end": 144.425,
+      "mseek": 2.355,
+      "ch_off": 21.83,
+      "show": 31.2
+    },
+    {
+      "no": "02",
+      "plain": "复仇记",
+      "aud": "p2",
+      "start": 144.425,
+      "narr_start": 144.775,
+      "narr_end": 162.3,
+      "full_start": 164.0,
+      "end": 184.0,
+      "mseek": 73.455,
+      "ch_off": 93.03,
+      "show": 20.0
+    },
+    {
+      "no": "01",
+      "plain": "大家的孤独",
+      "aud": "p1",
+      "start": 184.0,
+      "narr_start": 184.35,
+      "narr_end": 201.925,
+      "full_start": 203.625,
+      "end": 225.625,
+      "mseek": 110.605,
+      "ch_off": 130.23,
+      "show": 22.0
+    }
+  ]
+}

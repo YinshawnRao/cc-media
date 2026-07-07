@@ -1,0 +1,7 @@
+file 'seg_intro.wav'
+file 'seg_p5_guicai.wav'
+file 'seg_p4_liaobagua.wav'
+file 'seg_p3_moguanxin.wav'
+file 'seg_p2_fuchou.wav'
+file 'seg_p1_dajia.wav'
+file 'seg_outro.wav'

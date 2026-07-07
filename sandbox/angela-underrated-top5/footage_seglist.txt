@@ -1,0 +1,7 @@
+file 'clips_seg/intro.mp4'
+file 'clips_seg/p5_huanxiangai.mp4'
+file 'clips_seg/p4_tingyueguang.mp4'
+file 'clips_seg/p3_jingtiandongdi.mp4'
+file 'clips_seg/p2_fuhuojie.mp4'
+file 'clips_seg/p1_ouer.mp4'
+file 'clips_seg/outro.mp4'

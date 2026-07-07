@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.25,
+    "DIG": 1.45
+  },
+  "songs": [
+    {
+      "key": "p5",
+      "clip": "vert_p5",
+      "narr_end_src": 160.79,
+      "show_start_src": 162.49,
+      "show_end_src": 202.73
+    },
+    {
+      "key": "p4",
+      "clip": "vert_p4",
+      "narr_end_src": 175.04,
+      "show_start_src": 176.74,
+      "show_end_src": 211.74
+    },
+    {
+      "key": "p3",
+      "clip": "vert_p3",
+      "narr_end_src": 169.84,
+      "show_start_src": 171.54,
+      "show_end_src": 206.54
+    },
+    {
+      "key": "p2",
+      "clip": "vert_p2",
+      "narr_end_src": 97.66,
+      "show_start_src": 99.36,
+      "show_end_src": 138.3
+    },
+    {
+      "key": "p1",
+      "clip": "vert_p1",
+      "narr_end_src": 207.33,
+      "show_start_src": 209.03,
+      "show_end_src": 249.71
+    }
+  ]
+}

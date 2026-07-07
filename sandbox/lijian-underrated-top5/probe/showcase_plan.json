@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.25,
+    "DIG": 1.45
+  },
+  "songs": [
+    {
+      "key": "p5_shenhai",
+      "clip": "vert_shenhai",
+      "narr_end_src": 216.02,
+      "show_start_src": 217.72,
+      "show_end_src": 250.02
+    },
+    {
+      "key": "p4_zaaishanghai",
+      "clip": "vert_zaaishanghai",
+      "narr_end_src": 196.49,
+      "show_start_src": 198.19,
+      "show_end_src": 233.12
+    },
+    {
+      "key": "p3_fuxianhu",
+      "clip": "vert_fuxianhu",
+      "narr_end_src": 178.01,
+      "show_start_src": 179.71,
+      "show_end_src": 236.99
+    },
+    {
+      "key": "p2_shifenzhong",
+      "clip": "vert_shifenzhong",
+      "narr_end_src": 156.64,
+      "show_start_src": 158.34,
+      "show_end_src": 197.08
+    },
+    {
+      "key": "p1_yixiangren",
+      "clip": "vert_yixiangren",
+      "narr_end_src": 152.07,
+      "show_start_src": 153.77,
+      "show_end_src": 192.27
+    }
+  ]
+}

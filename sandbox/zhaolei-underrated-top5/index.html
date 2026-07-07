@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <script src="vendor/gsap.min.js"></script>
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+@font-face{font-family:"PingFang SC";src:local("PingFang SC");font-weight:400 900}
+@font-face{font-family:"Songti SC";src:local("Songti SC");font-weight:400 900}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#0c0a07;
+  font-family:"PingFang SC",system-ui,sans-serif;color:#f2ece1;-webkit-font-smoothing:antialiased}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#0c0a07}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(12,10,7,.90),rgba(12,10,7,.05) 30%,rgba(12,10,7,.18) 55%,rgba(9,7,5,.95))}
+#glow{position:absolute;inset:-260px;z-index:1;opacity:.38;background:radial-gradient(42% 26% at 18% 16%,rgba(224,180,120,.38),rgba(224,180,120,0) 65%),radial-gradient(48% 30% at 82% 82%,rgba(200,150,90,.26),rgba(200,150,90,0) 68%)}
+#grain{position:absolute;inset:-20px;z-index:9;opacity:.055;mix-blend-mode:soft-light;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(242,236,225,.13) 0 1px,rgba(242,236,225,0) 1px 4px)}
+.trans{position:absolute;left:0;right:0;top:0;bottom:0;z-index:8;background:linear-gradient(90deg,rgba(224,180,120,0),rgba(224,180,120,.48),rgba(200,150,90,0));transform-origin:center}
+#cover{position:absolute;inset:0;z-index:5;padding:120px 76px 116px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(180deg,rgba(12,10,7,.82),rgba(12,10,7,.10) 30%,rgba(12,10,7,.22) 60%,rgba(9,7,5,.92))}
+.eyebrow{display:inline-flex;align-items:center;gap:18px;font-size:30px;font-weight:900;color:#e0b478;letter-spacing:.10em}
+.eyebrow:before{content:"";width:58px;height:4px;background:#e0b478;border-radius:99px;box-shadow:0 0 18px rgba(224,180,120,.60)}
+#cover h1{margin-top:28px;font-family:"Songti SC",serif;font-size:104px;line-height:1.1;font-weight:900;max-width:944px;text-shadow:0 6px 42px rgba(0,0,0,.70)}
+#cover h1 b{color:#eecb98;font-weight:900}
+#cover .sub{margin-top:566px;font-size:35px;line-height:1.5;color:#e6ddd0;font-weight:600;max-width:920px;text-shadow:0 3px 20px rgba(0,0,0,.8)}
+.chips{display:flex;flex-wrap:wrap;gap:14px;max-width:932px}
+.chips span{border:1.5px solid rgba(224,180,120,.48);color:#f2ece1;background:rgba(12,10,7,.56);font-size:27px;font-weight:800;padding:12px 18px;border-radius:8px}
+.fullLabel{position:absolute;z-index:5;left:64px;right:64px;bottom:172px;padding:34px 36px 38px;background:linear-gradient(135deg,rgba(12,10,7,.91),rgba(34,26,16,.56));border-left:8px solid #b9843f;border-radius:6px;backdrop-filter:blur(2px);box-shadow:0 22px 70px rgba(0,0,0,.36)}
+.fullLabel .rank{font-family:"JetBrains Mono",monospace;font-size:31px;font-weight:900;color:#e0b478;letter-spacing:.14em}
+.fullLabel .meta{margin-top:14px;font-size:28px;font-weight:700;color:#b8a98f;letter-spacing:.06em}
+.fullLabel h2{font-family:"Songti SC",serif;margin-top:12px;font-size:80px;line-height:1.12;font-weight:900;color:#f2ece1}
+.fullLabel .tag{margin-top:19px;font-size:40px;line-height:1.28;font-weight:900;color:#eecb98}
+.fullLabel .note{margin-top:12px;font-size:30px;line-height:1.42;font-weight:600;color:#e6ddd0}
+.fullLabel.topRank{border-left-color:#e8c977;background:linear-gradient(135deg,rgba(24,17,8,.93),rgba(12,10,7,.60))}
+.fullLabel.topRank .rank,.fullLabel.topRank .tag{color:#f0d488}
+.miniLabel{position:absolute;z-index:5;top:92px;left:58px;display:flex;align-items:center;gap:16px;padding:13px 21px;background:rgba(12,10,7,.70);border:1.5px solid rgba(224,180,120,.50);border-radius:8px}
+.miniLabel span{font-family:"JetBrains Mono",monospace;font-size:44px;font-weight:900;color:#f2ece1;background:#0c0a07;border:1px solid rgba(224,180,120,.48);border-radius:6px;padding:2px 8px;line-height:1.1}
+.miniLabel strong{font-family:"Songti SC",serif;font-size:36px;font-weight:900;max-width:790px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.miniLabel.topRank{border-color:rgba(232,201,119,.76)}
+.miniLabel.topRank span{border-color:rgba(232,201,119,.70)}
+#outro{position:absolute;z-index:5;inset:0;padding:110px 72px 150px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(180deg,rgba(12,10,7,.40),rgba(9,7,5,.90))}
+#outro .small{font-family:"JetBrains Mono",monospace;font-size:31px;font-weight:900;color:#e0b478;letter-spacing:.14em}
+#outro h2{font-family:"Songti SC",serif;margin-top:20px;font-size:54px;line-height:1.3;font-weight:900;max-width:936px}
+#outro ol{margin-top:34px;list-style:none;display:grid;gap:13px;width:100%}
+#outro li{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:16px 20px;background:rgba(12,10,7,.64);border:1px solid rgba(242,236,225,.14);border-radius:8px}
+#outro li span{font-family:"JetBrains Mono",monospace;font-size:32px;font-weight:900;color:#f2ece1;background:#0c0a07;border:1px solid rgba(224,180,120,.45);border-radius:6px;padding:4px 8px;line-height:1.1;min-width:58px;text-align:center}
+#outro li:last-child{background:rgba(232,201,119,.14);border-color:rgba(232,201,119,.45)}
+#outro li:last-child span{border-color:rgba(232,201,119,.65)}
+#outro li strong{font-family:"Songti SC",serif;font-size:34px;font-weight:900;text-align:right}
+#outro .close{margin-top:28px;font-size:30px;line-height:1.5;color:#e6ddd0;font-weight:600}
+#cta{position:absolute;z-index:6;left:72px;right:72px;bottom:92px;text-align:center;padding:20px;background:rgba(12,10,7,.72);border:1.5px solid rgba(232,201,119,.42);border-radius:9px}
+#cta .v{font-size:42px;font-weight:900;color:#f0d488;line-height:1.22}
+#cta .f{margin-top:14px;font-size:33px;font-weight:900;color:#e0b478;letter-spacing:.14em}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="284.275" data-width="1080" data-height="1920">
+<video id="v0" class="clip fv" data-start="0" data-duration="284.275" data-track-index="0" src="clips_seg/footage_track.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="284.275" data-track-index="1"></div>
+<div id="glow" class="clip" data-start="0" data-duration="284.275" data-track-index="7"></div>
+<div id="grain" class="clip" data-start="0" data-duration="284.275" data-track-index="10"></div>
+<div id="tr0" class="clip trans" data-start="18.5" data-duration="0.9" data-track-index="8"></div>
+<div id="tr1" class="clip trans" data-start="62.5" data-duration="0.9" data-track-index="8"></div>
+<div id="tr2" class="clip trans" data-start="107.825" data-duration="0.9" data-track-index="8"></div>
+<div id="tr3" class="clip trans" data-start="149.7" data-duration="0.9" data-track-index="8"></div>
+<div id="tr4" class="clip trans" data-start="196.825" data-duration="0.9" data-track-index="8"></div>
+<section id="cover" class="clip" data-start="0" data-duration="18.53" data-track-index="2"><div><div class="eyebrow">民谣遗珠 · 不只是成都南方姑娘</div><h1>赵雷<br><b>最被低估</b>的5首歌</h1></div><div><p class="sub">在《成都》《南方姑娘》那些传遍大街小巷的金曲之外，他还写过更安静、更克制的心事。这五首，藏着最被低估的赵雷。</p><div class="chips" style="margin-top:26px"><span>朴素叙事</span><span>克制留白</span><span>民谣遗珠</span><span>市井观察</span><span>越听越深</span></div></div></section>
+<section id="full0" class="clip fullLabel" data-start="18.65" data-duration="19.0" data-track-index="2"><div class="rank">第 05 名</div><div class="meta">赵小雷 · 2011</div><h2>《不开的唇》</h2><p class="tag">到了嘴边，又咽了回去</p><p class="note">藏在角落里的安静小歌，越听越具体</p></section>
+<section id="mini0" class="clip miniLabel" data-start="37.65" data-duration="25.0" data-track-index="4"><span>05</span><strong>不开的唇</strong></section>
+<section id="full1" class="clip fullLabel" data-start="62.65" data-duration="19.825" data-track-index="2"><div class="rank">第 04 名</div><div class="meta">吉姆餐厅 · 2014</div><h2>《梦中的哈德森》</h2><p class="tag">人还在现实里走，心已经漂远</p><p class="note">一段旅人梦境，异乡感和漂泊感</p></section>
+<section id="mini1" class="clip miniLabel" data-start="82.475" data-duration="25.5" data-track-index="4"><span>04</span><strong>梦中的哈德森</strong></section>
+<section id="full2" class="clip fullLabel" data-start="107.975" data-duration="19.775" data-track-index="2"><div class="rank">第 03 名</div><div class="meta">无法长大 · 2016</div><h2>《玛丽》</h2><p class="tag">一个名字，一段不俗套的怀念</p><p class="note">藏在专辑前半段的小人物故事</p></section>
+<section id="mini2" class="clip miniLabel" data-start="127.75" data-duration="22.1" data-track-index="4"><span>03</span><strong>玛丽</strong></section>
+<section id="full3" class="clip fullLabel" data-start="149.85" data-duration="19.125" data-track-index="2"><div class="rank">第 02 名</div><div class="meta">赵小雷 · 2011</div><h2>《人家》</h2><p class="tag">看见别人的日子，也看见自己的空</p><p class="note">早期赵雷最珍贵的朴素观察感</p></section>
+<section id="mini3" class="clip miniLabel" data-start="168.975" data-duration="28.0" data-track-index="4"><span>02</span><strong>人家</strong></section>
+<section id="full4" class="clip fullLabel topRank" data-start="196.975" data-duration="20.05" data-track-index="2"><div class="rank">第 01 名</div><div class="meta">赵小雷 · 2011</div><h2>《未给姐姐递出的信》</h2><p class="tag">没递出去的信，没说出口的遗憾</p><p class="note">最能代表赵雷早期叙事能力的一首</p></section>
+<section id="mini4" class="clip miniLabel topRank" data-start="217.025" data-duration="35.4" data-track-index="4"><span>01</span><strong>未给姐姐递出的信</strong></section>
+<section id="outro" class="clip" data-start="252.425" data-duration="31.85" data-track-index="2"><div class="small">最终榜单</div><h2>赵雷从来不只是那个写《成都》《南方姑娘》的民谣代言人，他也很会用最安静的方式，把心事唱给你听。</h2><ol><li><span>05</span><strong>不开的唇</strong></li><li><span>04</span><strong>梦中的哈德森</strong></li><li><span>03</span><strong>玛丽</strong></li><li><span>02</span><strong>人家</strong></li><li><span>01</span><strong>未给姐姐递出的信</strong></li></ol><p class="close">这些被大热歌盖住的角落，刚好补全了他最被低估的另一面。</p></section>
+<section id="cta" class="clip" data-start="272.325" data-duration="11.95" data-track-index="5"><div class="v">为你的第一名，评论区投票</div><div class="f">点赞 · 收藏 · 关注</div></section>
+<audio id="master" class="clip" data-start="0" data-duration="284.275" data-track-index="3" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+tl.set("#cover",{opacity:1},0);
+tl.set("#cover .eyebrow, #cover h1, #cover .sub, #cover .chips span",{opacity:1,x:0,y:0},0);
+tl.fromTo("#cover h1",{scale:1.0},{scale:1.018,duration:3.2,ease:"sine.inOut",yoyo:true,repeat:1},0.25);
+tl.fromTo("#glow",{x:-18,y:0},{x:20,y:-14,duration:284.275,ease:"none"},0);
+tl.to("#cover",{opacity:0,duration:.42,ease:"power1.in"},18.15);
+tl.set("#cover",{opacity:0},18.65);
+tl.fromTo("#tr0",{opacity:.54,scaleY:.04},{opacity:0,scaleY:1,duration:.78,ease:"power2.out"},18.5);
+tl.fromTo("#tr1",{opacity:.54,scaleY:.04},{opacity:0,scaleY:1,duration:.78,ease:"power2.out"},62.5);
+tl.fromTo("#tr2",{opacity:.54,scaleY:.04},{opacity:0,scaleY:1,duration:.78,ease:"power2.out"},107.825);
+tl.fromTo("#tr3",{opacity:.54,scaleY:.04},{opacity:0,scaleY:1,duration:.78,ease:"power2.out"},149.7);
+tl.fromTo("#tr4",{opacity:.54,scaleY:.04},{opacity:0,scaleY:1,duration:.78,ease:"power2.out"},196.825);
+tl.fromTo("#full0 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},18.83);
+tl.fromTo("#full0 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},18.99);
+tl.fromTo("#full0 h2",{y:46,opacity:0},{y:0,opacity:1,duration:.64,ease:"power3.out"},19.15);
+tl.fromTo("#full0 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},19.51);
+tl.fromTo("#full0 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},19.77);
+tl.to("#full0",{opacity:0,duration:.35,ease:"power1.in"},37.25);
+tl.set("#full0",{opacity:0},37.65);
+tl.fromTo("#mini0",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},37.75);
+tl.to("#mini0",{opacity:0,duration:.35,ease:"power1.in"},62.3);
+tl.set("#mini0",{opacity:0},62.65);
+tl.fromTo("#full1 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},62.83);
+tl.fromTo("#full1 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},62.99);
+tl.fromTo("#full1 h2",{y:46,opacity:0},{y:0,opacity:1,duration:.64,ease:"power3.out"},63.15);
+tl.fromTo("#full1 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},63.51);
+tl.fromTo("#full1 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},63.77);
+tl.to("#full1",{opacity:0,duration:.35,ease:"power1.in"},82.075);
+tl.set("#full1",{opacity:0},82.475);
+tl.fromTo("#mini1",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},82.575);
+tl.to("#mini1",{opacity:0,duration:.35,ease:"power1.in"},107.625);
+tl.set("#mini1",{opacity:0},107.975);
+tl.fromTo("#full2 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},108.155);
+tl.fromTo("#full2 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},108.315);
+tl.fromTo("#full2 h2",{y:46,opacity:0},{y:0,opacity:1,duration:.64,ease:"power3.out"},108.475);
+tl.fromTo("#full2 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},108.835);
+tl.fromTo("#full2 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},109.095);
+tl.to("#full2",{opacity:0,duration:.35,ease:"power1.in"},127.35);
+tl.set("#full2",{opacity:0},127.75);
+tl.fromTo("#mini2",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},127.85);
+tl.to("#mini2",{opacity:0,duration:.35,ease:"power1.in"},149.5);
+tl.set("#mini2",{opacity:0},149.85);
+tl.fromTo("#full3 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},150.03);
+tl.fromTo("#full3 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},150.19);
+tl.fromTo("#full3 h2",{y:46,opacity:0},{y:0,opacity:1,duration:.64,ease:"power3.out"},150.35);
+tl.fromTo("#full3 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},150.71);
+tl.fromTo("#full3 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},150.97);
+tl.to("#full3",{opacity:0,duration:.35,ease:"power1.in"},168.575);
+tl.set("#full3",{opacity:0},168.975);
+tl.fromTo("#mini3",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},169.075);
+tl.to("#mini3",{opacity:0,duration:.35,ease:"power1.in"},196.625);
+tl.set("#mini3",{opacity:0},196.975);
+tl.fromTo("#full4 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},197.155);
+tl.fromTo("#full4 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},197.315);
+tl.fromTo("#full4 h2",{y:46,opacity:0},{y:0,opacity:1,duration:.64,ease:"power3.out"},197.475);
+tl.fromTo("#full4 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},197.835);
+tl.fromTo("#full4 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},198.095);
+tl.to("#full4",{opacity:0,duration:.35,ease:"power1.in"},216.625);
+tl.set("#full4",{opacity:0},217.025);
+tl.fromTo("#mini4",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},217.125);
+tl.to("#mini4",{opacity:0,duration:.35,ease:"power1.in"},252.075);
+tl.set("#mini4",{opacity:0},252.425);
+tl.fromTo("#outro .small",{y:22,opacity:0},{y:0,opacity:1,duration:.5,ease:"power2.out"},252.625);
+tl.fromTo("#outro h2",{y:40,opacity:0},{y:0,opacity:1,duration:.65,ease:"power3.out"},252.975);
+tl.fromTo("#outro li",{x:-34,opacity:0},{x:0,opacity:1,duration:.45,ease:"power2.out",stagger:.1},253.605);
+tl.fromTo("#outro .close",{y:24,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},254.605);
+tl.fromTo("#cta .v",{y:26,opacity:0},{y:0,opacity:1,duration:.55,ease:"power2.out"},272.475);
+tl.fromTo("#cta .f",{y:18,opacity:0},{y:0,opacity:1,duration:.5,ease:"power1.out"},272.825);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

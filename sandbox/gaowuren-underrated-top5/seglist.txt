@@ -1,0 +1,7 @@
+file 'seg_intro.wav'
+file 'seg_p5_aizaixiatian.wav'
+file 'seg_p4_yeliwuxing.wav'
+file 'seg_p3_tongyang.wav'
+file 'seg_p2_dainifei.wav'
+file 'seg_p1_hami.wav'
+file 'seg_outro.wav'

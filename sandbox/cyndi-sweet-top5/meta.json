@@ -1,0 +1,71 @@
+{
+  "id": "main",
+  "name": "cyndi-sweet-top5",
+  "total": 309.94,
+  "master_duration": 309.682,
+  "intro_end": 16.25,
+  "intro_seek": 65.775,
+  "outro_start": 284.035,
+  "blocks": [
+    {
+      "no": "05",
+      "plain": "爱的套餐",
+      "start": 16.25,
+      "narr_start": 16.6,
+      "narr_end": 27.175,
+      "full_start": 28.875,
+      "end": 69.675,
+      "mseek": 82.025,
+      "ch_off": 94.65,
+      "show": 40.8
+    },
+    {
+      "no": "04",
+      "plain": "彩虹的微笑",
+      "start": 69.675,
+      "narr_start": 70.025,
+      "narr_end": 80.35,
+      "full_start": 82.05,
+      "end": 122.62,
+      "mseek": 89.355,
+      "ch_off": 101.73,
+      "show": 40.57
+    },
+    {
+      "no": "03",
+      "plain": "睫毛弯弯",
+      "start": 122.62,
+      "narr_start": 122.97,
+      "narr_end": 134.195,
+      "full_start": 135.895,
+      "end": 174.325,
+      "mseek": 158.235,
+      "ch_off": 171.51,
+      "show": 38.43
+    },
+    {
+      "no": "02",
+      "plain": "爱你",
+      "start": 174.325,
+      "narr_start": 174.675,
+      "narr_end": 186.1,
+      "full_start": 187.8,
+      "end": 225.39,
+      "mseek": 138.975,
+      "ch_off": 152.45,
+      "show": 37.59
+    },
+    {
+      "no": "01",
+      "plain": "Honey",
+      "start": 225.39,
+      "narr_start": 225.74,
+      "narr_end": 238.965,
+      "full_start": 240.665,
+      "end": 284.035,
+      "mseek": 138.685,
+      "ch_off": 153.96,
+      "show": 43.37
+    }
+  ]
+}

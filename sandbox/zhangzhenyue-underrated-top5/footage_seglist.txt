@@ -1,0 +1,7 @@
+file 'clips_seg/intro.mp4'
+file 'clips_seg/p5_meiyu.mp4'
+file 'clips_seg/p4_liangshou.mp4'
+file 'clips_seg/p3_hennan.mp4'
+file 'clips_seg/p2_lukou.mp4'
+file 'clips_seg/p1_pojita.mp4'
+file 'clips_seg/outro.mp4'

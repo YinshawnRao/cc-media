@@ -1,0 +1,7 @@
+file 'clips_seg/intro.mp4'
+file 'clips_seg/p5_nanhai.mp4'
+file 'clips_seg/p4_gelou.mp4'
+file 'clips_seg/p3_touming.mp4'
+file 'clips_seg/p2_juzishu.mp4'
+file 'clips_seg/p1_key.mp4'
+file 'clips_seg/outro.mp4'

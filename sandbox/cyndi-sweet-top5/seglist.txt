@@ -1,0 +1,7 @@
+file 'seg_intro.wav'
+file 'seg_p5_taocan.wav'
+file 'seg_p4_rainbow.wav'
+file 'seg_p3_jiewanwan.wav'
+file 'seg_p2_aini.wav'
+file 'seg_p1_honey.wav'
+file 'seg_outro.wav'

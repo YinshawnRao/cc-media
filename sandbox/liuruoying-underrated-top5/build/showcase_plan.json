@@ -1,0 +1,37 @@
+{
+  "consts": {
+    "POST": 0.25,
+    "DIG": 1.45,
+    "LEAD": 0.35
+  },
+  "songs": [
+    {
+      "key": "p5_nanhai",
+      "clip": "vert_p5_nanhai",
+      "narr_end_src": 54.3,
+      "show_start_src": 56.0,
+      "show_end_src": 86.67
+    },
+    {
+      "key": "p3_touming",
+      "clip": "vert_p3_touming",
+      "narr_end_src": 22.61,
+      "show_start_src": 24.31,
+      "show_end_src": 43.21
+    },
+    {
+      "key": "p2_juzishu",
+      "clip": "vert_p2_juzishu",
+      "narr_end_src": 18.83,
+      "show_start_src": 20.53,
+      "show_end_src": 48.2
+    },
+    {
+      "key": "p1_key",
+      "clip": "vert_p1_key",
+      "narr_end_src": 20.3,
+      "show_start_src": 22.0,
+      "show_end_src": 48.0
+    }
+  ]
+}

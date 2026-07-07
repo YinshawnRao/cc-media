@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1080, height=1920" />
+  <script src="vendor/gsap.min.js"></script>
+  <style>
+*{margin:0;padding:0;box-sizing:border-box}
+@font-face{font-family:"PingFang SC";src:local("PingFang SC");font-weight:400 900}
+@font-face{font-family:"Songti SC";src:local("Songti SC");font-weight:400 900}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#0c0a07;
+  font-family:"PingFang SC",system-ui,sans-serif;color:#f2ece0;-webkit-font-smoothing:antialiased}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:#0c0a07}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;z-index:0}
+#scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to bottom,rgba(12,10,7,.90),rgba(12,10,7,.04) 30%,rgba(12,10,7,.16) 55%,rgba(8,6,4,.95))}
+#glow{position:absolute;inset:-260px;z-index:1;opacity:.42;background:radial-gradient(42% 26% at 18% 16%,rgba(220,180,96,.34),rgba(220,180,96,0) 65%),radial-gradient(48% 30% at 82% 84%,rgba(190,70,46,.22),rgba(190,70,46,0) 68%)}
+#grain{position:absolute;inset:-20px;z-index:9;opacity:.05;mix-blend-mode:soft-light;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(242,236,224,.13) 0 1px,rgba(242,236,224,0) 1px 4px)}
+.trans{position:absolute;left:0;right:0;top:0;bottom:0;z-index:8;background:linear-gradient(90deg,rgba(224,196,120,0),rgba(224,196,120,.5),rgba(190,90,50,0));transform-origin:center}
+#cover{position:absolute;inset:0;z-index:5;padding:128px 76px 120px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(180deg,rgba(10,8,5,.84),rgba(10,8,5,.10) 32%,rgba(10,8,5,.22) 60%,rgba(8,6,4,.92))}
+.eyebrow{display:inline-flex;align-items:center;gap:18px;font-size:29px;font-weight:900;color:#e0c074;letter-spacing:.12em}
+.eyebrow:before{content:"";width:56px;height:4px;background:#e0c074;border-radius:99px;box-shadow:0 0 18px rgba(224,192,116,.6)}
+#cover h1{margin-top:28px;font-family:"Songti SC",serif;font-size:118px;line-height:1.08;font-weight:900;letter-spacing:.02em;max-width:944px;text-shadow:0 6px 42px rgba(0,0,0,.74)}
+#cover h1 b{color:#edcf8a;font-weight:900}
+#cover h1 .sm{display:block;font-size:70px;margin-top:8px;color:#f2ece0}
+#cover .sub{margin-top:540px;font-size:34px;line-height:1.52;color:#e4dcc9;font-weight:600;max-width:912px;text-shadow:0 3px 20px rgba(0,0,0,.82)}
+.chips{display:flex;flex-wrap:wrap;gap:14px;max-width:932px}
+.chips span{border:1.5px solid rgba(224,192,116,.5);color:#f0e6cf;background:rgba(10,8,5,.55);font-size:26px;font-weight:800;padding:11px 18px;border-radius:7px}
+.fullLabel{position:absolute;z-index:5;left:64px;right:64px;bottom:178px;padding:34px 38px 38px;background:linear-gradient(135deg,rgba(10,8,5,.92),rgba(34,24,14,.56));border-left:8px solid #c79a4e;border-radius:6px;backdrop-filter:blur(2px);box-shadow:0 22px 70px rgba(0,0,0,.4)}
+.fullLabel .rank{font-family:"JetBrains Mono",monospace;font-size:31px;font-weight:900;color:#e0c074;letter-spacing:.14em}
+.fullLabel .meta{margin-top:14px;font-size:27px;font-weight:700;color:#b8a98f;letter-spacing:.05em}
+.fullLabel h2{font-family:"Songti SC",serif;margin-top:12px;font-size:82px;line-height:1.1;font-weight:900;color:#f6f0e4}
+.fullLabel .tag{margin-top:19px;font-size:41px;line-height:1.26;font-weight:900;color:#edcf8a}
+.fullLabel .note{margin-top:12px;font-size:30px;line-height:1.42;font-weight:600;color:#e4dcc9}
+.fullLabel.topRank{border-left-color:#d8482f;background:linear-gradient(135deg,rgba(28,12,8,.93),rgba(10,8,5,.6))}
+.fullLabel.topRank .rank{color:#f3b24a}
+.fullLabel.topRank .tag{color:#f6c060}
+.miniLabel{position:absolute;z-index:5;top:96px;left:58px;display:flex;align-items:center;gap:16px;padding:13px 21px;background:rgba(10,8,5,.7);border:1.5px solid rgba(224,192,116,.5);border-radius:8px}
+.miniLabel span{font-family:"JetBrains Mono",monospace;font-size:44px;font-weight:900;color:#f6f0e4;background:#0c0a07;border:1px solid rgba(224,192,116,.5);border-radius:6px;padding:2px 9px;line-height:1.1}
+.miniLabel strong{font-family:"Songti SC",serif;font-size:37px;font-weight:900;max-width:790px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.miniLabel.topRank{border-color:rgba(216,72,47,.78)}
+.miniLabel.topRank span{border-color:rgba(243,178,74,.72)}
+#outro{position:absolute;z-index:5;inset:0;padding:108px 72px 150px;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(180deg,rgba(10,8,5,.42),rgba(10,8,5,.9))}
+#outro .small{font-family:"JetBrains Mono",monospace;font-size:31px;font-weight:900;color:#e0c074;letter-spacing:.14em}
+#outro h2{font-family:"Songti SC",serif;margin-top:20px;font-size:55px;line-height:1.3;font-weight:900;max-width:936px}
+#outro ol{margin-top:34px;list-style:none;display:grid;gap:13px;width:100%}
+#outro li{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:16px 22px;background:rgba(10,8,5,.64);border:1px solid rgba(242,236,224,.14);border-radius:8px}
+#outro li span{font-family:"JetBrains Mono",monospace;font-size:32px;font-weight:900;color:#f6f0e4;background:#0c0a07;border:1px solid rgba(224,192,116,.46);border-radius:6px;padding:4px 9px;line-height:1.1;min-width:60px;text-align:center}
+#outro li:last-child{background:rgba(216,72,47,.16);border-color:rgba(216,72,47,.46)}
+#outro li:last-child span{border-color:rgba(243,178,74,.66)}
+#outro li strong{font-family:"Songti SC",serif;font-size:35px;font-weight:900;text-align:right}
+#outro .close{margin-top:28px;font-size:30px;line-height:1.5;color:#e4dcc9;font-weight:600}
+#cta{position:absolute;z-index:6;left:72px;right:72px;bottom:96px;text-align:center;padding:22px;background:rgba(10,8,5,.72);border:1.5px solid rgba(243,178,74,.44);border-radius:9px}
+#cta .v{font-size:42px;font-weight:900;color:#f6c060;line-height:1.22}
+#cta .f{margin-top:14px;font-size:33px;font-weight:900;color:#e0c074;letter-spacing:.14em}
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="main" data-start="0" data-duration="309.26" data-width="1080" data-height="1920">
+<video id="v0" class="clip fv" data-start="0" data-duration="309.26" data-track-index="0" src="clips_seg/footage_track.mp4" muted playsinline></video>
+<div id="scrim" class="clip" data-start="0" data-duration="309.26" data-track-index="1"></div>
+<div id="glow" class="clip" data-start="0" data-duration="309.26" data-track-index="7"></div>
+<div id="grain" class="clip" data-start="0" data-duration="309.26" data-track-index="10"></div>
+<div id="tr0" class="clip trans" data-start="20.675" data-duration="0.9" data-track-index="8"></div>
+<div id="tr1" class="clip trans" data-start="63.48" data-duration="0.9" data-track-index="8"></div>
+<div id="tr2" class="clip trans" data-start="115.925" data-duration="0.9" data-track-index="8"></div>
+<div id="tr3" class="clip trans" data-start="163.43" data-duration="0.9" data-track-index="8"></div>
+<div id="tr4" class="clip trans" data-start="225.165" data-duration="0.9" data-track-index="8"></div>
+<section id="cover" class="clip" data-start="0" data-duration="20.705" data-track-index="2"><div><div class="eyebrow">华语中国风 · CHINKED-OUT 开创者</div><h1>王力宏<span class="sm">最<b>中国风</b>的5首歌</span></h1></div><div><p class="sub">二十年前，他把京剧、昆曲，和各地的民族音乐，写进了流行歌里。这五首，是王力宏最中国风、也最见野心的作品。</p><div class="chips" style="margin-top:26px"><span>京剧昆曲</span><span>民族采风</span><span>说唱古典</span><span>Chinked-out</span><span>越听越有味</span></div></div></section>
+<section id="full0" class="clip fullLabel" data-start="20.825" data-duration="20.625" data-track-index="2"><div class="rank">第 05 名</div><div class="meta">十八般武艺 · 2010</div><h2>《伯牙绝弦》</h2><p class="tag">知音难觅，弦断有谁听</p><p class="note">《恋爱通告》概念主题曲，后期中国风里最完整的一首</p></section>
+<section id="mini0" class="clip miniLabel" data-start="41.45" data-duration="22.18" data-track-index="4"><span>05</span><strong>伯牙绝弦</strong></section>
+<section id="full1" class="clip fullLabel" data-start="63.63" data-duration="19.825" data-track-index="2"><div class="rank">第 04 名</div><div class="meta">心中的日月 · 2007</div><h2>《竹林深处》</h2><p class="tag">竹林里，凭空开了个录音棚</p><p class="note">藏地吟唱、中国鼓、笛声，压进一段很潮的律动</p></section>
+<section id="mini1" class="clip miniLabel" data-start="83.455" data-duration="32.62" data-track-index="4"><span>04</span><strong>竹林深处</strong></section>
+<section id="full2" class="clip fullLabel" data-start="116.075" data-duration="19.825" data-track-index="2"><div class="rank">第 03 名</div><div class="meta">心中的日月 · 2007</div><h2>《心中的日月》</h2><p class="tag">山川、远方，辽阔的民族色彩</p><p class="note">走遍西藏新疆内蒙云南采风，中国风的精神母题</p></section>
+<section id="mini2" class="clip miniLabel" data-start="135.9" data-duration="27.68" data-track-index="4"><span>03</span><strong>心中的日月</strong></section>
+<section id="full3" class="clip fullLabel" data-start="163.58" data-duration="20.625" data-track-index="2"><div class="rank">第 02 名</div><div class="meta">盖世英雄 · 2005</div><h2>《在梅边》</h2><p class="tag">五十秒，二百五十九个字</p><p class="note">取材昆曲《牡丹亭》，最有野心的一次实验</p></section>
+<section id="mini3" class="clip miniLabel" data-start="184.205" data-duration="41.11" data-track-index="4"><span>02</span><strong>在梅边</strong></section>
+<section id="full4" class="clip fullLabel topRank" data-start="225.315" data-duration="19.7" data-track-index="2"><div class="rank">第 01 名</div><div class="meta">盖世英雄 · 2005</div><h2>《花田错》</h2><p class="tag">花田里犯了错</p><p class="note">京剧与流行真正咬在一起，中国风的第一块拼图</p></section>
+<section id="mini4" class="clip miniLabel topRank" data-start="245.015" data-duration="32.72" data-track-index="4"><span>01</span><strong>花田错</strong></section>
+<section id="outro" class="clip" data-start="277.735" data-duration="31.525" data-track-index="2"><div class="small">最终榜单</div><h2>从京剧到昆曲，从藏地的吟唱到草原的辽阔，王力宏把中国风，唱成了能稳稳站住脚的一种声音。</h2><ol><li><span>05</span><strong>伯牙绝弦</strong></li><li><span>04</span><strong>竹林深处</strong></li><li><span>03</span><strong>心中的日月</strong></li><li><span>02</span><strong>在梅边</strong></li><li><span>01</span><strong>花田错</strong></li></ol><p class="close">这五首，就是他写给中国风，最漂亮的一份答卷。</p></section>
+<section id="cta" class="clip" data-start="297.31" data-duration="11.95" data-track-index="5"><div class="v">为你的第一名，评论区投票</div><div class="f">点赞 · 收藏 · 关注</div></section>
+<audio id="master" class="clip" data-start="0" data-duration="309.26" data-track-index="3" src="master.wav" data-volume="1"></audio>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+
+tl.set("#cover",{opacity:1},0);
+tl.set("#cover .eyebrow, #cover h1, #cover .sub, #cover .chips span",{opacity:1,x:0,y:0},0);
+tl.fromTo("#cover h1",{scale:1.0},{scale:1.02,duration:3.4,ease:"sine.inOut",yoyo:true,repeat:1},0.25);
+tl.fromTo("#glow",{x:-18,y:0},{x:20,y:-14,duration:309.26,ease:"none"},0);
+tl.to("#cover",{opacity:0,duration:.42,ease:"power1.in"},20.325);
+tl.set("#cover",{opacity:0},20.825);
+tl.fromTo("#tr0",{opacity:.54,scaleY:.04},{opacity:0,scaleY:1,duration:.78,ease:"power2.out"},20.675);
+tl.fromTo("#tr1",{opacity:.54,scaleY:.04},{opacity:0,scaleY:1,duration:.78,ease:"power2.out"},63.48);
+tl.fromTo("#tr2",{opacity:.54,scaleY:.04},{opacity:0,scaleY:1,duration:.78,ease:"power2.out"},115.925);
+tl.fromTo("#tr3",{opacity:.54,scaleY:.04},{opacity:0,scaleY:1,duration:.78,ease:"power2.out"},163.43);
+tl.fromTo("#tr4",{opacity:.54,scaleY:.04},{opacity:0,scaleY:1,duration:.78,ease:"power2.out"},225.165);
+tl.fromTo("#full0 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},21.005);
+tl.fromTo("#full0 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},21.165);
+tl.fromTo("#full0 h2",{y:46,opacity:0},{y:0,opacity:1,duration:.64,ease:"power3.out"},21.325);
+tl.fromTo("#full0 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},21.685);
+tl.fromTo("#full0 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},21.945);
+tl.to("#full0",{opacity:0,duration:.35,ease:"power1.in"},41.05);
+tl.set("#full0",{opacity:0},41.45);
+tl.fromTo("#mini0",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},41.55);
+tl.to("#mini0",{opacity:0,duration:.35,ease:"power1.in"},63.28);
+tl.set("#mini0",{opacity:0},63.63);
+tl.fromTo("#full1 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},63.81);
+tl.fromTo("#full1 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},63.97);
+tl.fromTo("#full1 h2",{y:46,opacity:0},{y:0,opacity:1,duration:.64,ease:"power3.out"},64.13);
+tl.fromTo("#full1 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},64.49);
+tl.fromTo("#full1 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},64.75);
+tl.to("#full1",{opacity:0,duration:.35,ease:"power1.in"},83.055);
+tl.set("#full1",{opacity:0},83.455);
+tl.fromTo("#mini1",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},83.555);
+tl.to("#mini1",{opacity:0,duration:.35,ease:"power1.in"},115.725);
+tl.set("#mini1",{opacity:0},116.075);
+tl.fromTo("#full2 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},116.255);
+tl.fromTo("#full2 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},116.415);
+tl.fromTo("#full2 h2",{y:46,opacity:0},{y:0,opacity:1,duration:.64,ease:"power3.out"},116.575);
+tl.fromTo("#full2 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},116.935);
+tl.fromTo("#full2 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},117.195);
+tl.to("#full2",{opacity:0,duration:.35,ease:"power1.in"},135.5);
+tl.set("#full2",{opacity:0},135.9);
+tl.fromTo("#mini2",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},136.0);
+tl.to("#mini2",{opacity:0,duration:.35,ease:"power1.in"},163.23);
+tl.set("#mini2",{opacity:0},163.58);
+tl.fromTo("#full3 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},163.76);
+tl.fromTo("#full3 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},163.92);
+tl.fromTo("#full3 h2",{y:46,opacity:0},{y:0,opacity:1,duration:.64,ease:"power3.out"},164.08);
+tl.fromTo("#full3 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},164.44);
+tl.fromTo("#full3 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},164.7);
+tl.to("#full3",{opacity:0,duration:.35,ease:"power1.in"},183.805);
+tl.set("#full3",{opacity:0},184.205);
+tl.fromTo("#mini3",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},184.305);
+tl.to("#mini3",{opacity:0,duration:.35,ease:"power1.in"},224.965);
+tl.set("#mini3",{opacity:0},225.315);
+tl.fromTo("#full4 .rank",{y:28,opacity:0},{y:0,opacity:1,duration:.45,ease:"power2.out"},225.495);
+tl.fromTo("#full4 .meta",{x:-22,opacity:0},{x:0,opacity:1,duration:.45,ease:"sine.out"},225.655);
+tl.fromTo("#full4 h2",{y:46,opacity:0},{y:0,opacity:1,duration:.64,ease:"power3.out"},225.815);
+tl.fromTo("#full4 .tag",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"power1.out"},226.175);
+tl.fromTo("#full4 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.44,ease:"power2.out"},226.435);
+tl.to("#full4",{opacity:0,duration:.35,ease:"power1.in"},244.615);
+tl.set("#full4",{opacity:0},245.015);
+tl.fromTo("#mini4",{x:-28,opacity:0},{x:0,opacity:1,duration:.46,ease:"power2.out"},245.115);
+tl.to("#mini4",{opacity:0,duration:.35,ease:"power1.in"},277.385);
+tl.set("#mini4",{opacity:0},277.735);
+tl.fromTo("#outro .small",{y:22,opacity:0},{y:0,opacity:1,duration:.5,ease:"power2.out"},277.935);
+tl.fromTo("#outro h2",{y:40,opacity:0},{y:0,opacity:1,duration:.65,ease:"power3.out"},278.285);
+tl.fromTo("#outro li",{x:-34,opacity:0},{x:0,opacity:1,duration:.45,ease:"power2.out",stagger:.1},278.915);
+tl.fromTo("#outro .close",{y:24,opacity:0},{y:0,opacity:1,duration:.45,ease:"sine.out"},279.915);
+tl.fromTo("#cta .v",{y:26,opacity:0},{y:0,opacity:1,duration:.55,ease:"power2.out"},297.46);
+tl.fromTo("#cta .f",{y:18,opacity:0},{y:0,opacity:1,duration:.5,ease:"power1.out"},297.81);
+
+    window.__timelines["main"] = tl;
+  </script>
+</body>
+</html>

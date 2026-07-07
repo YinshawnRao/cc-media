@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.2,
+    "DIG": 1.6
+  },
+  "songs": [
+    {
+      "key": "p5_congtou",
+      "clip": "vert_congtou_clean",
+      "narr_end_src": 45.62,
+      "show_start_src": 47.42,
+      "show_end_src": 79.22
+    },
+    {
+      "key": "p4_haohange",
+      "clip": "vert_haohange_clean",
+      "narr_end_src": 46.01,
+      "show_start_src": 47.81,
+      "show_end_src": 93.61
+    },
+    {
+      "key": "p3_qianwan",
+      "clip": "vert_qianwan_clean",
+      "narr_end_src": 122.94,
+      "show_start_src": 124.74,
+      "show_end_src": 166.94
+    },
+    {
+      "key": "p2_wanwan",
+      "clip": "vert_wanwan_clean",
+      "narr_end_src": 171.1,
+      "show_start_src": 172.9,
+      "show_end_src": 203.6
+    },
+    {
+      "key": "p1_fenghuang",
+      "clip": "vert_fenghuangyufei_clean",
+      "narr_end_src": 228.73,
+      "show_start_src": 230.53,
+      "show_end_src": 257.03
+    }
+  ]
+}

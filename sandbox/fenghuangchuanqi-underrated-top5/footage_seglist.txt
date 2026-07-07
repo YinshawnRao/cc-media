@@ -1,0 +1,7 @@
+file 'clips_seg/intro.mp4'
+file 'clips_seg/p5_zhongguo.mp4'
+file 'clips_seg/p4_tianlai.mp4'
+file 'clips_seg/p3_kangding.mp4'
+file 'clips_seg/p2_chuanqi.mp4'
+file 'clips_seg/p1_damo.mp4'
+file 'clips_seg/outro.mp4'

@@ -1,0 +1,75 @@
+{
+  "id": "main",
+  "name": "maobuyi-underrated-top5",
+  "sample": false,
+  "total": 324.59,
+  "intro_end": 18.8,
+  "outro_start": 293.615,
+  "blocks": [
+    {
+      "no": "05",
+      "plain": "等",
+      "aud": "p5",
+      "start": 18.8,
+      "narr_start": 19.15,
+      "narr_end": 36.7,
+      "full_start": 38.4,
+      "end": 73.4,
+      "mseek": 136.7,
+      "ch_off": 156.3,
+      "show": 35.0
+    },
+    {
+      "no": "04",
+      "plain": "于是没有洗头",
+      "aud": "p4",
+      "start": 73.4,
+      "narr_start": 73.75,
+      "narr_end": 91.875,
+      "full_start": 93.575,
+      "end": 121.595,
+      "mseek": 73.275,
+      "ch_off": 93.45,
+      "show": 28.02
+    },
+    {
+      "no": "03",
+      "plain": "深夜一角",
+      "aud": "p3",
+      "start": 121.595,
+      "narr_start": 121.945,
+      "narr_end": 140.17,
+      "full_start": 141.87,
+      "end": 176.87,
+      "mseek": 154.825,
+      "ch_off": 175.1,
+      "show": 35.0
+    },
+    {
+      "no": "02",
+      "plain": "水乡",
+      "aud": "p2",
+      "start": 176.87,
+      "narr_start": 177.22,
+      "narr_end": 195.52,
+      "full_start": 197.22,
+      "end": 238.04,
+      "mseek": 154.9,
+      "ch_off": 175.25,
+      "show": 40.82
+    },
+    {
+      "no": "01",
+      "plain": "南一道街",
+      "aud": "p1",
+      "start": 238.04,
+      "narr_start": 238.39,
+      "narr_end": 255.715,
+      "full_start": 257.415,
+      "end": 293.615,
+      "mseek": 143.055,
+      "ch_off": 162.43,
+      "show": 36.2
+    }
+  ]
+}

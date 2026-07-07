@@ -1,8 +1,0 @@
-file 'seg_cover.wav'
-file 'seg_intro.wav'
-file 'seg_rules.wav'
-file 'seg_heaven.wav'
-file 'seg_dimples.wav'
-file 'seg_coral.wav'
-file 'seg_today.wav'
-file 'seg_outro.wav'

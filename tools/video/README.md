@@ -42,6 +42,7 @@
 改 `countdown_build.py` 顶部 `songs`（key/clip/序号/歌名/标签）、各时长常量、`MGAIN`（暗调安静歌补偿），运行：建 master.wav（逐段 床→swell→展示，逐首 `loudnorm=I=-14` 统一响度）+ 生成 `index.html`。
 - **展示段时长（硬规则 (B)）**：每首给**一段连续副歌**含前后余量，**不碎镜快闪、不因旁白长就把歌切短**。解说盘点类单首 **≥~25s**（不设上限，以观赏为准）；footage 窗 == 音乐窗（同源同窗）→ 口型同步。clip 切到 `SHOW+余量`，`data-duration=SHOW`。
 - **🔒 展示段对齐闸门（硬规则 (C)，build 内置，违规不出 master）**：build 算完时间轴会自动跑 `showcase_align.gate()`，机械校验 ① 副歌人声在旁白收尾时入声并贯穿展示段（问题1）② 结尾落句末/器乐 gap 不切半句（问题2）。**FAIL → 修 `ch_off`/`show`**（拿不准跑 `showcase_align.py plan` 反推），WARN（人声检测不可靠）→ 导 26s mp3 人工耳验，误报才 `SHOWCASE_OVERRIDE=1` 跳过。
+- **🔒 盘点类封面（默认）**：用**第一首出场歌**（倒数盘点=最先揭晓的最后一名，如 #5）的**动态画面**做封面底，并让 intro footage 与该首 footage 取**同一条素材的连续窗**（帧首尾相接）→ 封面切第一首**画面不剪、丝滑**（只标题淡出+歌名卡淡入）。删静态 `cover_hero.png` 图层。详见 `CONVENTIONS.md「首屏封面 → 盘点类封面=第一首出场歌动态画面」`。
 - `npx hyperframes lint` 必须 **0 error**（媒体元素要有 id；相邻 footage 用交替轨道 0/6；同轨不可贴边）。
 
 ## 8. 渲染 + MUX（关键）

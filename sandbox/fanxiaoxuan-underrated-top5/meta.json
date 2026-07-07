@@ -1,0 +1,75 @@
+{
+  "id": "main",
+  "name": "fanxiaoxuan-underrated-top5",
+  "sample": false,
+  "total": 299.52,
+  "intro_end": 19.025,
+  "outro_start": 267.495,
+  "blocks": [
+    {
+      "no": "05",
+      "plain": "失控的胖子",
+      "aud": "p5",
+      "start": 19.025,
+      "narr_start": 19.375,
+      "narr_end": 37.275,
+      "full_start": 38.975,
+      "end": 71.995,
+      "mseek": 9.5,
+      "ch_off": 29.45,
+      "show": 33.02
+    },
+    {
+      "no": "04",
+      "plain": "因为",
+      "aud": "p4",
+      "start": 71.995,
+      "narr_start": 72.345,
+      "narr_end": 90.02,
+      "full_start": 91.72,
+      "end": 120.1,
+      "mseek": 27.045,
+      "ch_off": 46.77,
+      "show": 28.38
+    },
+    {
+      "no": "03",
+      "plain": "You Don't Trust Me At All",
+      "aud": "p3",
+      "start": 120.1,
+      "narr_start": 120.45,
+      "narr_end": 138.625,
+      "full_start": 140.325,
+      "end": 171.295,
+      "mseek": 132.225,
+      "ch_off": 152.45,
+      "show": 30.97
+    },
+    {
+      "no": "02",
+      "plain": "都是你",
+      "aud": "p2",
+      "start": 171.295,
+      "narr_start": 171.645,
+      "narr_end": 189.295,
+      "full_start": 190.995,
+      "end": 222.995,
+      "mseek": 180.3,
+      "ch_off": 200.0,
+      "show": 32.0
+    },
+    {
+      "no": "01",
+      "plain": "看不见",
+      "aud": "p1",
+      "start": 222.995,
+      "narr_start": 223.345,
+      "narr_end": 240.895,
+      "full_start": 242.595,
+      "end": 267.495,
+      "mseek": 176.52,
+      "ch_off": 196.12,
+      "show": 24.9
+    }
+  ]
+}

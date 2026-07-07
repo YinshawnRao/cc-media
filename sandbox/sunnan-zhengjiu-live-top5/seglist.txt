@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_TOP5.wav'
-file 'seg_TOP4.wav'
-file 'seg_TOP3.wav'
-file 'seg_TOP2.wav'
-file 'seg_TOP1.wav'
-file 'seg_outro.wav'

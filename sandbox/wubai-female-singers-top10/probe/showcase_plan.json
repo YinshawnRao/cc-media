@@ -1,0 +1,78 @@
+{
+  "consts": {
+    "POST": 0.25,
+    "DIG": 1.45
+  },
+  "songs": [
+    {
+      "key": null,
+      "clip": "au_p10",
+      "narr_end_src": 134.4,
+      "show_start_src": 136.1,
+      "show_end_src": 162.1
+    },
+    {
+      "key": null,
+      "clip": "vert_p9",
+      "narr_end_src": 142.95,
+      "show_start_src": 144.65,
+      "show_end_src": 176.65
+    },
+    {
+      "key": null,
+      "clip": "vert_p8",
+      "narr_end_src": 158.32,
+      "show_start_src": 160.02,
+      "show_end_src": 179.02
+    },
+    {
+      "key": null,
+      "clip": "au_p7",
+      "narr_end_src": 229.69,
+      "show_start_src": 231.39,
+      "show_end_src": 248.89
+    },
+    {
+      "key": null,
+      "clip": "au_p6",
+      "narr_end_src": 45.82,
+      "show_start_src": 47.52,
+      "show_end_src": 73.02
+    },
+    {
+      "key": null,
+      "clip": "au_p5",
+      "narr_end_src": 183.28,
+      "show_start_src": 184.98,
+      "show_end_src": 213.98
+    },
+    {
+      "key": null,
+      "clip": "au_p4",
+      "narr_end_src": 274.32,
+      "show_start_src": 276.02,
+      "show_end_src": 303.32
+    },
+    {
+      "key": null,
+      "clip": "vert_p3",
+      "narr_end_src": 194.3,
+      "show_start_src": 196.0,
+      "show_end_src": 236.0
+    },
+    {
+      "key": null,
+      "clip": "vert_p2",
+      "narr_end_src": 153.05,
+      "show_start_src": 154.75,
+      "show_end_src": 179.75
+    },
+    {
+      "key": null,
+      "clip": "vert_p1",
+      "narr_end_src": 173.34,
+      "show_start_src": 175.04,
+      "show_end_src": 207.74
+    }
+  ]
+}

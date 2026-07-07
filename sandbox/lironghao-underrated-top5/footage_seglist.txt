@@ -1,0 +1,7 @@
+file 'clips_seg/intro.mp4'
+file 'clips_seg/p5_chengzhang.mp4'
+file 'clips_seg/p4_wangpai.mp4'
+file 'clips_seg/p3_luosu.mp4'
+file 'clips_seg/p2_manzuo.mp4'
+file 'clips_seg/p1_yesheng.mp4'
+file 'clips_seg/outro.mp4'

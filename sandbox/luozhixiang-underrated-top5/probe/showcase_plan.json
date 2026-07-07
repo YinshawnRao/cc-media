@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.25,
+    "DIG": 1.45
+  },
+  "songs": [
+    {
+      "key": "p5_quanchengreai",
+      "clip": "vert_p5_quanchengreai",
+      "narr_end_src": 183.25,
+      "show_start_src": 184.95,
+      "show_end_src": 214.65
+    },
+    {
+      "key": "p4_jifen",
+      "clip": "vert_p4_jifen",
+      "narr_end_src": 76.6,
+      "show_start_src": 78.3,
+      "show_end_src": 102.5
+    },
+    {
+      "key": "p3_xiguanjiuhao",
+      "clip": "vert_p3_xiguanjiuhao",
+      "narr_end_src": 79.8,
+      "show_start_src": 81.5,
+      "show_end_src": 107.5
+    },
+    {
+      "key": "p2_zuihoudefengdu",
+      "clip": "vert_p2_zuihoudefengdu",
+      "narr_end_src": 139.9,
+      "show_start_src": 141.6,
+      "show_end_src": 181.1
+    },
+    {
+      "key": "p1_xingfubumie",
+      "clip": "vert_p1_xingfubumie",
+      "narr_end_src": 125.5,
+      "show_start_src": 127.2,
+      "show_end_src": 161.4
+    }
+  ]
+}

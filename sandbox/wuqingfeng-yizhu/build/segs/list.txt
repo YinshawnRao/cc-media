@@ -1,8 +1,0 @@
-file 'seg_cover.wav'
-file 'seg_intro.wav'
-file 'seg_shuimeiren.wav'
-file 'seg_deng.wav'
-file 'seg_yimengji.wav'
-file 'seg_shangfeng.wav'
-file 'seg_xian.wav'
-file 'seg_outro.wav'

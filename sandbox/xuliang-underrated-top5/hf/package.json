@@ -1,0 +1,9 @@
+{
+  "name": "xuliang-underrated-top5",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "npx --yes hyperframes@0.6.69 lint && npx --yes hyperframes@0.6.69 inspect",
+    "render": "npx --yes hyperframes@0.6.69 render --output ../renders/full_raw.mp4"
+  }
+}

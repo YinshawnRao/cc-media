@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.2,
+    "DIG": 1.6
+  },
+  "songs": [
+    {
+      "key": "p5_shangri",
+      "clip": "vert_p5_shangri",
+      "narr_end_src": 80.71,
+      "show_start_src": 82.51,
+      "show_end_src": 129.71
+    },
+    {
+      "key": "p4_niannian",
+      "clip": "vert_p4_niannian",
+      "narr_end_src": 63.2,
+      "show_start_src": 65.0,
+      "show_end_src": 102.85
+    },
+    {
+      "key": "p3_juebu",
+      "clip": "juebu_audio",
+      "narr_end_src": 16.48,
+      "show_start_src": 18.28,
+      "show_end_src": 58.28
+    },
+    {
+      "key": "p2_kongzhi",
+      "clip": "vert_p2_kongzhi",
+      "narr_end_src": 118.53,
+      "show_start_src": 120.33,
+      "show_end_src": 161.73
+    },
+    {
+      "key": "p1_shunjian",
+      "clip": "shun_audio",
+      "narr_end_src": 33.11,
+      "show_start_src": 34.91,
+      "show_end_src": 77.21
+    }
+  ]
+}

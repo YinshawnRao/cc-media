@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.2,
+    "DIG": 1.6
+  },
+  "songs": [
+    {
+      "key": "p5_pa",
+      "clip": "vert_p5_pa",
+      "narr_end_src": 198.2,
+      "show_start_src": 200.0,
+      "show_end_src": 227.6
+    },
+    {
+      "key": "p4_yusai",
+      "clip": "yusai_audio",
+      "narr_end_src": 205.7,
+      "show_start_src": 207.5,
+      "show_end_src": 235.0
+    },
+    {
+      "key": "p3_zhediee",
+      "clip": "vert_p3_zhediee",
+      "narr_end_src": 196.03,
+      "show_start_src": 197.83,
+      "show_end_src": 222.83
+    },
+    {
+      "key": "p2_zizuozishou",
+      "clip": "vert_p2_zizuozishou",
+      "narr_end_src": 197.2,
+      "show_start_src": 199.0,
+      "show_end_src": 228.7
+    },
+    {
+      "key": "p1_lengzhan",
+      "clip": "vert_p1_lengzhan",
+      "narr_end_src": 156.2,
+      "show_start_src": 158.0,
+      "show_end_src": 185.5
+    }
+  ]
+}

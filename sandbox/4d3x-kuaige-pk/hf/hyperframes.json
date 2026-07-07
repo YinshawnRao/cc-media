@@ -1,5 +1,0 @@
-{
-  "name": "4d3x-kuaige-pk",
-  "version": "0.1.0",
-  "compositions": [{ "id": "main", "entry": "index.html" }]
-}

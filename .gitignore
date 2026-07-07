@@ -63,16 +63,21 @@ raw/
 *.timestamp
 watermark_renderer
 
+# ---- 冷归档区（sandbox 老工程打包，体积大，整目录不入库）----
+archive/
+
 # ---- 临时 / 日志 / 系统 / 运行期 ----
 tmp/
 *.log
 .DS_Store
 .claude/*.lock
 .claude/settings.local.json
+.workbuddy/
 chrome_all_cookies.txt
 
 # ---- 项目内误装的依赖 / 渲染缓存 / 拷贝字体（可重建，不入库；vendor/gsap 等本地库仍入库）----
 .deps/
 .extract_cache/
+.npm-cache/
 *.hf-complete
 *.ttc

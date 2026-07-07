@@ -1,0 +1,75 @@
+{
+  "id": "main",
+  "name": "zhaolei-underrated-top5",
+  "sample": false,
+  "total": 284.275,
+  "intro_end": 18.65,
+  "outro_start": 252.425,
+  "blocks": [
+    {
+      "no": "05",
+      "plain": "不开的唇",
+      "aud": "p5",
+      "start": 18.65,
+      "narr_start": 19.0,
+      "narr_end": 35.95,
+      "full_start": 37.65,
+      "end": 62.65,
+      "mseek": 153.0,
+      "ch_off": 172.0,
+      "show": 25.0
+    },
+    {
+      "no": "04",
+      "plain": "梦中的哈德森",
+      "aud": "p4",
+      "start": 62.65,
+      "narr_start": 63.0,
+      "narr_end": 80.775,
+      "full_start": 82.475,
+      "end": 107.975,
+      "mseek": 104.175,
+      "ch_off": 124.0,
+      "show": 25.5
+    },
+    {
+      "no": "03",
+      "plain": "玛丽",
+      "aud": "p3",
+      "start": 107.975,
+      "narr_start": 108.325,
+      "narr_end": 126.05,
+      "full_start": 127.75,
+      "end": 149.85,
+      "mseek": 115.385,
+      "ch_off": 135.16,
+      "show": 22.1
+    },
+    {
+      "no": "02",
+      "plain": "人家",
+      "aud": "p2",
+      "start": 149.85,
+      "narr_start": 150.2,
+      "narr_end": 167.275,
+      "full_start": 168.975,
+      "end": 196.975,
+      "mseek": 174.875,
+      "ch_off": 194.0,
+      "show": 28.0
+    },
+    {
+      "no": "01",
+      "plain": "未给姐姐递出的信",
+      "aud": "p1",
+      "start": 196.975,
+      "narr_start": 197.325,
+      "narr_end": 215.325,
+      "full_start": 217.025,
+      "end": 252.425,
+      "mseek": 164.45,
+      "ch_off": 184.5,
+      "show": 35.4
+    }
+  ]
+}

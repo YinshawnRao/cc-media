@@ -1,0 +1,120 @@
+{
+  "vert_p5_aiwodeqingjushou": {
+    "name": "vert_p5_aiwodeqingjushou",
+    "duration": 54.57,
+    "vocal_segments": [
+      [
+        6.5,
+        10.31
+      ],
+      [
+        22.43,
+        26.61
+      ],
+      [
+        29.3,
+        53.2
+      ]
+    ]
+  },
+  "vert_p4_beijiguang": {
+    "name": "vert_p4_beijiguang",
+    "duration": 50.76,
+    "vocal_segments": [
+      [
+        3.11,
+        6.32
+      ],
+      [
+        8.29,
+        10.94
+      ],
+      [
+        19.81,
+        32.95
+      ],
+      [
+        37.85,
+        41.15
+      ],
+      [
+        45.72,
+        48.09
+      ]
+    ]
+  },
+  "vert_p3_qishiwo": {
+    "name": "vert_p3_qishiwo",
+    "duration": 44.31,
+    "vocal_segments": [
+      [
+        11.75,
+        14.05
+      ],
+      [
+        25.08,
+        39.2
+      ],
+      [
+        42.07,
+        44.12
+      ]
+    ]
+  },
+  "vert_p2_landeguan": {
+    "name": "vert_p2_landeguan",
+    "duration": 42.38,
+    "vocal_segments": [
+      [
+        1.51,
+        7.08
+      ],
+      [
+        8.8,
+        11.33
+      ],
+      [
+        19.46,
+        21.52
+      ],
+      [
+        23.08,
+        25.73
+      ],
+      [
+        28.63,
+        32.51
+      ],
+      [
+        37.59,
+        40.19
+      ]
+    ]
+  },
+  "vert_p1_yuedie": {
+    "name": "vert_p1_yuedie",
+    "duration": 53.8,
+    "vocal_segments": [
+      [
+        0.0,
+        4.88
+      ],
+      [
+        19.97,
+        23.29
+      ],
+      [
+        28.14,
+        30.39
+      ],
+      [
+        36.48,
+        41.1
+      ],
+      [
+        44.09,
+        49.11
+      ]
+    ]
+  }
+}

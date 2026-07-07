@@ -1,0 +1,7 @@
+file 'clips_seg/intro_clip.mp4'
+file 'clips_seg/p5_zuijiatingzhong.mp4'
+file 'clips_seg/p4_xinliyoushu.mp4'
+file 'clips_seg/p3_liuxialai.mp4'
+file 'clips_seg/p2_xiaxue.mp4'
+file 'clips_seg/p1_yigerenliulang.mp4'
+file 'clips_seg/outro_clip.mp4'

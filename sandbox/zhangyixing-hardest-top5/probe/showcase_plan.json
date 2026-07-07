@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.25,
+    "DIG": 1.45
+  },
+  "songs": [
+    {
+      "key": "p5_jiu",
+      "clip": "vert_p5_jiu",
+      "narr_end_src": 49.68,
+      "show_start_src": 51.38,
+      "show_end_src": 73.28
+    },
+    {
+      "key": "p4_mianshan",
+      "clip": "vert_p4_mianshan",
+      "narr_end_src": 150.57,
+      "show_start_src": 152.27,
+      "show_end_src": 177.27
+    },
+    {
+      "key": "p3_menglin",
+      "clip": "vert_p3_menglin",
+      "narr_end_src": 187.71,
+      "show_start_src": 189.41,
+      "show_end_src": 218.72
+    },
+    {
+      "key": "p2_feitian",
+      "clip": "vert_p2_feitian",
+      "narr_end_src": 153.34,
+      "show_start_src": 155.04,
+      "show_end_src": 187.3
+    },
+    {
+      "key": "p1_lian",
+      "clip": "vert_p1_lian",
+      "narr_end_src": 159.03,
+      "show_start_src": 160.73,
+      "show_end_src": 192.34
+    }
+  ]
+}

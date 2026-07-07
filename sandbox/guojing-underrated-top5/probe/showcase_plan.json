@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.25,
+    "DIG": 1.45
+  },
+  "songs": [
+    {
+      "key": "p5_qiji",
+      "clip": "vert_p5_qiji",
+      "narr_end_src": 138.07,
+      "show_start_src": 139.77,
+      "show_end_src": 167.17
+    },
+    {
+      "key": "p4_benlai",
+      "clip": "vert_p4_benlai",
+      "narr_end_src": 192.33,
+      "show_start_src": 194.03,
+      "show_end_src": 226.57
+    },
+    {
+      "key": "p3_tanqin",
+      "clip": "vert_p3_tanqin",
+      "narr_end_src": 98.06,
+      "show_start_src": 99.76,
+      "show_end_src": 128.39
+    },
+    {
+      "key": "p2_jinian",
+      "clip": "vert_p2_jinian",
+      "narr_end_src": 163.56,
+      "show_start_src": 165.26,
+      "show_end_src": 208.13
+    },
+    {
+      "key": "p1_buyao",
+      "clip": "vert_p1_buyao",
+      "narr_end_src": 157.67,
+      "show_start_src": 159.37,
+      "show_end_src": 192.85
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+file 'intro_clip.mp4'
+file 'p5_qiaodou.mp4'
+file 'p4_xiaoban.mp4'
+file 'p3_guang.mp4'
+file 'p2_zouma.mp4'
+file 'p1_yiran.mp4'
+file 'outro_clip.mp4'

@@ -1,0 +1,43 @@
+{
+  "consts": {
+    "POST": 0.25,
+    "DIG": 1.45
+  },
+  "songs": [
+    {
+      "key": "p5_ziyou",
+      "clip": "vert_p5_ziyou",
+      "narr_end_src": 162.01,
+      "show_start_src": 163.71,
+      "show_end_src": 192.9
+    },
+    {
+      "key": "p4_kuguo",
+      "clip": "vert_p4_kuguo",
+      "narr_end_src": 230.81,
+      "show_start_src": 232.51,
+      "show_end_src": 265.55
+    },
+    {
+      "key": "p3_niangai",
+      "clip": "vert_p3_niangai",
+      "narr_end_src": 158.3,
+      "show_start_src": 160.0,
+      "show_end_src": 190.0
+    },
+    {
+      "key": "p2_yezi",
+      "clip": "vert_p2_yezi",
+      "narr_end_src": 168.3,
+      "show_start_src": 170.0,
+      "show_end_src": 201.0
+    },
+    {
+      "key": "p1_nilai",
+      "clip": "vert_p1_nilai",
+      "narr_end_src": 142.48,
+      "show_start_src": 144.18,
+      "show_end_src": 186.47
+    }
+  ]
+}
