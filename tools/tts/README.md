@@ -15,9 +15,16 @@ cc-media 的配音能力。本地、免费、无需 API KEY。经横评（见 `w
 - 重建：
   ```bash
   /opt/homebrew/bin/python3.12 -m venv tools/tts/venv
-  tools/tts/venv/bin/pip install "kokoro>=0.9.4" "misaki[zh]" soundfile
+  tools/tts/venv/bin/pip install "kokoro>=0.9.4" "misaki[zh]" soundfile \
+    "librosa==0.11.0" "openai-whisper==20250625"
   ```
 - 首次合成会下载 Kokoro 模型（自动缓存）。约 1–2s/条（warmup 后）。输出 24kHz wav。
+- 多证据主唱检测首次使用前，**显式**预取 Whisper small（正常 build 不联网）：
+  ```bash
+  tools/tts/venv/bin/python -c "import whisper; whisper.load_model('small', device='cpu')"
+  test -f "$HOME/.cache/whisper/small.pt"
+  ```
+  `tools/video/vocal_segments.py --mode multi` 会从该本地 checkpoint 加载；缺失、损坏或推理失败均非零退出。
 
 ## 用法
 

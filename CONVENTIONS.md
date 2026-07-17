@@ -209,18 +209,20 @@
 
 - **对齐原则（理想）**：让一段连续唱的副歌 **在转场旁白结束前约 2 秒入声**（vocal onset），唱声先在旁白尾巴下起来，再随 swell 推满进展示段——既丝滑、展示段又全程有唱。
 - **切片公式**：`clip_start_src = vocal_onset_src − (LEAD + voice_dur − 2)`。即把"副歌入声"对到 segment-local 时间 `narr_end_local − 2`。（`full_start_local = LEAD + voice_dur + 0.25 + DIG`；展示段 = `clip_start + full_start_local` 起的 `SHOW` 秒，必须整段落在唱的区间。）
-- **副歌不够长就缩 SHOW**：不少歌单段连唱只有 ~22-26s，硬铺 38s 会把尾巴拖进器乐。这种把 `SHOW` 调到刚好盖住连唱段（≥25s 即可），别让展示段尾段变纯器乐。
+- **时长只定下限，不定硬切上限**：从目标时长起只向后寻找完整乐句出点；候选 gap 后 3s 内还有下一咬字，就把下一小句一起吞完。若源本身只有一段 22–26s 的完整副歌，可把 SHOW 收到该句的已确认安全边界；不得为了凑固定时长切字，也不得为凑长拖进纯器乐。
 - **变量命名防误用**：如果 build 脚本使用 `show_start` / `W` / `highlight_start` 这类字段，它必须表示**成片 full-music 展示段开始时对应的源时间码**，不是"这首歌从哪开始切"，也不是"副歌大概从哪开始"。实际预切起点应由脚本倒推：`media_seek = show_start - full_start_local`。改完必须抽成片 `full_start` 后 20-30s 的 contact sheet，确认画面歌词/口型已经进入人声段。
-- **怎么判"在唱"（关键，单一方法都不可靠）**：
-  - `vocal_segments.py` 对**慢歌/民谣可靠**（人声清晰），对**响摇滚/满编曲管弦乐会漏报**（人声频带被乐器淹没 → 整段被判无人声，华晨宇《我管你》整首漏）。
-  - 这类源用**烧死卡拉OK歌词是否在"逐句推进"**当可靠指示：歌词逐行换 = 在唱；同一行**静止不动十几秒** = 唱过一次后歌词 lingering、实际是器乐/holding（华晨宇斗牛"野性坦露"静止42s即此坑）。
-  - 拿不准 / 是用户重点曲：**导 26s showcase mp3 给用户耳听确认**（`ffmpeg -ss <local> -t 26 -i clip.mp4 -vn -af loudnorm out.mp3`），别只靠工具下结论。
-- **出点对齐（问题2，硬规则）**：展示段结尾 `show_end_src` **不得落在某句人声的半路**。允许落在：① 一句人声段结束后 ~1.2s 内（唱完整句再切），或 ② 两句之间的器乐 gap。**副歌不够长就缩 SHOW 对齐到最近的句末/gap，宁可短一点也别切半句**；副歌够长但 SHOW 设过头会把结尾顶进下一句开头（同样违规）——把 `show` 调到落在句末。
+- **怎么判“目标歌手在唱”（关键，单一方法都不可靠）**：
+  - 旧 HPSS + 200–3000Hz 能量只能叫 `candidate_segments`：萨克斯、吉他、合成器、观众合唱都会命中，**任何曲风都不能仅凭它自动 OK**。
+  - `vocal_segments.py --mode multi` 组合：Whisper 有效歌词密度和 word timestamps、固定字幕/credit 幻觉过滤、声学候选重叠、stereo mid/side 中心性。强一致才写 `lead_segments + evidence_level=multi_evidence`；单声道、宽混音对唱、观众/合唱风险或证据冲突写 `REVIEW`。
+  - Live / 演唱会 / 观众明显的源必须传 `--source-kind live`。在 crowd/choir 事件模型尚未接入前，Live 即使歌词和中心性都强也保持 REVIEW，防止整齐观众合唱假绿。
+  - `no_speech_prob` 只记录；`avg_logprob` 只能与极低 word probability 组合成“低置信冲突→REVIEW”。两者都不能单独判唱声：历史真唱的 no-speech 可高于假群声。
+  - 烧死卡拉 OK 歌词“逐句推进”可作人工辅助证据，但静态 lingering 歌词不是唱声。拿不准 / 用户重点曲：导出 showcase mp3 人工耳验，并把文件/抽帧/转录证据写进逐曲批准记录。
+- **出点对齐（问题2，硬规则）**：`show_end_src` 落在 active word/唱声中，只容忍 0.12s 分帧误差，直接 `FAIL`。落在 gap 也不能立刻算安全：尾音后至少留 0.30s，且向前看 3.0s；若下一 onset 很快出现，视为句内气口并继续向后吞句。Whisper 自动生成的 `safe_cut_intervals` 仍必须通过 3s 前向保护；只有显式 `manual/verified` 乐句证据可覆盖这条启发式，而且任何证据都不能覆盖“仍落在 active 唱声中”的硬失败。
 - QA 收尾：成片对每首展示段（旁白结束后那 30s）抽查确实有人声，不是只有伴奏；并核展示段最后 2s 是收在句末/器乐，不是切在唱字中间。
 
 **🔒 展示段对齐闸门（机械化强制，build 不过就不出 master）— 反复犯 → 不再靠人肉算。**
 
-`tools/video/showcase_align.py`：用各 clip 的人声段（`vocal_segments.py` 产出的 `vocal_analysis.json`）机械校验上面两条，**违规 `raise SystemExit`**。它把"凭感觉填 `ch_off`/`show`"变成可验证的闸门。
+`tools/video/showcase_align.py`：使用多证据 `vocal_analysis.json` 校验上面两条，状态为 `OK / APPROVED / REVIEW / FAIL / MISS`。只有 `OK/APPROVED` 能继续 build；旧能量数据不会再假绿。它把“凭感觉填 `ch_off/show`”变成可验证、可审计的闸门。
 
 - **接入（build 算完 blocks、建 master 之前，一行）**——`countdown_build.py` 模板已内置，复用 `full_build.py` 时照抄：
   ```python
@@ -231,16 +233,16 @@
   ```
   `blocks` 每首需含 `clip/start/narr_end/full_start/end`（可选 `mseek`=预切 `-ss`）。闸门自动换算源时间码：
   `narr_end_src=mseek+(narr_end-start)`、`show_start_src=mseek+(full_start-start)`、`show_end_src=mseek+(end-start)`。
-- **前置**：build 前先跑 `tools/tts/venv/bin/python tools/video/vocal_segments.py clips/vert_*.mp4 -o probe/vocal_analysis.json`（人声段基准 = 各 vert clip 源时间，与 `ch_off` 同基准）。
+- **前置**：build 前跑 `tools/tts/venv/bin/python tools/video/vocal_segments.py clips/vert_*.mp4 -o probe/vocal_analysis.json --mode multi --language zh`（按歌曲实际语言调整；时间基准 = 各 vert clip 源时间）。正式 build 用 `--mode multi`，模型缺失必须退出，不得静默退回能量候选。
 - **反推切点（别手填）**：拿不准 `ch_off`/`show` 就让工具算：
   ```bash
   tools/tts/venv/bin/python tools/video/showcase_align.py plan \
       --vocals probe/vocal_analysis.json --clip vert_p4_wait --voice-dur 14.0 --near 105
   ```
-  它按"人声入点 = 旁白收尾前 2s"给 `ch_off`，按"结尾落句末/gap 且 ≥25s"给 `show`。
-- **单独复核**（QA 阶段，不接 build 也能跑）：`showcase_align.py check --plan probe/showcase_plan.json --vocals probe/vocal_analysis.json`，违规 exit 1。
-- **降级而非误杀**：响摇滚/满编曲人声检测不可靠（`vocal_segments` 漏报）→ 闸门判 `WARN` 不阻断，但**必须导 26s mp3 人工耳验**（命令工具会打印）。慢歌/民谣检测可靠，照 FAIL 阻断。
-- **误报逃生**：确属工具误判时 `SHOWCASE_OVERRIDE=1 python build/full_build.py` 跳过，但要在交付里说明为何跳过。
+  它按“人声入点 = 旁白收尾前 2s”给 `ch_off`，从 ≥25s 目标开始只向后找完整乐句；推荐值还会走同一个 `verify_song()` 自检，自己判 FAIL 的值不会提示写入 build。
+- **单独复核**（QA 阶段）：`showcase_align.py check --plan probe/showcase_plan.json --vocals probe/vocal_analysis.json`，要求 `FAIL=0 REVIEW=0 MISS=0`。同目录 `showcase_approvals.json` 自动读取。
+- **REVIEW 人工复核**：先生成全部为 pending 的骨架：`showcase_align.py approval-template --plan probe/showcase_plan.json --vocals probe/vocal_analysis.json`。逐曲试听后填写具体 `reason/evidence` 并改 `status=approved`；记录会绑定 clip、分析 SHA-256、`narr_end/show_start/show_end`，任一变化即失效。
+- **禁止全局逃生**：`SHOWCASE_OVERRIDE` 已废弃。逐曲批准只能解决证据不足的 REVIEW，不能覆盖 active word、短气口等硬边界 FAIL。
 
 > 验证项目：`sandbox/zwtl-duet-pk/`（周王陶林男女合唱PK，4:25）。早期用竖裁放大→双人被裁半、副歌 14s 太短被吐槽；改 letterbox 全宽 + 连续 27–32s 副歌后达标。
 > 验证项目：`sandbox/huachenyu-hardest-top5/`（华晨宇最难5首）。初版 4/5 首展示段落在器乐段（唱声全被转场旁白盖住），按 (C) 重对齐 vocal onset 到旁白收尾前 2s 后修复。
@@ -422,10 +424,10 @@
 
 错误做法：用 RMS 能量峰找"高潮段"做接入点 — 能量峰常在副歌中段，错过了 verse/chorus 入口；同一首歌不同版本的 verse / chorus 入口时间码完全不同，必须**逐版本精确定位**。
 
-正确做法：用**人声段检测**找每个版本的 verse 1 / verse 2 / final chorus **入口时间码**，再让接力对齐到歌曲结构而非时间偏移：
+正确做法：用**多证据主唱候选检测**找每个版本的 verse 1 / verse 2 / final chorus **入口时间码**，再让接力对齐到歌曲结构而非时间偏移。旧频带算法仍保留为低成本候选，但不能独立证明是主唱：
 
 ```python
-# tools/video/vocal_segments.py (可复用)
+# tools/video/vocal_segments.py 内部的 acoustic candidate（不是最终主唱结论）
 y_harm, _ = librosa.effects.hpss(y, margin=3.0)         # 谐波分离
 S = np.abs(librosa.stft(y_harm))
 voice_mask = (freqs >= 200) & (freqs <= 3000)            # 人声频带 200-3000Hz
@@ -433,7 +435,7 @@ voice_rms = np.sqrt(np.mean(S[voice_mask] ** 2, axis=0))
 # 平滑 + 60th percentile 阈值 → 连续 >2s 视为有效 vocal 段；>1.5s gap 视为段间
 ```
 
-输出每段的 `vocal_segments=[[t_start, t_end], ...]`，根据 vocal 段密度判断 verse / chorus / 桥段：
+正式运行用 `--mode multi`，优先读取 `lead_segments`；`vocal_segments` 仅为兼容字段。若 `evidence_level!=multi_evidence`，不得仅按区间密度自动认定 verse/chorus，必须结合歌词结构或人工复核：
 - **verse 1** = 早期第一个长 vocal 段（通常源开始后 30-90s 之间的一段连唱）。
 - **verse 2** = 中段第二个长 vocal 段（通常 130-180s 之间）。
 - **final chorus** = 接近尾段的高密度 vocal 段（通常 200-250s 之间，多句连唱）。

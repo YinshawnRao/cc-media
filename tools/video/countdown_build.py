@@ -2,9 +2,9 @@
 """完整片构建模板（竖屏 1080x1920）：master.wav（逐段 床→swell→展示 + 旁白 + 逐首响度归一）+ index.html。
 
 模板，非通用程序。按每条 brief 复制到项目目录后改：songs（每首 旁白key/vert片段/序号/歌名/标签）、
-时长常量（SHOW/DIG/GAP_A）、MGAIN（暗调安静歌补偿）、开场 chips/title 与 outro 文案。
+时长常量（SHOW_DEFAULT/SHOWS/DIG/GAP_A）、MGAIN（暗调安静歌补偿）、开场 chips/title 与 outro 文案。
 前置：audio/<key>.wav（narrate_segments.py）、clips/vert_<song>.mp4（vfill.sh）、
-      **probe/vocal_analysis.json**（先跑 `vocal_segments.py clips/vert_*.mp4 -o probe/vocal_analysis.json`，
+      **probe/vocal_analysis.json**（先跑 `vocal_segments.py clips/vert_*.mp4 -o probe/vocal_analysis.json --mode multi --language zh`，
       供下方展示段对齐闸门校验"副歌入点 vs 旁白收尾 / 结尾不切半句"，见 CONVENTIONS「展示段硬规则 (C)」）。
 之后：npx hyperframes lint → render → ffmpeg mux master.wav（见 tools/video/README.md 第 8 步）。
 """
@@ -19,7 +19,15 @@ def run(cmd):
     subprocess.run(cmd, check=True)
 
 A = "audio"; C = "clips"
-SHOW = 19.0      # 每首副歌展示时长
+SHOW_DEFAULT = 25.0  # 解说盘点最低起点；实际必须向后对齐完整乐句，不是硬切上限
+# 用 showcase_align.py plan 逐曲反推后填这里；短盘点若明确采用 12–18s，也仍须落在安全句末。
+SHOWS = {
+    # "p1_pandora": 28.4,
+}
+
+def show_for(key):
+    return SHOWS.get(key, SHOW_DEFAULT)
+
 DIG = 1.4        # swell 时长
 BED = 0.14       # 旁白时音乐床增益
 MGAIN = {"p4_quanmian": 2.2}  # 逐首额外增益（暗调安静歌补偿，统一响度）
@@ -47,7 +55,7 @@ p1_start = intro_voice_end + GAP_A          # 9.2
 p1_end = p1_start + d["p1_pandora"]         # 23.73
 A_swell = p1_end + 0.2
 A_full = A_swell + DIG
-A_end = round(A_full + SHOW, 3)
+A_end = round(A_full + show_for("p1_pandora"), 3)
 
 blocks = []  # (key, clip, start, end, narr_start, narr_end, full_start, no, name, tag)
 # Block A: intro + 潘朵拉
@@ -61,7 +69,7 @@ for key, clip, no, name, tag in songs[1:]:
     ns = t + LEAD
     ne = ns + d[key]
     fs = ne + 0.2 + DIG
-    end = round(fs + SHOW, 3)
+    end = round(fs + show_for(key), 3)
     blocks.append(dict(key=key, clip=clip, start=t, end=end,
                        narr_start=ns, narr_end=ne, full_start=fs,
                        no=no, name=name, tag=tag, vid_start=t, mseek=0.0))
@@ -78,7 +86,8 @@ TOTAL = F_end
 # ---------- 展示段对齐闸门（硬规则，违规不出 master）----------
 # 机械校验每首：① 副歌人声在转场旁白收尾时正好进来、贯穿展示段（问题1：旁白别盖副歌）；
 #               ② 展示段结尾落在唱完一句之后 / 器乐 gap，不切半句（问题2：别暴力裁切）。
-# 依据各 clip 的人声段（probe/vocal_analysis.json）。误报时设 SHOWCASE_OVERRIDE=1 跳过。
+# 旧频带候选只会 REVIEW；多证据结果才能自动 OK。REVIEW 用绑定 clip/分析摘要/时间窗的
+# showcase_approvals.json 逐曲留证；硬边界 FAIL 不允许批准跳过。
 import sys as _sys
 _repo = Path(__file__).resolve()
 while _repo != _repo.parent and not (_repo / "tools" / "video" / "showcase_align.py").exists():

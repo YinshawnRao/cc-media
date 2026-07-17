@@ -68,32 +68,32 @@ def main():
     info = json.loads(m.group(1))
     data = info.get("data") or info.get("result") or {}
     dash = data.get("dash")
-    tmp = tempfile.mkdtemp(prefix="bili_")
-    if dash:
-        v = pick(dash["video"], a.max_h)
-        au = pick(dash["audio"], 99999)
-        vh = v.get("height"); vc = v.get("codecs"); ac = au.get("codecs")
-        print(f"[{a.bvid}] video {v.get('width')}x{vh} {vc} {v.get('bandwidth')//1000}kbps ; audio {ac} {au.get('bandwidth')//1000}kbps")
-        vf = os.path.join(tmp, "v.m4s"); af = os.path.join(tmp, "a.m4s")
-        for url, dst in [(v["baseUrl"], vf), (au["baseUrl"], af)]:
-            code = curl(url, ckhdr, dst)
-            sz = os.path.getsize(dst) if os.path.exists(dst) else 0
-            print(f"   dl {os.path.basename(dst)} HTTP {code} size {sz//1024}KB")
-            if sz < 10000:
-                sys.exit(f"!! stream too small ({dst}), likely blocked")
-        subprocess.run(["ffmpeg", "-v", "error", "-i", vf, "-i", af,
-                        "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
-                        "-movflags", "+faststart", a.out, "-y"], check=True)
-    else:
-        durl = data.get("durl")
-        if not durl:
-            sys.exit(f"!! no dash/durl for {a.bvid}")
-        u = durl[0]["url"]
-        mf = os.path.join(tmp, "m.mp4")
-        code = curl(u, ckhdr, mf)
-        print(f"[{a.bvid}] durl(mp4) HTTP {code} size {os.path.getsize(mf)//1024}KB")
-        subprocess.run(["ffmpeg", "-v", "error", "-i", mf, "-c", "copy",
-                        "-movflags", "+faststart", a.out, "-y"], check=True)
+    with tempfile.TemporaryDirectory(prefix="bili_") as tmp:
+        if dash:
+            v = pick(dash["video"], a.max_h)
+            au = pick(dash["audio"], 99999)
+            vh = v.get("height"); vc = v.get("codecs"); ac = au.get("codecs")
+            print(f"[{a.bvid}] video {v.get('width')}x{vh} {vc} {v.get('bandwidth')//1000}kbps ; audio {ac} {au.get('bandwidth')//1000}kbps")
+            vf = os.path.join(tmp, "v.m4s"); af = os.path.join(tmp, "a.m4s")
+            for url, dst in [(v["baseUrl"], vf), (au["baseUrl"], af)]:
+                code = curl(url, ckhdr, dst)
+                sz = os.path.getsize(dst) if os.path.exists(dst) else 0
+                print(f"   dl {os.path.basename(dst)} HTTP {code} size {sz//1024}KB")
+                if sz < 10000:
+                    sys.exit(f"!! stream too small ({dst}), likely blocked")
+            subprocess.run(["ffmpeg", "-v", "error", "-i", vf, "-i", af,
+                            "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
+                            "-movflags", "+faststart", a.out, "-y"], check=True)
+        else:
+            durl = data.get("durl")
+            if not durl:
+                sys.exit(f"!! no dash/durl for {a.bvid}")
+            u = durl[0]["url"]
+            mf = os.path.join(tmp, "m.mp4")
+            code = curl(u, ckhdr, mf)
+            print(f"[{a.bvid}] durl(mp4) HTTP {code} size {os.path.getsize(mf)//1024}KB")
+            subprocess.run(["ffmpeg", "-v", "error", "-i", mf, "-c", "copy",
+                            "-movflags", "+faststart", a.out, "-y"], check=True)
     r = subprocess.check_output(["ffprobe", "-v", "error", "-select_streams", "v:0",
                                  "-show_entries", "stream=width,height,codec_name",
                                  "-of", "csv=p=0:s=x", a.out]).decode().strip()

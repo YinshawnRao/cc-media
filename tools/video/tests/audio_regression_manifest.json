@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "purpose": "Optional real-audio regressions for target lead-vocal discrimination. Paths are repository-relative and point at historical local-only sandbox assets.",
+  "labels": {
+    "target_lead_vocal": "The featured singer is audibly singing in the window.",
+    "instrumental_no_lead": "Music or an instrument is present, but the featured singer is not singing.",
+    "ensemble_or_instrument_no_target_lead": "Backing/ensemble voices or instruments may be present, but not the featured lead singer.",
+    "crowd_or_instrumental_no_target_lead": "Audience/crowd and/or instruments are present, but not a usable featured-lead passage."
+  },
+  "samples": [
+    {
+      "id": "yeji_instrumental_interlude",
+      "path": "sandbox/chenhuixian-hardest-top5/raw/yeji_aud.wav",
+      "sha256": "893736973ee3f2e345b25ea124adabbca106048b5e792e77b06c1f2d9d4de0d2",
+      "start_sec": 176.0,
+      "end_sec": 196.0,
+      "expected": {
+        "label": "instrumental_no_lead",
+        "is_target_lead_vocal": false,
+        "auto_disposition": "reject",
+        "max_target_lead_coverage": 0.25,
+        "max_target_lead_score": 0.45
+      },
+      "history": "SOURCES.md records this sax/synth interlude as a legacy energy-detector false positive (~98% reported vocal coverage)."
+    },
+    {
+      "id": "yeji_final_chorus_lead",
+      "path": "sandbox/chenhuixian-hardest-top5/raw/yeji_aud.wav",
+      "sha256": "893736973ee3f2e345b25ea124adabbca106048b5e792e77b06c1f2d9d4de0d2",
+      "start_sec": 204.0,
+      "end_sec": 238.0,
+      "expected": {
+        "label": "target_lead_vocal",
+        "is_target_lead_vocal": true,
+        "auto_disposition": "lead",
+        "min_target_lead_coverage": 0.45,
+        "min_target_lead_score": 0.55
+      },
+      "history": "Corrected final-chorus window; continuously advancing burned-in lyrics were used to confirm real lead singing."
+    },
+    {
+      "id": "pojita_tribal_bridge_no_target_lead",
+      "path": "sandbox/zhangzhenyue-underrated-top5/raw/p1_pojita_aud.wav",
+      "sha256": "c1b4556082eb9299121b9fb586c33526f6c39e9bf1624a80fe218b73d66adec0",
+      "start_sec": 131.0,
+      "end_sec": 160.0,
+      "expected": {
+        "label": "ensemble_or_instrument_no_target_lead",
+        "is_target_lead_vocal": false,
+        "auto_disposition": "reject",
+        "max_target_lead_coverage": 0.25,
+        "max_target_lead_score": 0.45
+      },
+      "history": "Tribal/ensemble chant and guitar bridge was reported as 100% lead vocal by the legacy detector, but is not the featured singer passage."
+    },
+    {
+      "id": "pojita_featured_singer_verse",
+      "path": "sandbox/zhangzhenyue-underrated-top5/raw/p1_pojita_aud.wav",
+      "sha256": "c1b4556082eb9299121b9fb586c33526f6c39e9bf1624a80fe218b73d66adec0",
+      "start_sec": 77.0,
+      "end_sec": 94.5,
+      "expected": {
+        "label": "target_lead_vocal",
+        "is_target_lead_vocal": true,
+        "auto_disposition": "lead",
+        "min_target_lead_coverage": 0.40,
+        "min_target_lead_score": 0.55
+      },
+      "history": "Human-auditioned night-stage verse where the featured singer sings into the microphone."
+    },
+    {
+      "id": "jianqiangdeliyou_live_jam_no_target_lead",
+      "path": "sandbox/wubai-female-singers-top10/qa/audition/p03_from288.mp3",
+      "sha256": "d7980f110be8d2818fcef89a1a6c7628809138fde7213f7ac3c3857448a49868",
+      "start_sec": 0.0,
+      "end_sec": 26.0,
+      "expected": {
+        "label": "crowd_or_instrumental_no_target_lead",
+        "is_target_lead_vocal": false,
+        "auto_disposition": "reject",
+        "max_target_lead_coverage": 0.25,
+        "max_target_lead_score": 0.45
+      },
+      "history": "Audition export from the rejected finale: crowd/instrumental live jam was misreported as a long continuous singing passage."
+    },
+    {
+      "id": "jianqiangdeliyou_real_duet",
+      "path": "sandbox/wubai-female-singers-top10/qa/audition/FINAL_p03.mp3",
+      "sha256": "dc572619976d9765d436b9de5c889461c3223bc937673a997a331e3d7d920b6b",
+      "start_sec": 0.0,
+      "end_sec": 40.0,
+      "expected": {
+        "label": "target_lead_vocal",
+        "is_target_lead_vocal": true,
+        "auto_disposition": "review",
+        "min_target_lead_coverage": 0.40,
+        "min_target_lead_score": 0.55
+      },
+      "history": "Corrected 40-second live-duet audition export with real featured singing."
+    }
+  ],
+  "boundary_cases": [
+    {
+      "id": "wozaiku_next_syllable_cut",
+      "path": "sandbox/xiaojingteng-underrated-top5/raw/p4_aud.wav",
+      "sha256": "18802f91acca495c86232a36d72eb9c8f03d4ecbb7e597a704afaef122b8aeeb",
+      "narr_end_src": 116.47,
+      "show_start_src": 118.17,
+      "min_show_sec": 25.0,
+      "bad_show_end_src": 144.67,
+      "expected_safe_end_min": 148.5,
+      "expected_safe_end_max": 153.9,
+      "history": "The old cut lands inside a sung word; real word timestamps must reject it and search forward to a complete phrase boundary."
+    }
+  ]
+}

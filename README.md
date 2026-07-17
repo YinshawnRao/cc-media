@@ -99,7 +99,8 @@ HyperFrames 通常通过 `npx hyperframes ...` 使用。中文旁白不要使用
 - `tools/video/vfill.sh`：横屏素材转竖屏画布。
 - `tools/video/countdown_build.py`：倒计时类视频的音轨和工程生成模板。
 - `tools/video/narrate_segments.py`：按分段生成旁白。
-- `tools/video/showcase_align.py`：检查音乐 showcase 片段是否对齐核心演唱段。
+- `tools/video/vocal_segments.py`：Whisper 词时间戳 + 声学 + stereo 的多证据主唱候选检测；旧能量法只作候选。
+- `tools/video/showcase_align.py`：阻断式检查主唱入点和完整乐句出点；REVIEW 需逐曲留证，硬边界 FAIL 不可跳过。
 - `tools/video/check_yt_cookie.py`：检查 YouTube cookie 登录态。
 - `tools/video/bili_search.py`、`tools/video/bili_dl.py`：B站搜索和下载辅助。
 - `tools/tts/narrate.py`：本地中文旁白生成。
