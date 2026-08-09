@@ -10,6 +10,7 @@ import wave
 from pathlib import Path
 
 from narrate import resolve_runtime
+from text_normalizer import PronunciationPolicy, normalize_tts_text
 from voice_registry import VoiceRegistry, file_sha256
 
 
@@ -85,6 +86,21 @@ def main() -> int:
             if handle.getnchannels() != 1 or handle.getframerate() != 24000:
                 errors.append(f"invalid reference WAV format: {voice['id']}")
     print(f"voice-assets: {len(registry.voices)} references verified")
+
+    try:
+        policy = PronunciationPolicy.load()
+        probe = normalize_tts_text("今天重听BEYOND五首作品", policy=policy)
+        if probe.normalized_text != "今天重听Beyond五首作品":
+            errors.append(
+                "pronunciation normalization probe failed: "
+                f"{probe.normalized_text!r}"
+            )
+        print(
+            f"text-normalization: policy={policy.policy_id} "
+            f"probe=BEYOND→Beyond"
+        )
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        errors.append(f"invalid pronunciation policy: {exc}")
 
     if errors:
         print("TTS DOCTOR: FAIL")

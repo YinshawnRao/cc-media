@@ -82,7 +82,39 @@ python3 tools/tts/narrate.py script.txt --voice CV999 -o out.wav
 
 `--speed 0.5–2.0` 仍受支持。Qwen/MLX 当前不直接支持 speed，中央入口会用 FFmpeg `atempo` 做真实后处理，不会静默忽略。
 
-Qwen 默认使用 `language=Auto`，允许中英日等混合文本；不要再套用 Kokoro 的“外文一律跳过”。外文专名先生成并听检，只有读音确实不自然时才换通行中文译名、音译/谐音，或从口播省略并保留画面原文。新盘点 intro 第一段始终禁止“接下来”。
+## 混合文本发音与纯中文稳定性
+
+Qwen 默认使用 `language=Auto`，允许中英日等混合文本；不要再套用 Kokoro 的“外文一律跳过”。明显英文单词优先按词发音：连续全大写明显单词会先转为正常词形，例如 `BEYOND → Beyond`；明确的首字母缩写或不可自然词读的字母串才展开为逐字母读，例如 `BTS → B T S`、`S.H.E. → S H E`。画面标题仍可保留官方大写写法。
+
+这个预处理是窄范围的：未提供显式覆盖时，纯中文文本、中文标点、数字和原有措辞逐字原样透传，并跳过发音策略加载；生成 seed、请求结构和旧缓存 fingerprint 均不改变。它不会为了修英文而给中文分词、加空格或转拼音。
+
+先预览实际送入 TTS 的文本与判断依据：
+
+```bash
+python3 tools/tts/text_normalizer.py "今天重听BEYOND；BTS也在候选。" --json
+```
+
+判断不确定时先生成短样音；仍需指定时，用精确的项目级覆盖，不要先写生硬中文谐音：
+
+```bash
+python3 tools/tts/narrate.py "BTOB的这首作品。" \
+  --selection-file voice-selection.json \
+  --pronunciation "BTOB=B to B" \
+  -o narration/pronunciation-check.wav
+```
+
+批量请求可在顶层或单个 block 写 `pronunciation_overrides`，block 级覆盖优先：
+
+```json
+{
+  "pronunciation_overrides": {"BTOB": "B to B"},
+  "blocks": [
+    {"id": "intro", "text": "BTOB的五首作品。", "output": "narration/intro.wav"}
+  ]
+}
+```
+
+发生归一化时，`.wav.tts.json` 会额外保存 `source_text`、`normalized_text`、策略 hash 和逐项决策；纯中文 sidecar 不增加这些字段，以继续命中既有缓存。`--pronunciation` 只支持 Qwen 路径，Legacy Kokoro 明确拒绝。外文专名只有在短样音仍不自然时才考虑通行中文译名、音译或从口播省略。新盘点 intro 第一段始终禁止“接下来”。
 
 ## 运行环境
 

@@ -55,7 +55,7 @@ python3 tools/tts/narrate.py --batch narration-request.json \
   --selection-file voice-selection.json
 ```
 
-每条 WAV 都必须有 `.wav.tts.json` sidecar；本期所有旁白必须是同一个 resolved voice ID。新盘点不要使用 legacy `--female`。**intro 第一段禁止出现“接下来”**。Qwen 支持多语种，外文默认先自然生成并听检；只有读音不可靠时才改中文译名、音译/谐音或从口播省略。Qwen 不需要 Kokoro 垫话，禁止把旧模板垫话机械复制过来。
+每条 WAV 都必须有 `.wav.tts.json` sidecar；本期所有旁白必须是同一个 resolved voice ID。新盘点不要使用 legacy `--female`。**intro 第一段禁止出现“接下来”**。Qwen 支持多语种；明显英文单词优先按词发音，连续全大写词先转正常词形（`BEYOND → Beyond`），明确的首字母缩写或非词字母串才逐字母读。自动归一化只作用于送入 TTS 的 ASCII 拉丁 token，画面可继续使用官方写法 `BEYOND`，纯中文文本和中文标点必须原样透传。读音不确定时先生成短样音或写项目级 `pronunciation_overrides`，不要先改成生硬中文谐音。Qwen 不需要 Kokoro 垫话，禁止把旧模板垫话机械复制过来。
 
 ## 6. 音频 + 7. 合成
 改 `countdown_build.py` 顶部 `songs`（key/clip/序号/歌名/标签）、各时长常量、`MGAIN`（暗调安静歌补偿），运行：建 master.wav（逐段 床→swell→展示，逐首 `loudnorm=I=-14` 统一响度）+ 生成 `index.html`。

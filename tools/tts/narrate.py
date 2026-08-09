@@ -11,6 +11,12 @@ import sys
 import tempfile
 from pathlib import Path
 
+from text_normalizer import (
+    PronunciationPolicy,
+    normalize_tts_text,
+    parse_override_args,
+    validate_overrides,
+)
 from voice_registry import (
     VoiceRegistry,
     default_selection,
@@ -131,7 +137,13 @@ def selection_for(args: argparse.Namespace, registry: VoiceRegistry, batch: dict
     return default_selection(registry, requested=None, reason="default_no_request")
 
 
-def batch_items(path: Path, value: dict, default_speed: float, default_language: str) -> list[dict]:
+def batch_items(
+    path: Path,
+    value: dict,
+    default_speed: float,
+    default_language: str,
+    default_pronunciations: dict[str, str],
+) -> list[dict]:
     blocks = value.get("blocks")
     if not isinstance(blocks, list) or not blocks:
         raise SystemExit("batch JSON must contain a non-empty blocks array")
@@ -155,6 +167,16 @@ def batch_items(path: Path, value: dict, default_speed: float, default_language:
         speed = float(block.get("speed", default_speed))
         if not 0.5 <= speed <= 2.0:
             raise SystemExit(f"batch block {index} speed must be between 0.5 and 2.0")
+        try:
+            pronunciations = dict(default_pronunciations)
+            pronunciations.update(
+                validate_overrides(
+                    block.get("pronunciation_overrides"),
+                    f"batch block {index} pronunciation_overrides",
+                )
+            )
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
         items.append(
             {
                 "id": block.get("id") or f"block-{index:03d}",
@@ -162,9 +184,43 @@ def batch_items(path: Path, value: dict, default_speed: float, default_language:
                 "output": str(output.resolve()),
                 "language": block.get("language") or default_language,
                 "speed": speed,
+                "pronunciation_overrides": pronunciations,
             }
         )
     return items
+
+
+def normalize_qwen_items(items: list[dict]) -> None:
+    policy: PronunciationPolicy | None = None
+    for item in items:
+        overrides = item.pop("pronunciation_overrides", {})
+        # Pure Chinese is the dominant path. Keep it independent from the
+        # mixed-script policy file so a missing/corrupt policy cannot break an
+        # otherwise valid Chinese narration or alter its cache identity.
+        if not overrides and not any("A" <= char <= "Z" for char in item["text"]):
+            continue
+        if policy is None:
+            try:
+                policy = PronunciationPolicy.load()
+            except (OSError, ValueError, json.JSONDecodeError) as exc:
+                raise SystemExit(f"invalid pronunciation policy: {exc}") from exc
+        try:
+            result = normalize_tts_text(
+                item["text"],
+                policy=policy,
+                overrides=overrides,
+            )
+        except ValueError as exc:
+            raise SystemExit(f"item {item['id']} pronunciation error: {exc}") from exc
+        if result.decisions:
+            item["source_text"] = result.source_text
+            item["text"] = result.normalized_text
+            item["text_normalization"] = result.metadata()
+            rendered = ", ".join(
+                f"{decision['source']}→{decision['spoken']}[{decision['mode']}]"
+                for decision in result.decisions
+            )
+            print(f"text-normalization {item['id']}: {rendered}", file=sys.stderr)
 
 
 def main() -> int:
@@ -186,11 +242,22 @@ def main() -> int:
     parser.add_argument("--list-voices", action="store_true")
     parser.add_argument("--language", default="Auto")
     parser.add_argument("--speed", type=float, default=1.0)
+    parser.add_argument(
+        "--pronunciation",
+        action="append",
+        default=[],
+        metavar="SOURCE=SPOKEN",
+        help="exact Qwen pronunciation override; repeatable",
+    )
     parser.add_argument("--force", action="store_true", help="ignore valid output cache")
     args = parser.parse_args()
 
     if not 0.5 <= args.speed <= 2.0:
         parser.error("--speed must be between 0.5 and 2.0")
+    try:
+        cli_pronunciations = parse_override_args(args.pronunciation)
+    except ValueError as exc:
+        parser.error(str(exc))
     registry = VoiceRegistry.load()
     if args.list_voices:
         for voice in registry.voices:
@@ -242,7 +309,21 @@ def main() -> int:
 
     if batch is not None:
         assert batch_path is not None
-        items = batch_items(batch_path, batch, args.speed, args.language)
+        try:
+            pronunciations = validate_overrides(
+                batch.get("pronunciation_overrides"),
+                "batch pronunciation_overrides",
+            )
+        except ValueError as exc:
+            parser.error(str(exc))
+        pronunciations.update(cli_pronunciations)
+        items = batch_items(
+            batch_path,
+            batch,
+            args.speed,
+            args.language,
+            pronunciations,
+        )
     else:
         if args.input is None or args.output is None:
             parser.error("single generation requires input and --output, or use --batch")
@@ -256,10 +337,17 @@ def main() -> int:
                 "output": str(args.output.resolve()),
                 "language": args.language,
                 "speed": args.speed,
+                "pronunciation_overrides": cli_pronunciations,
             }
         ]
 
     engine = selection["engine"]
+    if engine == registry.config["qwen_base"]["engine"]:
+        normalize_qwen_items(items)
+    else:
+        legacy_overrides = [item.pop("pronunciation_overrides", {}) for item in items]
+        if any(legacy_overrides):
+            raise SystemExit("--pronunciation is supported only by the Qwen TTS path")
     python = resolve_runtime(registry.config, engine)
     worker = (
         TTS_ROOT / "engines" / "qwen_mlx.py"

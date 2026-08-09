@@ -269,6 +269,9 @@ def main() -> int:
             "speed": speed,
             "generation": generation,
         }
+        if "source_text" in item:
+            fp_inputs["source_text"] = item["source_text"]
+            fp_inputs["text_normalization"] = item["text_normalization"]
         fp = fingerprint(fp_inputs)
         hit = None if request.get("force") else cached(sidecar, output, fp)
         if hit is not None:
@@ -317,8 +320,9 @@ def main() -> int:
         info = wav_info(output)
         if info["channels"] != 1 or info["sample_rate_hz"] != qwen["sample_rate_hz"]:
             raise RuntimeError(f"unexpected output format: {info}")
+        normalized = "source_text" in item
         metadata = {
-            "schema_version": "1.0.0",
+            "schema_version": "1.1.0" if normalized else "1.0.0",
             "item_id": item.get("id"),
             "text": item["text"],
             "text_sha256": hashlib.sha256(item["text"].encode("utf-8")).hexdigest(),
@@ -342,6 +346,14 @@ def main() -> int:
             "output_sha256": sha256_file(output),
             "wav": info,
         }
+        if normalized:
+            metadata.update(
+                {
+                    "source_text": item["source_text"],
+                    "normalized_text": item["text"],
+                    "text_normalization": item["text_normalization"],
+                }
+            )
         atomic_json(sidecar, metadata)
         print(f"wrote {output}  voice={voice_id} speed={speed} dur={info['duration_seconds']:.2f}s")
     return 0

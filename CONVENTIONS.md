@@ -30,6 +30,8 @@
 - **构建门禁**：新项目旁白完成后运行 `tools/tts/verify_voice_usage.py`；所有旁白 sidecar 必须与项目级 selection 同一 ID，项目脚本不得绕过中央入口。
 - **显式其他声音**：`CV001–CV008` 的编号、名称、别名与实际样音见 `tools/tts/voices/listen.html`。无效显式选择仍按 CV002，并在 selection 中记录 fallback 原因。
 - **口播文本**：新盘点 intro 第一段**禁止出现“接下来”**。默认 Qwen `Auto` 允许中英日等混合文本，不再沿用 Kokoro 的“非中文一律跳过”经验；外文专名必须先听样音/做内容 QA。只有实际发音不自然、歧义大或不可懂时，才改用通行中文译名、音译/发音友好的谐音字，或从口播省略并只在画面保留原文。
+- **混合文本发音（Qwen 硬约束）**：明显英文单词优先按词发音；视觉上为连续全大写时，送入 TTS 前先归一为正常词形，例如 `BEYOND → Beyond`。只有明确的首字母缩写或不可自然词读的字母串才逐字母读，例如 `BTS → B T S`、`S.H.E. → S H E`。判断不确定时先生成短样音，或通过项目级 `pronunciation_overrides` 明确读法，不得直接改成生硬中文谐音。归一化只影响 TTS 口播输入，画面仍保留艺人/作品的官方写法。
+- **纯中文稳定性（硬约束）**：自动发音归一化只检查 ASCII 拉丁 token；未显式提供发音覆盖时，纯中文文本、中文标点、数字和原有中文措辞必须逐字原样透传，不做分词、加空格、拼音化或其他改写。纯中文请求不得依赖外文发音策略文件，其生成 seed、请求结构和既有缓存指纹必须保持不变。
 - **Legacy Kokoro**：8 个旧 ID 仅用于历史复现或用户精确指定（如 `--voice zm_yunxi`）。`--female` 保留旧兼容语义 `zf_xiaoyi`，但**新盘点禁止用 `--female` 表达默认**。
 - **不要用 HyperFrames 内置 `npx hyperframes tts` 做中文**：它把语言代码 `zh` 传给 espeak，而 espeak 只认 `cmn`，中文直接报错；且 espeak 普通话质量弱。英文旁白才考虑内置 tts。
 - 输出 24kHz wav，作为独立 `<audio>` 轨接入 composition（见下「全链路」）。自动字幕可对 wav 跑 `npx hyperframes transcribe`。
