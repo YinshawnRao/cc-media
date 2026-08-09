@@ -1,7 +1,0 @@
-file 'clips_seg/intro.mp4'
-file 'clips_seg/p5_diqiu.mp4'
-file 'clips_seg/p4_xiju.mp4'
-file 'clips_seg/p3_lvcheng.mp4'
-file 'clips_seg/p2_hehua.mp4'
-file 'clips_seg/p1_shisan.mp4'
-file 'clips_seg/outro.mp4'

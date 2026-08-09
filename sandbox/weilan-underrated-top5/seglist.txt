@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_aishenguozuoren.wav'
-file 'seg_p4_tabuguanbeiai.wav'
-file 'seg_p3_aimyoujiashe.wav'
-file 'seg_p2_zaji.wav'
-file 'seg_p1_rushui.wav'
-file 'seg_outro.wav'

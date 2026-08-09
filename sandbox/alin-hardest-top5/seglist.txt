@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_guilty.wav'
-file 'seg_p4_sorrow.wav'
-file 'seg_p3_happiness.wav'
-file 'seg_p2_tian.wav'
-file 'seg_p1_reason.wav'
-file 'seg_outro.wav'

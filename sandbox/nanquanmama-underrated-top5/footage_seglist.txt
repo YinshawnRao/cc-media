@@ -1,7 +1,0 @@
-file 'clips_seg/intro.mp4'
-file 'clips_seg/p5_lijia.mp4'
-file 'clips_seg/p4_xiaorong.mp4'
-file 'clips_seg/p3_renyu.mp4'
-file 'clips_seg/p2_poxiao.mp4'
-file 'clips_seg/p1_xiaoshi.mp4'
-file 'clips_seg/outro.mp4'

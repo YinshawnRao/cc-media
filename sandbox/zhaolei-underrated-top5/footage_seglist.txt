@@ -1,7 +1,0 @@
-file 'clips_seg/intro.mp4'
-file 'clips_seg/p5_buka.mp4'
-file 'clips_seg/p4_hadesen.mp4'
-file 'clips_seg/p3_mali.mp4'
-file 'clips_seg/p2_renjia.mp4'
-file 'clips_seg/p1_xin.mp4'
-file 'clips_seg/outro.mp4'

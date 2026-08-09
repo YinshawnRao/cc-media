@@ -1,5 +1,0 @@
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/zhaolei-underrated-top5/probe/_montage_tmp/p3_mali_0.mp4'
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/zhaolei-underrated-top5/probe/_montage_tmp/p3_mali_1.mp4'
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/zhaolei-underrated-top5/probe/_montage_tmp/p3_mali_2.mp4'
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/zhaolei-underrated-top5/probe/_montage_tmp/p3_mali_3.mp4'
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/zhaolei-underrated-top5/probe/_montage_tmp/p3_mali_4.mp4'

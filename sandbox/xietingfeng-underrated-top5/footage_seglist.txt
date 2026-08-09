@@ -1,7 +1,0 @@
-file 'clips_seg/intro.mp4'
-file 'clips_seg/p5.mp4'
-file 'clips_seg/p4.mp4'
-file 'clips_seg/p3.mp4'
-file 'clips_seg/p2.mp4'
-file 'clips_seg/p1.mp4'
-file 'clips_seg/outro.mp4'

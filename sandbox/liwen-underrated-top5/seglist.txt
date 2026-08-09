@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_dmf.wav'
-file 'seg_p4_buai.wav'
-file 'seg_p3_daan.wav'
-file 'seg_p2_guodong.wav'
-file 'seg_p1_momo.wav'
-file 'seg_outro.wav'

@@ -1,7 +1,0 @@
-file 'clips_seg/intro.mp4'
-file 'clips_seg/p5_kaiwang.mp4'
-file 'clips_seg/p4_liang.mp4'
-file 'clips_seg/p3_long.mp4'
-file 'clips_seg/p2_nianlun.mp4'
-file 'clips_seg/p1_guang.mp4'
-file 'clips_seg/outro.mp4'

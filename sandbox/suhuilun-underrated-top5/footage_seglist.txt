@@ -1,7 +1,0 @@
-file 'clips_seg/intro.mp4'
-file 'clips_seg/p5_ziyou.mp4'
-file 'clips_seg/p4_kuguo.mp4'
-file 'clips_seg/p3_niangai.mp4'
-file 'clips_seg/p2_yezi.mp4'
-file 'clips_seg/p1_nilai.mp4'
-file 'clips_seg/outro.mp4'

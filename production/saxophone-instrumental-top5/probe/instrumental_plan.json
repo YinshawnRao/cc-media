@@ -1,0 +1,73 @@
+{
+  "kind": "instrumental_phrase_and_visual_evidence",
+  "status": "OK",
+  "analysis_sha256": "4976e41c6f34de1a34f6be35e790c502548c30ec73e415e8ff768779f763cf63",
+  "minimum_continuous_music_seconds": 60,
+  "items": [
+    {
+      "key": "p5",
+      "rank": "05",
+      "source": "p5_mister_magic_yt.mp4",
+      "status": "OK",
+      "phrase_attack_src": 748.7,
+      "full_music_start_src": 748.7,
+      "music_end_src": 872.0,
+      "continuous_show_duration": 123.3,
+      "source_duration": 879.194,
+      "visual_evidence": "p5_window_sheet.jpg + p5_tail_sheet.jpg",
+      "end_evidence": "现场独奏结束前收口，避开 873 秒后演职员表"
+    },
+    {
+      "key": "p4",
+      "rank": "04",
+      "source": "p4_forever_in_love_bili.mp4",
+      "status": "OK",
+      "phrase_attack_src": 104.8,
+      "full_music_start_src": 104.8,
+      "music_end_src": 170.3,
+      "continuous_show_duration": 65.5,
+      "source_duration": 247.723,
+      "visual_evidence": "p4_window_alt_sheet.jpg",
+      "end_evidence": "分析确认的安静乐句边界；避开后段不适合叙事画面"
+    },
+    {
+      "key": "p3",
+      "rank": "03",
+      "source": "p3_lily_was_here_bili.mp4",
+      "status": "OK",
+      "phrase_attack_src": 183.9,
+      "full_music_start_src": 183.9,
+      "music_end_src": 258.4,
+      "continuous_show_duration": 74.5,
+      "source_duration": 263.68,
+      "visual_evidence": "p3_window_sheet.jpg + p3_tail_sheet.jpg",
+      "end_evidence": "乐曲自然衰减终点"
+    },
+    {
+      "key": "p2",
+      "rank": "02",
+      "source": "p2_going_home_yt.mp4",
+      "status": "OK",
+      "phrase_attack_src": 294.0,
+      "full_music_start_src": 294.0,
+      "music_end_src": 382.0,
+      "continuous_show_duration": 88.0,
+      "source_duration": 384.774,
+      "visual_evidence": "p2_window_sheet.jpg + p2_tail_sheet.jpg",
+      "end_evidence": "演奏结束后、黑场出现前收口"
+    },
+    {
+      "key": "p1",
+      "rank": "01",
+      "source": "p1_songbird_bili.mp4",
+      "status": "OK",
+      "phrase_attack_src": 145.6,
+      "full_music_start_src": 145.6,
+      "music_end_src": 242.0,
+      "continuous_show_duration": 96.4,
+      "source_duration": 248.247,
+      "visual_evidence": "p1_window_sheet.jpg + p1_tail_sheet.jpg",
+      "end_evidence": "片尾淡黑前的自然收束"
+    }
+  ]
+}

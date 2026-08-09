@@ -126,13 +126,14 @@ def _safe_interval_for(intervals, t):
 
 
 def verify_song(vocal_segments, narr_end_src, show_start_src, show_end_src,
-                key=None, clip=None, **_ignore):
+                key=None, clip=None, mode=None, **_ignore):
     """对一首歌做机械校验，返回 verdict dict。
 
     vocal_segments: 旧二维区间，或新版分析对象（源时间码，与 show_* 同基准）
     返回 {status: OK|FAIL|REVIEW, reasons:[...], metrics:{...}, key, clip}
     """
     analysis = _coerce_analysis(vocal_segments)
+    intro_hard_restart = mode == "intro_hard_restart"
     segs = analysis["segments"]
     boundary_segs = analysis["boundary_segments"]
     boundary_evidence = analysis["boundary_evidence"]
@@ -208,10 +209,13 @@ def verify_song(vocal_segments, narr_end_src, show_start_src, show_end_src,
 
     hard_problems = []
     review_problems = []
+    if intro_hard_restart and abs(show_start_src) > 0.05:
+        hard_problems.append(
+            f"前奏硬起模式要求 show_start_src=0，当前为 {show_start_src:.2f}s")
     if not reliable:
         review_problems.append(
             "主唱检测证据不足（showcase 邻域几乎无活动；满编曲可能漏报）→ 必须人工复核")
-    else:
+    elif not intro_hard_restart:
         if not entry_ok:
             target = hard_problems if trusted_identity else review_problems
             target.append(
@@ -241,8 +245,10 @@ def verify_song(vocal_segments, narr_end_src, show_start_src, show_end_src,
             "主唱覆盖通过，但没有歌词/乐句证据确认 safe_cut_intervals；不得仅凭能量 gap 自动放行"]
     else:
         status = "OK"
+        prefix = ("前奏从源 0 秒硬起 ✓ " if intro_hard_restart
+                  else f"入点对齐 ✓ 覆盖 {coverage*100:.0f}% ✓ ")
         reasons = [
-            f"入点对齐 ✓ 覆盖 {coverage*100:.0f}% ✓ 结尾"
+            prefix + "结尾"
             + ("落已确认安全区间 ✓" if safe_interval else f"在句末 {tail_remaining:.1f}s 内 ✓")]
 
     return {
@@ -263,6 +269,7 @@ def verify_song(vocal_segments, narr_end_src, show_start_src, show_end_src,
             "boundary_evidence": boundary_evidence,
             "trusted_boundary_activity": trusted_boundary_activity,
             "reliable": reliable,
+            "mode": mode,
         },
     }
 
@@ -408,6 +415,7 @@ def gate(blocks, vocals, consts=None, plan_path=None, clips_dir="clips",
         auto_approvals = Path(plan_path).with_name("showcase_approvals.json")
         approvals = auto_approvals if auto_approvals.exists() else None
     approval_map = _load_approvals(approvals)
+    gate_mode = (consts or {}).get("mode") if isinstance(consts, dict) else None
     songs, results = [], []
     counts = {"OK": 0, "FAIL": 0, "REVIEW": 0, "APPROVED": 0, "MISS": 0}
     for b in blocks:
@@ -426,7 +434,7 @@ def gate(blocks, vocals, consts=None, plan_path=None, clips_dir="clips",
                             [f"vocal_analysis.json 缺 clip『{clip}』→ 先跑 vocal_segments.py"], None))
             counts["MISS"] += 1
             continue
-        v = verify_song(analysis, **s)
+        v = verify_song(analysis, mode=b.get("mode", gate_mode), **s)
         status, reasons = v["status"], list(v["reasons"])
         approval, approval_error = _validate_approval(
             approval_map, s.get("key"), clip, expected_window=s,
@@ -481,6 +489,8 @@ def cmd_check(args):
     approvals = _load_approvals(approvals_path)
     plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))
     songs = plan["songs"] if isinstance(plan, dict) else plan
+    plan_mode = (plan.get("consts", {}).get("mode")
+                 if isinstance(plan, dict) else None)
 
     rows = []
     counts = {"OK": 0, "FAIL": 0, "REVIEW": 0, "APPROVED": 0, "MISS": 0}
@@ -495,7 +505,8 @@ def cmd_check(args):
         v = verify_song(analysis, key=s.get("key"), clip=clip,
                         narr_end_src=s["narr_end_src"],
                         show_start_src=s["show_start_src"],
-                        show_end_src=s["show_end_src"])
+                        show_end_src=s["show_end_src"],
+                        mode=s.get("mode", plan_mode))
         status, reasons = v["status"], list(v["reasons"])
         approval, approval_error = _validate_approval(
             approvals, s.get("key"), clip, expected_window=s,

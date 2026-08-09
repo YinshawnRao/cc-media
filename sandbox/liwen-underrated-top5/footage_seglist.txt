@@ -1,7 +1,0 @@
-file 'clips_seg/intro.mp4'
-file 'clips_seg/p5_dmf.mp4'
-file 'clips_seg/p4_buai.mp4'
-file 'clips_seg/p3_daan.mp4'
-file 'clips_seg/p2_guodong.mp4'
-file 'clips_seg/p1_momo.mp4'
-file 'clips_seg/outro.mp4'

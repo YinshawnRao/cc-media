@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_pangzi.wav'
-file 'seg_p4_yinwei.wav'
-file 'seg_p3_trust.wav'
-file 'seg_p2_dushini.wav'
-file 'seg_p1_kanbujian.wav'
-file 'seg_outro.wav'

@@ -1,8 +1,0 @@
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/panweibo-underrated-top5/audio/intro.wav'
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/panweibo-underrated-top5/audio/p5_jiwu.wav'
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/panweibo-underrated-top5/audio/p4_jihui.wav'
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/panweibo-underrated-top5/audio/p3_paitong.wav'
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/panweibo-underrated-top5/audio/p2_genwo.wav'
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/panweibo-underrated-top5/audio/p1_shiren.wav'
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/panweibo-underrated-top5/audio/outro.wav'
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/panweibo-underrated-top5/audio/outro_cta.wav'

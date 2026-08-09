@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_baba.wav'
-file 'seg_p4_zaiku.wav'
-file 'seg_p3_gushili.wav'
-file 'seg_p2_baishe.wav'
-file 'seg_p1_buaduo.wav'
-file 'seg_outro.wav'

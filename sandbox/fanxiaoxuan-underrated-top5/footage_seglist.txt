@@ -1,7 +1,0 @@
-file 'clips_seg/intro.mp4'
-file 'clips_seg/p5_pangzi.mp4'
-file 'clips_seg/p4_yinwei.mp4'
-file 'clips_seg/p3_trust.mp4'
-file 'clips_seg/p2_dushini.mp4'
-file 'clips_seg/p1_kanbujian.mp4'
-file 'clips_seg/outro.mp4'

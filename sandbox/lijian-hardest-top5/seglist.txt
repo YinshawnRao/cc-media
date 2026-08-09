@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_meiruo.wav'
-file 'seg_p4_chuanqi.wav'
-file 'seg_p3_xiangwang.wav'
-file 'seg_p2_tianyi.wav'
-file 'seg_p1_baikal.wav'
-file 'seg_outro.wav'

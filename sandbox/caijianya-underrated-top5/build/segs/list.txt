@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_yishu.wav'
-file 'seg_p4_shileyuan.wav'
-file 'seg_p3_youxianquan.wav'
-file 'seg_p2_shui.wav'
-file 'seg_p1_domino.wav'
-file 'seg_outro.wav'

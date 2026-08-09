@@ -1,7 +1,0 @@
-file 'clips_seg/intro.mp4'
-file 'clips_seg/p5_baba.mp4'
-file 'clips_seg/p4_zaiku.mp4'
-file 'clips_seg/p3_gushili.mp4'
-file 'clips_seg/p2_baishe.mp4'
-file 'clips_seg/p1_buaduo.mp4'
-file 'clips_seg/outro.mp4'

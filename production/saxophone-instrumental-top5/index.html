@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=1080,height=1920">
+<script src="vendor/gsap.min.js"></script><style>
+*{margin:0;padding:0;box-sizing:border-box}
+@font-face{font-family:"PingFang SC";src:local("PingFang SC");font-weight:400 900}
+@font-face{font-family:"Songti SC";src:local("Songti SC");font-weight:400 900}
+@font-face{font-family:"Oswald";src:local("Oswald");font-weight:400 800}
+@font-face{font-family:"JetBrains Mono";src:local("JetBrains Mono");font-weight:400 900}
+html,body{width:1080px;height:1920px;overflow:hidden;background:#120d0e;color:#f5e8d3;font-family:"PingFang SC",sans-serif;-webkit-font-smoothing:antialiased}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden}
+#base{position:absolute;inset:0;background:#120d0e}
+.fv{position:absolute;inset:0;width:1080px;height:1920px;object-fit:fill;transform-origin:center;z-index:0}
+#tint{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(18,13,14,.38),rgba(18,13,14,.08) 42%,rgba(18,13,14,.56))}
+#frame{position:absolute;inset:38px;z-index:14;border:2px solid rgba(245,232,211,.34);pointer-events:none}
+#frame:before,#frame:after{content:"";position:absolute;background:#c89b55}.clip{position:absolute}
+#frame:before{left:-2px;top:80px;width:7px;height:172px}#frame:after{right:-2px;bottom:92px;width:7px;height:124px}
+#folio{position:absolute;right:52px;top:64px;z-index:15;font:700 19px/1.2 "JetBrains Mono";letter-spacing:.18em;color:#dbc8aa;writing-mode:vertical-rl}
+#cover{inset:0;z-index:5;padding:148px 72px 430px;display:flex;flex-direction:column;background:linear-gradient(180deg,rgba(18,13,14,.42),rgba(18,13,14,.10) 35%,rgba(18,13,14,.80))}
+.coverTop{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid rgba(200,155,85,.68);padding-bottom:20px;font:700 22px "JetBrains Mono";letter-spacing:.13em}
+.coverTop b{padding:8px 13px;background:#c89b55;color:#120d0e;font-size:25px}.coverMain{margin-top:auto;margin-bottom:92px}
+.stamp{display:inline-block;border:3px solid #c89b55;padding:10px 16px;color:#e2bc7d;font:900 23px "JetBrains Mono";letter-spacing:.13em;transform:rotate(-2deg)}
+#cover h1{margin-top:28px;font:900 118px/1.02 "Songti SC",serif;letter-spacing:-.055em;text-shadow:0 6px 0 #120d0e,0 16px 34px rgba(0,0,0,.78)}
+#cover h1 em{display:inline-block;margin-top:12px;color:#f5e8d3;font:900 106px/.98 "Oswald",sans-serif;font-style:normal;letter-spacing:-.04em;-webkit-text-stroke:3px #c89b55;text-shadow:7px 7px 0 #7e5a29}
+.dek{margin-top:30px;max-width:820px;border-left:8px solid #c89b55;padding-left:22px;font-size:35px;line-height:1.42;font-weight:800;text-shadow:0 4px 18px rgba(0,0,0,.8)}
+.coverFoot{display:flex;justify-content:space-between;border-top:2px solid rgba(200,155,85,.55);padding-top:18px;font:700 20px "JetBrains Mono";letter-spacing:.09em;color:#dbc8aa}
+.dossier{inset:0;z-index:5;padding:80px 68px 96px;background:rgba(18,13,14,.20)}
+.dHead{display:grid;grid-template-columns:1fr auto auto;gap:18px;align-items:center;border-top:3px solid #f5e8d3;border-bottom:1px solid rgba(200,155,85,.62);padding:16px 0;font:700 20px "JetBrains Mono";letter-spacing:.08em}
+.dHead span{font-size:28px;color:#e2bc7d}.dHead i{font-style:normal;color:#cbbba1}.rankGhost{position:absolute;right:34px;top:236px;font:900 340px/.8 "Oswald";color:#f5e8d3;-webkit-text-stroke:3px #f5e8d3;opacity:.16;letter-spacing:-.06em}
+.dBody{position:absolute;left:68px;right:68px;bottom:170px;padding:32px 36px 36px;background:rgba(18,13,14,.91);border-left:8px solid #c89b55;border-top:1px solid rgba(200,155,85,.58)}
+.archive{font:900 18px "JetBrains Mono";letter-spacing:.18em;color:#e2bc7d}.dBody h2{margin-top:14px;font:900 84px/1.02 "Oswald","Songti SC";overflow-wrap:anywhere;text-shadow:0 3px 20px #000}
+.artist{margin-top:12px;font:800 25px/1.25 "JetBrains Mono";letter-spacing:.035em;color:#d1c2aa}.rule{height:5px;margin:24px 0 20px;background:#c89b55;transform-origin:left}
+.tag{font-size:39px;line-height:1.34;font-weight:900}.note{margin-top:13px;font-size:25px;line-height:1.5;font-weight:700;color:#baa98f}
+.wave{position:absolute;left:72px;top:312px;height:112px;display:flex;gap:11px;align-items:end;opacity:.72}.wave i{display:block;width:8px;background:#c89b55}.wave i:nth-child(1){height:38px}.wave i:nth-child(2){height:72px}.wave i:nth-child(3){height:52px}.wave i:nth-child(4){height:96px}.wave i:nth-child(5){height:65px}.wave i:nth-child(6){height:44px}.wave i:nth-child(7){height:84px}.wave i:nth-child(8){height:56px}.wave i:nth-child(9){height:102px}
+.rankRail{position:absolute;right:54px;bottom:78px;display:flex;gap:9px;font:900 19px "JetBrains Mono"}.rankRail span{width:67px;border-top:4px solid #5a514b;padding-top:8px;color:#766d65;text-align:center}.rankRail span.active{border-color:#c89b55;color:#f5e8d3}
+.topRank .dBody{border-left-color:#f0bf65}.topRank .dHead span,.topRank .archive{color:#f3c979}.topRank .rule{background:#f0bf65}
+.mini{z-index:5;left:58px;top:74px;min-width:660px;max-width:930px;padding:17px 22px 19px 25px;background:rgba(18,13,14,.90);border-left:7px solid #c89b55;border-top:1px solid rgba(200,155,85,.62);display:grid;grid-template-columns:1fr auto;gap:6px 20px}
+.mini div{grid-column:1/3;font:900 17px "JetBrains Mono";letter-spacing:.13em;color:#e2bc7d}.mini strong{font:900 39px/1.05 "Oswald","Songti SC";overflow-wrap:anywhere}.mini span{align-self:end;font:700 16px "JetBrains Mono";color:#bbaa90;text-align:right}.mini.topRank{border-left-color:#f0bf65}
+#gate{position:absolute;inset:0;z-index:20;overflow:hidden;pointer-events:none}#gateLeft,#gateRight{position:absolute;top:0;width:540px;height:1920px;background:#120d0e}#gateLeft{left:0;border-right:5px solid #c89b55}#gateRight{right:0;border-left:5px solid #c89b55}
+.gateCode{z-index:22;left:50%;top:50%;transform:translate(-50%,-50%);border:3px solid #c89b55;background:#120d0e;padding:16px 27px;font:900 28px "JetBrains Mono";letter-spacing:.16em;white-space:nowrap}
+#outro{inset:0;z-index:5;padding:82px 68px 118px;background:rgba(18,13,14,.76)}.outHead{display:flex;justify-content:space-between;border-top:3px solid #f5e8d3;border-bottom:1px solid rgba(200,155,85,.62);padding:15px 0;font:700 20px "JetBrains Mono";letter-spacing:.12em}
+#outro h2{margin-top:48px;font:900 70px/1.12 "Songti SC",serif}#outro h2 em{font-style:normal;color:#e2bc7d}#outro ol{list-style:none;margin-top:32px;display:grid;gap:11px}
+#outro li{display:grid;grid-template-columns:72px 1fr;gap:18px;align-items:center;border-top:1px solid rgba(200,155,85,.46);padding:15px 14px;background:rgba(18,13,14,.70)}#outro li b{font:900 36px "Oswald";color:#e2bc7d}#outro li div{display:flex;justify-content:space-between;align-items:baseline;gap:18px}#outro li strong{font:900 31px "Oswald","Songti SC"}#outro li small{font:700 15px "JetBrains Mono";color:#a99a84;text-align:right}
+.outClose{margin-top:26px;border-left:7px solid #c89b55;padding-left:20px;font-size:28px;line-height:1.5;font-weight:800;color:#dfcfb6}#cta{z-index:12;left:68px;right:68px;bottom:76px;padding:20px 24px;background:#120d0e;border:2px solid #f0bf65;text-align:center}.vote{font-size:37px;font-weight:900;color:#f0c878}.follow{margin-top:8px;font:900 21px "JetBrains Mono";letter-spacing:.16em}
+</style></head><body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="541.6" data-width="1080" data-height="1920"><div id="base" class="clip" data-start="0" data-duration="541.6" data-track-index="0"></div><video id="footage" class="clip fv" data-start="0" data-duration="541.6" data-track-index="1" src="clips_seg/footage_track.mp4" muted playsinline></video><div id="tint" class="clip" data-start="0" data-duration="541.6" data-track-index="2"></div><div id="frame" class="clip" data-start="0" data-duration="541.6" data-track-index="14"></div><div id="folio" class="clip" data-start="0" data-duration="541.6" data-track-index="15">SAXOPHONE / MASTER ARCHIVE · 05→01</div><section id="cover" class="clip" data-start="0" data-duration="10.75" data-track-index="5"><div class="coverTop"><span>MIDNIGHT BRASS / MASTER ARCHIVE</span><b>05→01</b></div><div class="coverMain"><div class="stamp">TOP TIER / 夜色情绪</div><h1>最顶级的<br><em>5首萨克斯纯音乐</em></h1><p class="dek">没有一句歌词，也能让空气先变成情绪。</p></div><div class="coverFoot"><span>BRASS / AFTER DARK</span><span>MASTER RECORD · 2026</span></div></section><section id="dossier0" class="clip dossier" data-start="10.75" data-duration="12.35" data-track-index="20"><div class="dHead"><span>RANK 05</span><b>LIVE · 1981</b><i>SOUL JAZZ</i></div><div class="rankGhost">05</div><div class="dBody"><div class="archive">BRASS MASTER / 夜色情绪档案</div><h2>Mister Magic</h2><p class="artist">GROVER WASHINGTON JR.</p><div class="rule"></div><p class="tag">让萨克斯放下深情，开始真正地摇摆。</p><p class="note">厚实暖音色 × 松弛律动 × 真实现场</p></div><div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="rankRail"><span class="active">05</span><span class="">04</span><span class="">03</span><span class="">02</span><span class="">01</span></div></section><section id="mini0" class="clip mini" data-start="23.1" data-duration="123.3" data-track-index="30"><div>RANK 05 / FULL MUSIC</div><strong>Mister Magic</strong><span>GROVER WASHINGTON JR.</span></section><section id="dossier1" class="clip dossier" data-start="146.4" data-duration="11.425" data-track-index="21"><div class="dHead"><span>RANK 04</span><b>OFFICIAL VIDEO · 1992</b><i>ROMANCE</i></div><div class="rankGhost">04</div><div class="dBody"><div class="archive">BRASS MASTER / 夜色情绪档案</div><h2>Forever in Love</h2><p class="artist">KENNY G</p><div class="rule"></div><p class="tag">像一段没有歌词的告白，浪漫却始终克制。</p><p class="note">钢琴和弦 × 柔和弦乐 × 高音萨克斯</p></div><div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="rankRail"><span class="">05</span><span class="active">04</span><span class="">03</span><span class="">02</span><span class="">01</span></div></section><section id="mini1" class="clip mini" data-start="157.825" data-duration="65.5" data-track-index="31"><div>RANK 04 / FULL MUSIC</div><strong>Forever in Love</strong><span>KENNY G</span></section><section id="dossier2" class="clip dossier" data-start="223.325" data-duration="10.45" data-track-index="22"><div class="dHead"><span>RANK 03</span><b>OFFICIAL VIDEO · 1989</b><i>NOIR</i></div><div class="rankGhost">03</div><div class="dBody"><div class="archive">BRASS MASTER / 夜色情绪档案</div><h2>Lily Was Here</h2><p class="artist">DAVID A. STEWART & CANDY DULFER</p><div class="rule"></div><p class="tag">城市夜色里，慵懒、性感，又带一点危险。</p><p class="note">电吉他 × 中音萨克斯 × 黑色电影气质</p></div><div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="rankRail"><span class="">05</span><span class="">04</span><span class="active">03</span><span class="">02</span><span class="">01</span></div></section><section id="mini2" class="clip mini" data-start="233.775" data-duration="74.5" data-track-index="32"><div>RANK 03 / FULL MUSIC</div><strong>Lily Was Here</strong><span>DAVID A. STEWART & CANDY DULFER</span></section><section id="dossier3" class="clip dossier" data-start="308.275" data-duration="11.95" data-track-index="23"><div class="dHead"><span>RANK 02</span><b>OFFICIAL VIDEO · 1990</b><i>HOMECOMING</i></div><div class="rankGhost">02</div><div class="dBody"><div class="archive">BRASS MASTER / 夜色情绪档案</div><h2>Going Home</h2><p class="artist">KENNY G</p><div class="rule"></div><p class="tag">把黄昏和归途，变成人人听得懂的声音。</p><p class="note">舒缓和弦 × 归途意象 × 经典旋律</p></div><div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="rankRail"><span class="">05</span><span class="">04</span><span class="">03</span><span class="active">02</span><span class="">01</span></div></section><section id="mini3" class="clip mini" data-start="320.225" data-duration="88.0" data-track-index="33"><div>RANK 02 / FULL MUSIC</div><strong>Going Home</strong><span>KENNY G</span></section><section id="dossier4" class="clip dossier topRank" data-start="408.225" data-duration="13.3" data-track-index="24"><div class="dHead"><span>RANK 01</span><b>OFFICIAL VIDEO · 1986</b><i>STANDARD</i></div><div class="rankGhost">01</div><div class="dBody"><div class="archive">BRASS MASTER / 夜色情绪档案</div><h2>Songbird</h2><p class="artist">KENNY G</p><div class="rule"></div><p class="tag">简单、温暖又孤独，直抵现代萨克斯的标准答案。</p><p class="note">极简旋律 × 温暖音色 × 永恒辨识度</p></div><div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="rankRail"><span class="">05</span><span class="">04</span><span class="">03</span><span class="">02</span><span class="active">01</span></div></section><section id="mini4" class="clip mini topRank" data-start="421.525" data-duration="96.4" data-track-index="34"><div>RANK 01 / FULL MUSIC</div><strong>Songbird</strong><span>KENNY G</span></section><div id="gate" class="clip" data-start="0" data-duration="541.6" data-track-index="18"><div id="gateLeft" data-layout-allow-overflow></div><div id="gateRight" data-layout-allow-overflow></div></div><div id="gate0" class="clip gateCode" data-start="146.12" data-duration=".82" data-track-index="50">BRASS / CUT</div><div id="gate1" class="clip gateCode" data-start="223.045" data-duration=".82" data-track-index="51">BRASS / CUT</div><div id="gate2" class="clip gateCode" data-start="307.995" data-duration=".82" data-track-index="52">BRASS / CUT</div><div id="gate3" class="clip gateCode" data-start="407.945" data-duration=".82" data-track-index="53">BRASS / CUT</div><div id="gate4" class="clip gateCode" data-start="517.645" data-duration=".82" data-track-index="54">BRASS / CUT</div><section id="outro" class="clip" data-start="517.925" data-duration="23.675" data-track-index="6"><div class="outHead"><span>MIDNIGHT BRASS ARCHIVE</span><span>FINAL ORDER / 05→01</span></div><h2>五段旋律，留下<br><em>五种没有歌词的情绪</em></h2><ol><li><b>05</b><div><strong>Mister Magic</strong><small>GROVER WASHINGTON JR.</small></div></li><li><b>04</b><div><strong>Forever in Love</strong><small>KENNY G</small></div></li><li><b>03</b><div><strong>Lily Was Here</strong><small>DAVID A. STEWART & CANDY DULFER</small></div></li><li><b>02</b><div><strong>Going Home</strong><small>KENNY G</small></div></li><li><b>01</b><div><strong>Songbird</strong><small>KENNY G</small></div></li></ol><p class="outClose">萨克斯一开口，每个人都会听见自己的故事。</p></section><section id="cta" class="clip" data-start="529.83" data-duration="11.77" data-track-index="16"><div class="vote">为你的第一名，评论区投票</div><div class="follow">点赞 · 收藏 · 关注</div></section><audio id="renderAudio" class="clip" data-start="0" data-duration="541.6" data-track-index="7" src="render_silence.wav" data-volume="1"></audio></div>
+<script>window.__timelines=window.__timelines||{};const tl=gsap.timeline({paused:true});
+tl.set("#cover, #cover .coverTop, #cover .stamp, #cover h1, #cover .dek, #cover .coverFoot",{opacity:1,x:0,y:0},0);
+tl.set("#gateLeft",{x:-550},0);tl.set("#gateRight",{x:550},0);
+tl.fromTo("#cover .stamp",{rotation:-4,scale:.96},{rotation:-2,scale:1,duration:.34,ease:"power3.out"},.12);
+tl.fromTo("#cover h1",{x:-7},{x:7,duration:4.4,ease:"sine.inOut",yoyo:true,repeat:1},.18);
+tl.fromTo("#cover .coverTop",{scaleX:.98},{scaleX:1,duration:.45,ease:"power2.out"},.08);
+tl.fromTo("#dossier0 .dHead",{x:-42,opacity:0},{x:0,opacity:1,duration:.42,ease:"power3.out"},10.93);
+tl.fromTo("#dossier0 .rankGhost",{x:80,opacity:0},{x:0,opacity:.16,duration:.58,ease:"power4.out"},11.03);
+tl.fromTo("#dossier0 .archive",{y:22,opacity:0},{y:0,opacity:1,duration:.38,ease:"power2.out"},11.17);
+tl.fromTo("#dossier0 h2",{y:56,opacity:0},{y:0,opacity:1,duration:.62,ease:"power4.out"},11.27);
+tl.fromTo("#dossier0 .artist",{x:-28,opacity:0},{x:0,opacity:1,duration:.44,ease:"power2.out"},11.49);
+tl.fromTo("#dossier0 .rule",{scaleX:0},{scaleX:1,duration:.52,ease:"power3.inOut"},11.61);
+tl.fromTo("#dossier0 .tag",{y:28,opacity:0},{y:0,opacity:1,duration:.48,ease:"power3.out"},11.75);
+tl.fromTo("#dossier0 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.42,ease:"power2.out"},11.95);
+tl.fromTo("#mini0",{x:-34,opacity:0},{x:0,opacity:1,duration:.38,ease:"power3.out"},23.18);
+tl.fromTo("#dossier1 .dHead",{x:-42,opacity:0},{x:0,opacity:1,duration:.42,ease:"power3.out"},146.58);
+tl.fromTo("#dossier1 .rankGhost",{x:80,opacity:0},{x:0,opacity:.16,duration:.58,ease:"power4.out"},146.68);
+tl.fromTo("#dossier1 .archive",{y:22,opacity:0},{y:0,opacity:1,duration:.38,ease:"power2.out"},146.82);
+tl.fromTo("#dossier1 h2",{y:56,opacity:0},{y:0,opacity:1,duration:.62,ease:"power4.out"},146.92);
+tl.fromTo("#dossier1 .artist",{x:-28,opacity:0},{x:0,opacity:1,duration:.44,ease:"power2.out"},147.14);
+tl.fromTo("#dossier1 .rule",{scaleX:0},{scaleX:1,duration:.52,ease:"power3.inOut"},147.26);
+tl.fromTo("#dossier1 .tag",{y:28,opacity:0},{y:0,opacity:1,duration:.48,ease:"power3.out"},147.4);
+tl.fromTo("#dossier1 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.42,ease:"power2.out"},147.6);
+tl.fromTo("#mini1",{x:-34,opacity:0},{x:0,opacity:1,duration:.38,ease:"power3.out"},157.905);
+tl.fromTo("#dossier2 .dHead",{x:-42,opacity:0},{x:0,opacity:1,duration:.42,ease:"power3.out"},223.505);
+tl.fromTo("#dossier2 .rankGhost",{x:80,opacity:0},{x:0,opacity:.16,duration:.58,ease:"power4.out"},223.605);
+tl.fromTo("#dossier2 .archive",{y:22,opacity:0},{y:0,opacity:1,duration:.38,ease:"power2.out"},223.745);
+tl.fromTo("#dossier2 h2",{y:56,opacity:0},{y:0,opacity:1,duration:.62,ease:"power4.out"},223.845);
+tl.fromTo("#dossier2 .artist",{x:-28,opacity:0},{x:0,opacity:1,duration:.44,ease:"power2.out"},224.065);
+tl.fromTo("#dossier2 .rule",{scaleX:0},{scaleX:1,duration:.52,ease:"power3.inOut"},224.185);
+tl.fromTo("#dossier2 .tag",{y:28,opacity:0},{y:0,opacity:1,duration:.48,ease:"power3.out"},224.325);
+tl.fromTo("#dossier2 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.42,ease:"power2.out"},224.525);
+tl.fromTo("#mini2",{x:-34,opacity:0},{x:0,opacity:1,duration:.38,ease:"power3.out"},233.855);
+tl.fromTo("#dossier3 .dHead",{x:-42,opacity:0},{x:0,opacity:1,duration:.42,ease:"power3.out"},308.455);
+tl.fromTo("#dossier3 .rankGhost",{x:80,opacity:0},{x:0,opacity:.16,duration:.58,ease:"power4.out"},308.555);
+tl.fromTo("#dossier3 .archive",{y:22,opacity:0},{y:0,opacity:1,duration:.38,ease:"power2.out"},308.695);
+tl.fromTo("#dossier3 h2",{y:56,opacity:0},{y:0,opacity:1,duration:.62,ease:"power4.out"},308.795);
+tl.fromTo("#dossier3 .artist",{x:-28,opacity:0},{x:0,opacity:1,duration:.44,ease:"power2.out"},309.015);
+tl.fromTo("#dossier3 .rule",{scaleX:0},{scaleX:1,duration:.52,ease:"power3.inOut"},309.135);
+tl.fromTo("#dossier3 .tag",{y:28,opacity:0},{y:0,opacity:1,duration:.48,ease:"power3.out"},309.275);
+tl.fromTo("#dossier3 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.42,ease:"power2.out"},309.475);
+tl.fromTo("#mini3",{x:-34,opacity:0},{x:0,opacity:1,duration:.38,ease:"power3.out"},320.305);
+tl.fromTo("#dossier4 .dHead",{x:-42,opacity:0},{x:0,opacity:1,duration:.42,ease:"power3.out"},408.405);
+tl.fromTo("#dossier4 .rankGhost",{x:80,opacity:0},{x:0,opacity:.16,duration:.58,ease:"power4.out"},408.505);
+tl.fromTo("#dossier4 .archive",{y:22,opacity:0},{y:0,opacity:1,duration:.38,ease:"power2.out"},408.645);
+tl.fromTo("#dossier4 h2",{y:56,opacity:0},{y:0,opacity:1,duration:.62,ease:"power4.out"},408.745);
+tl.fromTo("#dossier4 .artist",{x:-28,opacity:0},{x:0,opacity:1,duration:.44,ease:"power2.out"},408.965);
+tl.fromTo("#dossier4 .rule",{scaleX:0},{scaleX:1,duration:.52,ease:"power3.inOut"},409.085);
+tl.fromTo("#dossier4 .tag",{y:28,opacity:0},{y:0,opacity:1,duration:.48,ease:"power3.out"},409.225);
+tl.fromTo("#dossier4 .note",{y:18,opacity:0},{y:0,opacity:1,duration:.42,ease:"power2.out"},409.425);
+tl.fromTo("#mini4",{x:-34,opacity:0},{x:0,opacity:1,duration:.38,ease:"power3.out"},421.605);
+tl.to("#footage",{filter:"blur(16px)",scale:1.035,duration:.20,ease:"power2.in"},146.2);
+tl.to("#gateLeft",{x:0,duration:.22,ease:"power4.in"},146.18);
+tl.to("#gateRight",{x:0,duration:.22,ease:"power4.in"},146.18);
+tl.fromTo("#gate0",{scale:.84,opacity:0},{scale:1,opacity:1,duration:.16,ease:"power3.out"},146.38);
+tl.to("#gate0",{opacity:0,duration:.16,ease:"power2.in"},146.55);
+tl.to("#gateLeft",{x:-550,duration:.34,ease:"power4.out"},146.5);
+tl.to("#gateRight",{x:550,duration:.34,ease:"power4.out"},146.5);
+tl.to("#footage",{filter:"blur(0px)",scale:1,duration:.34,ease:"power2.out"},146.5);
+tl.to("#footage",{filter:"blur(16px)",scale:1.035,duration:.20,ease:"power2.in"},223.125);
+tl.to("#gateLeft",{x:0,duration:.22,ease:"power4.in"},223.105);
+tl.to("#gateRight",{x:0,duration:.22,ease:"power4.in"},223.105);
+tl.fromTo("#gate1",{scale:.84,opacity:0},{scale:1,opacity:1,duration:.16,ease:"power3.out"},223.305);
+tl.to("#gate1",{opacity:0,duration:.16,ease:"power2.in"},223.475);
+tl.to("#gateLeft",{x:-550,duration:.34,ease:"power4.out"},223.425);
+tl.to("#gateRight",{x:550,duration:.34,ease:"power4.out"},223.425);
+tl.to("#footage",{filter:"blur(0px)",scale:1,duration:.34,ease:"power2.out"},223.425);
+tl.to("#footage",{filter:"blur(16px)",scale:1.035,duration:.20,ease:"power2.in"},308.075);
+tl.to("#gateLeft",{x:0,duration:.22,ease:"power4.in"},308.055);
+tl.to("#gateRight",{x:0,duration:.22,ease:"power4.in"},308.055);
+tl.fromTo("#gate2",{scale:.84,opacity:0},{scale:1,opacity:1,duration:.16,ease:"power3.out"},308.255);
+tl.to("#gate2",{opacity:0,duration:.16,ease:"power2.in"},308.425);
+tl.to("#gateLeft",{x:-550,duration:.34,ease:"power4.out"},308.375);
+tl.to("#gateRight",{x:550,duration:.34,ease:"power4.out"},308.375);
+tl.to("#footage",{filter:"blur(0px)",scale:1,duration:.34,ease:"power2.out"},308.375);
+tl.to("#footage",{filter:"blur(16px)",scale:1.035,duration:.20,ease:"power2.in"},408.025);
+tl.to("#gateLeft",{x:0,duration:.22,ease:"power4.in"},408.005);
+tl.to("#gateRight",{x:0,duration:.22,ease:"power4.in"},408.005);
+tl.fromTo("#gate3",{scale:.84,opacity:0},{scale:1,opacity:1,duration:.16,ease:"power3.out"},408.205);
+tl.to("#gate3",{opacity:0,duration:.16,ease:"power2.in"},408.375);
+tl.to("#gateLeft",{x:-550,duration:.34,ease:"power4.out"},408.325);
+tl.to("#gateRight",{x:550,duration:.34,ease:"power4.out"},408.325);
+tl.to("#footage",{filter:"blur(0px)",scale:1,duration:.34,ease:"power2.out"},408.325);
+tl.to("#footage",{filter:"blur(16px)",scale:1.035,duration:.20,ease:"power2.in"},517.725);
+tl.to("#gateLeft",{x:0,duration:.22,ease:"power4.in"},517.705);
+tl.to("#gateRight",{x:0,duration:.22,ease:"power4.in"},517.705);
+tl.fromTo("#gate4",{scale:.84,opacity:0},{scale:1,opacity:1,duration:.16,ease:"power3.out"},517.905);
+tl.to("#gate4",{opacity:0,duration:.16,ease:"power2.in"},518.075);
+tl.to("#gateLeft",{x:-550,duration:.34,ease:"power4.out"},518.025);
+tl.to("#gateRight",{x:550,duration:.34,ease:"power4.out"},518.025);
+tl.to("#footage",{filter:"blur(0px)",scale:1,duration:.34,ease:"power2.out"},518.025);
+tl.fromTo("#outro .outHead",{x:-34,opacity:0},{x:0,opacity:1,duration:.45,ease:"power3.out"},518.145);
+tl.fromTo("#outro h2",{y:46,opacity:0},{y:0,opacity:1,duration:.62,ease:"power4.out"},518.405);
+tl.fromTo("#outro li",{x:-38,opacity:0},{x:0,opacity:1,duration:.36,ease:"power3.out",stagger:.10},518.885);
+tl.fromTo("#outro .outClose",{y:20,opacity:0},{y:0,opacity:1,duration:.42,ease:"power2.out"},519.645);
+tl.fromTo("#cta .vote",{y:24,opacity:0},{y:0,opacity:1,duration:.48,ease:"power3.out"},529.95);
+tl.fromTo("#cta .follow",{y:15,opacity:0},{y:0,opacity:1,duration:.42,ease:"power2.out"},530.23);
+tl.to("#root",{opacity:0,duration:.50,ease:"power2.in"},541.1);
+window.__timelines["main"]=tl;</script>
+</body></html>

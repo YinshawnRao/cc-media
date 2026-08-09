@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_nanhai.wav'
-file 'seg_p4_gelou.wav'
-file 'seg_p3_touming.wav'
-file 'seg_p2_juzishu.wav'
-file 'seg_p1_key.wav'
-file 'seg_outro.wav'

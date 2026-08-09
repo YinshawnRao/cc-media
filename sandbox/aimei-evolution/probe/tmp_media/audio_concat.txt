@@ -1,8 +1,0 @@
-file /Users/yinshawnrao/explorer/cc-media/sandbox/aimei-evolution/audio/segments/intro.wav
-file /Users/yinshawnrao/explorer/cc-media/sandbox/aimei-evolution/audio/segments/qingxue.wav
-file /Users/yinshawnrao/explorer/cc-media/sandbox/aimei-evolution/audio/segments/hou.wav
-file /Users/yinshawnrao/explorer/cc-media/sandbox/aimei-evolution/audio/segments/xue.wav
-file /Users/yinshawnrao/explorer/cc-media/sandbox/aimei-evolution/audio/segments/rainie.wav
-file /Users/yinshawnrao/explorer/cc-media/sandbox/aimei-evolution/audio/segments/faye.wav
-file /Users/yinshawnrao/explorer/cc-media/sandbox/aimei-evolution/audio/segments/outro.wav
-file /Users/yinshawnrao/explorer/cc-media/sandbox/aimei-evolution/audio/segments/cta.wav

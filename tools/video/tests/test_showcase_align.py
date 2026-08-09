@@ -95,6 +95,37 @@ class VerifySongTests(unittest.TestCase):
         self.assertEqual("FAIL", result["status"])
         self.assertEqual("imminent_next_onset", result["metrics"]["end_reason"])
 
+    def test_intro_hard_restart_allows_long_instrumental_opening(self):
+        value = analysis(
+            [[30.0, 39.7]],
+            evidence="multi_evidence",
+            safe=[[39.95, 40.20]],
+        )
+        result = align.verify_song(
+            value,
+            narr_end_src=8.0,
+            show_start_src=0.0,
+            show_end_src=40.0,
+            mode="intro_hard_restart",
+        )
+        self.assertEqual("OK", result["status"])
+        self.assertEqual("intro_hard_restart", result["metrics"]["mode"])
+
+    def test_intro_hard_restart_rejects_nonzero_show_start(self):
+        value = analysis(
+            [[30.0, 39.7]],
+            evidence="multi_evidence",
+            safe=[[39.95, 40.20]],
+        )
+        result = align.verify_song(
+            value,
+            narr_end_src=8.0,
+            show_start_src=1.0,
+            show_end_src=40.0,
+            mode="intro_hard_restart",
+        )
+        self.assertEqual("FAIL", result["status"])
+
     def test_weak_word_boundary_still_prevents_cut(self):
         value = analysis(
             [[7.5, 39.7]],

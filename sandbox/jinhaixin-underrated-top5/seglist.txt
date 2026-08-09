@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_laibuji.wav'
-file 'seg_p4_bitian.wav'
-file 'seg_p3_duian.wav'
-file 'seg_p2_sleep.wav'
-file 'seg_p1_right.wav'
-file 'seg_outro.wav'

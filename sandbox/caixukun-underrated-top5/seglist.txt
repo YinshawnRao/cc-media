@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_meiyouyiwai.wav'
-file 'seg_p4_rideordie.wav'
-file 'seg_p3_ganshouta.wav'
-file 'seg_p2_hugme.wav'
-file 'seg_p1_home.wav'
-file 'seg_outro.wav'

@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_xingqiu.wav'
-file 'seg_p4_haibian.wav'
-file 'seg_p3_qixian.wav'
-file 'seg_p2_woni.wav'
-file 'seg_p1_ruguo.wav'
-file 'seg_outro.wav'

@@ -1,7 +1,0 @@
-file 'clips_seg/intro.mp4'
-file 'clips_seg/p5_pinlv.mp4'
-file 'clips_seg/p4_bdwolf.mp4'
-file 'clips_seg/p3_baowei.mp4'
-file 'clips_seg/p2_yanwo.mp4'
-file 'clips_seg/p1_wuyan.mp4'
-file 'clips_seg/outro.mp4'

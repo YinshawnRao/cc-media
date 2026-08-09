@@ -26,7 +26,7 @@ The repository is in an **exploration phase**. When scaffolding, follow `CONVENT
 1. 读 `CONVENTIONS.md`（全局规范 + brief 格式 + QA 方法论）和 `tools/video/README.md`（从 brief 到成片的 Runbook）。
 2. 复用脚本在 `tools/`（配音 `tools/tts/`、竖屏 `tools/video/vfill.sh`、音轨+合成模板 `tools/video/countdown_build.py`）——不要重造。
 3. 涉及联网下载（yt-dlp）先确认对应平台 cookie 可用（仓库根目录 `www.youtube.com_cookies.txt` / `www.bilibili.com_cookies.txt`）；产物写 `sandbox/<slug>/`。**Cookie 只允许放根目录，不得在 `sandbox/` 下复制或覆盖第二份。**
-4. **关键铁律**：① 渲染后必须用预混 master.wav **后期 mux**（HyperFrames 会压平音频动态）；② 我看不到画面/听不到声音，**QA 靠抽帧 Read + ffmpeg volumedetect/silencedetect**，不凭感觉下结论；③ 成片里不得出现水印/网址/提示词/路径。
+4. **关键铁律**：① 渲染后必须用预混 master.wav **后期 mux**（HyperFrames 会压平音频动态）；② 我看不到画面/听不到声音，**QA 靠抽帧 Read + ffmpeg volumedetect/silencedetect**，不凭感觉下结论；③ 成片里不得出现水印/网址/提示词/路径；④ **禁止自定义旁白字幕**（不要把 TTS 口播再叠成底部字幕条；用户未显式要求就一律不加，详见 `CONVENTIONS.md`「禁止自定义旁白字幕」）。
 
 ## AI 克隆歌手音色 MV 复用协议
 

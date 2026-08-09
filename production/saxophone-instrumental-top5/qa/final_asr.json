@@ -1,0 +1,160 @@
+{
+  "status": "OK",
+  "model": "whisper-small-local",
+  "audio_source": "renders/saxophone-instrumental-top5.mp4",
+  "items": [
+    {
+      "key": "intro",
+      "source": "final post-mux AAC",
+      "start": 0.0,
+      "end": 10.75,
+      "expected": "有些乐器，一开口就能把空气变成情绪。最顶级的五首萨克斯纯音乐，第五名到第一名。",
+      "transcript_raw": "有些樂器一開口就能把空氣變成情緒最頂級的五首薩克斯純音樂第五名到第一名",
+      "transcript_normalized": "有些樂器一開口就能把空氣變成情緒最頂級的五首萨克斯純音樂第五名到第一名",
+      "normalization_scope": [
+        "薩克斯->萨克斯",
+        "評論區->评论区",
+        "點贊->点赞"
+      ],
+      "similarity": 0.743,
+      "context_tokens": [
+        "五首",
+        "萨克斯"
+      ],
+      "context_ok": true,
+      "forbidden_next": false
+    },
+    {
+      "key": "p5",
+      "source": "final post-mux AAC",
+      "start": 11.0,
+      "end": 21.75,
+      "expected": "第五名。它让萨克斯先放下深情，开始真正地摇摆。厚实暖音色配上松弛律动，身体会比耳朵先听懂。",
+      "transcript_raw": "第五名他让萨克斯先放下深情开始真正地摇摆后时暖音色配上松弛绿洞身体会逼而躲先停等",
+      "transcript_normalized": "第五名他让萨克斯先放下深情开始真正地摇摆后时暖音色配上松弛绿洞身体会逼而躲先停等",
+      "normalization_scope": [
+        "薩克斯->萨克斯",
+        "評論區->评论区",
+        "點贊->点赞"
+      ],
+      "similarity": 0.75,
+      "context_tokens": [
+        "第五",
+        "摇摆",
+        "萨克斯"
+      ],
+      "context_ok": true,
+      "forbidden_next": false
+    },
+    {
+      "key": "p4",
+      "source": "final post-mux AAC",
+      "start": 146.65,
+      "end": 156.475,
+      "expected": "第四名。钢琴和弦乐把空间铺开，萨克斯像一段没有歌词的告白。浪漫，却始终保留克制。",
+      "transcript_raw": "第四名,鋼琴和弦乐把空间铺开,薩克思想一段没有歌词的告白。浪漫却始终保留克制。",
+      "transcript_normalized": "第四名,鋼琴和弦乐把空间铺开,薩克思想一段没有歌词的告白。浪漫却始终保留克制。",
+      "normalization_scope": [
+        "薩克斯->萨克斯",
+        "評論區->评论区",
+        "點贊->点赞"
+      ],
+      "similarity": 0.886,
+      "context_tokens": [
+        "第四",
+        "钢琴",
+        "浪漫"
+      ],
+      "context_ok": true,
+      "forbidden_next": false
+    },
+    {
+      "key": "p3",
+      "source": "final post-mux AAC",
+      "start": 223.575,
+      "end": 232.425,
+      "expected": "第三名。吉他铺开城市夜色，萨克斯慢慢说出心事。慵懒，性感，又带一点危险。",
+      "transcript_raw": "第三名吉他鋪開城市夜色薩克斯慢慢說出心事湧蘭性感又帶一點危險",
+      "transcript_normalized": "第三名吉他鋪開城市夜色萨克斯慢慢說出心事湧蘭性感又帶一點危險",
+      "normalization_scope": [
+        "薩克斯->萨克斯",
+        "評論區->评论区",
+        "點贊->点赞"
+      ],
+      "similarity": 0.733,
+      "context_tokens": [
+        "第三",
+        "城市",
+        "萨克斯"
+      ],
+      "context_ok": true,
+      "forbidden_next": false
+    },
+    {
+      "key": "p2",
+      "source": "final post-mux AAC",
+      "start": 308.525,
+      "end": 318.875,
+      "expected": "第二名。旋律一响，黄昏、归途和一天结束后的画面都回来了。它把回家，变成所有人都听得懂的声音。",
+      "transcript_raw": "第二名玄律一響,黃昏,歸途和一天結束後的畫面都回來了。他把回家變成所有人都聽得懂的聲音。",
+      "transcript_normalized": "第二名玄律一響,黃昏,歸途和一天結束後的畫面都回來了。他把回家變成所有人都聽得懂的聲音。",
+      "normalization_scope": [
+        "薩克斯->萨克斯",
+        "評論區->评论区",
+        "點贊->点赞"
+      ],
+      "similarity": 0.7,
+      "context_tokens": [
+        "第二",
+        "回家",
+        "归途"
+      ],
+      "context_ok": true,
+      "forbidden_next": false
+    },
+    {
+      "key": "p1",
+      "source": "final post-mux AAC",
+      "start": 408.475,
+      "end": 420.175,
+      "expected": "第一名。没有复杂铺垫，旋律像一束光直接进入耳朵。简单，温暖，又带一点孤独。它就是现代萨克斯最接近标准答案的一首。",
+      "transcript_raw": "第一名没有复杂铺垫,玄律向衣束光直接进入而躲。简单温暖又带一点孤独,它就是现代萨克斯最接近标准答案的一手。",
+      "transcript_normalized": "第一名没有复杂铺垫,玄律向衣束光直接进入而躲。简单温暖又带一点孤独,它就是现代萨克斯最接近标准答案的一手。",
+      "normalization_scope": [
+        "薩克斯->萨克斯",
+        "評論區->评论区",
+        "點贊->点赞"
+      ],
+      "similarity": 0.878,
+      "context_tokens": [
+        "第一",
+        "旋律",
+        "萨克斯"
+      ],
+      "context_ok": true,
+      "forbidden_next": false
+    },
+    {
+      "key": "outro",
+      "source": "final post-mux AAC",
+      "start": 517.925,
+      "end": 541.6,
+      "expected": "从松弛律动到浪漫告白，从城市夜色到归途和孤独。萨克斯不用一句歌词，也能让每个人听见自己的故事。你最想为哪一首投票？评论区告诉我。记得点赞、收藏、关注我，下一期，可能就盘到你单曲循环过的那一首。",
+      "transcript_raw": "從松池律動到浪漫告白,從城市夜色到歸途和孤獨。薩克斯不用一句歌詞,也能讓每個人聽見自己的故事。你最想為哪一首投票,評論區告訴我,記得點贊,收藏,關注我下一期,可能就盤到你單區循環過的那一首。",
+      "transcript_normalized": "從松池律動到浪漫告白,從城市夜色到歸途和孤獨。萨克斯不用一句歌詞,也能讓每個人聽見自己的故事。你最想為哪一首投票,评论区告訴我,記得点赞,收藏,關注我下一期,可能就盤到你單區循環過的那一首。",
+      "normalization_scope": [
+        "薩克斯->萨克斯",
+        "評論區->评论区",
+        "點贊->点赞"
+      ],
+      "similarity": 0.765,
+      "context_tokens": [
+        "萨克斯",
+        "评论区",
+        "点赞"
+      ],
+      "context_ok": true,
+      "forbidden_next": false
+    }
+  ]
+}

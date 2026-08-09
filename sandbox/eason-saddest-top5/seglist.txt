@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_putao.wav'
-file 'seg_sunyou.wav'
-file 'seg_renlai.wav'
-file 'seg_mingnian.wav'
-file 'seg_fushi.wav'
-file 'seg_outro.wav'

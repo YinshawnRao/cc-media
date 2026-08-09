@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_feicheng.wav'
-file 'seg_p4_zhuanyan.wav'
-file 'seg_p3_anxin.wav'
-file 'seg_p2_gangqinjian.wav'
-file 'seg_p1_shuizhongyang.wav'
-file 'seg_outro.wav'

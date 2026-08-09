@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_aishangle.wav'
-file 'seg_p4_yuedinglantian.wav'
-file 'seg_p3_xinqingchezhan.wav'
-file 'seg_p2_bieku.wav'
-file 'seg_p1_anjing.wav'
-file 'seg_outro.wav'

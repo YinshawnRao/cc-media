@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_ruijin.wav'
-file 'seg_p4_luchi.wav'
-file 'seg_p3_weijie.wav'
-file 'seg_p2_wogei.wav'
-file 'seg_p1_buyao.wav'
-file 'seg_outro.wav'

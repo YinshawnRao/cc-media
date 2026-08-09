@@ -1,4 +1,0 @@
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/zhaolei-underrated-top5/probe/_montage_tmp/p4_hadesen_0.mp4'
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/zhaolei-underrated-top5/probe/_montage_tmp/p4_hadesen_1.mp4'
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/zhaolei-underrated-top5/probe/_montage_tmp/p4_hadesen_2.mp4'
-file '/Users/yinshawnrao/explorer/cc-media/sandbox/zhaolei-underrated-top5/probe/_montage_tmp/p4_hadesen_3.mp4'

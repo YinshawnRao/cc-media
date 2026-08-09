@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_buka.wav'
-file 'seg_p4_hadesen.wav'
-file 'seg_p3_mali.wav'
-file 'seg_p2_renjia.wav'
-file 'seg_p1_xin.wav'
-file 'seg_outro.wav'

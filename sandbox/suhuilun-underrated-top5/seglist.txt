@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_ziyou.wav'
-file 'seg_p4_kuguo.wav'
-file 'seg_p3_niangai.wav'
-file 'seg_p2_yezi.wav'
-file 'seg_p1_nilai.wav'
-file 'seg_outro.wav'

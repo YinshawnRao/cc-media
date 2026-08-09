@@ -1,7 +1,0 @@
-file 'seg_intro.wav'
-file 'seg_p5_lamp.wav'
-file 'seg_p4_water.wav'
-file 'seg_p3_dawn.wav'
-file 'seg_p2_dream.wav'
-file 'seg_p1_passby.wav'
-file 'seg_outro.wav'

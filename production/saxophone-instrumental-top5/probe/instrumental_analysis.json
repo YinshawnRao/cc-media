@@ -1,0 +1,1470 @@
+{
+  "kind": "instrumental_phrase_analysis",
+  "items": [
+    {
+      "key": "p5",
+      "source": "p5_mister_magic_yt.mp4",
+      "source_duration": 879.194,
+      "program_level_p90_dbfs": -13.92,
+      "audible_threshold_dbfs": -45.92,
+      "natural_audible_end": 878.9,
+      "trailing_below_threshold": 0.294,
+      "estimated_tempo_bpm": 120.0,
+      "target_show_duration": 125.0,
+      "suggested_phrase_start": 748.7,
+      "suggested_show_duration": 130.2,
+      "strong_attacks": [
+        {
+          "time": 41.9,
+          "onset_score": 3.4733
+        },
+        {
+          "time": 48.4,
+          "onset_score": 3.6981
+        },
+        {
+          "time": 57.1,
+          "onset_score": 3.0277
+        },
+        {
+          "time": 74.4,
+          "onset_score": 5.0774
+        },
+        {
+          "time": 96.4,
+          "onset_score": 4.049
+        },
+        {
+          "time": 106.7,
+          "onset_score": 3.8232
+        },
+        {
+          "time": 114.8,
+          "onset_score": 3.3587
+        },
+        {
+          "time": 122.9,
+          "onset_score": 3.3173
+        },
+        {
+          "time": 135.9,
+          "onset_score": 3.2275
+        },
+        {
+          "time": 141.3,
+          "onset_score": 3.6464
+        },
+        {
+          "time": 171.5,
+          "onset_score": 3.2533
+        },
+        {
+          "time": 178.9,
+          "onset_score": 3.0038
+        },
+        {
+          "time": 197.9,
+          "onset_score": 3.8552
+        },
+        {
+          "time": 210.1,
+          "onset_score": 4.0157
+        },
+        {
+          "time": 308.5,
+          "onset_score": 3.0969
+        },
+        {
+          "time": 336.1,
+          "onset_score": 3.0578
+        },
+        {
+          "time": 374.7,
+          "onset_score": 3.0528
+        },
+        {
+          "time": 423.5,
+          "onset_score": 3.8294
+        },
+        {
+          "time": 450.5,
+          "onset_score": 2.997
+        },
+        {
+          "time": 593.4,
+          "onset_score": 3.2105
+        },
+        {
+          "time": 730.4,
+          "onset_score": 3.1463
+        },
+        {
+          "time": 748.7,
+          "onset_score": 3.0925
+        },
+        {
+          "time": 841.1,
+          "onset_score": 3.5091
+        },
+        {
+          "time": 846.4,
+          "onset_score": 3.2862
+        }
+      ],
+      "quiet_cut_candidates": [
+        {
+          "time": 13.6,
+          "rms_dbfs": -36.09,
+          "boundary_score": 0.4932
+        },
+        {
+          "time": 24.3,
+          "rms_dbfs": -19.55,
+          "boundary_score": 0.6344
+        },
+        {
+          "time": 28.5,
+          "rms_dbfs": -14.27,
+          "boundary_score": 0.6327
+        },
+        {
+          "time": 32.8,
+          "rms_dbfs": -14.32,
+          "boundary_score": 0.6394
+        },
+        {
+          "time": 39.3,
+          "rms_dbfs": -15.07,
+          "boundary_score": 0.6303
+        },
+        {
+          "time": 43.7,
+          "rms_dbfs": -14.6,
+          "boundary_score": 0.6345
+        },
+        {
+          "time": 48.0,
+          "rms_dbfs": -15.4,
+          "boundary_score": 0.6404
+        },
+        {
+          "time": 52.3,
+          "rms_dbfs": -14.5,
+          "boundary_score": 0.6392
+        },
+        {
+          "time": 65.9,
+          "rms_dbfs": -17.07,
+          "boundary_score": 0.6418
+        },
+        {
+          "time": 139.6,
+          "rms_dbfs": -23.36,
+          "boundary_score": 0.6214
+        },
+        {
+          "time": 287.5,
+          "rms_dbfs": -25.3,
+          "boundary_score": 0.6095
+        },
+        {
+          "time": 301.7,
+          "rms_dbfs": -15.22,
+          "boundary_score": 0.6473
+        },
+        {
+          "time": 328.1,
+          "rms_dbfs": -14.87,
+          "boundary_score": 0.6418
+        },
+        {
+          "time": 334.1,
+          "rms_dbfs": -16.63,
+          "boundary_score": 0.6333
+        },
+        {
+          "time": 346.4,
+          "rms_dbfs": -14.13,
+          "boundary_score": 0.633
+        },
+        {
+          "time": 351.6,
+          "rms_dbfs": -14.4,
+          "boundary_score": 0.6341
+        },
+        {
+          "time": 357.2,
+          "rms_dbfs": -17.96,
+          "boundary_score": 0.6234
+        },
+        {
+          "time": 366.0,
+          "rms_dbfs": -14.23,
+          "boundary_score": 0.625
+        },
+        {
+          "time": 371.2,
+          "rms_dbfs": -15.14,
+          "boundary_score": 0.6254
+        },
+        {
+          "time": 383.6,
+          "rms_dbfs": -20.17,
+          "boundary_score": 0.6394
+        },
+        {
+          "time": 401.3,
+          "rms_dbfs": -19.93,
+          "boundary_score": 0.6341
+        },
+        {
+          "time": 406.1,
+          "rms_dbfs": -20.05,
+          "boundary_score": 0.621
+        },
+        {
+          "time": 414.3,
+          "rms_dbfs": -18.97,
+          "boundary_score": 0.6304
+        },
+        {
+          "time": 418.4,
+          "rms_dbfs": -29.03,
+          "boundary_score": 0.5967
+        },
+        {
+          "time": 422.6,
+          "rms_dbfs": -29.41,
+          "boundary_score": 0.581
+        },
+        {
+          "time": 426.8,
+          "rms_dbfs": -19.91,
+          "boundary_score": 0.6309
+        },
+        {
+          "time": 430.9,
+          "rms_dbfs": -17.83,
+          "boundary_score": 0.6341
+        },
+        {
+          "time": 447.8,
+          "rms_dbfs": -16.08,
+          "boundary_score": 0.6422
+        },
+        {
+          "time": 456.6,
+          "rms_dbfs": -15.65,
+          "boundary_score": 0.6463
+        },
+        {
+          "time": 478.7,
+          "rms_dbfs": -24.84,
+          "boundary_score": 0.6149
+        },
+        {
+          "time": 486.9,
+          "rms_dbfs": -32.26,
+          "boundary_score": 0.558
+        },
+        {
+          "time": 501.2,
+          "rms_dbfs": -28.38,
+          "boundary_score": 0.6284
+        },
+        {
+          "time": 545.2,
+          "rms_dbfs": -23.55,
+          "boundary_score": 0.6316
+        },
+        {
+          "time": 811.9,
+          "rms_dbfs": -25.85,
+          "boundary_score": 0.6298
+        },
+        {
+          "time": 827.9,
+          "rms_dbfs": -14.19,
+          "boundary_score": 0.6393
+        },
+        {
+          "time": 847.0,
+          "rms_dbfs": -15.07,
+          "boundary_score": 0.6454
+        }
+      ],
+      "evidence": "librosa onset-strength attack plus relative RMS natural-end gate"
+    },
+    {
+      "key": "p4",
+      "source": "p4_forever_in_love_bili.mp4",
+      "source_duration": 247.723,
+      "program_level_p90_dbfs": -10.51,
+      "audible_threshold_dbfs": -42.51,
+      "natural_audible_end": 246.4,
+      "trailing_below_threshold": 1.323,
+      "estimated_tempo_bpm": 150.0,
+      "target_show_duration": 82.0,
+      "suggested_phrase_start": 175.9,
+      "suggested_show_duration": 70.5,
+      "strong_attacks": [
+        {
+          "time": 27.8,
+          "onset_score": 3.9388
+        },
+        {
+          "time": 38.2,
+          "onset_score": 1.7834
+        },
+        {
+          "time": 54.9,
+          "onset_score": 2.0319
+        },
+        {
+          "time": 60.6,
+          "onset_score": 1.8637
+        },
+        {
+          "time": 66.1,
+          "onset_score": 1.9513
+        },
+        {
+          "time": 75.4,
+          "onset_score": 1.8115
+        },
+        {
+          "time": 84.2,
+          "onset_score": 2.2289
+        },
+        {
+          "time": 90.7,
+          "onset_score": 2.7308
+        },
+        {
+          "time": 104.8,
+          "onset_score": 2.7092
+        },
+        {
+          "time": 113.9,
+          "onset_score": 1.94
+        },
+        {
+          "time": 127.7,
+          "onset_score": 2.2342
+        },
+        {
+          "time": 136.8,
+          "onset_score": 2.7393
+        },
+        {
+          "time": 146.5,
+          "onset_score": 2.0313
+        },
+        {
+          "time": 151.7,
+          "onset_score": 2.1806
+        },
+        {
+          "time": 160.3,
+          "onset_score": 2.3251
+        },
+        {
+          "time": 166.4,
+          "onset_score": 2.1295
+        },
+        {
+          "time": 175.9,
+          "onset_score": 2.87
+        },
+        {
+          "time": 179.9,
+          "onset_score": 2.3113
+        },
+        {
+          "time": 184.6,
+          "onset_score": 1.9476
+        },
+        {
+          "time": 191.3,
+          "onset_score": 3.3208
+        },
+        {
+          "time": 198.6,
+          "onset_score": 2.472
+        },
+        {
+          "time": 214.7,
+          "onset_score": 2.9154
+        },
+        {
+          "time": 218.8,
+          "onset_score": 2.3487
+        },
+        {
+          "time": 226.4,
+          "onset_score": 2.5522
+        }
+      ],
+      "quiet_cut_candidates": [
+        {
+          "time": 13.2,
+          "rms_dbfs": -15.09,
+          "boundary_score": 0.6487
+        },
+        {
+          "time": 18.3,
+          "rms_dbfs": -13.7,
+          "boundary_score": 0.6448
+        },
+        {
+          "time": 27.2,
+          "rms_dbfs": -12.21,
+          "boundary_score": 0.6713
+        },
+        {
+          "time": 34.6,
+          "rms_dbfs": -13.03,
+          "boundary_score": 0.6387
+        },
+        {
+          "time": 42.8,
+          "rms_dbfs": -14.42,
+          "boundary_score": 0.6307
+        },
+        {
+          "time": 50.6,
+          "rms_dbfs": -15.45,
+          "boundary_score": 0.6336
+        },
+        {
+          "time": 59.0,
+          "rms_dbfs": -13.84,
+          "boundary_score": 0.6244
+        },
+        {
+          "time": 68.2,
+          "rms_dbfs": -14.36,
+          "boundary_score": 0.6567
+        },
+        {
+          "time": 77.0,
+          "rms_dbfs": -13.75,
+          "boundary_score": 0.6523
+        },
+        {
+          "time": 81.4,
+          "rms_dbfs": -15.59,
+          "boundary_score": 0.622
+        },
+        {
+          "time": 85.8,
+          "rms_dbfs": -13.36,
+          "boundary_score": 0.6519
+        },
+        {
+          "time": 93.2,
+          "rms_dbfs": -15.26,
+          "boundary_score": 0.6233
+        },
+        {
+          "time": 97.5,
+          "rms_dbfs": -13.33,
+          "boundary_score": 0.6496
+        },
+        {
+          "time": 103.3,
+          "rms_dbfs": -15.89,
+          "boundary_score": 0.6227
+        },
+        {
+          "time": 110.7,
+          "rms_dbfs": -15.89,
+          "boundary_score": 0.6337
+        },
+        {
+          "time": 118.0,
+          "rms_dbfs": -15.25,
+          "boundary_score": 0.6252
+        },
+        {
+          "time": 125.6,
+          "rms_dbfs": -12.71,
+          "boundary_score": 0.6561
+        },
+        {
+          "time": 129.7,
+          "rms_dbfs": -13.57,
+          "boundary_score": 0.6363
+        },
+        {
+          "time": 135.1,
+          "rms_dbfs": -12.6,
+          "boundary_score": 0.6544
+        },
+        {
+          "time": 140.1,
+          "rms_dbfs": -15.14,
+          "boundary_score": 0.6178
+        },
+        {
+          "time": 145.0,
+          "rms_dbfs": -16.52,
+          "boundary_score": 0.6086
+        },
+        {
+          "time": 155.3,
+          "rms_dbfs": -15.73,
+          "boundary_score": 0.6332
+        },
+        {
+          "time": 159.7,
+          "rms_dbfs": -14.01,
+          "boundary_score": 0.6326
+        },
+        {
+          "time": 163.9,
+          "rms_dbfs": -15.98,
+          "boundary_score": 0.6257
+        },
+        {
+          "time": 170.3,
+          "rms_dbfs": -13.66,
+          "boundary_score": 0.6352
+        },
+        {
+          "time": 177.7,
+          "rms_dbfs": -15.2,
+          "boundary_score": 0.6407
+        },
+        {
+          "time": 182.8,
+          "rms_dbfs": -13.77,
+          "boundary_score": 0.6434
+        },
+        {
+          "time": 186.8,
+          "rms_dbfs": -15.65,
+          "boundary_score": 0.6257
+        },
+        {
+          "time": 192.7,
+          "rms_dbfs": -17.7,
+          "boundary_score": 0.6181
+        },
+        {
+          "time": 197.1,
+          "rms_dbfs": -17.26,
+          "boundary_score": 0.607
+        },
+        {
+          "time": 205.4,
+          "rms_dbfs": -12.1,
+          "boundary_score": 0.6666
+        },
+        {
+          "time": 211.7,
+          "rms_dbfs": -16.9,
+          "boundary_score": 0.6349
+        },
+        {
+          "time": 218.2,
+          "rms_dbfs": -11.83,
+          "boundary_score": 0.6671
+        },
+        {
+          "time": 223.5,
+          "rms_dbfs": -16.51,
+          "boundary_score": 0.6119
+        },
+        {
+          "time": 229.3,
+          "rms_dbfs": -20.28,
+          "boundary_score": 0.5709
+        },
+        {
+          "time": 235.2,
+          "rms_dbfs": -22.86,
+          "boundary_score": 0.5266
+        }
+      ],
+      "evidence": "librosa onset-strength attack plus relative RMS natural-end gate"
+    },
+    {
+      "key": "p3",
+      "source": "p3_lily_was_here_bili.mp4",
+      "source_duration": 263.68,
+      "program_level_p90_dbfs": -10.67,
+      "audible_threshold_dbfs": -42.67,
+      "natural_audible_end": 258.4,
+      "trailing_below_threshold": 5.28,
+      "estimated_tempo_bpm": 100.0,
+      "target_show_duration": 88.0,
+      "suggested_phrase_start": 183.9,
+      "suggested_show_duration": 74.5,
+      "strong_attacks": [
+        {
+          "time": 8.1,
+          "onset_score": 1.8319
+        },
+        {
+          "time": 30.6,
+          "onset_score": 2.2876
+        },
+        {
+          "time": 51.7,
+          "onset_score": 1.774
+        },
+        {
+          "time": 59.5,
+          "onset_score": 3.2052
+        },
+        {
+          "time": 69.5,
+          "onset_score": 3.4652
+        },
+        {
+          "time": 76.7,
+          "onset_score": 2.9662
+        },
+        {
+          "time": 85.0,
+          "onset_score": 1.7151
+        },
+        {
+          "time": 96.1,
+          "onset_score": 1.7614
+        },
+        {
+          "time": 120.6,
+          "onset_score": 2.5759
+        },
+        {
+          "time": 128.3,
+          "onset_score": 2.0194
+        },
+        {
+          "time": 133.9,
+          "onset_score": 2.0882
+        },
+        {
+          "time": 139.4,
+          "onset_score": 1.8772
+        },
+        {
+          "time": 145.9,
+          "onset_score": 1.6332
+        },
+        {
+          "time": 178.3,
+          "onset_score": 1.6652
+        },
+        {
+          "time": 183.9,
+          "onset_score": 2.5152
+        },
+        {
+          "time": 192.8,
+          "onset_score": 2.3832
+        },
+        {
+          "time": 197.2,
+          "onset_score": 1.5501
+        },
+        {
+          "time": 210.5,
+          "onset_score": 2.8099
+        },
+        {
+          "time": 222.7,
+          "onset_score": 1.822
+        },
+        {
+          "time": 228.3,
+          "onset_score": 2.1998
+        },
+        {
+          "time": 239.4,
+          "onset_score": 2.4684
+        },
+        {
+          "time": 245.8,
+          "onset_score": 2.1265
+        },
+        {
+          "time": 251.7,
+          "onset_score": 2.4889
+        },
+        {
+          "time": 256.0,
+          "onset_score": 1.8312
+        }
+      ],
+      "quiet_cut_candidates": [
+        {
+          "time": 20.1,
+          "rms_dbfs": -11.47,
+          "boundary_score": 0.6625
+        },
+        {
+          "time": 26.8,
+          "rms_dbfs": -11.82,
+          "boundary_score": 0.6684
+        },
+        {
+          "time": 35.7,
+          "rms_dbfs": -12.33,
+          "boundary_score": 0.6694
+        },
+        {
+          "time": 39.9,
+          "rms_dbfs": -13.23,
+          "boundary_score": 0.6692
+        },
+        {
+          "time": 45.8,
+          "rms_dbfs": -11.39,
+          "boundary_score": 0.6769
+        },
+        {
+          "time": 53.4,
+          "rms_dbfs": -12.57,
+          "boundary_score": 0.6551
+        },
+        {
+          "time": 57.4,
+          "rms_dbfs": -14.91,
+          "boundary_score": 0.6631
+        },
+        {
+          "time": 61.8,
+          "rms_dbfs": -13.12,
+          "boundary_score": 0.6774
+        },
+        {
+          "time": 71.3,
+          "rms_dbfs": -12.21,
+          "boundary_score": 0.652
+        },
+        {
+          "time": 75.7,
+          "rms_dbfs": -12.02,
+          "boundary_score": 0.674
+        },
+        {
+          "time": 84.5,
+          "rms_dbfs": -12.3,
+          "boundary_score": 0.6549
+        },
+        {
+          "time": 89.6,
+          "rms_dbfs": -14.07,
+          "boundary_score": 0.6714
+        },
+        {
+          "time": 96.3,
+          "rms_dbfs": -11.48,
+          "boundary_score": 0.6736
+        },
+        {
+          "time": 102.1,
+          "rms_dbfs": -14.01,
+          "boundary_score": 0.6705
+        },
+        {
+          "time": 111.2,
+          "rms_dbfs": -13.37,
+          "boundary_score": 0.6415
+        },
+        {
+          "time": 119.5,
+          "rms_dbfs": -14.06,
+          "boundary_score": 0.6763
+        },
+        {
+          "time": 124.6,
+          "rms_dbfs": -12.24,
+          "boundary_score": 0.6784
+        },
+        {
+          "time": 130.1,
+          "rms_dbfs": -12.51,
+          "boundary_score": 0.672
+        },
+        {
+          "time": 140.1,
+          "rms_dbfs": -12.1,
+          "boundary_score": 0.678
+        },
+        {
+          "time": 155.7,
+          "rms_dbfs": -12.6,
+          "boundary_score": 0.6485
+        },
+        {
+          "time": 160.1,
+          "rms_dbfs": -13.03,
+          "boundary_score": 0.6437
+        },
+        {
+          "time": 164.5,
+          "rms_dbfs": -12.91,
+          "boundary_score": 0.6543
+        },
+        {
+          "time": 172.9,
+          "rms_dbfs": -14.37,
+          "boundary_score": 0.6667
+        },
+        {
+          "time": 177.9,
+          "rms_dbfs": -12.79,
+          "boundary_score": 0.6405
+        },
+        {
+          "time": 185.7,
+          "rms_dbfs": -11.11,
+          "boundary_score": 0.6739
+        },
+        {
+          "time": 191.2,
+          "rms_dbfs": -12.82,
+          "boundary_score": 0.6536
+        },
+        {
+          "time": 195.6,
+          "rms_dbfs": -12.87,
+          "boundary_score": 0.6388
+        },
+        {
+          "time": 200.6,
+          "rms_dbfs": -15.33,
+          "boundary_score": 0.658
+        },
+        {
+          "time": 209.0,
+          "rms_dbfs": -11.26,
+          "boundary_score": 0.6595
+        },
+        {
+          "time": 214.0,
+          "rms_dbfs": -14.06,
+          "boundary_score": 0.6604
+        },
+        {
+          "time": 220.0,
+          "rms_dbfs": -12.81,
+          "boundary_score": 0.6486
+        },
+        {
+          "time": 227.9,
+          "rms_dbfs": -12.46,
+          "boundary_score": 0.6481
+        },
+        {
+          "time": 237.8,
+          "rms_dbfs": -12.24,
+          "boundary_score": 0.6434
+        },
+        {
+          "time": 242.9,
+          "rms_dbfs": -19.56,
+          "boundary_score": 0.6164
+        },
+        {
+          "time": 250.1,
+          "rms_dbfs": -22.15,
+          "boundary_score": 0.5595
+        },
+        {
+          "time": 255.1,
+          "rms_dbfs": -29.68,
+          "boundary_score": 0.5204
+        }
+      ],
+      "evidence": "librosa onset-strength attack plus relative RMS natural-end gate"
+    },
+    {
+      "key": "p2",
+      "source": "p2_going_home_yt.mp4",
+      "source_duration": 384.774,
+      "program_level_p90_dbfs": -17.79,
+      "audible_threshold_dbfs": -49.79,
+      "natural_audible_end": 384.2,
+      "trailing_below_threshold": 0.574,
+      "estimated_tempo_bpm": 150.0,
+      "target_show_duration": 96.0,
+      "suggested_phrase_start": 294.0,
+      "suggested_show_duration": 90.2,
+      "strong_attacks": [
+        {
+          "time": 68.4,
+          "onset_score": 2.4781
+        },
+        {
+          "time": 75.7,
+          "onset_score": 4.2086
+        },
+        {
+          "time": 92.4,
+          "onset_score": 2.7956
+        },
+        {
+          "time": 107.2,
+          "onset_score": 2.4479
+        },
+        {
+          "time": 113.2,
+          "onset_score": 3.7118
+        },
+        {
+          "time": 119.2,
+          "onset_score": 5.5055
+        },
+        {
+          "time": 123.2,
+          "onset_score": 3.5893
+        },
+        {
+          "time": 133.0,
+          "onset_score": 4.4251
+        },
+        {
+          "time": 141.8,
+          "onset_score": 3.1884
+        },
+        {
+          "time": 154.9,
+          "onset_score": 4.6079
+        },
+        {
+          "time": 160.7,
+          "onset_score": 3.5882
+        },
+        {
+          "time": 168.3,
+          "onset_score": 4.0403
+        },
+        {
+          "time": 172.6,
+          "onset_score": 2.8399
+        },
+        {
+          "time": 177.0,
+          "onset_score": 2.6435
+        },
+        {
+          "time": 183.6,
+          "onset_score": 2.3899
+        },
+        {
+          "time": 190.7,
+          "onset_score": 2.4794
+        },
+        {
+          "time": 197.7,
+          "onset_score": 3.0071
+        },
+        {
+          "time": 244.2,
+          "onset_score": 2.3597
+        },
+        {
+          "time": 294.0,
+          "onset_score": 2.6447
+        },
+        {
+          "time": 326.4,
+          "onset_score": 2.8339
+        },
+        {
+          "time": 331.9,
+          "onset_score": 3.5555
+        },
+        {
+          "time": 339.2,
+          "onset_score": 2.8853
+        },
+        {
+          "time": 345.9,
+          "onset_score": 2.3517
+        },
+        {
+          "time": 352.6,
+          "onset_score": 4.3349
+        }
+      ],
+      "quiet_cut_candidates": [
+        {
+          "time": 16.1,
+          "rms_dbfs": -34.59,
+          "boundary_score": 0.5422
+        },
+        {
+          "time": 22.2,
+          "rms_dbfs": -36.88,
+          "boundary_score": 0.5255
+        },
+        {
+          "time": 29.0,
+          "rms_dbfs": -59.9,
+          "boundary_score": 0.3227
+        },
+        {
+          "time": 36.6,
+          "rms_dbfs": -34.91,
+          "boundary_score": 0.5551
+        },
+        {
+          "time": 46.5,
+          "rms_dbfs": -36.13,
+          "boundary_score": 0.5602
+        },
+        {
+          "time": 54.5,
+          "rms_dbfs": -38.03,
+          "boundary_score": 0.5245
+        },
+        {
+          "time": 58.9,
+          "rms_dbfs": -30.78,
+          "boundary_score": 0.5946
+        },
+        {
+          "time": 74.4,
+          "rms_dbfs": -24.95,
+          "boundary_score": 0.6249
+        },
+        {
+          "time": 95.1,
+          "rms_dbfs": -24.87,
+          "boundary_score": 0.6044
+        },
+        {
+          "time": 101.5,
+          "rms_dbfs": -33.42,
+          "boundary_score": 0.5598
+        },
+        {
+          "time": 111.2,
+          "rms_dbfs": -38.42,
+          "boundary_score": 0.5407
+        },
+        {
+          "time": 118.4,
+          "rms_dbfs": -37.07,
+          "boundary_score": 0.5162
+        },
+        {
+          "time": 124.3,
+          "rms_dbfs": -35.89,
+          "boundary_score": 0.5545
+        },
+        {
+          "time": 131.8,
+          "rms_dbfs": -36.06,
+          "boundary_score": 0.5377
+        },
+        {
+          "time": 141.1,
+          "rms_dbfs": -29.15,
+          "boundary_score": 0.5513
+        },
+        {
+          "time": 148.5,
+          "rms_dbfs": -31.73,
+          "boundary_score": 0.5845
+        },
+        {
+          "time": 154.2,
+          "rms_dbfs": -31.22,
+          "boundary_score": 0.5643
+        },
+        {
+          "time": 160.0,
+          "rms_dbfs": -29.69,
+          "boundary_score": 0.6
+        },
+        {
+          "time": 209.3,
+          "rms_dbfs": -33.99,
+          "boundary_score": 0.5477
+        },
+        {
+          "time": 215.3,
+          "rms_dbfs": -27.12,
+          "boundary_score": 0.6184
+        },
+        {
+          "time": 222.1,
+          "rms_dbfs": -31.34,
+          "boundary_score": 0.5842
+        },
+        {
+          "time": 226.5,
+          "rms_dbfs": -32.92,
+          "boundary_score": 0.5685
+        },
+        {
+          "time": 232.2,
+          "rms_dbfs": -32.52,
+          "boundary_score": 0.5628
+        },
+        {
+          "time": 239.1,
+          "rms_dbfs": -30.45,
+          "boundary_score": 0.5957
+        },
+        {
+          "time": 248.8,
+          "rms_dbfs": -31.91,
+          "boundary_score": 0.6031
+        },
+        {
+          "time": 301.4,
+          "rms_dbfs": -38.74,
+          "boundary_score": 0.5311
+        },
+        {
+          "time": 305.8,
+          "rms_dbfs": -33.32,
+          "boundary_score": 0.5666
+        },
+        {
+          "time": 312.7,
+          "rms_dbfs": -33.93,
+          "boundary_score": 0.5557
+        },
+        {
+          "time": 317.4,
+          "rms_dbfs": -31.29,
+          "boundary_score": 0.5669
+        },
+        {
+          "time": 325.3,
+          "rms_dbfs": -32.87,
+          "boundary_score": 0.5436
+        },
+        {
+          "time": 342.8,
+          "rms_dbfs": -35.12,
+          "boundary_score": 0.5363
+        },
+        {
+          "time": 350.9,
+          "rms_dbfs": -30.07,
+          "boundary_score": 0.6005
+        },
+        {
+          "time": 359.0,
+          "rms_dbfs": -32.82,
+          "boundary_score": 0.573
+        },
+        {
+          "time": 364.5,
+          "rms_dbfs": -40.19,
+          "boundary_score": 0.5102
+        },
+        {
+          "time": 373.4,
+          "rms_dbfs": -28.73,
+          "boundary_score": 0.6063
+        },
+        {
+          "time": 378.9,
+          "rms_dbfs": -26.68,
+          "boundary_score": 0.6165
+        }
+      ],
+      "evidence": "librosa onset-strength attack plus relative RMS natural-end gate"
+    },
+    {
+      "key": "p1",
+      "source": "p1_songbird_bili.mp4",
+      "source_duration": 248.247,
+      "program_level_p90_dbfs": -11.29,
+      "audible_threshold_dbfs": -43.29,
+      "natural_audible_end": 247.7,
+      "trailing_below_threshold": 0.547,
+      "estimated_tempo_bpm": 150.0,
+      "target_show_duration": 84.0,
+      "suggested_phrase_start": 146.5,
+      "suggested_show_duration": 101.2,
+      "strong_attacks": [
+        {
+          "time": 16.4,
+          "onset_score": 2.7461
+        },
+        {
+          "time": 24.2,
+          "onset_score": 1.7842
+        },
+        {
+          "time": 31.3,
+          "onset_score": 3.8606
+        },
+        {
+          "time": 38.4,
+          "onset_score": 2.3027
+        },
+        {
+          "time": 44.6,
+          "onset_score": 1.8451
+        },
+        {
+          "time": 50.7,
+          "onset_score": 1.868
+        },
+        {
+          "time": 83.6,
+          "onset_score": 1.9022
+        },
+        {
+          "time": 98.7,
+          "onset_score": 2.5561
+        },
+        {
+          "time": 110.2,
+          "onset_score": 1.9642
+        },
+        {
+          "time": 127.9,
+          "onset_score": 3.0527
+        },
+        {
+          "time": 134.8,
+          "onset_score": 2.0199
+        },
+        {
+          "time": 141.0,
+          "onset_score": 2.3622
+        },
+        {
+          "time": 145.6,
+          "onset_score": 3.9221
+        },
+        {
+          "time": 151.8,
+          "onset_score": 2.2624
+        },
+        {
+          "time": 166.7,
+          "onset_score": 2.5026
+        },
+        {
+          "time": 175.2,
+          "onset_score": 2.4016
+        },
+        {
+          "time": 183.6,
+          "onset_score": 1.9117
+        },
+        {
+          "time": 190.8,
+          "onset_score": 2.1545
+        },
+        {
+          "time": 205.0,
+          "onset_score": 1.982
+        },
+        {
+          "time": 221.8,
+          "onset_score": 1.7435
+        },
+        {
+          "time": 229.8,
+          "onset_score": 2.4043
+        },
+        {
+          "time": 235.3,
+          "onset_score": 2.1523
+        },
+        {
+          "time": 239.3,
+          "onset_score": 2.4321
+        },
+        {
+          "time": 246.1,
+          "onset_score": 2.8051
+        }
+      ],
+      "quiet_cut_candidates": [
+        {
+          "time": 13.4,
+          "rms_dbfs": -16.3,
+          "boundary_score": 0.6104
+        },
+        {
+          "time": 23.6,
+          "rms_dbfs": -12.25,
+          "boundary_score": 0.674
+        },
+        {
+          "time": 28.4,
+          "rms_dbfs": -13.74,
+          "boundary_score": 0.6716
+        },
+        {
+          "time": 34.4,
+          "rms_dbfs": -12.34,
+          "boundary_score": 0.6681
+        },
+        {
+          "time": 40.4,
+          "rms_dbfs": -12.32,
+          "boundary_score": 0.6691
+        },
+        {
+          "time": 45.5,
+          "rms_dbfs": -12.41,
+          "boundary_score": 0.6739
+        },
+        {
+          "time": 50.2,
+          "rms_dbfs": -12.92,
+          "boundary_score": 0.6675
+        },
+        {
+          "time": 61.7,
+          "rms_dbfs": -16.92,
+          "boundary_score": 0.6038
+        },
+        {
+          "time": 70.9,
+          "rms_dbfs": -16.2,
+          "boundary_score": 0.637
+        },
+        {
+          "time": 75.7,
+          "rms_dbfs": -13.59,
+          "boundary_score": 0.651
+        },
+        {
+          "time": 84.0,
+          "rms_dbfs": -15.47,
+          "boundary_score": 0.6422
+        },
+        {
+          "time": 90.0,
+          "rms_dbfs": -12.8,
+          "boundary_score": 0.6568
+        },
+        {
+          "time": 95.4,
+          "rms_dbfs": -15.41,
+          "boundary_score": 0.6497
+        },
+        {
+          "time": 102.1,
+          "rms_dbfs": -14.88,
+          "boundary_score": 0.6625
+        },
+        {
+          "time": 111.3,
+          "rms_dbfs": -18.35,
+          "boundary_score": 0.5895
+        },
+        {
+          "time": 119.5,
+          "rms_dbfs": -16.95,
+          "boundary_score": 0.6129
+        },
+        {
+          "time": 125.5,
+          "rms_dbfs": -16.05,
+          "boundary_score": 0.6223
+        },
+        {
+          "time": 130.1,
+          "rms_dbfs": -16.14,
+          "boundary_score": 0.6184
+        },
+        {
+          "time": 134.2,
+          "rms_dbfs": -14.32,
+          "boundary_score": 0.6242
+        },
+        {
+          "time": 139.6,
+          "rms_dbfs": -16.13,
+          "boundary_score": 0.6207
+        },
+        {
+          "time": 147.8,
+          "rms_dbfs": -16.88,
+          "boundary_score": 0.6147
+        },
+        {
+          "time": 155.0,
+          "rms_dbfs": -16.26,
+          "boundary_score": 0.6192
+        },
+        {
+          "time": 162.0,
+          "rms_dbfs": -16.27,
+          "boundary_score": 0.6207
+        },
+        {
+          "time": 169.1,
+          "rms_dbfs": -16.21,
+          "boundary_score": 0.6212
+        },
+        {
+          "time": 178.5,
+          "rms_dbfs": -13.61,
+          "boundary_score": 0.6572
+        },
+        {
+          "time": 182.9,
+          "rms_dbfs": -13.44,
+          "boundary_score": 0.6522
+        },
+        {
+          "time": 188.7,
+          "rms_dbfs": -13.51,
+          "boundary_score": 0.6609
+        },
+        {
+          "time": 192.8,
+          "rms_dbfs": -16.45,
+          "boundary_score": 0.6123
+        },
+        {
+          "time": 198.0,
+          "rms_dbfs": -14.92,
+          "boundary_score": 0.6074
+        },
+        {
+          "time": 204.2,
+          "rms_dbfs": -14.79,
+          "boundary_score": 0.6461
+        },
+        {
+          "time": 211.7,
+          "rms_dbfs": -16.08,
+          "boundary_score": 0.6187
+        },
+        {
+          "time": 217.4,
+          "rms_dbfs": -18.74,
+          "boundary_score": 0.5924
+        },
+        {
+          "time": 226.7,
+          "rms_dbfs": -17.26,
+          "boundary_score": 0.6122
+        },
+        {
+          "time": 233.8,
+          "rms_dbfs": -17.47,
+          "boundary_score": 0.6132
+        },
+        {
+          "time": 241.0,
+          "rms_dbfs": -17.41,
+          "boundary_score": 0.6124
+        }
+      ],
+      "evidence": "librosa onset-strength attack plus relative RMS natural-end gate"
+    }
+  ]
+}
