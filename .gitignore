@@ -18,7 +18,18 @@ __pycache__/
 # ---- 敏感：登录态，绝不入库 ----
 cookies.txt
 *cookies*.txt
+*cookies*.json
 .env
+.env.*
+!.env.example
+!.env.sample
+.npmrc
+.pypirc
+.netrc
+*credentials*.json
+*service-account*.json
+*.p12
+*.pfx
 *.pem
 *.key
 
@@ -30,6 +41,11 @@ cookies.txt
 *.flac
 *.opus
 *.pcm
+
+# 正式编号配音库的精选母带/样例是可复用源资产，窄范围入库。
+!tools/tts/voices/CV*/reference.wav
+!tools/tts/voices/CV*/examples/*.wav
+!tools/tts/voices/baselines/kokoro/*.wav
 
 # ---- 视频（下载素材 + 渲染成片，可复现）----
 *.mp4
@@ -81,3 +97,15 @@ chrome_all_cookies.txt
 .npm-cache/
 *.hf-complete
 *.ttc
+
+# TTS 本地模型、独立运行时和生成缓存不入库。
+tools/tts/models/
+tools/tts/runtime/
+tools/tts/research/**/outputs/
+
+# ---- 仓库级实验 / 会话临时目录 ----
+# sandbox 可丢弃且可能达到数百 GB；正式资产应先整理到 tools/ 或 production/。
+/sandbox/
+/.session_tmps/
+# 根目录 probe 是临时探测残留；项目内的 <project>/probe/ 仍可按需入库。
+/probe/

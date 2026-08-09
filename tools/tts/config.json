@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "default_voice_id": "CV002",
+  "fallback_voice_id": "CV002",
+  "selection_policy": {
+    "unknown": "fallback_default",
+    "ambiguous": "fallback_default",
+    "fuzzy_matching": false,
+    "parse_once_per_project": true
+  },
+  "runtime": {
+    "offline_required": true,
+    "qwen_python_env": "CC_MEDIA_QWEN_PYTHON",
+    "qwen_python_candidates": [
+      "qwen.venv/bin/python",
+      "../../../local-anime-avatar-workflow/work/venvs/poc-a-mlx-audio/bin/python"
+    ],
+    "kokoro_python_env": "CC_MEDIA_KOKORO_PYTHON",
+    "kokoro_python_candidates": [
+      "venv/bin/python"
+    ],
+    "qwen_base_model_envs": [
+      "CC_MEDIA_QWEN_BASE_MODEL",
+      "QWEN_BASE_MODEL"
+    ],
+    "qwen_base_model_candidates": [
+      "models/qwen3-tts/Qwen3-TTS-12Hz-0.6B-Base-8bit@50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+      "../../../local-anime-avatar-workflow/models/qwen3-tts/Qwen3-TTS-12Hz-0.6B-Base-8bit@50f45ef0047cde7e84c2ef04326acb8ada2436a7"
+    ]
+  },
+  "qwen_base": {
+    "engine": "qwen3-tts-base-mlx",
+    "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+    "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+    "model_tree_sha256": "e536317ea04672c76a6baa12d2cf72efe88358db6b7f8f1588a6a8b203153903",
+    "model_file_manifest": "model-manifests/qwen-base-8bit.json",
+    "mlx_audio_version": "0.4.5",
+    "sample_rate_hz": 24000,
+    "language": "Auto",
+    "generation": {
+      "seed": 20260809,
+      "temperature": 0.8,
+      "top_k": 50,
+      "top_p": 0.95,
+      "repetition_penalty": 1.1,
+      "max_tokens": 2048,
+      "trim_threshold_dbfs": -50.0,
+      "trim_padding_ms": 120
+    }
+  },
+  "legacy_kokoro": {
+    "engine": "kokoro-misaki-zh",
+    "model_id": "hexgrad/Kokoro-82M",
+    "sample_rate_hz": 24000,
+    "voices": [
+      "zf_xiaobei",
+      "zf_xiaoni",
+      "zf_xiaoxiao",
+      "zf_xiaoyi",
+      "zm_yunjian",
+      "zm_yunxi",
+      "zm_yunxia",
+      "zm_yunyang"
+    ]
+  }
+}

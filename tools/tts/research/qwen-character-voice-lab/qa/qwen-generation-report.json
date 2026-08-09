@@ -1,0 +1,1504 @@
+{
+  "schema_version": "1.0.0",
+  "manifest": "tools/tts/research/qwen-character-voice-lab/manifest.json",
+  "offline": true,
+  "runtime": {
+    "python": "3.12.13",
+    "mlx_audio": "0.4.5"
+  },
+  "models": {
+    "voice_design": {
+      "id": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit",
+      "revision": "f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
+      "path": "$QWEN_MODEL_ROOT/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit@f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee"
+    },
+    "base_clone": {
+      "id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+      "revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+      "path": "$QWEN_MODEL_ROOT/Qwen3-TTS-12Hz-0.6B-Base-8bit@50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+      "load_seconds": 1.2116629170486704
+    }
+  },
+  "personas": [
+    {
+      "id": "moe_spark",
+      "label": "元气萌妹",
+      "group": "female",
+      "description": "原创年轻成年女性动漫声线，音色明亮甜美、音调偏高但不尖锐，语尾有轻巧上扬，节奏活泼有弹性，像元气十足的二次元主持人；吐字必须清晰自然，不要幼儿化，不模仿任何可识别人物。",
+      "master": {
+        "path": "outputs/qwen3-tts/moe_spark/raw/voice-master.wav",
+        "sha256": "3cc9ef2dda1967812cff30fb190cd436dc28b250f1d491e14f095dadc69152fb",
+        "wav": {
+          "channels": 1,
+          "sample_rate_hz": 24000,
+          "sample_width_bytes": 2,
+          "frames": 209280,
+          "duration_seconds": 8.72
+        },
+        "metadata": {
+          "seed": 188357048,
+          "generation_seconds": 2.808978874993045,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:08.720",
+              "processing_seconds": 2.7936651706695557,
+              "peak_memory_gb": 7.17181805,
+              "token_count": 110
+            }
+          ],
+          "raw": "outputs/qwen3-tts/moe_spark/raw/voice-master.wav",
+          "raw_sha256": "3cc9ef2dda1967812cff30fb190cd436dc28b250f1d491e14f095dadc69152fb",
+          "raw_duration_seconds": 8.72,
+          "ready": "outputs/qwen3-tts/moe_spark/ready/voice-master.wav",
+          "ready_sha256": "3cc9ef2dda1967812cff30fb190cd436dc28b250f1d491e14f095dadc69152fb",
+          "ready_duration_seconds": 8.72,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "stage": "voice-design-master",
+          "persona_id": "moe_spark",
+          "persona_label": "元气萌妹",
+          "text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+          "language": "Chinese",
+          "fingerprint": "0c02c9e35615612e293193f709d04798836e96187b7f4143c3bfb5e1480307f5",
+          "fingerprint_inputs": {
+            "stage": "voice-design-master",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit",
+            "model_revision": "f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
+            "persona": {
+              "id": "moe_spark",
+              "label": "元气萌妹",
+              "group": "female",
+              "description": "原创年轻成年女性动漫声线，音色明亮甜美、音调偏高但不尖锐，语尾有轻巧上扬，节奏活泼有弹性，像元气十足的二次元主持人；吐字必须清晰自然，不要幼儿化，不模仿任何可识别人物。"
+            },
+            "text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "language": "Chinese",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 188357048
+          }
+        }
+      },
+      "samples": [
+        {
+          "seed": 2520005943,
+          "generation_seconds": 3.531246625003405,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:10.117",
+              "processing_seconds": 3.504232883453369,
+              "peak_memory_gb": 7.612209547,
+              "token_count": 127
+            }
+          ],
+          "raw": "outputs/qwen3-tts/moe_spark/raw/showcase.wav",
+          "raw_sha256": "5f1b296b0c02143716465efc834a1dce616332e726d02b58c2ab8b2daaf857fa",
+          "raw_duration_seconds": 10.116958333333333,
+          "ready": "outputs/qwen3-tts/moe_spark/ready/showcase.wav",
+          "ready_sha256": "31a76403690ca1ff33f8369a60784118f2a6f557cc5fc419a07572ad45c06102",
+          "ready_duration_seconds": 9.676958333333333,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.44,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "text_id": "showcase",
+          "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+          "language": "Chinese",
+          "cache_hit": true,
+          "stage": "base-clone",
+          "persona_id": "moe_spark",
+          "fingerprint": "8dd9ae86ff601ae516614956e69266c63d83abc78d163ec2587f14825bccf677",
+          "fingerprint_inputs": {
+            "stage": "base-clone",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+            "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+            "persona_id": "moe_spark",
+            "text_id": "showcase",
+            "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+            "language": "Chinese",
+            "reference_audio_sha256": "3cc9ef2dda1967812cff30fb190cd436dc28b250f1d491e14f095dadc69152fb",
+            "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 2520005943
+          }
+        },
+        {
+          "seed": 405191879,
+          "generation_seconds": 2.7389243749785237,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:08.083",
+              "processing_seconds": 2.715272903442383,
+              "peak_memory_gb": 7.612209547,
+              "token_count": 102
+            }
+          ],
+          "raw": "outputs/qwen3-tts/moe_spark/raw/mixed_language.wav",
+          "raw_sha256": "b7db407cb23f6f016fee7cbcf18bb510980b1690816e920738fab527a3d344bf",
+          "raw_duration_seconds": 8.082666666666666,
+          "ready": "outputs/qwen3-tts/moe_spark/ready/mixed_language.wav",
+          "ready_sha256": "b7db407cb23f6f016fee7cbcf18bb510980b1690816e920738fab527a3d344bf",
+          "ready_duration_seconds": 8.082666666666666,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "text_id": "mixed_language",
+          "text": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+          "language": "Auto",
+          "cache_hit": true,
+          "stage": "base-clone",
+          "persona_id": "moe_spark",
+          "fingerprint": "5f95e40be6c2f7e253ad675ddcf802aa9ce4252343a9e76ddbe1aea9af576ac5",
+          "fingerprint_inputs": {
+            "stage": "base-clone",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+            "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+            "persona_id": "moe_spark",
+            "text_id": "mixed_language",
+            "text": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+            "language": "Auto",
+            "reference_audio_sha256": "3cc9ef2dda1967812cff30fb190cd436dc28b250f1d491e14f095dadc69152fb",
+            "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 405191879
+          }
+        }
+      ]
+    },
+    {
+      "id": "soft_healer",
+      "label": "治愈少女",
+      "group": "female",
+      "description": "原创年轻成年女性动漫声线，柔软温暖、气息细腻、语速舒缓，带轻微微笑感和陪伴感；声音亲近但不能耳语，辅音清楚，适合温柔叙事，不模仿任何可识别人物。",
+      "master": {
+        "path": "outputs/qwen3-tts/soft_healer/raw/voice-master.wav",
+        "sha256": "1610cf180e0bd245d7a50381a403c529e43b8fd65e7bbc20433edbc5062c0c13",
+        "wav": {
+          "channels": 1,
+          "sample_rate_hz": 24000,
+          "sample_width_bytes": 2,
+          "frames": 234240,
+          "duration_seconds": 9.76
+        },
+        "metadata": {
+          "seed": 4175925866,
+          "generation_seconds": 3.0986820840043947,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:09.760",
+              "processing_seconds": 3.081881046295166,
+              "peak_memory_gb": 7.17181805,
+              "token_count": 123
+            }
+          ],
+          "raw": "outputs/qwen3-tts/soft_healer/raw/voice-master.wav",
+          "raw_sha256": "1610cf180e0bd245d7a50381a403c529e43b8fd65e7bbc20433edbc5062c0c13",
+          "raw_duration_seconds": 9.76,
+          "ready": "outputs/qwen3-tts/soft_healer/ready/voice-master.wav",
+          "ready_sha256": "1610cf180e0bd245d7a50381a403c529e43b8fd65e7bbc20433edbc5062c0c13",
+          "ready_duration_seconds": 9.76,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "stage": "voice-design-master",
+          "persona_id": "soft_healer",
+          "persona_label": "治愈少女",
+          "text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+          "language": "Chinese",
+          "fingerprint": "ead7341907351ad0121798586710901a4255f1e99103884c51dd6794cb7fdaa1",
+          "fingerprint_inputs": {
+            "stage": "voice-design-master",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit",
+            "model_revision": "f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
+            "persona": {
+              "id": "soft_healer",
+              "label": "治愈少女",
+              "group": "female",
+              "description": "原创年轻成年女性动漫声线，柔软温暖、气息细腻、语速舒缓，带轻微微笑感和陪伴感；声音亲近但不能耳语，辅音清楚，适合温柔叙事，不模仿任何可识别人物。"
+            },
+            "text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "language": "Chinese",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 4175925866
+          }
+        }
+      },
+      "samples": [
+        {
+          "seed": 2404015015,
+          "generation_seconds": 3.1770317920017987,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:09.480",
+              "processing_seconds": 3.152873992919922,
+              "peak_memory_gb": 7.724485407,
+              "token_count": 119
+            }
+          ],
+          "raw": "outputs/qwen3-tts/soft_healer/raw/showcase.wav",
+          "raw_sha256": "b6b63f0b270f738b6fb61ffde784fdeb398459931d7fa3172e70d0395c1b8b18",
+          "raw_duration_seconds": 9.4805,
+          "ready": "outputs/qwen3-tts/soft_healer/ready/showcase.wav",
+          "ready_sha256": "b6b63f0b270f738b6fb61ffde784fdeb398459931d7fa3172e70d0395c1b8b18",
+          "ready_duration_seconds": 9.4805,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "text_id": "showcase",
+          "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+          "language": "Chinese",
+          "cache_hit": true,
+          "stage": "base-clone",
+          "persona_id": "soft_healer",
+          "fingerprint": "d655afa8c9fc3ac19eade536840d481c0017cb2fabf9ba382f32631135a31b40",
+          "fingerprint_inputs": {
+            "stage": "base-clone",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+            "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+            "persona_id": "soft_healer",
+            "text_id": "showcase",
+            "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+            "language": "Chinese",
+            "reference_audio_sha256": "1610cf180e0bd245d7a50381a403c529e43b8fd65e7bbc20433edbc5062c0c13",
+            "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 2404015015
+          }
+        },
+        {
+          "seed": 3743227447,
+          "generation_seconds": 2.685957374982536,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:07.848",
+              "processing_seconds": 2.6582422256469727,
+              "peak_memory_gb": 7.724485407,
+              "token_count": 99
+            }
+          ],
+          "raw": "outputs/qwen3-tts/soft_healer/raw/mixed_language.wav",
+          "raw_sha256": "8403b23f786bc3c54cd2f1f1cb5fa1d8a8bbf88cab78ff8c6a31f9b29bc930c6",
+          "raw_duration_seconds": 7.848333333333334,
+          "ready": "outputs/qwen3-tts/soft_healer/ready/mixed_language.wav",
+          "ready_sha256": "8403b23f786bc3c54cd2f1f1cb5fa1d8a8bbf88cab78ff8c6a31f9b29bc930c6",
+          "ready_duration_seconds": 7.848333333333334,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "text_id": "mixed_language",
+          "text": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+          "language": "Auto",
+          "cache_hit": true,
+          "stage": "base-clone",
+          "persona_id": "soft_healer",
+          "fingerprint": "842aa91a3fbd9cc5261aae62c9a87e318f042de5a8944aad448df01ff9215b3a",
+          "fingerprint_inputs": {
+            "stage": "base-clone",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+            "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+            "persona_id": "soft_healer",
+            "text_id": "mixed_language",
+            "text": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+            "language": "Auto",
+            "reference_audio_sha256": "1610cf180e0bd245d7a50381a403c529e43b8fd65e7bbc20433edbc5062c0c13",
+            "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 3743227447
+          }
+        }
+      ]
+    },
+    {
+      "id": "tsundere_comic",
+      "label": "傲娇吐槽姬",
+      "group": "female",
+      "description": "原创年轻成年女性动漫声线，清脆略带小傲娇和机灵吐槽感，节奏偏快，重音鲜明，偶尔有不耐烦的俏皮停顿；保持自然可懂，不要过度做作，不模仿任何可识别人物。",
+      "master": {
+        "path": "outputs/qwen3-tts/tsundere_comic/raw/voice-master.wav",
+        "sha256": "69eb40e4e2e2603647510508180b33e3da288a12718577cbd39d4e896c995966",
+        "wav": {
+          "channels": 1,
+          "sample_rate_hz": 24000,
+          "sample_width_bytes": 2,
+          "frames": 182400,
+          "duration_seconds": 7.6
+        },
+        "metadata": {
+          "seed": 293387204,
+          "generation_seconds": 2.4562652920139953,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:07.600",
+              "processing_seconds": 2.4417011737823486,
+              "peak_memory_gb": 7.17181805,
+              "token_count": 96
+            }
+          ],
+          "raw": "outputs/qwen3-tts/tsundere_comic/raw/voice-master.wav",
+          "raw_sha256": "69eb40e4e2e2603647510508180b33e3da288a12718577cbd39d4e896c995966",
+          "raw_duration_seconds": 7.6,
+          "ready": "outputs/qwen3-tts/tsundere_comic/ready/voice-master.wav",
+          "ready_sha256": "69eb40e4e2e2603647510508180b33e3da288a12718577cbd39d4e896c995966",
+          "ready_duration_seconds": 7.6,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "stage": "voice-design-master",
+          "persona_id": "tsundere_comic",
+          "persona_label": "傲娇吐槽姬",
+          "text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+          "language": "Chinese",
+          "fingerprint": "7ed1237b0aad03f5e27103229ac583e28591e790f69ae8f4565503afc93f77b8",
+          "fingerprint_inputs": {
+            "stage": "voice-design-master",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit",
+            "model_revision": "f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
+            "persona": {
+              "id": "tsundere_comic",
+              "label": "傲娇吐槽姬",
+              "group": "female",
+              "description": "原创年轻成年女性动漫声线，清脆略带小傲娇和机灵吐槽感，节奏偏快，重音鲜明，偶尔有不耐烦的俏皮停顿；保持自然可懂，不要过度做作，不模仿任何可识别人物。"
+            },
+            "text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "language": "Chinese",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 293387204
+          }
+        }
+      },
+      "samples": [
+        {
+          "seed": 2216602583,
+          "generation_seconds": 2.882586249965243,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:08.837",
+              "processing_seconds": 2.860285997390747,
+              "peak_memory_gb": 7.724485407,
+              "token_count": 111
+            }
+          ],
+          "raw": "outputs/qwen3-tts/tsundere_comic/raw/showcase.wav",
+          "raw_sha256": "915cc7641fe26a6beecabff134623ad6f508738b8e0f531236c1bec9a8858078",
+          "raw_duration_seconds": 8.836916666666667,
+          "ready": "outputs/qwen3-tts/tsundere_comic/ready/showcase.wav",
+          "ready_sha256": "fc8b6c441145998a240415ab83bb0d8ea35d8de4d525a7a2e370cc3632ec9020",
+          "ready_duration_seconds": 8.396916666666666,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.44,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "text_id": "showcase",
+          "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+          "language": "Chinese",
+          "cache_hit": true,
+          "stage": "base-clone",
+          "persona_id": "tsundere_comic",
+          "fingerprint": "a5d333ade20719750604531302577a1235ff36acd87f011905c0ba12229e8075",
+          "fingerprint_inputs": {
+            "stage": "base-clone",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+            "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+            "persona_id": "tsundere_comic",
+            "text_id": "showcase",
+            "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+            "language": "Chinese",
+            "reference_audio_sha256": "69eb40e4e2e2603647510508180b33e3da288a12718577cbd39d4e896c995966",
+            "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 2216602583
+          }
+        },
+        {
+          "seed": 2089215194,
+          "generation_seconds": 2.451450749998912,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:07.361",
+              "processing_seconds": 2.432210922241211,
+              "peak_memory_gb": 7.724485407,
+              "token_count": 93
+            }
+          ],
+          "raw": "outputs/qwen3-tts/tsundere_comic/raw/mixed_language.wav",
+          "raw_sha256": "fc9e6370660850ac4521ee526a617642729fbf2cf5d59e2a5af73dffdd51cb06",
+          "raw_duration_seconds": 7.360875,
+          "ready": "outputs/qwen3-tts/tsundere_comic/ready/mixed_language.wav",
+          "ready_sha256": "780cffbf6e904278245b22a86836c600a78e2846100e877f811c3c95f9b7ef42",
+          "ready_duration_seconds": 6.880875,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.48,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "text_id": "mixed_language",
+          "text": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+          "language": "Auto",
+          "cache_hit": true,
+          "stage": "base-clone",
+          "persona_id": "tsundere_comic",
+          "fingerprint": "d6aa03ace8da458f0bcf20781c728055d28a7b0ea178a027064b0e404819bb0c",
+          "fingerprint_inputs": {
+            "stage": "base-clone",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+            "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+            "persona_id": "tsundere_comic",
+            "text_id": "mixed_language",
+            "text": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+            "language": "Auto",
+            "reference_audio_sha256": "69eb40e4e2e2603647510508180b33e3da288a12718577cbd39d4e896c995966",
+            "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 2089215194
+          }
+        }
+      ]
+    },
+    {
+      "id": "cool_senpai",
+      "label": "清冷学姐",
+      "group": "female",
+      "description": "原创年轻成年女性动漫声线，中低音区、清冷克制、质感干净，语速稳定，句尾收得利落；偶尔流露温柔和自信，适合高级感盘点解说，不模仿任何可识别人物。",
+      "master": {
+        "path": "outputs/qwen3-tts/cool_senpai/raw/voice-master.wav",
+        "sha256": "dadee84bd7feaffb19abc44c29f3b8fbee93e84941699a176996c0e10746acf8",
+        "wav": {
+          "channels": 1,
+          "sample_rate_hz": 24000,
+          "sample_width_bytes": 2,
+          "frames": 190080,
+          "duration_seconds": 7.92
+        },
+        "metadata": {
+          "seed": 4173832886,
+          "generation_seconds": 2.5478884590556845,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:07.920",
+              "processing_seconds": 2.5335428714752197,
+              "peak_memory_gb": 7.17181805,
+              "token_count": 100
+            }
+          ],
+          "raw": "outputs/qwen3-tts/cool_senpai/raw/voice-master.wav",
+          "raw_sha256": "dadee84bd7feaffb19abc44c29f3b8fbee93e84941699a176996c0e10746acf8",
+          "raw_duration_seconds": 7.92,
+          "ready": "outputs/qwen3-tts/cool_senpai/ready/voice-master.wav",
+          "ready_sha256": "dadee84bd7feaffb19abc44c29f3b8fbee93e84941699a176996c0e10746acf8",
+          "ready_duration_seconds": 7.92,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "stage": "voice-design-master",
+          "persona_id": "cool_senpai",
+          "persona_label": "清冷学姐",
+          "text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+          "language": "Chinese",
+          "fingerprint": "701d1bb3c0b94239d8e3c8d4a6552dff7b131a262f3f8c3989dab123829e4faa",
+          "fingerprint_inputs": {
+            "stage": "voice-design-master",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit",
+            "model_revision": "f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
+            "persona": {
+              "id": "cool_senpai",
+              "label": "清冷学姐",
+              "group": "female",
+              "description": "原创年轻成年女性动漫声线，中低音区、清冷克制、质感干净，语速稳定，句尾收得利落；偶尔流露温柔和自信，适合高级感盘点解说，不模仿任何可识别人物。"
+            },
+            "text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "language": "Chinese",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 4173832886
+          }
+        }
+      },
+      "samples": [
+        {
+          "seed": 1363851605,
+          "generation_seconds": 3.2523940830142237,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:09.955",
+              "processing_seconds": 3.228764772415161,
+              "peak_memory_gb": 7.724485407,
+              "token_count": 125
+            }
+          ],
+          "raw": "outputs/qwen3-tts/cool_senpai/raw/showcase.wav",
+          "raw_sha256": "fd4bcc8920b5871cab80e3399902adb062577fe0d3529ff49cea6f3024fb1cda",
+          "raw_duration_seconds": 9.955375,
+          "ready": "outputs/qwen3-tts/cool_senpai/ready/showcase.wav",
+          "ready_sha256": "fd4bcc8920b5871cab80e3399902adb062577fe0d3529ff49cea6f3024fb1cda",
+          "ready_duration_seconds": 9.955375,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "text_id": "showcase",
+          "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+          "language": "Chinese",
+          "cache_hit": true,
+          "stage": "base-clone",
+          "persona_id": "cool_senpai",
+          "fingerprint": "4c5c1735110c8e9dc09a7b4bde00e7352849b12f2c2ae663dd6030c3050e90d4",
+          "fingerprint_inputs": {
+            "stage": "base-clone",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+            "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+            "persona_id": "cool_senpai",
+            "text_id": "showcase",
+            "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+            "language": "Chinese",
+            "reference_audio_sha256": "dadee84bd7feaffb19abc44c29f3b8fbee93e84941699a176996c0e10746acf8",
+            "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 1363851605
+          }
+        },
+        {
+          "seed": 1365003541,
+          "generation_seconds": 2.5779936669860035,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:07.760",
+              "processing_seconds": 2.5559608936309814,
+              "peak_memory_gb": 7.724485407,
+              "token_count": 98
+            }
+          ],
+          "raw": "outputs/qwen3-tts/cool_senpai/raw/mixed_language.wav",
+          "raw_sha256": "091f32cd66c0e38951a8c7083b4132db3aa0c56cae26d1b31ed215bbcb827898",
+          "raw_duration_seconds": 7.760416666666667,
+          "ready": "outputs/qwen3-tts/cool_senpai/ready/mixed_language.wav",
+          "ready_sha256": "091f32cd66c0e38951a8c7083b4132db3aa0c56cae26d1b31ed215bbcb827898",
+          "ready_duration_seconds": 7.760416666666667,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "text_id": "mixed_language",
+          "text": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+          "language": "Auto",
+          "cache_hit": true,
+          "stage": "base-clone",
+          "persona_id": "cool_senpai",
+          "fingerprint": "3c865032b264182cb2f7880f6cdaf21f6444d8d8c0e53ff4dd44ccbd9bbf6e20",
+          "fingerprint_inputs": {
+            "stage": "base-clone",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+            "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+            "persona_id": "cool_senpai",
+            "text_id": "mixed_language",
+            "text": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+            "language": "Auto",
+            "reference_audio_sha256": "dadee84bd7feaffb19abc44c29f3b8fbee93e84941699a176996c0e10746acf8",
+            "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 1365003541
+          }
+        }
+      ]
+    },
+    {
+      "id": "sleepy_cat",
+      "label": "慵懒猫系",
+      "group": "female",
+      "description": "原创年轻成年女性动漫声线，慵懒松弛、略带鼻音和猫系俏皮感，语速稍慢但不拖沓，像刚睡醒却很会讲故事；吐字清楚，不使用真实人物特征。",
+      "master": {
+        "path": "outputs/qwen3-tts/sleepy_cat/raw/voice-master.wav",
+        "sha256": "e768fef04b16e29a70321496acb6dd2a48b4b6b288f9a536d39d4f18c79dcc82",
+        "wav": {
+          "channels": 1,
+          "sample_rate_hz": 24000,
+          "sample_width_bytes": 2,
+          "frames": 282240,
+          "duration_seconds": 11.76
+        },
+        "metadata": {
+          "seed": 2838631263,
+          "generation_seconds": 3.733883875014726,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:11.760",
+              "processing_seconds": 3.7141177654266357,
+              "peak_memory_gb": 7.17181805,
+              "token_count": 148
+            }
+          ],
+          "raw": "outputs/qwen3-tts/sleepy_cat/raw/voice-master.wav",
+          "raw_sha256": "e768fef04b16e29a70321496acb6dd2a48b4b6b288f9a536d39d4f18c79dcc82",
+          "raw_duration_seconds": 11.76,
+          "ready": "outputs/qwen3-tts/sleepy_cat/ready/voice-master.wav",
+          "ready_sha256": "eb3a8a5c12cc7a1a18cb88d2ca795be62362c145927b421a4ca4076c2cc0a318",
+          "ready_duration_seconds": 11.28,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.48,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "stage": "voice-design-master",
+          "persona_id": "sleepy_cat",
+          "persona_label": "慵懒猫系",
+          "text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+          "language": "Chinese",
+          "fingerprint": "191b85c54a00a4d996f085e5c25a0e5099d6fe89a4001430de8e513fb71b3a5a",
+          "fingerprint_inputs": {
+            "stage": "voice-design-master",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit",
+            "model_revision": "f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
+            "persona": {
+              "id": "sleepy_cat",
+              "label": "慵懒猫系",
+              "group": "female",
+              "description": "原创年轻成年女性动漫声线，慵懒松弛、略带鼻音和猫系俏皮感，语速稍慢但不拖沓，像刚睡醒却很会讲故事；吐字清楚，不使用真实人物特征。"
+            },
+            "text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "language": "Chinese",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 2838631263
+          }
+        }
+      },
+      "samples": [
+        {
+          "seed": 1489889843,
+          "generation_seconds": 3.4448744579567574,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:10.203",
+              "processing_seconds": 3.4188380241394043,
+              "peak_memory_gb": 7.724485407,
+              "token_count": 128
+            }
+          ],
+          "raw": "outputs/qwen3-tts/sleepy_cat/raw/showcase.wav",
+          "raw_sha256": "d58f6024b6c70b28cf62af1dfa7e4d719a30874cef35407b5968875122556c8f",
+          "raw_duration_seconds": 10.202791666666666,
+          "ready": "outputs/qwen3-tts/sleepy_cat/ready/showcase.wav",
+          "ready_sha256": "fe66497edb1f5681f5755cc9c1c897ec78f36008b446b9eb61b8f0cbd244c5d8",
+          "ready_duration_seconds": 9.862791666666666,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.34,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "text_id": "showcase",
+          "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+          "language": "Chinese",
+          "cache_hit": true,
+          "stage": "base-clone",
+          "persona_id": "sleepy_cat",
+          "fingerprint": "afcb2a15d6dc4a4a33c88d0a9641ac374b05710179d54492469f08f5eac5603e",
+          "fingerprint_inputs": {
+            "stage": "base-clone",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+            "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+            "persona_id": "sleepy_cat",
+            "text_id": "showcase",
+            "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+            "language": "Chinese",
+            "reference_audio_sha256": "e768fef04b16e29a70321496acb6dd2a48b4b6b288f9a536d39d4f18c79dcc82",
+            "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 1489889843
+          }
+        },
+        {
+          "seed": 4063405713,
+          "generation_seconds": 2.60183749999851,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:07.298",
+              "processing_seconds": 2.577636241912842,
+              "peak_memory_gb": 7.724485407,
+              "token_count": 92
+            }
+          ],
+          "raw": "outputs/qwen3-tts/sleepy_cat/raw/mixed_language.wav",
+          "raw_sha256": "d129d46eb3d78c1e1d14cc3645090f5f2f59e937a04271d080b3be3edeb8f1cd",
+          "raw_duration_seconds": 7.298416666666666,
+          "ready": "outputs/qwen3-tts/sleepy_cat/ready/mixed_language.wav",
+          "ready_sha256": "d3935c7b7bbfa95562ed40271585788e964de38aa537613f8b28f61c423e1cc6",
+          "ready_duration_seconds": 6.878416666666666,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.42,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "text_id": "mixed_language",
+          "text": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+          "language": "Auto",
+          "cache_hit": true,
+          "stage": "base-clone",
+          "persona_id": "sleepy_cat",
+          "fingerprint": "102b3b9bb0b05135ecdf60d1788eddffe86477f35eed204a52b322ada1759e41",
+          "fingerprint_inputs": {
+            "stage": "base-clone",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+            "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+            "persona_id": "sleepy_cat",
+            "text_id": "mixed_language",
+            "text": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+            "language": "Auto",
+            "reference_audio_sha256": "e768fef04b16e29a70321496acb6dd2a48b4b6b288f9a536d39d4f18c79dcc82",
+            "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 4063405713
+          }
+        }
+      ]
+    },
+    {
+      "id": "hotblood_youth",
+      "label": "热血少年",
+      "group": "male",
+      "description": "原创年轻成年男性动漫声线，明亮有冲劲、少年感强但不稚嫩，节奏紧凑，关键词有向前推动的力量，像热血番解说；避免喊叫和失真，不模仿任何可识别人物。",
+      "master": {
+        "path": "outputs/qwen3-tts/hotblood_youth/raw/voice-master.wav",
+        "sha256": "335269748b3208423a4e4ed9899da870f3e4a2a9c0e4f940710c9731878530ae",
+        "wav": {
+          "channels": 1,
+          "sample_rate_hz": 24000,
+          "sample_width_bytes": 2,
+          "frames": 180480,
+          "duration_seconds": 7.52
+        },
+        "metadata": {
+          "seed": 3369168007,
+          "generation_seconds": 2.4536762919742614,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:07.520",
+              "processing_seconds": 2.4393727779388428,
+              "peak_memory_gb": 7.17181805,
+              "token_count": 96
+            }
+          ],
+          "raw": "outputs/qwen3-tts/hotblood_youth/raw/voice-master.wav",
+          "raw_sha256": "335269748b3208423a4e4ed9899da870f3e4a2a9c0e4f940710c9731878530ae",
+          "raw_duration_seconds": 7.52,
+          "ready": "outputs/qwen3-tts/hotblood_youth/ready/voice-master.wav",
+          "ready_sha256": "335269748b3208423a4e4ed9899da870f3e4a2a9c0e4f940710c9731878530ae",
+          "ready_duration_seconds": 7.52,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "stage": "voice-design-master",
+          "persona_id": "hotblood_youth",
+          "persona_label": "热血少年",
+          "text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+          "language": "Chinese",
+          "fingerprint": "11833bdd92349f783b467768ff9fac7eda19fc25893e56bf5f3a35ee87dba08d",
+          "fingerprint_inputs": {
+            "stage": "voice-design-master",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit",
+            "model_revision": "f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
+            "persona": {
+              "id": "hotblood_youth",
+              "label": "热血少年",
+              "group": "male",
+              "description": "原创年轻成年男性动漫声线，明亮有冲劲、少年感强但不稚嫩，节奏紧凑，关键词有向前推动的力量，像热血番解说；避免喊叫和失真，不模仿任何可识别人物。"
+            },
+            "text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "language": "Chinese",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 3369168007
+          }
+        }
+      },
+      "samples": [
+        {
+          "seed": 3401407194,
+          "generation_seconds": 2.9869190000463277,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:09.192",
+              "processing_seconds": 2.9652750492095947,
+              "peak_memory_gb": 7.724485407,
+              "token_count": 116
+            }
+          ],
+          "raw": "outputs/qwen3-tts/hotblood_youth/raw/showcase.wav",
+          "raw_sha256": "f317cfbacfdc3938c17306ea2b35c8bbe6fa0d7843ca4ffc0727a4d064084666",
+          "raw_duration_seconds": 9.191625,
+          "ready": "outputs/qwen3-tts/hotblood_youth/ready/showcase.wav",
+          "ready_sha256": "f317cfbacfdc3938c17306ea2b35c8bbe6fa0d7843ca4ffc0727a4d064084666",
+          "ready_duration_seconds": 9.191625,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "text_id": "showcase",
+          "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+          "language": "Chinese",
+          "cache_hit": true,
+          "stage": "base-clone",
+          "persona_id": "hotblood_youth",
+          "fingerprint": "024074fb25f70825b89565861357b1e18b37a7efb6d308c55217f46c0ec35fd1",
+          "fingerprint_inputs": {
+            "stage": "base-clone",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+            "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+            "persona_id": "hotblood_youth",
+            "text_id": "showcase",
+            "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+            "language": "Chinese",
+            "reference_audio_sha256": "335269748b3208423a4e4ed9899da870f3e4a2a9c0e4f940710c9731878530ae",
+            "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 3401407194
+          }
+        },
+        {
+          "seed": 967373686,
+          "generation_seconds": 2.241373166034464,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:06.607",
+              "processing_seconds": 2.222994804382324,
+              "peak_memory_gb": 7.724485407,
+              "token_count": 84
+            }
+          ],
+          "raw": "outputs/qwen3-tts/hotblood_youth/raw/mixed_language.wav",
+          "raw_sha256": "8bc2c3e321fc3ef2059fe31d1f63201b15742d74e2610d893a4afafe4eaab12f",
+          "raw_duration_seconds": 6.60675,
+          "ready": "outputs/qwen3-tts/hotblood_youth/ready/mixed_language.wav",
+          "ready_sha256": "8bc2c3e321fc3ef2059fe31d1f63201b15742d74e2610d893a4afafe4eaab12f",
+          "ready_duration_seconds": 6.60675,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "text_id": "mixed_language",
+          "text": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+          "language": "Auto",
+          "cache_hit": true,
+          "stage": "base-clone",
+          "persona_id": "hotblood_youth",
+          "fingerprint": "198e315587d7035ff8bf699ab053a2bc60393b78ce2e4f977011c916225c58a4",
+          "fingerprint_inputs": {
+            "stage": "base-clone",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+            "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+            "persona_id": "hotblood_youth",
+            "text_id": "mixed_language",
+            "text": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+            "language": "Auto",
+            "reference_audio_sha256": "335269748b3208423a4e4ed9899da870f3e4a2a9c0e4f940710c9731878530ae",
+            "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 967373686
+          }
+        }
+      ]
+    },
+    {
+      "id": "mystic_rival",
+      "label": "神秘宿敌",
+      "group": "male",
+      "description": "原创年轻成年男性动漫声线，中低音、冷静神秘、带轻微危险感和舞台感，语速从容，停顿有戏剧张力；保持清晰自然，不压成气泡音，不模仿任何可识别人物。",
+      "master": {
+        "path": "outputs/qwen3-tts/mystic_rival/raw/voice-master.wav",
+        "sha256": "f4b28e04cdd5fcbb4f3606d783cdc49a0abb2c122252e0f1346add33e6842102",
+        "wav": {
+          "channels": 1,
+          "sample_rate_hz": 24000,
+          "sample_width_bytes": 2,
+          "frames": 203520,
+          "duration_seconds": 8.48
+        },
+        "metadata": {
+          "seed": 362654198,
+          "generation_seconds": 2.731185042008292,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:08.480",
+              "processing_seconds": 2.7167859077453613,
+              "peak_memory_gb": 7.17181805,
+              "token_count": 107
+            }
+          ],
+          "raw": "outputs/qwen3-tts/mystic_rival/raw/voice-master.wav",
+          "raw_sha256": "f4b28e04cdd5fcbb4f3606d783cdc49a0abb2c122252e0f1346add33e6842102",
+          "raw_duration_seconds": 8.48,
+          "ready": "outputs/qwen3-tts/mystic_rival/ready/voice-master.wav",
+          "ready_sha256": "f4b28e04cdd5fcbb4f3606d783cdc49a0abb2c122252e0f1346add33e6842102",
+          "ready_duration_seconds": 8.48,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "stage": "voice-design-master",
+          "persona_id": "mystic_rival",
+          "persona_label": "神秘宿敌",
+          "text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+          "language": "Chinese",
+          "fingerprint": "1709ce6f41dfb5d7b88ed0f7f224d19fbcedbcfb4b5aae04779e5cbb0d054b2d",
+          "fingerprint_inputs": {
+            "stage": "voice-design-master",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit",
+            "model_revision": "f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
+            "persona": {
+              "id": "mystic_rival",
+              "label": "神秘宿敌",
+              "group": "male",
+              "description": "原创年轻成年男性动漫声线，中低音、冷静神秘、带轻微危险感和舞台感，语速从容，停顿有戏剧张力；保持清晰自然，不压成气泡音，不模仿任何可识别人物。"
+            },
+            "text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "language": "Chinese",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 362654198
+          }
+        }
+      },
+      "samples": [
+        {
+          "seed": 441209616,
+          "generation_seconds": 2.9450473749893717,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:08.919",
+              "processing_seconds": 2.922210931777954,
+              "peak_memory_gb": 7.724485407,
+              "token_count": 112
+            }
+          ],
+          "raw": "outputs/qwen3-tts/mystic_rival/raw/showcase.wav",
+          "raw_sha256": "05ce4f4786d3f9d9ee641a1bdec02afef8cee9aa9897083e80f4a71732fc418c",
+          "raw_duration_seconds": 8.918916666666666,
+          "ready": "outputs/qwen3-tts/mystic_rival/ready/showcase.wav",
+          "ready_sha256": "05ce4f4786d3f9d9ee641a1bdec02afef8cee9aa9897083e80f4a71732fc418c",
+          "ready_duration_seconds": 8.918916666666666,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "text_id": "showcase",
+          "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+          "language": "Chinese",
+          "cache_hit": true,
+          "stage": "base-clone",
+          "persona_id": "mystic_rival",
+          "fingerprint": "2a7786da33fa8f9da6ce0b28ca0fe0b09040a86216b3b9919da73f752d94de29",
+          "fingerprint_inputs": {
+            "stage": "base-clone",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+            "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+            "persona_id": "mystic_rival",
+            "text_id": "showcase",
+            "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+            "language": "Chinese",
+            "reference_audio_sha256": "f4b28e04cdd5fcbb4f3606d783cdc49a0abb2c122252e0f1346add33e6842102",
+            "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 441209616
+          }
+        },
+        {
+          "seed": 164686702,
+          "generation_seconds": 2.5938249589526094,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:07.763",
+              "processing_seconds": 2.5714187622070312,
+              "peak_memory_gb": 7.724485407,
+              "token_count": 98
+            }
+          ],
+          "raw": "outputs/qwen3-tts/mystic_rival/raw/mixed_language.wav",
+          "raw_sha256": "9998670c0e5378c17a47b86dbef3e6aeb478a0bd77564b07d88553031fad24f2",
+          "raw_duration_seconds": 7.763166666666667,
+          "ready": "outputs/qwen3-tts/mystic_rival/ready/mixed_language.wav",
+          "ready_sha256": "9998670c0e5378c17a47b86dbef3e6aeb478a0bd77564b07d88553031fad24f2",
+          "ready_duration_seconds": 7.763166666666667,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "text_id": "mixed_language",
+          "text": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+          "language": "Auto",
+          "cache_hit": true,
+          "stage": "base-clone",
+          "persona_id": "mystic_rival",
+          "fingerprint": "5509fda33aad5420b7f5ca6fdce6b5008f90212cdd67114e67d52cd7a9d79f44",
+          "fingerprint_inputs": {
+            "stage": "base-clone",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+            "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+            "persona_id": "mystic_rival",
+            "text_id": "mixed_language",
+            "text": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+            "language": "Auto",
+            "reference_audio_sha256": "f4b28e04cdd5fcbb4f3606d783cdc49a0abb2c122252e0f1346add33e6842102",
+            "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 164686702
+          }
+        }
+      ]
+    },
+    {
+      "id": "airy_spirit",
+      "label": "空灵精灵",
+      "group": "androgynous",
+      "description": "原创中性动漫精灵声线，轻盈空灵、音色透明、年龄感模糊，带一点梦幻与好奇，旋律性自然但仍像正常解说；避免耳语和混响感过重，不模仿任何可识别人物。",
+      "master": {
+        "path": "outputs/qwen3-tts/airy_spirit/raw/voice-master.wav",
+        "sha256": "c53225892d5ed8095c7842ca720d220aa2666e2f217228af9698d06a1ba4023e",
+        "wav": {
+          "channels": 1,
+          "sample_rate_hz": 24000,
+          "sample_width_bytes": 2,
+          "frames": 259200,
+          "duration_seconds": 10.8
+        },
+        "metadata": {
+          "seed": 3844339988,
+          "generation_seconds": 3.4324896670295857,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:10.800",
+              "processing_seconds": 3.4143340587615967,
+              "peak_memory_gb": 7.333526574,
+              "token_count": 136
+            }
+          ],
+          "raw": "outputs/qwen3-tts/airy_spirit/raw/voice-master.wav",
+          "raw_sha256": "c53225892d5ed8095c7842ca720d220aa2666e2f217228af9698d06a1ba4023e",
+          "raw_duration_seconds": 10.8,
+          "ready": "outputs/qwen3-tts/airy_spirit/ready/voice-master.wav",
+          "ready_sha256": "c53225892d5ed8095c7842ca720d220aa2666e2f217228af9698d06a1ba4023e",
+          "ready_duration_seconds": 10.8,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "stage": "voice-design-master",
+          "persona_id": "airy_spirit",
+          "persona_label": "空灵精灵",
+          "text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+          "language": "Chinese",
+          "fingerprint": "54ff37e013331e73649cc57a26054120af4da5f99f54f080215c8b3a26477478",
+          "fingerprint_inputs": {
+            "stage": "voice-design-master",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit",
+            "model_revision": "f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
+            "persona": {
+              "id": "airy_spirit",
+              "label": "空灵精灵",
+              "group": "androgynous",
+              "description": "原创中性动漫精灵声线，轻盈空灵、音色透明、年龄感模糊，带一点梦幻与好奇，旋律性自然但仍像正常解说；避免耳语和混响感过重，不模仿任何可识别人物。"
+            },
+            "text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "language": "Chinese",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 3844339988
+          }
+        }
+      },
+      "samples": [
+        {
+          "seed": 1060959190,
+          "generation_seconds": 3.506058624945581,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:10.560",
+              "processing_seconds": 3.4796078205108643,
+              "peak_memory_gb": 7.724485407,
+              "token_count": 132
+            }
+          ],
+          "raw": "outputs/qwen3-tts/airy_spirit/raw/showcase.wav",
+          "raw_sha256": "19516b95ca253284c1828e822a8c775f7b19733e0474be137f99125205cf496b",
+          "raw_duration_seconds": 10.56,
+          "ready": "outputs/qwen3-tts/airy_spirit/ready/showcase.wav",
+          "ready_sha256": "5527f877625325f0ab9a841b88416a7652c2bae5164a65bd0dc7981abe3c4da0",
+          "ready_duration_seconds": 10.2,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.36,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "text_id": "showcase",
+          "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+          "language": "Chinese",
+          "cache_hit": true,
+          "stage": "base-clone",
+          "persona_id": "airy_spirit",
+          "fingerprint": "4adc30d7853c76f5a13c5f52263506d6c5d72d4dd3d29c4d719623eef26ffdcd",
+          "fingerprint_inputs": {
+            "stage": "base-clone",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+            "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+            "persona_id": "airy_spirit",
+            "text_id": "showcase",
+            "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+            "language": "Chinese",
+            "reference_audio_sha256": "c53225892d5ed8095c7842ca720d220aa2666e2f217228af9698d06a1ba4023e",
+            "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 1060959190
+          }
+        },
+        {
+          "seed": 3158708892,
+          "generation_seconds": 2.757789125025738,
+          "model_metrics": [
+            {
+              "reported_audio_duration": "00:00:08.046",
+              "processing_seconds": 2.732707977294922,
+              "peak_memory_gb": 7.724485407,
+              "token_count": 101
+            }
+          ],
+          "raw": "outputs/qwen3-tts/airy_spirit/raw/mixed_language.wav",
+          "raw_sha256": "2aa100e7f242f661283a0948d2bc670be30d7636b748ac7e3ab79425f466eb50",
+          "raw_duration_seconds": 8.045791666666666,
+          "ready": "outputs/qwen3-tts/airy_spirit/ready/mixed_language.wav",
+          "ready_sha256": "2aa100e7f242f661283a0948d2bc670be30d7636b748ac7e3ab79425f466eb50",
+          "ready_duration_seconds": 8.045791666666666,
+          "sample_rate_hz": 24000,
+          "trim": {
+            "start_trim_seconds": 0.0,
+            "end_trim_seconds": 0.0,
+            "threshold_dbfs": -50.0,
+            "padding_ms": 120
+          },
+          "text_id": "mixed_language",
+          "text": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+          "language": "Auto",
+          "cache_hit": true,
+          "stage": "base-clone",
+          "persona_id": "airy_spirit",
+          "fingerprint": "92cefe674e89d81a1bf9fde20d39f4438f279f9b381afacd6879910c5504c91f",
+          "fingerprint_inputs": {
+            "stage": "base-clone",
+            "model_id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+            "model_revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+            "persona_id": "airy_spirit",
+            "text_id": "mixed_language",
+            "text": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+            "language": "Auto",
+            "reference_audio_sha256": "c53225892d5ed8095c7842ca720d220aa2666e2f217228af9698d06a1ba4023e",
+            "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+            "generation": {
+              "seed": 20260809,
+              "temperature": 0.8,
+              "top_k": 50,
+              "top_p": 0.95,
+              "repetition_penalty": 1.1,
+              "max_tokens": 2048,
+              "sample_rate_hz": 24000,
+              "trim_threshold_dbfs": -50.0,
+              "trim_padding_ms": 120
+            },
+            "seed": 3158708892
+          }
+        }
+      ]
+    }
+  ]
+}

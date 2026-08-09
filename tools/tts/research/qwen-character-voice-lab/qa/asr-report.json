@@ -1,0 +1,278 @@
+{
+  "schema_version": "1.0.0",
+  "model": "small",
+  "device": "cpu",
+  "load_seconds": 0.9357898330199532,
+  "python": "3.12.13",
+  "records": [
+    {
+      "engine": "qwen3-tts",
+      "voice": "moe_spark",
+      "text_id": "showcase",
+      "path": "outputs/listen-audio/qwen3-tts/moe_spark/showcase.wav",
+      "expected": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "transcript": "第五名,真正让人记住的不只是旋律,而是那一瞬间突然拉满的情绪,准备好了吗?好戏才刚刚开始。",
+      "normalized_similarity": 1.0,
+      "elapsed_seconds": 0.9283158339676447,
+      "interpretation": "content_check"
+    },
+    {
+      "engine": "qwen3-tts",
+      "voice": "moe_spark",
+      "text_id": "mixed_language",
+      "path": "outputs/listen-audio/qwen3-tts/moe_spark/mixed_language.wav",
+      "expected": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+      "transcript": "这次用AI重看王Piece和静许诺Q赢看看熟悉的名场面还能不能让你起鸡皮疙瘩",
+      "normalized_similarity": 0.8205128205128205,
+      "elapsed_seconds": 0.7945472919964232,
+      "interpretation": "mixed-script evidence only; ASR spelling is not a pronunciation verdict"
+    },
+    {
+      "engine": "qwen3-tts",
+      "voice": "soft_healer",
+      "text_id": "showcase",
+      "path": "outputs/listen-audio/qwen3-tts/soft_healer/showcase.wav",
+      "expected": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "transcript": "第五名,真正讓人記住的不只是旋律,而是那一瞬間突然拉滿的情緒。準備好了嗎?好戲才剛剛開始。",
+      "normalized_similarity": 0.975,
+      "elapsed_seconds": 0.7529963749693707,
+      "interpretation": "content_check"
+    },
+    {
+      "engine": "qwen3-tts",
+      "voice": "soft_healer",
+      "text_id": "mixed_language",
+      "path": "outputs/listen-audio/qwen3-tts/soft_healer/mixed_language.wav",
+      "expected": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+      "transcript": "这次用AI重看One Piece和静音的QQ针,看看熟悉的迷场面还能不能让你起鸡皮疙瘩。",
+      "normalized_similarity": 0.8395061728395061,
+      "elapsed_seconds": 0.7052309580030851,
+      "interpretation": "mixed-script evidence only; ASR spelling is not a pronunciation verdict"
+    },
+    {
+      "engine": "qwen3-tts",
+      "voice": "tsundere_comic",
+      "text_id": "showcase",
+      "path": "outputs/listen-audio/qwen3-tts/tsundere_comic/showcase.wav",
+      "expected": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "transcript": "第五名真正让人记住的不只是旋律而是那一瞬间突然拉满的情绪准备好了吗好戏才刚刚开始",
+      "normalized_similarity": 1.0,
+      "elapsed_seconds": 0.8042739579686895,
+      "interpretation": "content_check"
+    },
+    {
+      "engine": "qwen3-tts",
+      "voice": "tsundere_comic",
+      "text_id": "mixed_language",
+      "path": "outputs/listen-audio/qwen3-tts/tsundere_comic/mixed_language.wav",
+      "expected": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+      "transcript": "这次用AI重看One Piece和静系Nokuri看看熟悉的迷场面还能不能让你起起屁股的",
+      "normalized_similarity": 0.7228915662650602,
+      "elapsed_seconds": 0.7090215829666704,
+      "interpretation": "mixed-script evidence only; ASR spelling is not a pronunciation verdict"
+    },
+    {
+      "engine": "qwen3-tts",
+      "voice": "cool_senpai",
+      "text_id": "showcase",
+      "path": "outputs/listen-audio/qwen3-tts/cool_senpai/showcase.wav",
+      "expected": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "transcript": "第五名,真正讓人記住的不只是旋律,而是那一瞬間突然拉滿的情緒。準備好了嗎?好戲才剛剛開始。",
+      "normalized_similarity": 0.975,
+      "elapsed_seconds": 0.7481705410173163,
+      "interpretation": "content_check"
+    },
+    {
+      "engine": "qwen3-tts",
+      "voice": "cool_senpai",
+      "text_id": "mixed_language",
+      "path": "outputs/listen-audio/qwen3-tts/cool_senpai/mixed_language.wav",
+      "expected": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+      "transcript": "这次用AI重看One Piece和进行的QGN看看熟悉的名场面还能不能让你起起皮疙瘩",
+      "normalized_similarity": 0.8395061728395061,
+      "elapsed_seconds": 0.7141555410344154,
+      "interpretation": "mixed-script evidence only; ASR spelling is not a pronunciation verdict"
+    },
+    {
+      "engine": "qwen3-tts",
+      "voice": "sleepy_cat",
+      "text_id": "showcase",
+      "path": "outputs/listen-audio/qwen3-tts/sleepy_cat/showcase.wav",
+      "expected": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "transcript": "第五名,真正让人记住的不只是旋律,而是那一瞬间突然拉满的情绪,准备好了吗?好戏才刚刚开始。",
+      "normalized_similarity": 1.0,
+      "elapsed_seconds": 0.8090901660034433,
+      "interpretation": "content_check"
+    },
+    {
+      "engine": "qwen3-tts",
+      "voice": "sleepy_cat",
+      "text_id": "mixed_language",
+      "path": "outputs/listen-audio/qwen3-tts/sleepy_cat/mixed_language.wav",
+      "expected": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+      "transcript": "这次用AI重看One Piece和静岂能Q针看看熟悉的迷场面还能不能让你起鸡皮疙瘩",
+      "normalized_similarity": 0.85,
+      "elapsed_seconds": 0.7450411670142785,
+      "interpretation": "mixed-script evidence only; ASR spelling is not a pronunciation verdict"
+    },
+    {
+      "engine": "qwen3-tts",
+      "voice": "hotblood_youth",
+      "text_id": "showcase",
+      "path": "outputs/listen-audio/qwen3-tts/hotblood_youth/showcase.wav",
+      "expected": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "transcript": "第五名,真正讓人記住的,不只是旋律,而是那一瞬間突然拉滿的情緒。準備好了嗎?好戲才剛剛開始。",
+      "normalized_similarity": 0.975,
+      "elapsed_seconds": 0.7408072500256822,
+      "interpretation": "content_check"
+    },
+    {
+      "engine": "qwen3-tts",
+      "voice": "hotblood_youth",
+      "text_id": "mixed_language",
+      "path": "outputs/listen-audio/qwen3-tts/hotblood_youth/mixed_language.wav",
+      "expected": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+      "transcript": "这次用AI重看One Piece和进行Nokyojin看看熟悉的名场面还能不能让你起金皮",
+      "normalized_similarity": 0.7710843373493976,
+      "elapsed_seconds": 0.6412587079685181,
+      "interpretation": "mixed-script evidence only; ASR spelling is not a pronunciation verdict"
+    },
+    {
+      "engine": "qwen3-tts",
+      "voice": "mystic_rival",
+      "text_id": "showcase",
+      "path": "outputs/listen-audio/qwen3-tts/mystic_rival/showcase.wav",
+      "expected": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "transcript": "第五名,真正讓人記住的不只是旋律,而是那一瞬間突然拉滿的情緒。準備好了嗎?好戲才剛剛開始。",
+      "normalized_similarity": 0.975,
+      "elapsed_seconds": 0.733193832973484,
+      "interpretation": "content_check"
+    },
+    {
+      "engine": "qwen3-tts",
+      "voice": "mystic_rival",
+      "text_id": "mixed_language",
+      "path": "outputs/listen-audio/qwen3-tts/mystic_rival/mixed_language.wav",
+      "expected": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+      "transcript": "这次用AI重看One Piece和近期Nokyojin,看看熟悉的名场面还能不能让你起鸡皮歌。",
+      "normalized_similarity": 0.7857142857142857,
+      "elapsed_seconds": 0.6726167090237141,
+      "interpretation": "mixed-script evidence only; ASR spelling is not a pronunciation verdict"
+    },
+    {
+      "engine": "qwen3-tts",
+      "voice": "airy_spirit",
+      "text_id": "showcase",
+      "path": "outputs/listen-audio/qwen3-tts/airy_spirit/showcase.wav",
+      "expected": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "transcript": "第五名,真正讓人記住的不只是旋律,而是那一瞬間突然拉滿的情緒,準備好了嗎?好戲才剛剛開始。",
+      "normalized_similarity": 0.975,
+      "elapsed_seconds": 0.7504925830289721,
+      "interpretation": "content_check"
+    },
+    {
+      "engine": "qwen3-tts",
+      "voice": "airy_spirit",
+      "text_id": "mixed_language",
+      "path": "outputs/listen-audio/qwen3-tts/airy_spirit/mixed_language.wav",
+      "expected": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。",
+      "transcript": "这次用AI重看One Piece和静喜诺Q影看看熟悉的名场面还能不能让你起鸡皮疙瘩",
+      "normalized_similarity": 0.875,
+      "elapsed_seconds": 0.7645785419736058,
+      "interpretation": "mixed-script evidence only; ASR spelling is not a pronunciation verdict"
+    },
+    {
+      "engine": "kokoro",
+      "voice": "zf_xiaobei",
+      "text_id": "showcase",
+      "path": "outputs/listen-audio/kokoro/zf_xiaobei.wav",
+      "expected": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "transcript": "第五名真正讓人記住的不只是旋律而是那一瞬間突然拉滿的情緒準備好了嗎好戲才剛剛開始",
+      "normalized_similarity": 0.975,
+      "elapsed_seconds": 0.7254400830133818,
+      "interpretation": "content_check"
+    },
+    {
+      "engine": "kokoro",
+      "voice": "zf_xiaoni",
+      "text_id": "showcase",
+      "path": "outputs/listen-audio/kokoro/zf_xiaoni.wav",
+      "expected": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "transcript": "第五名整征讓人積珠底不致思旋律,而思納已瞬間土然浪漫的情緒,準備耗了媽耗息,才港港凱四。",
+      "normalized_similarity": 0.475,
+      "elapsed_seconds": 0.8244443750008941,
+      "interpretation": "content_check"
+    },
+    {
+      "engine": "kokoro",
+      "voice": "zf_xiaoxiao",
+      "text_id": "showcase",
+      "path": "outputs/listen-audio/kokoro/zf_xiaoxiao.wav",
+      "expected": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "transcript": "《一無名》真正讓人記住的不只是旋律,而是那一瞬間突然拉滿的情緒,準備好了嗎?好戲才剛剛開始。",
+      "normalized_similarity": 0.925,
+      "elapsed_seconds": 0.7621355830342509,
+      "interpretation": "content_check"
+    },
+    {
+      "engine": "kokoro",
+      "voice": "zf_xiaoyi",
+      "text_id": "showcase",
+      "path": "outputs/listen-audio/kokoro/zf_xiaoyi.wav",
+      "expected": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "transcript": "第五名真正讓人記住的不只是旋律,而是那一瞬間突然拉滿的情緒,準備好了嗎?好戲才剛剛開始。",
+      "normalized_similarity": 0.975,
+      "elapsed_seconds": 0.7289302499848418,
+      "interpretation": "content_check"
+    },
+    {
+      "engine": "kokoro",
+      "voice": "zm_yunjian",
+      "text_id": "showcase",
+      "path": "outputs/listen-audio/kokoro/zm_yunjian.wav",
+      "expected": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "transcript": "第五名真正讓人記住的不只是旋律而是那一瞬間突然拉滿的情緒準備好了嗎好戲才剛剛開始",
+      "normalized_similarity": 0.975,
+      "elapsed_seconds": 0.7191325000021607,
+      "interpretation": "content_check"
+    },
+    {
+      "engine": "kokoro",
+      "voice": "zm_yunxi",
+      "text_id": "showcase",
+      "path": "outputs/listen-audio/kokoro/zm_yunxi.wav",
+      "expected": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "transcript": "第五名真正讓人記住的不只是旋律而是那一瞬間突然拉滿的情緒準備好了嗎好戲才剛剛開始",
+      "normalized_similarity": 0.975,
+      "elapsed_seconds": 0.7173023750074208,
+      "interpretation": "content_check"
+    },
+    {
+      "engine": "kokoro",
+      "voice": "zm_yunxia",
+      "text_id": "showcase",
+      "path": "outputs/listen-audio/kokoro/zm_yunxia.wav",
+      "expected": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "transcript": "第五名真正讓人記住的不只是旋律而是那一瞬間突然拉滿的情緒準備好了嗎?好戲才剛剛開始",
+      "normalized_similarity": 0.975,
+      "elapsed_seconds": 0.7238470420124941,
+      "interpretation": "content_check"
+    },
+    {
+      "engine": "kokoro",
+      "voice": "zm_yunyang",
+      "text_id": "showcase",
+      "path": "outputs/listen-audio/kokoro/zm_yunyang.wav",
+      "expected": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "transcript": "第五名真正讓人記住的不只是旋律而是那一瞬間突然拉滿的情緒準備好了嗎好戲才剛剛開始",
+      "normalized_similarity": 0.975,
+      "elapsed_seconds": 0.7013919170130976,
+      "interpretation": "content_check"
+    }
+  ],
+  "summary": {
+    "total": 24,
+    "showcase_below_0_85": 1,
+    "showcase_min_similarity": 0.475
+  }
+}

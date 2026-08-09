@@ -1,0 +1,127 @@
+{
+  "schema_version": "1.0.0",
+  "engine": "current cc-media Kokoro + misaki[zh]",
+  "entrypoint": "tools/tts/narrate.py",
+  "voices": [
+    {
+      "voice": "zf_xiaobei",
+      "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "output": "outputs/kokoro/raw/zf_xiaobei.wav",
+      "sha256": "252d598677035405f4cf3605596f9594a969c779ee18fa3923bb32cac1833a8c",
+      "wav": {
+        "channels": 1,
+        "sample_rate_hz": 24000,
+        "sample_width_bytes": 2,
+        "frames": 255600,
+        "duration_seconds": 10.65
+      },
+      "elapsed_seconds": 0.00036095798714086413,
+      "cache_hit": true
+    },
+    {
+      "voice": "zf_xiaoni",
+      "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "output": "outputs/kokoro/raw/zf_xiaoni.wav",
+      "sha256": "b6f2639a8ccf5b40eb4f46b5ece786311bf6c6eb910ceeb7c8acf097fffedd08",
+      "wav": {
+        "channels": 1,
+        "sample_rate_hz": 24000,
+        "sample_width_bytes": 2,
+        "frames": 229800,
+        "duration_seconds": 9.575
+      },
+      "elapsed_seconds": 0.0002531249774619937,
+      "cache_hit": true
+    },
+    {
+      "voice": "zf_xiaoxiao",
+      "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "output": "outputs/kokoro/raw/zf_xiaoxiao.wav",
+      "sha256": "fb664b2ac0c766bdd385a6a64833ecc110d9b67f63c40a5a61dd49caf7dedf54",
+      "wav": {
+        "channels": 1,
+        "sample_rate_hz": 24000,
+        "sample_width_bytes": 2,
+        "frames": 221400,
+        "duration_seconds": 9.225
+      },
+      "elapsed_seconds": 0.0002336249453946948,
+      "cache_hit": true
+    },
+    {
+      "voice": "zf_xiaoyi",
+      "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "output": "outputs/kokoro/raw/zf_xiaoyi.wav",
+      "sha256": "0e80884e1b7b49b5b0fdde13ba3c666d779dea04e770f7dcf1893d415aa0b45d",
+      "wav": {
+        "channels": 1,
+        "sample_rate_hz": 24000,
+        "sample_width_bytes": 2,
+        "frames": 217200,
+        "duration_seconds": 9.05
+      },
+      "elapsed_seconds": 0.00023016700288280845,
+      "cache_hit": true
+    },
+    {
+      "voice": "zm_yunjian",
+      "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "output": "outputs/kokoro/raw/zm_yunjian.wav",
+      "sha256": "b603b442dc8648f78b3e09510544189119a9f39419479047b6ce128692bb0704",
+      "wav": {
+        "channels": 1,
+        "sample_rate_hz": 24000,
+        "sample_width_bytes": 2,
+        "frames": 213000,
+        "duration_seconds": 8.875
+      },
+      "elapsed_seconds": 0.00022245798027142882,
+      "cache_hit": true
+    },
+    {
+      "voice": "zm_yunxi",
+      "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "output": "outputs/kokoro/raw/zm_yunxi.wav",
+      "sha256": "2d3205777955cf3911381b47242f9ee33b25d35311d4bb3a74a9d06161f47b69",
+      "wav": {
+        "channels": 1,
+        "sample_rate_hz": 24000,
+        "sample_width_bytes": 2,
+        "frames": 210600,
+        "duration_seconds": 8.775
+      },
+      "elapsed_seconds": 0.00021641695639118552,
+      "cache_hit": true
+    },
+    {
+      "voice": "zm_yunxia",
+      "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "output": "outputs/kokoro/raw/zm_yunxia.wav",
+      "sha256": "32542e2f20c8f746d1bc882a8d471078e6acfc7afbcf5e4dc65ca0d5eb5eeb20",
+      "wav": {
+        "channels": 1,
+        "sample_rate_hz": 24000,
+        "sample_width_bytes": 2,
+        "frames": 231000,
+        "duration_seconds": 9.625
+      },
+      "elapsed_seconds": 0.00023383297957479954,
+      "cache_hit": true
+    },
+    {
+      "voice": "zm_yunyang",
+      "text": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+      "output": "outputs/kokoro/raw/zm_yunyang.wav",
+      "sha256": "7b6f42846853996af24e209ed3c86aa6b9f5c6bc05df6cc9e3a4c5e38c8200d2",
+      "wav": {
+        "channels": 1,
+        "sample_rate_hz": 24000,
+        "sample_width_bytes": 2,
+        "frames": 205800,
+        "duration_seconds": 8.575
+      },
+      "elapsed_seconds": 0.00036995904520154,
+      "cache_hit": true
+    }
+  ]
+}

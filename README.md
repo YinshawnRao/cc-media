@@ -23,7 +23,11 @@
 
 ## 核心原则
 
-- **双平台查源**：除非 brief 明确排除某个平台，每条素材都要同时查 YouTube 和 B站，再按清晰度、画面干净度、立体声、现场质量和版本匹配度选源。
+- **双平台查源**：除非 brief 明确排除某个平台，每条素材都要同时查 YouTube 和 B站；先比较版本身份和官方属性，再在同一来源层级内比较画面干净度、立体声和清晰度。
+- **版本正确、官方优先**：先确认目标歌手/翻唱版本，再优先可用官方 MV；官方 MV 画质稍差也不因此换成第三方高清修复或二剪。确需换源时在 `SOURCES.md` 留证。
+- **TOP 倒数揭晓**：凡 TOP / 排名 / 榜单都按 N→1 播放；封面和 intro 不提前列完整歌单、排序或第一名，每一名到对应转场才揭晓。
+- **结构完整、质量优先**：一般视频保留开头、歌曲转场和结尾配音；完全自由探索类才可例外。默认不设总时长上限，不为变短牺牲完整乐句或观赏体验。
+- **封面排版也是 QA**：标题按语义自然换行，歌手名与同层级主要文字同字号或更大；首帧同时检查排版美感、安全区、主体避让和平台裁剪。
 - **源码进仓库，素材留本地**：提交脚本、清单、配置、设计稿、时间码和 QA 记录，不提交下载视频、渲染结果、缓存、cookie 和大体积中间产物。
 - **可复现优先**：`production/<项目名>/` 里保留能重建成片的输入，而不是只放一个最终 MP4。
 - **QA 靠工具**：不能只凭肉眼印象或听感下结论。渲染后要用 FFmpeg 检查音量/静音，用抽帧或 contact sheet 检查画面。
@@ -39,7 +43,7 @@
 ├── CLAUDE.md               # Claude/自动化代理工作说明
 ├── tools/
 │   ├── video/              # 视频任务 runbook 和复用脚本
-│   └── tts/                # 本地中文旁白工具，基于 Kokoro + misaki[zh]
+│   └── tts/                # 编号化本地中文配音库；默认 CV002 治愈少女
 ├── sandbox/                # 实验区，可丢弃，不承诺长期保留
 └── production/             # 正式项目区，保留可复现输入和工程文件
 ```
@@ -58,7 +62,7 @@
 
 不适合进入 git 的内容：
 
-- 下载原片、切片、转码中间文件、最终 MP4、WAV/MP3、大图、缓存帧。
+- 下载原片、切片、转码中间文件、最终 MP4、普通 WAV/MP3、大图、缓存帧。唯一音频例外是 `tools/tts/voices/` 内编号角色的精选参考母带与试听样例。
 - `node_modules/`、Python venv、`__pycache__/`、`.hf-local/`、HyperFrames 本地缓存。
 - 任何 cookie、登录态、token、`.env` 和私密配置。
 - `sandbox/` 下的一次性下载产物和临时渲染结果。
@@ -86,13 +90,14 @@ HyperFrames 通常通过 `npx hyperframes ...` 使用。中文旁白不要使用
 
 1. 阅读 `CONVENTIONS.md` 和 `tools/video/README.md`。
 2. 按 brief 创建 `sandbox/<slug>/`，所有试错先放这里。
-3. 确认 cookie 只在仓库根目录。优先使用 `all_cookies.txt`；旧脚本可能读取 `www.youtube.com_cookies.txt` 或 `www.bilibili.com_cookies.txt`。这些文件都不应提交。
-4. YouTube 和 B站都查源，把候选、取舍理由、URL 和时间码写进 `SOURCES.md`。
-5. 用 `yt-dlp` / FFmpeg 获取素材，用 `tools/video/` 脚本做竖屏填充、旁白分段、倒计时或 showcase 对齐。
-6. 用 HyperFrames 生成包装层，渲染画面。
-7. 用预混 `master.wav` 后期 mux 到最终视频。
-8. 运行音频和画面 QA，记录结果。
-9. 若项目要长期保留，再把可复现输入整理到 `production/<项目名>/`。
+3. 把原始任务提示词交给 `tools/tts/resolve_voice.py`，保存项目级 `voice-selection.json`。新盘点默认 `CV002「治愈少女」`；未知、模糊或冲突指定也回退 CV002。
+4. 确认 cookie 只在仓库根目录。优先使用 `all_cookies.txt`；旧脚本可能读取 `www.youtube.com_cookies.txt` 或 `www.bilibili.com_cookies.txt`。这些文件都不应提交。
+5. YouTube 和 B站都查源，把候选、取舍理由、URL 和时间码写进 `SOURCES.md`。
+6. 用 `yt-dlp` / FFmpeg 获取素材，用 `tools/video/` 脚本做竖屏填充、旁白分段、倒计时或 showcase 对齐。
+7. 用 HyperFrames 生成包装层，渲染画面。
+8. 用预混 `master.wav` 后期 mux 到最终视频。
+9. 运行配音一致性、音频和画面 QA，记录结果。
+10. 若项目要长期保留，再把可复现输入整理到 `production/<项目名>/`。
 
 ## 重要工具入口
 
@@ -103,6 +108,8 @@ HyperFrames 通常通过 `npx hyperframes ...` 使用。中文旁白不要使用
 - `tools/video/showcase_align.py`：阻断式检查主唱入点和完整乐句出点；REVIEW 需逐曲留证，硬边界 FAIL 不可跳过。
 - `tools/video/check_yt_cookie.py`：检查 YouTube cookie 登录态。
 - `tools/video/bili_search.py`、`tools/video/bili_dl.py`：B站搜索和下载辅助。
-- `tools/tts/narrate.py`：本地中文旁白生成。
+- `tools/tts/resolve_voice.py`：从原始任务提示词确定一次项目级配音；默认及兜底均为 CV002。
+- `tools/tts/narrate.py`：统一中文旁白入口，读取 `voice-selection.json`，Qwen 缺失时硬失败而非换声。
+- `tools/tts/voices/listen.html`：CV001–CV008 编号声音、参考母带和实际样音。
 
 更多细节以 `CONVENTIONS.md` 和 `tools/video/README.md` 为准。

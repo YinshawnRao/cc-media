@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.0.0",
+  "id_namespace": "CV",
+  "numbering_policy": "IDs are permanent and must never be reordered or reused",
+  "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
+  "voices": [
+    {
+      "id": "CV001",
+      "slug": "moe-spark",
+      "legacy_persona_id": "moe_spark",
+      "name": "元气萌妹",
+      "group": "female",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["元气少女", "萌妹", "萌妹子", "甜系萌妹", "moe_spark", "moe-spark"],
+      "description": "明亮甜美、节奏活泼、有弹性的原创成年二次元女声。",
+      "reference_audio": "CV001-moe-spark/reference.wav",
+      "reference_sha256": "3cc9ef2dda1967812cff30fb190cd436dc28b250f1d491e14f095dadc69152fb",
+      "examples": {
+        "ranking": "CV001-moe-spark/examples/ranking.wav",
+        "mixed_language": "CV001-moe-spark/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV002",
+      "slug": "soft-healer",
+      "legacy_persona_id": "soft_healer",
+      "name": "治愈少女",
+      "group": "female",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["治愈系少女", "治愈女声", "温柔少女", "温柔女声", "默认", "默认配音", "soft_healer", "soft-healer"],
+      "description": "柔软温暖、气息细腻、语速舒缓，带陪伴感的原创成年二次元女声。",
+      "reference_audio": "CV002-soft-healer/reference.wav",
+      "reference_sha256": "1610cf180e0bd245d7a50381a403c529e43b8fd65e7bbc20433edbc5062c0c13",
+      "examples": {
+        "ranking": "CV002-soft-healer/examples/ranking.wav",
+        "mixed_language": "CV002-soft-healer/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV003",
+      "slug": "tsundere-comic",
+      "legacy_persona_id": "tsundere_comic",
+      "name": "傲娇吐槽姬",
+      "group": "female",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["傲娇少女", "傲娇", "吐槽姬", "tsundere_comic", "tsundere-comic"],
+      "description": "清脆机灵、节奏偏快、重音鲜明，略带傲娇吐槽感的原创成年女声。",
+      "reference_audio": "CV003-tsundere-comic/reference.wav",
+      "reference_sha256": "69eb40e4e2e2603647510508180b33e3da288a12718577cbd39d4e896c995966",
+      "examples": {
+        "ranking": "CV003-tsundere-comic/examples/ranking.wav",
+        "mixed_language": "CV003-tsundere-comic/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV004",
+      "slug": "cool-senpai",
+      "legacy_persona_id": "cool_senpai",
+      "name": "清冷学姐",
+      "group": "female",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["冷淡御姐", "清冷女声", "学姐音", "cool_senpai", "cool-senpai"],
+      "description": "中低音区、清冷克制、节奏稳定，句尾利落的原创成年女声。",
+      "reference_audio": "CV004-cool-senpai/reference.wav",
+      "reference_sha256": "dadee84bd7feaffb19abc44c29f3b8fbee93e84941699a176996c0e10746acf8",
+      "examples": {
+        "ranking": "CV004-cool-senpai/examples/ranking.wav",
+        "mixed_language": "CV004-cool-senpai/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV005",
+      "slug": "sleepy-cat",
+      "legacy_persona_id": "sleepy_cat",
+      "name": "慵懒猫系",
+      "group": "female",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["猫系少女", "慵懒女声", "猫系", "sleepy_cat", "sleepy-cat"],
+      "description": "慵懒松弛、略带鼻音和猫系俏皮感，语速稍慢的原创成年女声。",
+      "reference_audio": "CV005-sleepy-cat/reference.wav",
+      "reference_sha256": "e768fef04b16e29a70321496acb6dd2a48b4b6b288f9a536d39d4f18c79dcc82",
+      "examples": {
+        "ranking": "CV005-sleepy-cat/examples/ranking.wav",
+        "mixed_language": "CV005-sleepy-cat/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV006",
+      "slug": "hotblood-youth",
+      "legacy_persona_id": "hotblood_youth",
+      "name": "热血少年",
+      "group": "male",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["少年男声", "热血男声", "热血少年声", "hotblood_youth", "hotblood-youth"],
+      "description": "明亮有冲劲、少年感强、关键词有推动力的原创成年男声。",
+      "reference_audio": "CV006-hotblood-youth/reference.wav",
+      "reference_sha256": "335269748b3208423a4e4ed9899da870f3e4a2a9c0e4f940710c9731878530ae",
+      "examples": {
+        "ranking": "CV006-hotblood-youth/examples/ranking.wav",
+        "mixed_language": "CV006-hotblood-youth/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV007",
+      "slug": "mystic-rival",
+      "legacy_persona_id": "mystic_rival",
+      "name": "神秘宿敌",
+      "group": "male",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["神秘男声", "反派男声", "宿敌", "mystic_rival", "mystic-rival"],
+      "description": "中低音、冷静神秘、停顿有戏剧张力的原创成年男声。",
+      "reference_audio": "CV007-mystic-rival/reference.wav",
+      "reference_sha256": "f4b28e04cdd5fcbb4f3606d783cdc49a0abb2c122252e0f1346add33e6842102",
+      "examples": {
+        "ranking": "CV007-mystic-rival/examples/ranking.wav",
+        "mixed_language": "CV007-mystic-rival/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV008",
+      "slug": "airy-spirit",
+      "legacy_persona_id": "airy_spirit",
+      "name": "空灵精灵",
+      "group": "androgynous",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["精灵声", "空灵中性声", "中性精灵", "airy_spirit", "airy-spirit"],
+      "description": "轻盈空灵、音色透明、年龄感模糊的原创中性动漫声线。",
+      "reference_audio": "CV008-airy-spirit/reference.wav",
+      "reference_sha256": "c53225892d5ed8095c7842ca720d220aa2666e2f217228af9698d06a1ba4023e",
+      "examples": {
+        "ranking": "CV008-airy-spirit/examples/ranking.wav",
+        "mixed_language": "CV008-airy-spirit/examples/mixed-language.wav"
+      }
+    }
+  ]
+}

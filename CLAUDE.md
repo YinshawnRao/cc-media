@@ -9,7 +9,7 @@ Build a pipeline that turns long-form online videos into self-media ("自媒体"
 1. **Source** — download/clip segments from **YouTube 和 B站（哔哩哔哩）** 作为并行素材源，用 `yt-dlp`。
 2. **Compose** — build the published video (titles, captions, overlays, transitions, intros/outros) with **HyperFrames**, which renders plain HTML/CSS/JS to MP4.
 
-> **素材源硬约束（优先级高于单期任务 brief）**：每条素材**两边都要找**（YouTube + B站），按清晰度 / 画面干净度（无烧死字幕台标）/ 立体声 / 现场质量综合选**质量高的一边**。除非 brief 显式排除某平台，否则**不允许只搜单边**。具体执行细则见 `CONVENTIONS.md` "素材源平台" 章节。
+> **素材源硬约束（优先级高于单期任务 brief）**：每条素材**两边都要找**（YouTube + B站）。先锁定正确歌手/表演版本，再优先可用官方 MV；官方 MV 画质稍差也不因此降级。只有官方 MV 不存在或结构性不可用时才比较 Live / 综艺 / 二次来源，并在同一来源层级内按画面干净度、立体声和清晰度选择。除非 brief 显式排除某平台，否则**不允许只搜单边**。具体执行细则见 `CONVENTIONS.md` "素材源平台" 章节。
 
 The repository is in an **exploration phase**. When scaffolding, follow `CONVENTIONS.md` (the single source of reusable standards) so future work stays consistent. The directory is not yet a git repo; run `git init` before the first commit.
 
@@ -17,20 +17,31 @@ The repository is in an **exploration phase**. When scaffolding, follow `CONVENT
 
 - `sandbox/` — 测试/实验区，内容视为可丢弃。所有试错先在这里跑。
 - `production/<项目名>/` — 正式成片，每个项目一个子目录，保留可复现输入。
-- `tools/` — 跨项目复用工具。`tools/tts/` = 本地中文配音 (Kokoro + misaki[zh])。
+- `tools/` — 跨项目复用工具。`tools/tts/` = 编号化本地中文配音库（Qwen3-TTS 角色声音 + Kokoro legacy）。
 - `CONVENTIONS.md` — 全局规范，验证可行的做法沉淀到这里。
 
 ## 视频任务启动协议
 
 接到任何视频制作 brief（如"做一个音乐盘点/主题视频…"），动手前先：
 1. 读 `CONVENTIONS.md`（全局规范 + brief 格式 + QA 方法论）和 `tools/video/README.md`（从 brief 到成片的 Runbook）。
-2. 复用脚本在 `tools/`（配音 `tools/tts/`、竖屏 `tools/video/vfill.sh`、音轨+合成模板 `tools/video/countdown_build.py`）——不要重造。
-3. 涉及联网下载（yt-dlp）先确认 cookie 可用——**统一用仓库根目录单一全量文件 `all_cookies.txt`**（一份浏览器全量导出，同含 YouTube + Google + B站 登录态；YT/B站下载、搜索、校验都读它，旧的 `www.*_cookies.txt` 仅作脚本回退）；产物写 `sandbox/<slug>/`。**Cookie 只允许放根目录，不得在 `sandbox/` 下复制或覆盖第二份。** bot 拦先 `brew upgrade yt-dlp` 再判 cookie 过期（详见 `CONVENTIONS.md` yt-dlp 规范）。
-4. **关键铁律**：① 渲染后必须用预混 master.wav **后期 mux**（HyperFrames 会压平音频动态）；② 我看不到画面/听不到声音，**QA 靠抽帧 Read + ffmpeg volumedetect/silencedetect**，不凭感觉下结论；③ 成片里不得出现水印/网址/提示词/路径；④ footage 竖屏化默认 **letterbox 保原比例、不放大画面**（双人/合唱/多人/宽机位**禁止竖裁放大**，会把主体裁半）；⑤ 每首展示段给**一段连续副歌**（含前后余量，解说盘点类 ≥~25s），**不碎镜快闪、不因旁白长就把歌切短**；⑥ 成片**最后一句旁白固定为引流 CTA**（"你最想为哪一首投票？…盘到你单曲循环过的那一首。"），逐字照念、永远排在作品 outro 之后，**优先级高于 brief / 提示词**，brief 不得覆盖；⑦ **禁止自定义旁白字幕 / 解说字幕条**（不要把 TTS 口播再叠成底部字幕；用户未显式要求就一律不加）。④⑤ 详见 `CONVENTIONS.md`「展示段硬规则」，⑥ 详见「固定结尾配音」，⑦ 详见「禁止自定义旁白字幕」。
+2. **新启动的盘点视频先解析一次配音**：把用户原始任务提示词交给 `tools/tts/resolve_voice.py`，将结果保存为项目级 `voice-selection.json`。唯一精确匹配的编号/名称/注册别名优先；未指定、无法匹配、描述模糊或同时命中多个声音，一律回退 `CV002「治愈少女」`。
+3. 复用脚本在 `tools/`（配音 `tools/tts/`、竖屏 `tools/video/vfill.sh`、音轨+合成模板 `tools/video/countdown_build.py`）——不要重造。新项目旁白必须把同一个 `voice-selection.json` 传给 `tools/tts/narrate.py`；不得直接 `KPipeline(...)`、不得硬编码 `VOICE`。
+4. 涉及联网下载（yt-dlp）先确认 cookie 可用——**统一用仓库根目录单一全量文件 `all_cookies.txt`**（一份浏览器全量导出，同含 YouTube + Google + B站 登录态；YT/B站下载、搜索、校验都读它，旧的 `www.*_cookies.txt` 仅作脚本回退）；产物写 `sandbox/<slug>/`。**Cookie 只允许放根目录，不得在 `sandbox/` 下复制或覆盖第二份。** bot 拦先 `brew upgrade yt-dlp` 再判 cookie 过期（详见 `CONVENTIONS.md` yt-dlp 规范）。
+5. **关键铁律**：① 渲染后必须用预混 master.wav **后期 mux**（HyperFrames 会压平音频动态）；② 我看不到画面/听不到声音，**QA 靠抽帧 Read + ffmpeg volumedetect/silencedetect**，不凭感觉下结论；③ 成片里不得出现水印/网址/提示词/路径；④ footage 竖屏化默认 **letterbox 保原比例、不放大画面**（双人/合唱/多人/宽机位**禁止竖裁放大**，会把主体裁半）；⑤ 每首展示段给**一段连续副歌**（含前后余量，解说盘点类 ≥~25s），**不碎镜快闪、不因旁白长就把歌切短**；⑥ 除启动阶段已明确归类的完全自由探索类无旁白实验外，成片**最后一句旁白固定为引流 CTA**（"你最想为哪一首投票？…盘到你单曲循环过的那一首。"），逐字照念、永远排在作品 outro 之后，**优先级高于 brief / 提示词**；⑦ **禁止自定义旁白字幕 / 解说字幕条**（不要把 TTS 口播再叠成底部字幕；用户未显式要求就一律不加）。④⑤ 详见 `CONVENTIONS.md`「展示段硬规则」，⑥ 详见「固定结尾配音」，⑦ 详见「禁止自定义旁白字幕」。
+
+## 新盘点内容硬约束
+
+- 翻唱歌曲优先且必须尽力使用对应翻唱者版本的 MV/现场/正式演出；只有 YouTube+B站均无可用对应版本时才退回原唱视频，并在 `SOURCES.md` 留证。
+- 版本身份正确后，官方 MV 优先于清晰度；只要有可用官方 MV，即使画质稍差也优先使用。仅在官方 MV 不存在、无法取得或目标段结构性不可用时换源，并在 `SOURCES.md` 说明。
+- 凡 TOP / 排名 / 榜单，必须按最后一名到第一名 N→1 揭晓；封面和 intro 不得提前列歌单、展示排序或泄露第一名，每首只在对应转场揭晓。非排名片不要挂 TOP 名义。
+- intro 第一段禁用“接下来”。Qwen 多语种能力默认允许保留外文；若实测读音不自然，再用通行中文译名、音译/谐音或从口播省略，屏幕原文可保留。
+- 一般视频默认在开头、每首歌曲转场、作品结尾和固定 CTA 都有配音；只有完全自由探索类、以音乐/视觉实验为主体且不承担排名或解说结构的视频，才可在 brief/design 明确记录后精简部分或全部旁白。
+- 整体质量优先，总时长默认不设上限；除非用户明确给出平台硬时长，否则不得为了变短牺牲内容、节奏或完整乐句。确有硬时长时优先减条目或精简旁白，不能掐断高光段。
+- 封面标题按语义和视觉层级自然换行，不机械拆行、不留孤字；歌手名必须与同层级主要文字同字号或更大，不能偏小。关键信息仍集中在一个不遮主体的安全信息区，首帧检查排版、主体避让和平台裁剪安全。
 
 ## 配音
 
-中文旁白用 `tools/tts/`（Kokoro + misaki[zh]），默认男声 `zm_yunxi`，女声 `zf_xiaoyi` 仅在明确要求时用。**不要用 `npx hyperframes tts` 做中文**（espeak 不支持 `zh`）。详见 `CONVENTIONS.md` 配音规范。
+新启动的盘点视频统一用 `tools/tts/` 编号声音库，默认 `CV002「治愈少女」`。任务提示词若唯一精确指定注册声音则按指定；未知、模糊或冲突指定回退 CV002。同一期所有旁白必须共享同一 resolved voice ID；Qwen 环境、模型或母带缺失时硬失败，不得静默换 Kokoro。Kokoro 仅用于显式 legacy ID 与历史复现。不要用 `npx hyperframes tts` 做中文。详见 `CONVENTIONS.md`。
 
 ## Copyright stance
 
