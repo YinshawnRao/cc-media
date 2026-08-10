@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "voice_selection": "voice-selection.json",
+  "watermark_png": "assets/ai-training-watermark.png",
+  "output_dir": "final",
+  "songs": [
+    {
+      "key": "song-key",
+      "title": "示例歌名",
+      "video": "raw/song-key.mp4",
+      "song_audio": "audio/song-key.wav",
+      "intro_voice": "voice/song-key-intro.wav",
+      "output": "示例歌名_AI训练音色MV.mp4",
+      "crop": null,
+      "audio_gain": 1.0
+    }
+  ]
+}

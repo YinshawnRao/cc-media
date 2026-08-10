@@ -2,42 +2,80 @@
 """B站下载救场（yt-dlp 报 HTTP 412 风控时用）。
 
 yt-dlp 的 BiliBili extractor 会被 B站对其请求签名做 412 风控，但**普通浏览器式 curl
-(--compressed + 桌面UA + referer + cookie) 仍能取到视频页**，页里内嵌 window.__playinfo__
+(--compressed + 桌面UA + referer + Netscape cookie jar) 仍能取到视频页**，页里内嵌 window.__playinfo__
 (DASH m4s 直链)。本脚本据此取直链、curl 下载视频/音频流、ffmpeg mux 成 mp4。
 
 用法：
     python tools/video/bili_dl.py <bvid> <out.mp4> [--max-h 1080] [--cookies path]
-默认读取仓库根目录 all_cookies.txt（含 B站登录态）；缺则回退旧 www.bilibili.com_cookies.txt。优先 AVC(h264) ≤max-h，便于下游重剪。
+默认读取仓库根目录过滤后的 all_cookies.txt（含 B站登录态）；缺则回退旧
+www.bilibili.com_cookies.txt。cookie jar 必须为 0600；脚本只把文件路径交给 curl，
+不会把 cookie value 拼进进程参数。优先 AVC(h264) ≤max-h，便于下游重剪。
 """
-import sys, re, json, subprocess, argparse, tempfile, os
+import argparse
+import json
+import os
+import re
+import stat
+import subprocess
+import sys
+import tempfile
 from pathlib import Path
 
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
 REPO = Path(__file__).resolve().parents[2]
-DEF_CK = REPO / "all_cookies.txt"
-if not DEF_CK.exists():
-    DEF_CK = REPO / "www.bilibili.com_cookies.txt"
 
 
-def cookie_header(ck_path: Path) -> str:
-    # 只取 bilibili 域 cookie：all_cookies.txt 是浏览器全量导出(上千条跨域),
-    # 全塞进一个 Cookie 头会超长被 curl/B站拒。按域名过滤。
-    parts = []
-    for ln in ck_path.read_text(encoding="utf-8").splitlines():
-        if ln.startswith("#") or not ln.strip():
-            continue
-        f = ln.split("\t")
-        if len(f) >= 7 and "bilibili" in f[0]:
-            parts.append(f"{f[5]}={f[6]}")
-    return "; ".join(parts)
+def default_cookie_path(repo_root: Path | None = None) -> Path:
+    root = REPO if repo_root is None else Path(repo_root)
+    preferred = root / "all_cookies.txt"
+    if preferred.is_file():
+        return preferred
+    return root / "www.bilibili.com_cookies.txt"
 
 
-def curl(url: str, ckhdr: str, out: str = None) -> bytes:
-    cmd = ["curl", "-sL", "--compressed", "-A", UA, "-e", "https://www.bilibili.com/",
-           "-H", f"Cookie: {ckhdr}", url]
+DEF_CK = default_cookie_path()
+
+
+def validate_cookie_jar(path: Path | str) -> Path:
+    jar = Path(path).expanduser()
+    if "=" in str(jar):
+        raise SystemExit(
+            "!! cookie jar 路径不能包含 '='；curl 会把该参数误判为内联 cookie data"
+        )
+    if not jar.is_file():
+        raise SystemExit(f"!! cookie jar 不存在: {jar}")
+    mode = stat.S_IMODE(jar.stat().st_mode)
+    if mode & 0o077:
+        raise SystemExit(f"!! cookie jar 权限为 {mode:04o}，请先 chmod 600 {jar}")
+    return jar
+
+
+def build_curl_command(
+    url: str, cookie_jar: Path | str, out: str | None = None
+) -> list[str]:
+    """Build curl argv containing only the jar path, never cookie values."""
+
+    cmd = [
+        "curl",
+        "-sL",
+        "--compressed",
+        "--cookie",
+        str(cookie_jar),
+        "-A",
+        UA,
+        "-e",
+        "https://www.bilibili.com/",
+    ]
     if out:
-        cmd[1:1] = ["-o", out, "-w", "%{http_code}"]
+        cmd.extend(["-o", out, "-w", "%{http_code}"])
+    cmd.append(url)
+    return cmd
+
+
+def curl(url: str, cookie_jar: Path, out: str | None = None):
+    cmd = build_curl_command(url, cookie_jar, out)
+    if out:
         code = subprocess.check_output(cmd).decode().strip()
         return code
     return subprocess.check_output(cmd)
@@ -52,16 +90,20 @@ def pick(streams, max_h):
     return cand[0]
 
 
-def main():
+def parse_args(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("bvid")
     ap.add_argument("out")
     ap.add_argument("--max-h", type=int, default=1080)
     ap.add_argument("--cookies", default=str(DEF_CK))
-    a = ap.parse_args()
+    return ap.parse_args(argv)
 
-    ckhdr = cookie_header(Path(a.cookies))
-    html = curl(f"https://www.bilibili.com/video/{a.bvid}/", ckhdr).decode("utf-8", "replace")
+
+def main(argv=None):
+    a = parse_args(argv)
+
+    cookie_jar = validate_cookie_jar(a.cookies)
+    html = curl(f"https://www.bilibili.com/video/{a.bvid}/", cookie_jar).decode("utf-8", "replace")
     m = re.search(r"window\.__playinfo__=(\{.*?\})</script>", html)
     if not m:
         sys.exit(f"!! no playinfo for {a.bvid} (可能风控页/需登录/番剧)")
@@ -76,7 +118,7 @@ def main():
             print(f"[{a.bvid}] video {v.get('width')}x{vh} {vc} {v.get('bandwidth')//1000}kbps ; audio {ac} {au.get('bandwidth')//1000}kbps")
             vf = os.path.join(tmp, "v.m4s"); af = os.path.join(tmp, "a.m4s")
             for url, dst in [(v["baseUrl"], vf), (au["baseUrl"], af)]:
-                code = curl(url, ckhdr, dst)
+                code = curl(url, cookie_jar, dst)
                 sz = os.path.getsize(dst) if os.path.exists(dst) else 0
                 print(f"   dl {os.path.basename(dst)} HTTP {code} size {sz//1024}KB")
                 if sz < 10000:
@@ -90,7 +132,7 @@ def main():
                 sys.exit(f"!! no dash/durl for {a.bvid}")
             u = durl[0]["url"]
             mf = os.path.join(tmp, "m.mp4")
-            code = curl(u, ckhdr, mf)
+            code = curl(u, cookie_jar, mf)
             print(f"[{a.bvid}] durl(mp4) HTTP {code} size {os.path.getsize(mf)//1024}KB")
             subprocess.run(["ffmpeg", "-v", "error", "-i", mf, "-c", "copy",
                             "-movflags", "+faststart", a.out, "-y"], check=True)

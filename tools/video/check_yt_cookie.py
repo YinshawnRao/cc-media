@@ -1,78 +1,206 @@
 #!/usr/bin/env python3
-"""校验 YouTube cookies.txt 是否含有效登录态（不用跑 yt-dlp 就能秒判）。
-用法: python3 tools/video/check_yt_cookie.py [cookie文件]  (默认仓库根目录 all_cookies.txt，缺则回退旧 www.youtube.com_cookies.txt)
+"""静态预检 YouTube Netscape cookie jar 的结构、过期时间和文件权限。
 
-判定逻辑（基于实战）：
-- yt-dlp 过 YouTube bot 检查需要"已登录"的 cookie 集合。
-- 必需(任缺其一基本会被 bot 拦)：LOGIN_INFO + SID + HSID + SSID + SAPISID + APISID
-  （这些是首登录态 cookie；只有登录后才会出现。也可能在 .google.com 域上。）
-- 可计算 auth hash 的：SAPISID 或 __Secure-3PAPISID（至少一个）。
-- 任何必需 cookie 已过期同样视为失败。
+用法：
+    python3 tools/video/check_yt_cookie.py [cookie文件]
+
+未显式传文件时，始终从仓库根目录选择 ``all_cookies.txt``；仅当它不存在时，
+才回退旧的 ``www.youtube.com_cookies.txt``。本工具不会联网，因此通过只表示：
+所需字段存在、按文件内时间戳尚未过期、文件未向 group/other 开放。它不能证明
+YouTube 服务端仍接受这份会话；解析时不会保留或输出 cookie value。
 """
-import sys, time
+
+from __future__ import annotations
+
+import stat
+import sys
+import time
 from pathlib import Path
 
-REQUIRED = ["LOGIN_INFO", "SID", "HSID", "SSID", "SAPISID", "APISID"]
-HELPFUL  = ["__Secure-1PSID", "__Secure-3PSID", "__Secure-1PAPISID", "__Secure-3PAPISID",
-            "__Secure-1PSIDTS", "__Secure-3PSIDTS"]
 
-def load(path):
-    rows = []
-    for ln in Path(path).read_text(errors="ignore").splitlines():
-        if ln.startswith("#") or not ln.strip():
-            continue
-        f = ln.split("\t")
-        if len(f) >= 7:
-            rows.append((f[0], f[5], f[4]))  # domain, name, expiry
+REPO_ROOT = Path(__file__).resolve().parents[2]
+HTTPONLY_PREFIX = "#HttpOnly_"
+REQUIRED = [
+    "LOGIN_INFO",
+    "SID",
+    "HSID",
+    "SSID",
+    "SAPISID",
+    "APISID",
+    "__Secure-3PSID",
+]
+HELPFUL = [
+    "__Secure-1PSID",
+    "__Secure-1PAPISID",
+    "__Secure-3PAPISID",
+    "__Secure-1PSIDTS",
+    "__Secure-3PSIDTS",
+]
+AUTH_HASH_NAMES = {"SAPISID", "__Secure-3PAPISID", "__Secure-1PAPISID"}
+ALLOWED_DOMAIN_SUFFIXES = ("youtube.com", "google.com", "bilibili.com")
+
+
+def default_cookie_path(repo_root: Path | None = None) -> Path:
+    """Return the repository-anchored preferred jar, with legacy fallback."""
+
+    root = REPO_ROOT if repo_root is None else Path(repo_root)
+    preferred = root / "all_cookies.txt"
+    if preferred.is_file():
+        return preferred
+    return root / "www.youtube.com_cookies.txt"
+
+
+def _parse_netscape_line(line: str) -> tuple[str, str, str] | None:
+    """Parse only domain/name/expiry, preserving Netscape HttpOnly records."""
+
+    if not line.strip():
+        return None
+    if line.startswith(HTTPONLY_PREFIX):
+        line = line[len(HTTPONLY_PREFIX) :]
+    elif line.startswith("#"):
+        return None
+
+    fields = line.split("\t")
+    if len(fields) < 7:
+        return None
+    return fields[0], fields[5], fields[4]
+
+
+def load(path: Path | str) -> list[tuple[str, str, str]]:
+    """Load non-secret metadata from a Netscape jar; cookie values are discarded."""
+
+    rows: list[tuple[str, str, str]] = []
+    for line in Path(path).read_text(encoding="utf-8", errors="ignore").splitlines():
+        row = _parse_netscape_line(line)
+        if row is not None:
+            rows.append(row)
     return rows
 
-def main():
-    default = "all_cookies.txt" if Path("all_cookies.txt").exists() else "www.youtube.com_cookies.txt"
-    path = sys.argv[1] if len(sys.argv) > 1 else default
-    if not Path(path).exists():
-        print(f"✗ 文件不存在: {path}"); return 2
+
+def _expiry_epoch(value: str) -> int | None:
+    try:
+        return int(value or 0)
+    except (TypeError, ValueError):
+        return None
+
+
+def _is_live(expiry: str, now: int) -> bool:
+    epoch = _expiry_epoch(expiry)
+    return epoch is not None and (epoch == 0 or epoch > now)
+
+
+def _permission_check(path: Path) -> tuple[bool, str]:
+    mode = stat.S_IMODE(path.stat().st_mode)
+    safe = mode & 0o077 == 0
+    return safe, f"{mode:04o}"
+
+
+def _allowed_domain(domain: str) -> bool:
+    normalized = domain.removeprefix("#HttpOnly_").lstrip(".").lower()
+    return any(
+        normalized == suffix or normalized.endswith(f".{suffix}")
+        for suffix in ALLOWED_DOMAIN_SUFFIXES
+    )
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = sys.argv[1:] if argv is None else argv
+    if len(args) > 1:
+        print("用法: python3 tools/video/check_yt_cookie.py [cookie文件]")
+        return 2
+
+    path = Path(args[0]).expanduser() if args else default_cookie_path()
+    if not path.is_file():
+        print(f"✗ 文件不存在: {path}")
+        return 2
+
     rows = load(path)
     now = int(time.time())
-    domains = sorted({d for d, _, _ in rows})
-    by_name = {}
-    for d, n, e in rows:
-        by_name.setdefault(n, []).append((d, e))
+    domains = {domain for domain, _, _ in rows}
+    by_name: dict[str, list[tuple[str, str]]] = {}
+    for domain, name, expiry in rows:
+        by_name.setdefault(name, []).append((domain, expiry))
+
+    permission_ok, mode_text = _permission_check(path)
     print(f"文件: {path}")
-    print(f"cookie 总数: {len(rows)} | 域: {', '.join(domains)}")
-    has_google = any(".google.com" in d for d in domains)
-    print(f".google.com 行: {'有' if has_google else '无（注意：SID/HSID/SSID/SAPISID 多在 .google.com 上）'}")
+    print(f"cookie 元数据条目: {len(rows)}（不保留、不输出 value）")
+    print(
+        f"文件权限: {mode_text} "
+        + ("✓ 仅当前用户可访问" if permission_ok else "✗ group/other 可访问；请 chmod 600")
+    )
+    has_google = any(
+        domain.lstrip(".").lower() == "google.com"
+        or domain.lstrip(".").lower().endswith(".google.com")
+        for domain in domains
+    )
+    print(
+        ".google.com 元数据: "
+        + ("有" if has_google else "无（SID/HSID/SSID/SAPISID 通常需要该域）")
+    )
     print("-" * 52)
-    ok = True
-    def check(name, required):
-        global_ok = True
-        if name not in by_name:
+
+    unexpected_domains = {domain for domain in domains if not _allowed_domain(domain)}
+    allowlist_ok = not unexpected_domains
+    print(
+        "目标域 allowlist: "
+        + (
+            "✓ 仅含 YouTube / Google / B站"
+            if allowlist_ok
+            else f"✗ 含 {len(unexpected_domains)} 个非目标域"
+        )
+    )
+
+    ok = permission_ok and allowlist_ok
+
+    def check(name: str, required: bool) -> bool:
+        entries = by_name.get(name)
+        if not entries:
             print(f"  {'✗' if required else '·'} {name:20s} 缺失")
             return not required
-        entries = by_name[name]
-        live = [e for _, e in entries if int(e or 0) == 0 or int(e or 0) > now]
-        if not live:
-            print(f"  ✗ {name:20s} 已过期")
+        live_expiries = [expiry for _, expiry in entries if _is_live(expiry, now)]
+        if not live_expiries:
+            print(f"  ✗ {name:20s} 已过期或 expiry 格式无效")
             return not required
-        exp = min((int(e) for _, e in entries if int(e or 0) > 0), default=0)
-        when = time.strftime("%Y-%m-%d", time.localtime(exp)) if exp else "session"
+        dated = [
+            epoch
+            for expiry in live_expiries
+            if (epoch := _expiry_epoch(expiry)) is not None and epoch > 0
+        ]
+        earliest = min(dated, default=0)
+        when = time.strftime("%Y-%m-%d", time.localtime(earliest)) if earliest else "session"
         print(f"  ✓ {name:20s} 在 (exp {when})")
         return True
-    print("必需（登录态）:")
-    for n in REQUIRED:
-        if not check(n, True): ok = False
+
+    print("必需（静态登录态字段）:")
+    for name in REQUIRED:
+        if not check(name, True):
+            ok = False
     print("辅助:")
-    for n in HELPFUL:
-        check(n, False)
-    # auth hash 能力
-    can_hash = any(x in by_name for x in ["SAPISID", "__Secure-3PAPISID", "__Secure-1PAPISID"])
+    for name in HELPFUL:
+        check(name, False)
+
+    can_hash = any(
+        name in by_name
+        and any(_is_live(expiry, now) for _, expiry in by_name[name])
+        for name in AUTH_HASH_NAMES
+    )
     print("-" * 52)
     if not can_hash:
-        print("✗ 无 SAPISID / __Secure-*APISID → yt-dlp 无法算 auth hash"); ok = False
-    print("结果:", "✓ 合格，应该能过 bot 检查" if ok else "✗ 不合格——缺登录态 cookie，会被 bot 拦")
+        print("✗ 无未过期的 SAPISID / __Secure-*APISID，无法计算 auth hash")
+        ok = False
+
+    if ok:
+        print("静态预检结果: ✓ 结构、文件内过期时间与权限检查通过")
+    else:
+        print("静态预检结果: ✗ 结构、目标域 allowlist、文件内过期时间或权限不合格")
+    print("注意: 静态预检不验证服务端会话新鲜度；实际 yt-dlp 请求仍可能被拒绝。")
     if not ok:
-        print("\n修复：无痕窗口登录 youtube.com → 用扩展导出（确保含 LOGIN_INFO/SID/HSID/SSID/SAPISID）")
-        print("      → 覆盖该文件 → 直接关无痕窗口（别登出，避免 cookie 被轮换作废）")
+        print(
+            "修复: 在仓库外准备 0600 原始导出，再运行 tools/video/filter_cookie_jar.py "
+            "过滤目标域并原子覆盖 all_cookies.txt。"
+        )
     return 0 if ok else 1
+
 
 if __name__ == "__main__":
     sys.exit(main())

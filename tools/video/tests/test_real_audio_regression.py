@@ -8,6 +8,8 @@ Run with the repository's audio-analysis environment:
 
 The large/media inputs deliberately stay in ignored ``sandbox/`` projects. A
 normal unit-test run validates the manifest but skips decoding and inference.
+Even with the opt-in flag, a checkout with no manifest fixtures skips before
+loading Whisper; missing local media is not a detector failure.
 """
 
 from __future__ import annotations
@@ -19,6 +21,7 @@ import os
 import unittest
 from pathlib import Path
 from typing import Any, Iterable
+from unittest import mock
 
 
 TEST_DIR = Path(__file__).resolve().parent
@@ -65,6 +68,11 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: stream.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _manifest_fixture_paths(manifest: dict[str, Any]) -> list[Path]:
+    rows = list(manifest.get("samples", [])) + list(manifest.get("boundary_cases", []))
+    return [REPO_ROOT / row["path"] for row in rows]
 
 
 def _pair(segment: Any) -> tuple[float, float] | None:
@@ -259,6 +267,19 @@ class AudioRegressionManifestTests(unittest.TestCase):
         }
         self.assertEqual(0.0, _view(result, 0.0, 10.0)["coverage"])
 
+    def test_no_fixture_skips_before_importing_whisper(self) -> None:
+        missing = REPO_ROOT / "sandbox" / "fixture-that-must-not-exist.wav"
+        with (
+            mock.patch(
+                f"{__name__}._manifest_fixture_paths",
+                return_value=[missing],
+            ),
+            mock.patch.object(importlib, "import_module") as import_module,
+            self.assertRaisesRegex(unittest.SkipTest, "Whisper was not loaded"),
+        ):
+            RealAudioRegressionTests.setUpClass()
+        import_module.assert_not_called()
+
 
 @unittest.skipUnless(
     RUN_REAL_AUDIO,
@@ -267,6 +288,12 @@ class AudioRegressionManifestTests(unittest.TestCase):
 class RealAudioRegressionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        fixtures = _manifest_fixture_paths(_load_manifest())
+        if not any(path.is_file() for path in fixtures):
+            raise unittest.SkipTest(
+                "none of the optional manifest audio fixtures are present; "
+                "Whisper was not loaded"
+            )
         try:
             module = importlib.import_module("tools.video.vocal_segments")
             model_name = os.environ.get("CC_MEDIA_WHISPER_MODEL", "small")

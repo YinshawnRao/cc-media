@@ -107,23 +107,23 @@
 
 ## yt-dlp 规范
 
-- **Cookie 文件（统一约定，2026-06 起）**：单一全量文件 **仓库根目录 `all_cookies.txt`**（一份浏览器**全量** cookie 导出，同时含 YouTube + Google + B站 三套登录态），YouTube 和 B站下载 / 搜索 / 校验全部读它。登录态文件含敏感凭据，已 gitignore。
-  - **为什么是全量文件**：YT 过 bot 检查依赖登录态 cookie，其中 `LOGIN_INFO/SID/HSID/SSID/SAPISID` 等常落在 **`.google.com`** 域上，只导 youtube 标签页会漏 → 仍被 bot 拦（即便 `__Secure-3PSID` 在）。导"全部 cookie"才稳。
-  - **唯一有效位置是仓库根目录**；**不得在 `sandbox/` 下创建、复制、覆盖第二份 cookie 文件**。所有脚本、下载命令、校验命令都必须直接读根目录 `all_cookies.txt`；发现 `sandbox/**/*cookies*.txt` 视为过期副本，应删除而不是继续使用。
-  - 导出方式：浏览器装 "Get cookies.txt LOCALLY" → **导出"全部 cookie / All cookies"**（不要只导当前站）→ Netscape 格式 → 保存/覆盖到仓库根目录 `all_cookies.txt`。`document.cookie` 复制串拿不到 HttpOnly 凭据，不可用。
-  - **向后兼容**：复用脚本（`check_yt_cookie.py`/`bili_search.py`/`bili_dl.py`）默认读 `all_cookies.txt`，缺失时才回退旧的 `www.youtube.com_cookies.txt` / `www.bilibili.com_cookies.txt`。新项目一律用 `all_cookies.txt`。
+- **Cookie 文件（统一约定）**：新项目唯一入口是仓库根目录 `all_cookies.txt`，格式为 Netscape jar。它不是浏览器所有站点的原始快照，而是从仓库外原始导出中过滤后，仅保留 YouTube / Google / B站目标域的合并文件；YouTube 和 B站下载、搜索、校验全部读它。
+  - **为什么仍需 Google 域**：YT 过 bot 检查依赖登录态 cookie，其中 `LOGIN_INFO/SID/HSID/SSID/SAPISID` 等常落在 **`.google.com`** 域上；过滤时必须保留 YouTube 域及所需 Google 域，B站则保留 Bilibili 域。不得把其他网站 cookie 带进仓库工作区。
+  - **原始导出边界**：浏览器原始“全部 cookie / All cookies”只能临时导出到仓库外、权限 `0600` 的位置；不得先落到根目录、`.session_tmps/` 或 `sandbox/`。运行 `python3 tools/video/filter_cookie_jar.py /仓库外/原始导出.txt`，脚本保留 Netscape `#HttpOnly_` 行、只放行目标域，并用根目录同文件系统的 `0600` 临时文件原子替换 `all_cookies.txt`；原始导出按本机安全流程销毁。`document.cookie` 拿不到 HttpOnly 凭据，不可用。
+  - **权限与位置**：执行 `chmod 600 all_cookies.txt`；group/other 可读即静态预检失败。不得在 `sandbox/` 或会话临时目录创建、复制、覆盖第二份 Cookie。登录态虽已 gitignore，仍必须在提交前检查 staged 内容。
+  - **向后兼容**：`check_yt_cookie.py`、`bili_search.py`、`bili_dl.py` 默认读根目录 `all_cookies.txt`，缺失时才回退旧 `www.youtube.com_cookies.txt` / `www.bilibili.com_cookies.txt`。新项目禁止主动选择旧文件。
 - **YouTube 登录态**（反爬：不带或缺登录态会报 "Sign in to confirm you're not a bot"）：
-  - `all_cookies.txt` 须含 HttpOnly 认证 cookie（`LOGIN_INFO` + `SID/HSID/SSID/SAPISID/APISID` + `__Secure-3PSID`），其中多个在 `.google.com` 域 —— 全量导出才齐。`python3 tools/video/check_yt_cookie.py` 秒判。
-  - **过期与更新**：标称过期约 1 年，但**实际寿命短得多**——YouTube 服务端频繁轮换 `*SIDCC`/`*SIDTS`，实践中常几天～几周失效。`check_yt_cookie.py` 只验**存在**不验**新鲜度**：cookie token 都在却仍 bot 拦 = 服务端已轮换、快照过期。
-    - **bot 拦排查顺序（2026-06 实战）**：① 先 `brew upgrade yt-dlp`（旧版跟不上 YT player 改动也会恒 bot 拦，与 cookie 无关，本次从 2026.3.17→2026.6.9）；② 仍拦再判 cookie 过期 → 让用户**重新导出全量 cookie** 覆盖 `all_cookies.txt`。换 `--extractor-args player_client` 对登录态失效无效。
-    - 让 cookie 更耐用：用**无痕窗口**登录 → 导出全部 → **直接关窗口、别登出**（避免主会话把快照轮换掉）。
+  - `all_cookies.txt` 须含 HttpOnly 认证 cookie（`LOGIN_INFO` + `SID/HSID/SSID/SAPISID/APISID` + `__Secure-3PSID`），其中多个在 `.google.com` 域。`python3 tools/video/check_yt_cookie.py` 会正确解析 Netscape `#HttpOnly_` 行，并静态检查字段、文件内 expiry 与 `0600` 权限。
+  - **过期与更新**：标称过期约 1 年，但**实际寿命短得多**——YouTube 服务端频繁轮换 `*SIDCC`/`*SIDTS`，实践中常几天～几周失效。`check_yt_cookie.py` 只是**静态预检**，不能验证服务端新鲜度：字段都在却仍 bot 拦，仍可能是服务端已轮换、快照过期。
+    - **bot 拦排查顺序（2026-06 实战）**：① 先 `brew upgrade yt-dlp`（旧版跟不上 YT player 改动也会恒 bot 拦，与 cookie 无关，本次从 2026.3.17→2026.6.9）；② 仍拦再判 cookie 过期 → 在仓库外重新导出原始快照，用 `filter_cookie_jar.py` 过滤并原子覆盖，再运行静态预检。换 `--extractor-args player_client` 对登录态失效无效。
+    - 让 cookie 更耐用：用**无痕窗口**登录 → 只在仓库外导出原始快照 → 用 `filter_cookie_jar.py` 过滤并原子覆盖根目录目标域 jar → **直接关窗口、别登出**（避免主会话把快照轮换掉）；原始快照不得进入 workspace。
   - **另一种 403（非 bot 拦，2026-07 实战，`sandbox/xietingfeng-underrated-top5` 验证）**：cookie 有效、`check_yt_cookie.py` 通过，但下载 adaptive(dash) 流（itag 137/140/251 等）持续 `HTTP 403 Forbidden`，日志显示走的是 `tv downgraded player API` + `[jsc:deno] Solving JS challenges` 链路——这是该 client 的签名解密偶发失效，与登录态无关（区别于上面 line 99 的 bot 拦场景）。单独 `--extractor-args "youtube:player_client=web"` 能避开 403，但格式表被裁到只剩 itag 18（360p）。**修法**：四个 client 一起传 `--extractor-args "youtube:player_client=web,web_embedded,web_music,mweb"` → 格式表恢复完整（含 1080p），下载不再 403。遇到"cookie 明明有效却仍 403（不是 bot 拦提示语）"时先试这个，而不是急着重新导出 cookie。
 - **B站登录态**（无登录态只能拿到 ≤720P；大会员/番剧/4K 必须）：
-  - `all_cookies.txt` 须含 `SESSDATA`、`bili_jct`、`DedeUserID` 等（全量导出自带）。
-  - 过期更新比 YT 更频繁（几周）；触发信号：清晰度被压回 720P 或 4K 选项消失 → 重新导出全量覆盖。
+  - 过滤后的 `all_cookies.txt` 须保留 Bilibili 域的 `SESSDATA`、`bili_jct`、`DedeUserID` 等登录态字段。
+  - 过期更新比 YT 更频繁（几周）；触发信号：清晰度被压回 720P 或 4K 选项消失 → 按同一“仓库外导出 → 目标域过滤 → 静态预检 → 原子覆盖”流程更新。
   - **B站搜索 yt-dlp 不能解析**，要用 API：`https://api.bilibili.com/x/web-interface/wbi/search/type?search_type=video&keyword=<关键词>`，response 里 `data.result[].bvid` 即视频 ID，URL 拼为 `https://www.bilibili.com/video/<bvid>`。
-    - **必须 WBI 签名**（2026 验证）：普通 search 端点 + `yt-dlp bilisearchN:` 现在都返回 **HTTP 412 风控**。要先 GET `https://api.bilibili.com/x/web-interface/nav` 取 `wbi_img.img_url/sub_url` 的文件名 → mixin_key（固定 64 位重排表取前 32 位）→ 参数加 `wts` 排序 urlencode 后 `md5(query+mixin_key)` 得 `w_rid`，带 cookie + 桌面 UA 才通。**复用脚本 `tools/video/bili_search.py`**（用法 `python tools/video/bili_search.py "关键词" [n]`，读根目录 `all_cookies.txt`），输出 `bvid | 时长 | up主 | 标题`。
-  - **B站下载 yt-dlp 报 HTTP 412 风控的救场（2026-06 验证）**：`yt-dlp` 的 BiliBili extractor 走的 webpage/playurl 端点会被 412 风控（即使 cookie 有效、search 与 `--skip-download --print` 偶尔能过），重试也基本恒 412。但**普通浏览器式 `curl --compressed` + 桌面 UA + `referer:https://www.bilibili.com/` + cookie 头能取到视频页**，页里内嵌 `window.__playinfo__`（DASH `baseUrl` m4s 直链）。**复用脚本 `tools/video/bili_dl.py`**（用法 `python tools/video/bili_dl.py <bvid> <out.mp4> [--max-h 1080]`）：curl 取页 → 解析 playinfo → 取 ≤max-h 优先 AVC 的 video + 最佳 audio 直链 → curl 下载 → ffmpeg mux 成 mp4。这是 B站下载被 412 挡住时的首选下载法。
+    - **必须 WBI 签名**（2026 验证）：普通 search 端点 + `yt-dlp bilisearchN:` 现在都返回 **HTTP 412 风控**。要先 GET `https://api.bilibili.com/x/web-interface/nav` 取 `wbi_img.img_url/sub_url` 的文件名 → mixin_key（固定 64 位重排表取前 32 位）→ 参数加 `wts` 排序 urlencode 后 `md5(query+mixin_key)` 得 `w_rid`，带 cookie + 桌面 UA 才通。**复用脚本 `tools/video/bili_search.py`**（用法 `python tools/video/bili_search.py "关键词" [n]`）：模块导入不读 Cookie，只有实际搜索时才延迟加载根目录 `all_cookies.txt`，输出 `bvid | 时长 | up主 | 标题`。
+  - **B站下载 yt-dlp 报 HTTP 412 风控的救场（2026-06 验证）**：`yt-dlp` 的 BiliBili extractor 走的 webpage/playurl 端点会被 412 风控（即使 cookie 有效、search 与 `--skip-download --print` 偶尔能过），重试也基本恒 412。但**普通浏览器式 `curl --compressed` + 桌面 UA + `referer:https://www.bilibili.com/` + Netscape jar 仍能取到视频页**，页里内嵌 `window.__playinfo__`（DASH `baseUrl` m4s 直链）。**复用脚本 `tools/video/bili_dl.py`**（用法 `python tools/video/bili_dl.py <bvid> <out.mp4> [--max-h 1080]`）：curl 直接读取 jar 路径，cookie value 不进入 argv；随后解析 playinfo → 取 ≤max-h 优先 AVC 的 video + 最佳 audio 直链 → curl 下载 → ffmpeg mux 成 mp4。这是 B站下载被 412 挡住时的首选下载法。
 - **切片**用 `--download-sections "*HH:MM:SS-HH:MM:SS"`，避免下整片（已验证：635s 视频只取 10s）。
 - 已验证可用的切片命令（YouTube 与 B站同用一份 `all_cookies.txt`）：
   ```bash
@@ -372,7 +372,7 @@
 
 ### 长篇叙事盘点 / 音乐时间线的实战补充（李荣浩×杨丞琳时间线验证）
 
-> 验证项目：`sandbox/lirh-yangcl-timeline/`（5 首歌 6:33 竖屏纪录片式时间线，按叙事序而非倒数）。
+> 历史验证：`sandbox/lirh-yangcl-timeline/` 曾完成 5 首歌 6:33 竖屏纪录片式时间线，后按 sandbox 生命周期删除。可复用的无媒体骨架已迁到 `tools/video/templates/longform-timeline/`，新项目不得依赖旧路径。
 
 **与 60-90s TOP 盘点的关键差异**：单片 6-8 分钟，5 首歌每首 60-90s，每首要求"进入 → 旁白铺垫 → 消化位 → swell → 副歌展示 → 中段金句 → 转场"七阶段。
 
@@ -488,17 +488,17 @@ voice_rms = np.sqrt(np.mean(S[voice_mask] ** 2, axis=0))
 
 ### 格式之三：AI 克隆歌手音色 MV（整首 MV 换训练音轨）
 
-> 验证项目：`sandbox/angela-ai-mv-covers/`（张韶涵 e200 / 激进版音色 MV，已持续追加多批独立 MP4，完整清单见该目录 `README.md`）。
+> 历史验证：`sandbox/angela-ai-mv-covers/` 曾持续追加多批独立 AI 音色 MV，后按 sandbox 生命周期删除。无媒体、无人物绑定的构建骨架已迁到 `tools/video/templates/ai-voice-mv/`；不要恢复旧目录或其中生成物。
 
-当 brief 明确是“AI 克隆/训练歌手音色制作 MV”“如果某歌手唱某歌”，且用户给了可直接使用的训练音频 WAV 时，默认复用 `sandbox/angela-ai-mv-covers/` 继续追加歌曲，不新开实验目录。只有当用户明确要求新项目，或任务不再是“整首 MV 视频轨 + 训练音频替换”时，才另建目录。
+当 brief 明确是“AI 克隆/训练歌手音色制作 MV”“如果某歌手唱某歌”，且用户给了可直接使用的训练音频 WAV 时，新建当期 `sandbox/<slug>/`，复用中央 durable 模板；每期素材、来源记录、声线选择和输出彼此隔离。
 
 **固定流程：**
-- 源音频：把用户给的训练 WAV 复制到 `sandbox/angela-ai-mv-covers/audio/`，不要重新推理、不要改训练音色文件本身。若音频来自 `cc-voice`，只允许复制用户明确给出的 WAV 路径或目录内 WAV 到本项目；不得对 `cc-voice` 做目录扫描、状态检查、哈希/时长探测、进程检查或任何写操作。时长/静音/哈希等校验一律在复制到 `cc-media` 后对本地副本执行。批量目录导入时，文件名含 `废弃` 的 WAV 直接跳过。
+- 源音频：把用户给的训练 WAV 复制到当期项目 `audio/`，不要重新推理、不要改训练音色文件本身。若音频来自 `cc-voice`，只允许复制用户明确给出的 WAV 路径或目录内 WAV 到本项目；不得对 `cc-voice` 做目录扫描、状态检查、哈希/时长探测、进程检查或任何写操作。时长/静音/哈希等校验一律在复制到 `cc-media` 后对本地副本执行。批量目录导入时，文件名含 `废弃` 的 WAV 直接跳过。
 - 源视频：每首仍按“素材源平台”硬约束同时查 YouTube + B站。版本身份正确后优先官方 MV，官方 MV 画质稍差也继续优先；第三方 4K 升级源不能仅凭分辨率胜出。仍需抽帧确认目标段可用，只有官方 MV 存在结构性缺口时才按总则换源并在 `SOURCES.md` 留证。
-- 构建：复用 `sandbox/angela-ai-mv-covers/build/build.py`，新增 `Song` 配置；一首输出一个 `final/YYYY-MM-DD/<歌名>_AI训练张韶涵音色MV.mp4`。脚本默认用运行当天日期，也可用 `ANGELA_MV_FINAL_DATE=YYYY-MM-DD` 指定历史/批次目录。若视频轨只比训练 WAV 短几十毫秒到约 0.5s，在视频滤镜加 `tpad=stop_mode=clone:stop_duration=2` 后再 `-shortest`，避免截掉尾音。
-- intro：用 `tools/tts/narrate.py --voice CV002 --speed 1.12` 生成“如果张韶涵唱《歌名》。”这类治愈少女提示；构建脚本会自动修剪 TTS 首尾静音。
+- 构建：按 `tools/video/templates/README.md` 填写项目 `build/config.json`，运行 `tools/video/templates/ai-voice-mv/build.py`；一首输出一个 `final/YYYY-MM-DD/<配置输出名>.mp4`。视频必须先与训练 WAV 对齐；仅允许用 `tpad` 补视频短于音频不超过约 0.5s 的编码级差异，不能靠它掩盖剧情片头或错误偏移。
+- intro：先从用户原始 prompt 解析一次项目 `voice-selection.json`，再用 `tools/tts/narrate.py <文案> --selection-file ... -o ... --speed 1.12` 生成“如果某歌手唱《歌名》。”类提示；未指定时自然落到默认 CV002，显式有效指定则按指定。构建脚本会校验 sidecar 与项目选择一致，并修剪 TTS 首尾静音。
 - 混音：intro 期间训练音频 duck 到约 25%，intro 结束后 350ms 恢复；最终音频直接由 FFmpeg 预混/编码，不走 HyperFrames 音频归一化。单首训练音频若明显低于本目录响度基线，可在 `Song` 配置轻微 `audio_gain`，但最终 max volume 必须低于 0dB。
-- 角标：全程叠加 `AI训练，仅供娱乐`。当前 FFmpeg 没有 `drawtext`，用 Swift/AppKit 生成透明 PNG 水印再 `overlay`。
+- 角标：全程叠加 `AI训练，仅供娱乐`。用 durable 模板内保留的 `watermark.swift` 离线生成当期项目透明 PNG，再由构建脚本 `overlay`；源码可复用，生成的工具和 PNG 仍留在 `sandbox/<slug>/`。
 - 来源记录：每首都补 `SOURCES.md`，写清 YouTube/B站候选、最终选择、限制和是否做 crop。
 
 **源选择与 crop 经验：**

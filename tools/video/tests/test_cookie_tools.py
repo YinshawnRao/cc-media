@@ -1,0 +1,351 @@
+import contextlib
+import http.cookiejar
+import importlib
+import io
+import os
+import tempfile
+import unittest
+from pathlib import Path
+from unittest import mock
+
+from tools.video import bili_dl
+from tools.video import bili_search
+from tools.video import check_yt_cookie
+from tools.video import filter_cookie_jar
+
+
+FUTURE_EXPIRY = "4102444800"
+SYNTHETIC_VALUE = "synthetic-cookie-value-never-from-a-real-session"
+
+
+def netscape_line(domain: str, name: str, *, httponly: bool = False) -> str:
+    prefix = "#HttpOnly_" if httponly else ""
+    return (
+        f"{prefix}{domain}\tTRUE\t/\tTRUE\t{FUTURE_EXPIRY}\t"
+        f"{name}\t{SYNTHETIC_VALUE}"
+    )
+
+
+def write_synthetic_jar(path: Path, mode: int = 0o600) -> None:
+    names = [*check_yt_cookie.REQUIRED, "__Secure-3PAPISID"]
+    lines = ["# Netscape HTTP Cookie File"]
+    for index, name in enumerate(names):
+        domain = ".youtube.com" if name == "LOGIN_INFO" else ".google.com"
+        lines.append(netscape_line(domain, name, httponly=index % 2 == 0))
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    os.chmod(path, mode)
+
+
+class YoutubeCookiePreflightTests(unittest.TestCase):
+    def test_http_only_rows_are_data_not_comments(self):
+        row = check_yt_cookie._parse_netscape_line(
+            netscape_line(".youtube.com", "LOGIN_INFO", httponly=True)
+        )
+        self.assertEqual((".youtube.com", "LOGIN_INFO", FUTURE_EXPIRY), row)
+
+    def test_default_path_is_anchored_to_repository_root(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            legacy = root / "www.youtube.com_cookies.txt"
+            legacy.touch()
+            with tempfile.TemporaryDirectory() as unrelated_cwd:
+                previous_cwd = Path.cwd()
+                try:
+                    os.chdir(unrelated_cwd)
+                    with mock.patch("tools.video.check_yt_cookie.REPO_ROOT", root):
+                        self.assertEqual(legacy, check_yt_cookie.default_cookie_path())
+                    preferred = root / "all_cookies.txt"
+                    preferred.touch()
+                    with mock.patch("tools.video.check_yt_cookie.REPO_ROOT", root):
+                        self.assertEqual(preferred, check_yt_cookie.default_cookie_path())
+                finally:
+                    os.chdir(previous_cwd)
+
+    def test_static_preflight_accepts_synthetic_http_only_jar_without_leaking_values(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            jar = Path(tmp) / "filtered cookies.txt"
+            write_synthetic_jar(jar)
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                result = check_yt_cookie.main([str(jar)])
+            output = stdout.getvalue()
+            self.assertEqual(0, result)
+            self.assertIn("静态预检结果: ✓", output)
+            self.assertIn("不验证服务端会话新鲜度", output)
+            self.assertNotIn(SYNTHETIC_VALUE, output)
+
+    def test_group_readable_jar_fails_static_preflight(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            jar = Path(tmp) / "cookies.txt"
+            write_synthetic_jar(jar, mode=0o640)
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                result = check_yt_cookie.main([str(jar)])
+            self.assertEqual(1, result)
+            self.assertIn("chmod 600", stdout.getvalue())
+
+    def test_non_target_domain_fails_allowlist_without_printing_domain(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            jar = Path(tmp) / "cookies.txt"
+            write_synthetic_jar(jar)
+            with jar.open("a", encoding="utf-8") as handle:
+                handle.write(netscape_line(".unrelated.invalid", "SESSION") + "\n")
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                result = check_yt_cookie.main([str(jar)])
+            output = stdout.getvalue()
+            self.assertEqual(1, result)
+            self.assertIn("非目标域", output)
+            self.assertNotIn("unrelated.invalid", output)
+
+
+class BilibiliCookieJarTests(unittest.TestCase):
+    def test_curl_argv_uses_jar_path_and_never_cookie_value(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            jar = Path(tmp) / "filtered cookies.txt"
+            write_synthetic_jar(jar)
+            command = bili_dl.build_curl_command(
+                "https://www.bilibili.com/video/BVsynthetic", jar
+            )
+            self.assertIn("--cookie", command)
+            self.assertIn(str(jar), command)
+            self.assertNotIn("-H", command)
+            self.assertNotIn(SYNTHETIC_VALUE, " ".join(command))
+
+    def test_curl_passes_space_containing_jar_path_as_one_argument(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            jar = Path(tmp) / "cookie jar with spaces.txt"
+            write_synthetic_jar(jar)
+            with mock.patch.object(
+                bili_dl.subprocess, "check_output", return_value=b"synthetic"
+            ) as check_output:
+                bili_dl.curl("https://www.bilibili.com/", jar)
+            command = check_output.call_args.args[0]
+            cookie_index = command.index("--cookie")
+            self.assertEqual(str(jar), command[cookie_index + 1])
+            self.assertNotIn(SYNTHETIC_VALUE, " ".join(command))
+
+    def test_insecure_jar_is_rejected_before_curl(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            jar = Path(tmp) / "cookies.txt"
+            write_synthetic_jar(jar, mode=0o644)
+            with self.assertRaisesRegex(SystemExit, "chmod 600"):
+                bili_dl.validate_cookie_jar(jar)
+
+    def test_equals_in_jar_path_is_rejected_as_ambiguous_curl_data(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            jar = Path(tmp) / "cookies=ambiguous.txt"
+            write_synthetic_jar(jar)
+            with self.assertRaisesRegex(SystemExit, "不能包含 '='"):
+                bili_dl.validate_cookie_jar(jar)
+
+    def test_cookie_cli_option_accepts_both_forms_and_positions(self):
+        cases = [
+            ["--cookies", "/tmp/cookie jar.txt", "BVsynthetic", "out.mp4"],
+            ["BVsynthetic", "out.mp4", "--cookies=/tmp/cookie jar.txt"],
+            ["BVsynthetic", "--cookies", "/tmp/cookie jar.txt", "out.mp4"],
+        ]
+        for argv in cases:
+            with self.subTest(argv=argv):
+                args = bili_dl.parse_args(argv)
+                self.assertEqual("BVsynthetic", args.bvid)
+                self.assertEqual("out.mp4", args.out)
+                self.assertEqual("/tmp/cookie jar.txt", args.cookies)
+
+    def test_duplicate_cookie_option_uses_last_complete_value(self):
+        args = bili_dl.parse_args(
+            [
+                "BVsynthetic",
+                "out.mp4",
+                "--cookies",
+                "/tmp/first.txt",
+                "--cookies=/tmp/second.txt",
+            ]
+        )
+        self.assertEqual("/tmp/second.txt", args.cookies)
+
+    def test_missing_cookie_option_value_is_rejected_without_sensitive_output(self):
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            with self.assertRaises(SystemExit):
+                bili_dl.parse_args(["BVsynthetic", "out.mp4", "--cookies"])
+        self.assertNotIn(SYNTHETIC_VALUE, stderr.getvalue())
+
+
+class BilibiliSearchCookieTests(unittest.TestCase):
+    def test_import_does_not_load_any_cookie_jar(self):
+        with mock.patch.object(
+            http.cookiejar.MozillaCookieJar, "load"
+        ) as load_cookie_jar:
+            importlib.reload(bili_search)
+        load_cookie_jar.assert_not_called()
+
+    def test_lazy_loader_preserves_netscape_http_only_cookie(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            jar = Path(tmp) / "bilibili cookies.txt"
+            jar.write_text(
+                "# Netscape HTTP Cookie File\n"
+                + netscape_line(
+                    ".bilibili.com", "SESSDATA", httponly=True
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            os.chmod(jar, 0o600)
+            loaded = bili_search.load_cookie_jar(jar)
+            cookies = list(loaded)
+            self.assertEqual(1, len(cookies))
+            self.assertEqual("SESSDATA", cookies[0].name)
+            self.assertEqual(SYNTHETIC_VALUE, cookies[0].value)
+            self.assertTrue(cookies[0].has_nonstandard_attr("HTTPOnly"))
+
+    def test_search_consumer_rejects_insecure_and_equals_paths(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            insecure = Path(tmp) / "cookies.txt"
+            write_synthetic_jar(insecure, mode=0o644)
+            with self.assertRaisesRegex(ValueError, "chmod 600"):
+                bili_search.load_cookie_jar(insecure)
+
+            ambiguous = Path(tmp) / "cookies=inline.txt"
+            write_synthetic_jar(ambiguous)
+            with self.assertRaisesRegex(ValueError, "不能包含 '='"):
+                bili_search.load_cookie_jar(ambiguous)
+
+    def test_search_default_path_is_repository_anchored(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            legacy = root / "www.bilibili.com_cookies.txt"
+            legacy.touch()
+            with mock.patch("tools.video.bili_search.REPO_ROOT", root):
+                self.assertEqual(legacy, bili_search.default_cookie_path())
+            preferred = root / "all_cookies.txt"
+            preferred.touch()
+            with mock.patch("tools.video.bili_search.REPO_ROOT", root):
+                self.assertEqual(preferred, bili_search.default_cookie_path())
+
+    def test_load_error_is_sanitized_without_cookie_value(self):
+        stdout = io.StringIO()
+        with mock.patch.object(
+            bili_search,
+            "build_opener",
+            side_effect=http.cookiejar.LoadError(SYNTHETIC_VALUE),
+        ):
+            with contextlib.redirect_stdout(stdout):
+                result = bili_search.main(["synthetic", "--cookies", "/tmp/jar.txt"])
+        output = stdout.getvalue()
+        self.assertEqual(2, result)
+        self.assertIn("格式无效", output)
+        self.assertNotIn(SYNTHETIC_VALUE, output)
+
+
+class FilterCookieJarTests(unittest.TestCase):
+    def make_layout(self, base: Path) -> tuple[Path, Path]:
+        repo = base / "repo"
+        outside = base / "outside"
+        repo.mkdir()
+        outside.mkdir()
+        return repo, outside
+
+    def write_raw_source(self, path: Path, mode: int = 0o600) -> None:
+        lines = ["# Netscape HTTP Cookie File"]
+        for index, name in enumerate(sorted(filter_cookie_jar.REQUIRED_YOUTUBE_NAMES)):
+            domain = ".youtube.com" if name == b"LOGIN_INFO" else ".google.com"
+            lines.append(
+                netscape_line(domain, name.decode("ascii"), httponly=index % 2 == 0)
+            )
+        for index, name in enumerate(sorted(filter_cookie_jar.REQUIRED_BILIBILI_NAMES)):
+            lines.append(
+                netscape_line(
+                    ".bilibili.com", name.decode("ascii"), httponly=index % 2 == 0
+                )
+            )
+        lines.append(netscape_line(".unrelated.invalid", "SESSION"))
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        os.chmod(path, mode)
+
+    def test_filters_external_source_preserves_http_only_and_writes_atomic_0600(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, outside = self.make_layout(Path(tmp))
+            source = outside / "raw browser export.txt"
+            self.write_raw_source(source)
+
+            result = filter_cookie_jar.filter_cookie_jar(source, repo_root=repo)
+            output = repo / "all_cookies.txt"
+            payload = output.read_text(encoding="utf-8")
+
+            self.assertEqual(output.resolve(), result.output.resolve())
+            self.assertEqual(
+                len(filter_cookie_jar.REQUIRED_YOUTUBE_NAMES)
+                + len(filter_cookie_jar.REQUIRED_BILIBILI_NAMES),
+                result.retained,
+            )
+            self.assertEqual(1, result.discarded)
+            self.assertEqual(0o600, output.stat().st_mode & 0o777)
+            self.assertIn("#HttpOnly_.youtube.com", payload)
+            self.assertIn("#HttpOnly_.bilibili.com", payload)
+            self.assertNotIn("unrelated.invalid", payload)
+            self.assertEqual([], list(repo.glob("all_cookies.next.*.txt")))
+
+    def test_source_inside_repository_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            repo.mkdir()
+            source = repo / "raw.txt"
+            self.write_raw_source(source)
+            with self.assertRaisesRegex(ValueError, "必须位于仓库外"):
+                filter_cookie_jar.filter_cookie_jar(source, repo_root=repo)
+
+    def test_source_equal_to_destination_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo = Path(tmp) / "repo"
+            repo.mkdir()
+            source = repo / "all_cookies.txt"
+            self.write_raw_source(source)
+            with self.assertRaisesRegex(ValueError, "不能与 all_cookies.txt 目标相同"):
+                filter_cookie_jar.filter_cookie_jar(source, repo_root=repo)
+
+    def test_workspace_symlink_to_external_source_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, outside = self.make_layout(Path(tmp))
+            external = outside / "raw.txt"
+            self.write_raw_source(external)
+            workspace_link = repo / "raw-link.txt"
+            workspace_link.symlink_to(external)
+            with self.assertRaisesRegex(ValueError, "必须位于仓库外"):
+                filter_cookie_jar.filter_cookie_jar(workspace_link, repo_root=repo)
+
+    def test_missing_required_fields_does_not_replace_existing_jar(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, outside = self.make_layout(Path(tmp))
+            destination = repo / "all_cookies.txt"
+            original = b"existing-known-good-placeholder\n"
+            destination.write_bytes(original)
+            os.chmod(destination, 0o600)
+            source = outside / "incomplete.txt"
+            source.write_text(
+                netscape_line(".youtube.com", "LOGIN_INFO", httponly=True) + "\n",
+                encoding="utf-8",
+            )
+            os.chmod(source, 0o600)
+            with self.assertRaisesRegex(ValueError, "关键字段不完整"):
+                filter_cookie_jar.filter_cookie_jar(source, repo_root=repo)
+            self.assertEqual(original, destination.read_bytes())
+
+    def test_filter_cli_reports_counts_without_cookie_values(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, outside = self.make_layout(Path(tmp))
+            source = outside / "raw.txt"
+            self.write_raw_source(source)
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                result = filter_cookie_jar.main([str(source)], repo_root=repo)
+            output = stdout.getvalue()
+            self.assertEqual(0, result)
+            self.assertIn("COOKIE FILTER: PASS", output)
+            self.assertIn("output=all_cookies.txt", output)
+            self.assertNotIn(str(repo), output)
+            self.assertNotIn(SYNTHETIC_VALUE, output)
+
+
+if __name__ == "__main__":
+    unittest.main()

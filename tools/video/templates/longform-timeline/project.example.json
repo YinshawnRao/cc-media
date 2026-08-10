@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "voice_selection": "voice-selection.json",
+  "outputs": {
+    "master_audio": "master.wav",
+    "footage_track": "footage_track.mp4",
+    "timeline": "timeline.json"
+  },
+  "video": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30
+  },
+  "segments": [
+    {
+      "key": "intro",
+      "role": "intro",
+      "clip": "clips/intro.mp4",
+      "source_seek_sec": 0.0,
+      "duration_sec": 10.0,
+      "narration_wavs": [
+        "voice/intro.wav"
+      ],
+      "audio_segment": "audio/segments/intro.wav",
+      "audio_segment_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "key": "song-01",
+      "role": "song",
+      "clip": "clips/song-01.mp4",
+      "source_seek_sec": 12.5,
+      "duration_sec": 45.0,
+      "narration_wavs": [
+        "voice/song-01-transition.wav"
+      ],
+      "audio_segment": "audio/segments/song-01.wav",
+      "audio_segment_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "acceptance": "showcase_align"
+    },
+    {
+      "key": "outro",
+      "role": "outro",
+      "clip": "clips/outro.mp4",
+      "source_seek_sec": 0.0,
+      "duration_sec": 12.0,
+      "narration_wavs": [
+        "voice/outro.wav"
+      ],
+      "audio_segment": "audio/segments/outro.wav",
+      "audio_segment_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "key": "cta",
+      "role": "cta",
+      "clip": "clips/outro.mp4",
+      "source_seek_sec": 12.0,
+      "duration_sec": 9.0,
+      "narration_wavs": [
+        "voice/outro-cta.wav"
+      ],
+      "audio_segment": "audio/segments/outro-cta.wav",
+      "audio_segment_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ]
+}

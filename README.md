@@ -91,7 +91,7 @@ HyperFrames 通常通过 `npx hyperframes ...` 使用。中文旁白不要使用
 1. 阅读 `CONVENTIONS.md` 和 `tools/video/README.md`。
 2. 按 brief 创建 `sandbox/<slug>/`，所有试错先放这里。
 3. 把原始任务提示词交给 `tools/tts/resolve_voice.py`，保存项目级 `voice-selection.json`。新盘点默认 `CV002「治愈少女」`；未知、模糊或冲突指定也回退 CV002。
-4. 确认 cookie 只在仓库根目录。优先使用 `all_cookies.txt`；旧脚本可能读取 `www.youtube.com_cookies.txt` 或 `www.bilibili.com_cookies.txt`。这些文件都不应提交。
+4. Cookie 原始全量导出只允许临时放仓库外并设为 `0600`；用 `tools/video/filter_cookie_jar.py` 过滤 YouTube / Google / B站域并原子写入根目录 `all_cookies.txt`。旧 `www.*_cookies.txt` 仅作脚本回退，任何 Cookie 文件都不得提交或复制进 `sandbox/`。
 5. YouTube 和 B站都查源，把候选、取舍理由、URL 和时间码写进 `SOURCES.md`。
 6. 用 `yt-dlp` / FFmpeg 获取素材，用 `tools/video/` 脚本做竖屏填充、旁白分段、倒计时或 showcase 对齐。
 7. 用 HyperFrames 生成包装层，渲染画面。
@@ -106,7 +106,8 @@ HyperFrames 通常通过 `npx hyperframes ...` 使用。中文旁白不要使用
 - `tools/video/narrate_segments.py`：按分段生成旁白。
 - `tools/video/vocal_segments.py`：Whisper 词时间戳 + 声学 + stereo 的多证据主唱候选检测；旧能量法只作候选。
 - `tools/video/showcase_align.py`：阻断式检查主唱入点和完整乐句出点；REVIEW 需逐曲留证，硬边界 FAIL 不可跳过。
-- `tools/video/check_yt_cookie.py`：检查 YouTube cookie 登录态。
+- `tools/video/filter_cookie_jar.py`：把仓库外原始导出过滤为根目录目标域 Cookie jar，原子写入且固定 `0600`。
+- `tools/video/check_yt_cookie.py`：静态检查 YouTube Cookie 字段、文件内 expiry、目标域 allowlist 与权限；不能证明服务端会话仍有效。
 - `tools/video/bili_search.py`、`tools/video/bili_dl.py`：B站搜索和下载辅助。
 - `tools/tts/resolve_voice.py`：从原始任务提示词确定一次项目级配音；默认及兜底均为 CV002。
 - `tools/tts/narrate.py`：统一中文旁白入口，读取 `voice-selection.json`，Qwen 缺失时硬失败而非换声。

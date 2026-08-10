@@ -6,7 +6,8 @@
 - `countdown_build.py` — **TOP 盘点模板**。解说盘点默认从每首 25s 起步，并用 `SHOWS` 逐曲落到完整乐句；固定时长不是硬切上限。
 - `vocal_segments.py` — **多证据主唱候选检测**。旧 HPSS + 频带能量只保留为候选；默认再用本机 Whisper small 的有效歌词密度/word timestamps、字幕幻觉过滤和 stereo mid/side 区分“中心主唱”与“观众/合唱/宽混音待复核”。输出兼容旧 `vocal_segments`，并新增 `lead_segments`、`safe_cut_intervals`、`segment_scores`、`evidence_level`。**盘点类和多版本接力都必须先产出 `probe/vocal_analysis.json`。**
 - `showcase_align.py` — **展示段对齐闸门（机械化强制）**。校验：① 主唱身份证据与副歌入点；② 展示覆盖；③ 结尾不落在 word/唱声中；④ 候选出点后 3s 内若有下一咬字就继续向后吞完整句。状态为 `OK / APPROVED / REVIEW / FAIL / MISS`；只有 `OK/APPROVED` 可继续 build。旧能量结果、观众/合唱风险和缺模型都变成阻断式 `REVIEW`，不再假绿。
-- **长篇叙事盘点 / 音乐时间线**（6-8 分钟，5+ 首歌每首 60-90s 含七阶段）：参考 `sandbox/lirh-yangcl-timeline/build/full_build.py`。与 countdown 模板差异：每首独立 audio segment、多 footage 需 ffmpeg 输出端预切到 `clips_seg/`、cover 需真人头像（首选用户提供合照）、字号基线放大、render 必加 `--sdr`。详见 CONVENTIONS「长篇叙事盘点」与「HyperFrames render 默认参数」。
+- **长篇叙事盘点 / 音乐时间线**：复用 `templates/longform-timeline/` 的无媒体构建骨架，将已验证的章节画面输出端预切后拼成单一 `footage_track.mp4`，将当期预混章节音频拼成 `master.wav`；封面和 HTML 仍按当期 design 创建，render 必加 `--sdr`。历史 `sandbox/lirh-yangcl-timeline/` 已删除，不得依赖。详见 `templates/README.md` 与 CONVENTIONS「长篇叙事盘点」。
+- **整首 AI 音色 MV**：复用 `templates/ai-voice-mv/`；历史 `sandbox/angela-ai-mv-covers/` 已删除。模板只读项目内已复制素材，不含媒体、Cookie、歌单或人物绑定配置。
 
 > 配音引擎、音色策略见 `../tts/`；全局规范见仓库根 `CONVENTIONS.md`。
 
@@ -14,7 +15,7 @@
 - 确认在 `cc-media/` 仓库内；读根 `CLAUDE.md` 和 `CONVENTIONS.md`。
 - 依赖：`ffmpeg`、`yt-dlp`、`node>=22`。旁白默认还要求 `tools/tts/` 能找到 Qwen/MLX interpreter、固定 Base 模型与 CV002 参考母带；缺失必须硬失败，不能静默换 Kokoro。多证据检测仍要求 `tools/tts/venv` 内已有 `openai-whisper`，且 `~/.cache/whisper/small.pt` 已显式预取。
 - 开工前运行 `python3 tools/tts/doctor.py`，必须 `TTS DOCTOR: PASS default=CV002`；初始化机器或模型变化后运行一次 `--full-model-hash`。
-- Cookie 文件唯一来源：仓库根目录 `www.youtube.com_cookies.txt` / `www.bilibili.com_cookies.txt`（Netscape 格式，含 HttpOnly 认证 cookie）。不要在 `sandbox/` 下复制第二份；失效会报 "Sign in to confirm you're not a bot"，让用户重新导出并覆盖根目录文件。
+- 新项目 Cookie 唯一入口是仓库根目录 `all_cookies.txt`：原始全量导出必须留在仓库外并为 `0600`；运行 `python3 tools/video/filter_cookie_jar.py /仓库外/原始导出.txt`，脚本只保留 YouTube / Google / B站域并以 `0600` 原子写入。旧 `www.*_cookies.txt` 仅作回退；不得在 `sandbox/` 复制 Cookie。`check_yt_cookie.py` 只做字段、文件内 expiry、目标域 allowlist 和权限的静态预检，不能证明服务端会话仍有效。
 - 所有产物写 `sandbox/<项目slug>/`（可丢弃）；正式留存才进 `production/`。
 
 ## 1. 解析 brief
@@ -104,5 +105,7 @@ tools/tts/venv/bin/python -m unittest discover -s tools/video/tests -p 'test_*.p
 CC_MEDIA_AUDIO_REGRESSION=1 tools/tts/venv/bin/python -m unittest \
   tools.video.tests.test_real_audio_regression.RealAudioRegressionTests -v
 ```
+
+`audio_regression_manifest.json` 只是历史本地素材的可选索引，不随 git 分发音频。未设置 opt-in 时整组推理测试跳过；即使显式设置，若所有 manifest fixture 都缺失，也必须在加载 Whisper 前明确 `SKIP`，不能把缺素材报成检测器失败，更不能伪造同名 WAV。只有实际存在的 fixture 才执行，存在但 SHA 不符仍应失败。
 
 首轮依赖仅增加已写入 `tools/tts/README.md` 重建命令的 `librosa==0.11.0`、`openai-whisper==20250625` 与显式缓存的 small 模型；不引入 Demucs/PANNs。后续若仍有无语义吟唱/超宽现场混音难例，再在独立 `tools/audio-analysis/venv` 引入 Demucs（只分离展示候选窗）和 PANNs crowd/choir 事件分数；不要把这两套老依赖装进 `tools/tts/venv`，模型缺失也不得按 0 分处理。

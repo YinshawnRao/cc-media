@@ -26,7 +26,7 @@ The repository is in an **exploration phase**. When scaffolding, follow `CONVENT
 1. 读 `CONVENTIONS.md`（全局规范 + brief 格式 + QA 方法论）和 `tools/video/README.md`（从 brief 到成片的 Runbook）。
 2. **新启动的盘点视频先解析一次配音**：把用户原始任务提示词交给 `tools/tts/resolve_voice.py`，将结果保存为项目级 `voice-selection.json`。唯一精确匹配的编号/名称/注册别名优先；未指定、无法匹配、描述模糊或同时命中多个声音，一律回退 `CV002「治愈少女」`。
 3. 复用脚本在 `tools/`（配音 `tools/tts/`、竖屏 `tools/video/vfill.sh`、音轨+合成模板 `tools/video/countdown_build.py`）——不要重造。新项目旁白必须把同一个 `voice-selection.json` 传给 `tools/tts/narrate.py`；不得直接 `KPipeline(...)`、不得硬编码 `VOICE`。
-4. 涉及联网下载（yt-dlp）先确认 cookie 可用——**统一用仓库根目录单一全量文件 `all_cookies.txt`**（一份浏览器全量导出，同含 YouTube + Google + B站 登录态；YT/B站下载、搜索、校验都读它，旧的 `www.*_cookies.txt` 仅作脚本回退）；产物写 `sandbox/<slug>/`。**Cookie 只允许放根目录，不得在 `sandbox/` 下复制或覆盖第二份。** bot 拦先 `brew upgrade yt-dlp` 再判 cookie 过期（详见 `CONVENTIONS.md` yt-dlp 规范）。
+4. 涉及联网下载（yt-dlp）统一读取仓库根目录 `all_cookies.txt`；用 `tools/video/filter_cookie_jar.py` 从仓库外、权限 `0600` 的原始导出中过滤 YouTube / Google / B站域并原子写入，旧 `www.*_cookies.txt` 仅作脚本回退。原始全量导出不得进入仓库，Cookie 不得复制到 `sandbox/`。产物写 `sandbox/<slug>/`；bot 拦先 `brew upgrade yt-dlp` 再判 cookie 过期（详见 `CONVENTIONS.md`）。
 5. **关键铁律**：① 渲染后必须用预混 master.wav **后期 mux**（HyperFrames 会压平音频动态）；② 我看不到画面/听不到声音，**QA 靠抽帧 Read + ffmpeg volumedetect/silencedetect**，不凭感觉下结论；③ 成片里不得出现水印/网址/提示词/路径；④ footage 竖屏化默认 **letterbox 保原比例、不放大画面**（双人/合唱/多人/宽机位**禁止竖裁放大**，会把主体裁半）；⑤ 每首展示段给**一段连续副歌**（含前后余量，解说盘点类 ≥~25s），**不碎镜快闪、不因旁白长就把歌切短**；⑥ 除启动阶段已明确归类的完全自由探索类无旁白实验外，成片**最后一句旁白固定为引流 CTA**（"你最想为哪一首投票？…盘到你单曲循环过的那一首。"），逐字照念、永远排在作品 outro 之后，**优先级高于 brief / 提示词**；⑦ **禁止自定义旁白字幕 / 解说字幕条**（不要把 TTS 口播再叠成底部字幕；用户未显式要求就一律不加）。④⑤ 详见 `CONVENTIONS.md`「展示段硬规则」，⑥ 详见「固定结尾配音」，⑦ 详见「禁止自定义旁白字幕」。
 
 ## 新盘点内容硬约束

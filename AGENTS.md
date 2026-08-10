@@ -26,7 +26,7 @@ The repository is in an **exploration phase**. When scaffolding, follow `CONVENT
 1. 读 `CONVENTIONS.md`（全局规范 + brief 格式 + QA 方法论）和 `tools/video/README.md`（从 brief 到成片的 Runbook）。
 2. **新启动的盘点视频先解析一次配音**：把用户原始任务提示词交给 `tools/tts/resolve_voice.py`，将结果保存为项目级 `voice-selection.json`。唯一精确匹配的编号/名称/注册别名优先；未指定、无法匹配、描述模糊或同时命中多个声音，一律回退 `CV002「治愈少女」`。
 3. 复用脚本在 `tools/`（配音 `tools/tts/`、竖屏 `tools/video/vfill.sh`、音轨+合成模板 `tools/video/countdown_build.py`）——不要重造。新项目旁白必须把同一个 `voice-selection.json` 传给中央入口 `tools/tts/narrate.py`；不得直接 `KPipeline(...)`、不得在项目里硬编码 `VOICE`。
-4. 涉及联网下载（yt-dlp）先确认对应平台 cookie 可用（仓库根目录 `www.youtube.com_cookies.txt` / `www.bilibili.com_cookies.txt`）；产物写 `sandbox/<slug>/`。**Cookie 只允许放根目录，不得在 `sandbox/` 下复制或覆盖第二份。**
+4. 涉及联网下载（yt-dlp）统一读取仓库根目录 `all_cookies.txt`；用 `tools/video/filter_cookie_jar.py` 从仓库外、权限 `0600` 的原始导出中过滤 YouTube / Google / B站域并原子写入。旧 `www.*_cookies.txt` 仅作脚本回退。原始全量导出不得进入仓库，Cookie 不得复制到 `sandbox/`；产物写 `sandbox/<slug>/`。
 5. **关键铁律**：① 渲染后必须用预混 master.wav **后期 mux**（HyperFrames 会压平音频动态）；② 我看不到画面/听不到声音，**QA 靠抽帧 Read + ffmpeg volumedetect/silencedetect**，不凭感觉下结论；③ 成片里不得出现水印/网址/提示词/路径；④ **禁止自定义旁白字幕**（不要把 TTS 口播再叠成底部字幕条；用户未显式要求就一律不加，详见 `CONVENTIONS.md`「禁止自定义旁白字幕」）。
 
 ## 新盘点内容硬约束
@@ -40,14 +40,14 @@ The repository is in an **exploration phase**. When scaffolding, follow `CONVENT
 - **质量优先、总时长默认不设上限**：除非用户明确给出平台硬时长，不能为了压缩总时长牺牲内容、节奏或完整乐句。某首的完整副歌/演唱段需要更长就保留更长；若确有硬时长，应优先减少条目或精简旁白，不得掐断唱句、尾音或高光段。
 - **封面排版与安全区同时过关**：标题必须按语义短语和视觉层级选择自然换行，禁止机械等字数拆行、留下孤字或让重点词断裂；歌手名字号应与同层级主要文字相同或更大，不能被缩成次要小字。标题、排名、主题等关键信息不得拆到画面最顶端和最底端，也不得整块死居中遮住人物/主体；应放在一个中上或侧向安全信息区，并通过首帧抽帧检查排版美感、主体避让和发布裁剪后的完整可读性。
 
-## AI 克隆歌手音色 MV 复用协议
+## AI 克隆歌手音色 MV durable 模板协议
 
-当 brief 明确是“AI 克隆/训练歌手音色制作 MV”“如果某歌手唱某歌”，且用户提供了可直接使用的训练音频 WAV 时，默认复用 `sandbox/angela-ai-mv-covers/`，不要新开实验目录。先读该目录的 `README.md` 和 `SOURCES.md`，再按 `CONVENTIONS.md` 的“格式之三：AI 克隆歌手音色 MV（整首 MV 换训练音轨）”执行。
+当 brief 明确是“AI 克隆/训练歌手音色制作 MV”“如果某歌手唱某歌”，且用户提供了可直接使用的训练音频 WAV 时，新建当期 `sandbox/<slug>/`，并复用 `tools/video/templates/ai-voice-mv/`；历史 `sandbox/angela-ai-mv-covers/` 已删除，不得恢复或继续依赖。先读 `tools/video/templates/README.md`，再按 `CONVENTIONS.md` 的“格式之三：AI 克隆歌手音色 MV（整首 MV 换训练音轨）”执行。
 
 固定做法：
-- 把训练 WAV 复制到 `sandbox/angela-ai-mv-covers/audio/`，在 `build/build.py` 追加 `Song` 配置，一首输出一个独立 MP4。
+- 只把用户明确给出的训练 WAV 复制到当期项目 `audio/`，填写项目 `build/config.json`；用中央 durable builder 一首输出一个独立 MP4，不在 `sandbox/` 留唯一脚本副本。
 - 仍然必须双平台查源（YouTube + B站），记录候选和取舍到 `SOURCES.md`。
-- intro 用本地 `tools/tts/narrate.py --voice CV002` 生成“如果张韶涵唱《歌名》”类治愈少女提示；歌曲音频在 intro 期间 duck，随后恢复。
+- intro 必须复用当期 `voice-selection.json` 调用 `tools/tts/narrate.py`；未指定时 resolver 默认 CV002，唯一有效指定则按指定。歌曲音频在 intro 期间 duck，随后恢复。
 - 全程叠加 `AI训练，仅供娱乐`，并通过抽帧确认无平台/UP 主水印、无网址、无路径、无提示词泄漏。
 - 遇到 B站 4K 修复源带底部水印/烧词，优先尝试全宽横带 crop 保主体；crop 不成立再退回更干净源。不要交付带平台/UP 主水印的成片。
 - `silencedetect` 报静音时，对照训练 WAV。若静音来自用户给的 e200/训练源，为保证整首 MV 对齐可保留，并在结果里说明。

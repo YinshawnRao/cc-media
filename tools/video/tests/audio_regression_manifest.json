@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "purpose": "Optional real-audio regressions for target lead-vocal discrimination. Paths are repository-relative and point at historical local-only sandbox assets.",
+  "purpose": "Optional real-audio regressions for target lead-vocal discrimination. Paths are repository-relative historical local-only sandbox assets, are not bundled by git, and intentionally skip inference when absent.",
   "labels": {
     "target_lead_vocal": "The featured singer is audibly singing in the window.",
     "instrumental_no_lead": "Music or an instrument is present, but the featured singer is not singing.",
