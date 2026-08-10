@@ -247,20 +247,31 @@ class LatinPronunciationTests(unittest.TestCase):
 
 
 class PronunciationPolicyDocumentationTests(unittest.TestCase):
-    def test_global_docs_state_word_first_rule(self) -> None:
-        paths = [
-            REPO_ROOT / "AGENTS.md",
-            REPO_ROOT / "CLAUDE.md",
-            REPO_ROOT / "CONVENTIONS.md",
-            REPO_ROOT / "tools" / "video" / "README.md",
-            TTS_ROOT / "README.md",
-        ]
-        for path in paths:
-            text = path.read_text(encoding="utf-8")
-            self.assertIn("BEYOND", text, path)
-            self.assertRegex(text, r"单词.*优先.*按词|优先.*单词.*发音", path)
-            self.assertRegex(text, r"缩写|首字母", path)
-            self.assertRegex(text, r"纯中文.*原样|纯中文.*透传", path)
+    def test_agents_owns_word_first_rule_and_claude_is_a_thin_entrypoint(self) -> None:
+        agents = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        claude = (REPO_ROOT / "CLAUDE.md").read_text(encoding="utf-8")
+
+        self.assertIn("single top-level source of agent instructions", agents)
+        self.assertIn("BEYOND", agents)
+        self.assertRegex(agents, r"单词.*优先.*按词|优先.*单词.*发音")
+        self.assertRegex(agents, r"缩写|首字母")
+        self.assertRegex(agents, r"纯中文.*原样|纯中文.*透传")
+
+        for reference in (
+            "[`AGENTS.md`](AGENTS.md)",
+            "[`CONVENTIONS.md`](CONVENTIONS.md)",
+            "[`tools/video/README.md`](tools/video/README.md)",
+        ):
+            self.assertIn(reference, claude)
+        self.assertNotIn("BEYOND", claude)
+        self.assertNotIn("CV002", claude)
+
+        # The executable policy, not duplicated prose, is the pronunciation truth.
+        policy = PronunciationPolicy.load()
+        self.assertEqual(
+            "Beyond与B T S",
+            normalize_tts_text("BEYOND与BTS", policy=policy).normalized_text,
+        )
 
     def test_qwen_sidecar_records_source_and_normalized_text(self) -> None:
         worker = (TTS_ROOT / "engines" / "qwen_mlx.py").read_text(encoding="utf-8")

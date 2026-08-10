@@ -65,7 +65,7 @@ python3 tools/tts/resolve_voice.py --task-prompt-file <原始brief文件> \
 ## 4. 竖屏化（⚠️ 硬规则见 CONVENTIONS「展示段硬规则 (A)」）
 `bash tools/video/vfill.sh <raw> clips/vert_<song>.mp4 <crop>`。
 - **默认 letterbox 保原比例、不放大画面**：crop 传**全宽横带**（`源宽 : 裁掉烧词后的高 : 0 : Y`），全宽呈现、上下模糊填充。**双人/合唱/多人/宽机位一律 letterbox**，否则主体被裁半。
-- **只有单主体全程居中**才可传窄竖条做"裁切放大贴宽"。拿不准就 letterbox。
+- 窄竖条“裁切放大贴宽”只保留为**用户明确要求的历史兼容例外**：还必须对完整候选窗逐帧确认单主体始终居中、主体不被切，并把选择与抽帧证据写入当期 design/QA；任一条件不满足或拿不准都用 letterbox。
 - 抽帧确认：人物完整不被裁、无烧词/水印残留。
 - **竖屏化后立即跑多证据主唱检测**（供第 6 步对齐闸门）：
   `tools/tts/venv/bin/python tools/video/vocal_segments.py clips/vert_*.mp4 -o probe/vocal_analysis.json --mode multi --language zh`。
@@ -99,11 +99,11 @@ python3 tools/tts/narrate.py --batch narration-request.json \
     --plan probe/showcase_plan.json --vocals probe/vocal_analysis.json
   ```
 - **🔒 盘点类封面（默认）**：用**第一首出场歌**（TOP = 最先揭晓的最后一名，如 #5）的**动态画面**做封面底，并让 intro footage 与该首 footage 取**同一条素材的连续窗**。TOP 封面只写主题与 `TOP N`，禁止列完整歌单、歌曲排序或泄露第 1 名。标题按语义短语自然换行，不机械等字数拆分、不留孤字；歌手名与同层级主要文字同字号或更大，不能偏小。关键信息集中在约 `x=72–1008 / y=220–1420` 的一个安全信息区，不拆到最顶和最底，也不死居中挡主体；首帧必须做排版与发布裁剪预览。详见 `CONVENTIONS.md「首屏封面」`。
-- `npx hyperframes lint` 必须 **0 error**（媒体元素要有 id；相邻 footage 用交替轨道 0/6；同轨不可贴边）。
+- 新项目运行 `npx --yes hyperframes@0.6.69 lint` 必须 **0 error**（媒体元素要有 id；相邻 footage 用交替轨道 0/6；同轨不可贴边）；历史项目使用自身 `package.json` / lockfile 的精确 pin。
 
 ## 8. 渲染 + MUX（关键）
 ```bash
-npx hyperframes render --output renders/full.mp4 --sdr   # ← --sdr 必加
+npx --yes hyperframes@0.6.69 render --output renders/full.mp4 --sdr   # ← --sdr 必加；历史项目使用自身 pin
 # HyperFrames 会对音频做响度归一化、压平动态 → 必须用预混 master 覆盖音轨：
 ffmpeg -i renders/full.mp4 -i master.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 192k -shortest renders/<slug>.mp4
 ```

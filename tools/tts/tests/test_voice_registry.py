@@ -532,20 +532,31 @@ class VoiceGateTests(unittest.TestCase):
 
 
 class WorkspacePolicyTests(unittest.TestCase):
-    def test_top_level_rules_share_the_same_default(self) -> None:
+    def test_default_comes_from_registry_and_claude_delegates_to_agents(self) -> None:
         repo = TTS_ROOT.parents[1]
-        paths = [
-            repo / "AGENTS.md",
-            repo / "CLAUDE.md",
-            repo / "CONVENTIONS.md",
-            repo / "tools" / "video" / "README.md",
-            TTS_ROOT / "README.md",
-        ]
-        for path in paths:
-            text = path.read_text(encoding="utf-8")
-            self.assertIn("CV002", text, path)
-            self.assertIn("治愈少女", text, path)
-            self.assertNotIn("默认男声", text, path)
+        registry = VoiceRegistry.load()
+        agents = (repo / "AGENTS.md").read_text(encoding="utf-8")
+        claude = (repo / "CLAUDE.md").read_text(encoding="utf-8")
+
+        self.assertEqual("CV002", registry.config["default_voice_id"])
+        self.assertEqual("CV002", registry.config["fallback_voice_id"])
+        self.assertEqual(
+            "CV002",
+            resolve_task_prompt(registry, "配音：CV999")["resolved_voice_id"],
+        )
+        self.assertIn("single top-level source of agent instructions", agents)
+        self.assertIn("CV002", agents)
+        self.assertIn("治愈少女", agents)
+
+        for reference in (
+            "[`AGENTS.md`](AGENTS.md)",
+            "[`CONVENTIONS.md`](CONVENTIONS.md)",
+            "[`tools/video/README.md`](tools/video/README.md)",
+        ):
+            self.assertIn(reference, claude)
+        self.assertNotIn("CV002", claude)
+        self.assertNotIn("治愈少女", claude)
+        self.assertNotIn("BEYOND", claude)
 
     def test_shared_video_template_cannot_bypass_dispatcher(self) -> None:
         repo = TTS_ROOT.parents[1]
@@ -582,14 +593,10 @@ class WorkspacePolicyTests(unittest.TestCase):
         ):
             self.assertIn(phrase, agents)
 
-    def test_global_video_defaults_are_synced(self) -> None:
+    def test_agents_is_the_single_top_level_video_policy_source(self) -> None:
         repo = TTS_ROOT.parents[1]
-        paths = [
-            repo / "AGENTS.md",
-            repo / "CLAUDE.md",
-            repo / "CONVENTIONS.md",
-            repo / "tools" / "video" / "README.md",
-        ]
+        agents = (repo / "AGENTS.md").read_text(encoding="utf-8")
+        claude = (repo / "CLAUDE.md").read_text(encoding="utf-8")
         patterns = {
             "official MV priority": r"官方 MV.*优先",
             "TOP countdown": r"TOP.*N→1",
@@ -599,10 +606,24 @@ class WorkspacePolicyTests(unittest.TestCase):
             "singer typography": r"歌手名.*(?:相同|同字号|更大)",
             "free exploration boundary": r"完全自由探索类",
         }
-        for path in paths:
-            text = path.read_text(encoding="utf-8")
-            for label, pattern in patterns.items():
-                self.assertRegex(text, pattern, f"{path}: missing {label}")
+        self.assertIn("single top-level source of agent instructions", agents)
+        for label, pattern in patterns.items():
+            self.assertRegex(agents, pattern, f"AGENTS.md: missing {label}")
+
+        for reference in (
+            "[`AGENTS.md`](AGENTS.md)",
+            "[`CONVENTIONS.md`](CONVENTIONS.md)",
+            "[`tools/video/README.md`](tools/video/README.md)",
+        ):
+            self.assertIn(reference, claude)
+        for duplicated_rule in (
+            "官方 MV",
+            "N→1",
+            "完全自由探索类",
+            "CV002",
+            "BEYOND",
+        ):
+            self.assertNotIn(duplicated_rule, claude)
 
 
 if __name__ == "__main__":

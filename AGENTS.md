@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
+This file is the single top-level source of agent instructions for this repository. Other agent entry files may point here, but must not copy and independently maintain these business rules.
 
 ## Project intent
 
@@ -11,23 +11,25 @@ Build a pipeline that turns long-form online videos into self-media ("自媒体"
 
 > **素材源硬约束（优先级高于单期任务 brief）**：每条素材**两边都要找**（YouTube + B站）。先锁定正确歌手/表演版本，再优先可用官方 MV；官方 MV 画质稍差也不因此降级。只有官方 MV 不存在或结构性不可用时才比较 Live / 综艺 / 二次来源，并在同一来源层级内按画面干净度、立体声和清晰度选择。除非 brief 显式排除某平台，否则**不允许只搜单边**。具体执行细则见 `CONVENTIONS.md` "素材源平台" 章节。
 
-The repository is in an **exploration phase**. When scaffolding, follow `CONVENTIONS.md` (the single source of reusable standards) so future work stays consistent. The directory is not yet a git repo; run `git init` before the first commit.
+The repository is in an **exploration phase** and is already an initialized Git repository. Before work, inspect the current branch, HEAD and dirty worktree; do not repeat `git init`, overwrite unrelated changes or stage outside the agreed scope. When scaffolding, follow `CONVENTIONS.md` (the single source of reusable production standards) so future work stays consistent.
 
 ## Layout
 
-- `sandbox/` — 测试/实验区，内容视为可丢弃。所有试错先在这里跑。
+- `sandbox/` — 单期视频的下载素材、渲染产物和可丢弃试验区；内容不承诺长期保留。
 - `production/<项目名>/` — 正式成片，每个项目一个子目录，保留可复现输入。
-- `tools/` — 跨项目复用工具。`tools/tts/` = 编号化本地中文配音库（Qwen3-TTS 角色声音 + Kokoro legacy）。
+- `tools/` — 跨项目复用工具。可复用的工具调研放 `tools/<domain>/research/`，不能因为仍在试验就塞进视频成品目录；`tools/tts/` = 编号化本地中文配音库（Qwen3-TTS 角色声音 + Kokoro legacy），实际母带与样音放 `tools/tts/voices/`。
 - `CONVENTIONS.md` — 全局规范，验证可行的做法沉淀到这里。
 
 ## 视频任务启动协议
 
 接到任何视频制作 brief（如"做一个音乐盘点/主题视频…"），动手前先：
 1. 读 `CONVENTIONS.md`（全局规范 + brief 格式 + QA 方法论）和 `tools/video/README.md`（从 brief 到成片的 Runbook）。
-2. **新启动的盘点视频先解析一次配音**：把用户原始任务提示词交给 `tools/tts/resolve_voice.py`，将结果保存为项目级 `voice-selection.json`。唯一精确匹配的编号/名称/注册别名优先；未指定、无法匹配、描述模糊或同时命中多个声音，一律回退 `CV002「治愈少女」`。
-3. 复用脚本在 `tools/`（配音 `tools/tts/`、竖屏 `tools/video/vfill.sh`、音轨+合成模板 `tools/video/countdown_build.py`）——不要重造。新项目旁白必须把同一个 `voice-selection.json` 传给中央入口 `tools/tts/narrate.py`；不得直接 `KPipeline(...)`、不得在项目里硬编码 `VOICE`。
-4. 涉及联网下载（yt-dlp）统一读取仓库根目录 `all_cookies.txt`；用 `tools/video/filter_cookie_jar.py` 从仓库外、权限 `0600` 的原始导出中过滤 YouTube / Google / B站域并原子写入。旧 `www.*_cookies.txt` 仅作脚本回退。原始全量导出不得进入仓库，Cookie 不得复制到 `sandbox/`；产物写 `sandbox/<slug>/`。
-5. **关键铁律**：① 渲染后必须用预混 master.wav **后期 mux**（HyperFrames 会压平音频动态）；② 我看不到画面/听不到声音，**QA 靠抽帧 Read + ffmpeg volumedetect/silencedetect**，不凭感觉下结论；③ 成片里不得出现水印/网址/提示词/路径；④ **禁止自定义旁白字幕**（不要把 TTS 口播再叠成底部字幕条；用户未显式要求就一律不加，详见 `CONVENTIONS.md`「禁止自定义旁白字幕」）。
+2. 先运行 `python3 tools/tts/doctor.py`；初始化机器或模型/runtime 变化后运行一次 `--full-model-hash`。必须得到 `TTS DOCTOR: PASS default=CV002`，缺模型、参考母带或固定运行环境时停止。
+3. **新启动的盘点视频先解析一次配音**：把用户原始任务提示词交给 `tools/tts/resolve_voice.py`，将结果保存为项目级 `voice-selection.json`。唯一精确匹配的编号/名称/注册别名优先；未指定、无法匹配、描述模糊或同时命中多个声音，一律回退 `CV002「治愈少女」`。
+4. 复用脚本在 `tools/`（配音 `tools/tts/`、竖屏 `tools/video/vfill.sh`、音轨+合成模板 `tools/video/countdown_build.py`）——不要重造。新项目旁白必须把同一个 `voice-selection.json` 传给中央入口 `tools/tts/narrate.py`；不得直接 `KPipeline(...)`、不得在项目里硬编码 `VOICE`。旁白生成完运行 `python3 tools/tts/verify_voice_usage.py --selection sandbox/<slug>/voice-selection.json --project-root sandbox/<slug>`，必须得到 `VOICE GATE: PASS`。
+5. 涉及联网下载（yt-dlp）统一读取仓库根目录 `all_cookies.txt`；用 `tools/video/filter_cookie_jar.py` 从仓库外、权限 `0600` 的原始导出中过滤 YouTube / Google / B站域并原子写入。旧 `www.*_cookies.txt` 仅作脚本回退。原始全量导出不得进入仓库，Cookie 不得复制到 `sandbox/`；产物写 `sandbox/<slug>/`。静态 Cookie 检查不等于服务端登录态有效，公开资源可下载也不等于已登录；不得输出 Cookie 值、header 或原始 info JSON。
+6. 盘点、叙事和自由探索项目在正式 build 前填写项目级 `project-manifest.json`，运行 `python3 tools/video/verify_project.py --project sandbox/<slug>`，必须得到 `PROJECT CONTRACT: PASS`；不能先出产物再补来源、旁白或展示证据。
+7. **关键铁律**：① 渲染后必须用预混 `master.wav` **后期 mux**（HyperFrames 会压平音频动态）；② mux 后按 `tools/video/README.md` 填写终片 QA manifest，运行 `python3 tools/video/verify_final_video.py --project sandbox/<slug> --manifest qa/final-video-qa.json`，只有 `FINAL VIDEO QA: PASS` 才算机械验收完成；③ 抽帧人工查看、FFmpeg 音量/静音分析和人耳复核仍不可省略，机械 PASS 不代表工具已经理解画面、排版或听感；④ 成片里不得出现水印/网址/提示词/路径；⑤ **禁止自定义旁白字幕**（不要把 TTS 口播再叠成底部字幕条；用户未显式要求就一律不加，详见 `CONVENTIONS.md`「禁止自定义旁白字幕」）。
 
 ## 新盘点内容硬约束
 
@@ -51,10 +53,11 @@ The repository is in an **exploration phase**. When scaffolding, follow `CONVENT
 - 全程叠加 `AI训练，仅供娱乐`，并通过抽帧确认无平台/UP 主水印、无网址、无路径、无提示词泄漏。
 - 遇到 B站 4K 修复源带底部水印/烧词，优先尝试全宽横带 crop 保主体；crop 不成立再退回更干净源。不要交付带平台/UP 主水印的成片。
 - `silencedetect` 报静音时，对照训练 WAV。若静音来自用户给的 e200/训练源，为保证整首 MV 对齐可保留，并在结果里说明。
+- AI 音色 MV 不使用标准 HyperFrames post-mux 的 `verify_project.py` / `verify_final_video.py` schema；继续走 durable builder 与其独立 `--check`。两条流程的 PASS 不得互相冒充。
 
 ## 配音
 
-新启动的盘点视频统一用 `tools/tts/` 编号声音库，默认 `CV002「治愈少女」`。任务提示词若唯一精确指定 `CV001–CV008`、正式名称或注册别名，则使用指定角色；未知、模糊、冲突指定仍用 CV002，不做相似度猜测。同一期 intro、全部排名转场、作品 outro 与固定 CTA 必须共享同一 resolved voice ID，并通过 `verify_voice_usage.py` 校验。Qwen 运行环境、模型或参考母带缺失时必须停止，**不得静默降级 Kokoro**。Kokoro 只保留给显式 legacy ID 与历史工程复现。不要用 `npx hyperframes tts` 做中文。详见 `CONVENTIONS.md` 配音规范。
+新启动的盘点视频统一用 `tools/tts/` 编号声音库，默认 `CV002「治愈少女」`。任务提示词若唯一精确指定 `CV001–CV008`、正式名称或注册别名，则使用指定角色；未知、模糊、冲突指定仍用 CV002，不做相似度猜测。同一期 intro、全部排名转场、作品 outro 与固定 CTA 必须共享同一 resolved voice ID，并通过 `verify_voice_usage.py` 校验。Qwen 运行环境、模型或参考母带缺失时必须停止，**不得静默降级 Kokoro**。Kokoro 只保留给显式 legacy ID 与历史工程复现。Qwen 的外文策略只处理 ASCII 拉丁 token；未提供显式覆盖时，纯中文文本、中文标点、数字、seed、请求结构和既有缓存 fingerprint 必须保持原样。不要用 HyperFrames 内置 TTS 做中文。receipt、sidecar 和哈希只证明当前本地工作流的一致性，不证明音色来源，也不抵抗同一用户权限下的主动篡改。详见 `CONVENTIONS.md` 配音规范和 `tools/tts/README.md`。
 
 ## Copyright stance
 
@@ -98,19 +101,21 @@ Note: 本地测试阶段不涉及发布；发布前的授权评估见上文 Copy
 
 HyperFrames renders HTML compositions to video. Compositions are plain HTML files with `data-*` attributes (no React/DSL). Animations are driven by GSAP (or anime.js, Lottie, Three.js, WAAPI, CSS).
 
+新项目固定使用 **`hyperframes@0.6.69`**；已有项目遵循自身 `package.json` 中的精确 pin，不为套用新默认而升级。禁止裸 `npx hyperframes`、`hyperframes@latest` 或未评估的自动升级；升级必须作为独立兼容性任务重新走 lint、render、mux 与终片 QA。渲染所需字体必须离线可用：新项目默认使用项目内合法授权的 WOFF2；系统 `local()` 只允许明确锁定本机/OS、且不要求跨机复现的历史或本机专用工程。不得依赖 Google Fonts 等渲染时网络请求。
+
 ```bash
 # Scaffold a project (non-interactive form preferred for agent use)
-npx hyperframes init <name> --non-interactive --example blank
+npx --yes hyperframes@0.6.69 init <name> --non-interactive --example blank
 
 # Install agent skills — registers /hyperframes slash commands in Codex
 npx skills add heygen-com/hyperframes
 
 # Dev loop
-npx hyperframes preview            # live-reload browser preview
-npx hyperframes render --output output.mp4
-npx hyperframes lint               # validate composition files before rendering
-npx hyperframes inspect            # examine composition metadata
-npx hyperframes doctor             # diagnose environment (FFmpeg, Node, etc.)
+npx --yes hyperframes@0.6.69 preview
+npx --yes hyperframes@0.6.69 render --output output.mp4 --sdr
+npx --yes hyperframes@0.6.69 lint
+npx --yes hyperframes@0.6.69 inspect
+npx --yes hyperframes@0.6.69 doctor
 ```
 
 ### Composition anatomy
@@ -119,7 +124,7 @@ A composition needs three things wired together:
 
 1. Root element carrying metadata: `data-composition-id`, `data-start`, `data-width`, `data-height`.
 2. Timed clips marked `class="clip"` with `data-start`, `data-duration`, `data-track-index`.
-3. A paused GSAP timeline registered on `window.__timelines["<composition-id>"]` — HyperFrames drives this timeline frame-by-frame during render, which is what makes output **deterministic** (same input → identical MP4).
+3. A paused GSAP timeline registered on `window.__timelines["<composition-id>"]` — HyperFrames drives this timeline frame-by-frame during render. The goal is frame-level reproducibility under the same pinned toolchain, browser, fonts and inputs; do not claim byte-identical MP4 output across environments.
 
 ### Use the installed skills
 

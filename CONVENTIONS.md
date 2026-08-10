@@ -1,14 +1,15 @@
 # CONVENTIONS.md — 全局规范
 
-本文件用于**积累和定义可复用的规范**。每当在 `sandbox/` 验证出一个值得固化的做法，就写到这里。CLAUDE.md 引用本文件作为规范的单一来源。
+本文件用于**积累和定义可复用的规范**。每当在 `sandbox/` 验证出一个值得固化的做法，就写到这里；`AGENTS.md` 承载顶层代理硬约束，`CLAUDE.md` 只做入口，各工具 README 记录可执行细节，三者都不得另立与本文件相冲突的生产规则。
 
-> 状态：探索阶段，多数条目待补。先记录约定，跑通后再回填细节。
+> 状态：仓库已经初始化并持续用 Git 管理；“探索阶段”只表示允许在 `sandbox/` 试错，不表示重新执行 `git init`，也不降低下列门禁和提交边界。
 
 ## 目录约定
 
-- `sandbox/` — 测试/实验，内容可丢弃。
-- `production/<项目名>/` — 正式成片，每个项目独立子目录。
-- `tools/` — 跨项目复用的工具（如 `tools/tts/` 配音）。
+- `sandbox/<项目名>/` — 每期实际项目、测试和生成物；内容可丢弃，且不得成为复用脚本、schema 或规范的唯一副本。
+- `production/<项目名>/` — 需要长期保留的正式工程；每个项目独立，保存可复现输入与轻量证据，不把最终 MP4 当作唯一交付依据。
+- `tools/` — 跨项目复用的源码、schema 与 durable 模板（如 `tools/tts/`、`tools/video/templates/`）；验证稳定后从 `sandbox/` 迁到这里。
+- **Git 边界**：提交源码、文档、配置、schema 和轻量 QA 证据；下载媒体、普通 WAV/MP4、渲染缓存、模型/runtime、Cookie、token 与其他敏感信息必须由 `.gitignore` 隔离，并在提交前检查 staged 清单。根目录被忽略的 `all_cookies.txt` 是下载运行时输入，不是可提交资产。
 
 ## 配音 (TTS) 规范
 
@@ -33,8 +34,8 @@
 - **混合文本发音（Qwen 硬约束）**：明显英文单词优先按词发音；视觉上为连续全大写时，送入 TTS 前先归一为正常词形，例如 `BEYOND → Beyond`。只有明确的首字母缩写或不可自然词读的字母串才逐字母读，例如 `BTS → B T S`、`S.H.E. → S H E`。判断不确定时先生成短样音，或通过项目级 `pronunciation_overrides` 明确读法，不得直接改成生硬中文谐音。归一化只影响 TTS 口播输入，画面仍保留艺人/作品的官方写法。
 - **纯中文稳定性（硬约束）**：自动发音归一化只检查 ASCII 拉丁 token；未显式提供发音覆盖时，纯中文文本、中文标点、数字和原有中文措辞必须逐字原样透传，不做分词、加空格、拼音化或其他改写。纯中文请求不得依赖外文发音策略文件，其生成 seed、请求结构和既有缓存指纹必须保持不变。
 - **Legacy Kokoro**：8 个旧 ID 仅用于历史复现或用户精确指定（如 `--voice zm_yunxi`）。`--female` 保留旧兼容语义 `zf_xiaoyi`，但**新盘点禁止用 `--female` 表达默认**。
-- **不要用 HyperFrames 内置 `npx hyperframes tts` 做中文**：它把语言代码 `zh` 传给 espeak，而 espeak 只认 `cmn`，中文直接报错；且 espeak 普通话质量弱。英文旁白才考虑内置 tts。
-- 输出 24kHz wav，作为独立 `<audio>` 轨接入 composition（见下「全链路」）。自动字幕可对 wav 跑 `npx hyperframes transcribe`。
+- **不要用 HyperFrames 内置 `npx --yes hyperframes@0.6.69 tts` 做中文**：它把语言代码 `zh` 传给 espeak，而 espeak 只认 `cmn`，中文直接报错；且 espeak 普通话质量弱。英文旁白才考虑内置 tts。
+- 输出 24kHz wav，作为独立 `<audio>` 轨接入 composition（见下「全链路」）。用户明确要求字幕时，自动字幕可对 wav 跑 `npx --yes hyperframes@0.6.69 transcribe`；历史项目则使用其 lockfile/package scripts 已固定的版本。
 - **Legacy Kokoro 专属：⚠ 长句（~15s+）独立 `pipeline()` 调用会吞掉开头第一小句（2026-07 实战，`xietingfeng-underrated-top5` 排查）**。本条及下面的“垫话”修法**只用于明确复现 Kokoro 的旧项目，不得复制到 Qwen/CV002 新流程**；Qwen 会把“接下来”等垫话正常念出来。TOP 盘点每首的整段旧旁白（"第X名，《歌名》。它收录在……" 一大段，单次 `pipeline(text, voice=..., speed=1.0)` 调用生成，时长 15-19s）有概率把开头第一句吞掉或吞掉一部分。
   - **根因**：与文本内容无关（把无意义的垫话放在最前面，垫话会被吞、真正内容才是"被吞对象"），是 Kokoro 对**长独立发声**开头的一个通病；短句（<10s）或"同一大段里第一句"都不受影响，只在"这段话本身是一次孤立的长 `pipeline()` 调用"时出现。**同一系列此前项目（如 `xuruyun-underrated-top5`）用 Whisper 抽查也复现同一问题**——过去这个 bug 一直存在但没被发现，因为没人用 ASR 逐句核对过旁白。
   - **旧项目修法（仅 Kokoro）**：给每段旁白文本前面拼接一句垫话（如"接下来，"），再送进旧 `pipeline()`。只在严格复现 legacy Kokoro 时保留；新 Qwen/CV002 文案不得自动添加垫话。
@@ -43,7 +44,7 @@
 ## 命名约定
 
 - 项目/成片名：`kebab-case`（如 `ai-news-weekly-01`）。
-- 源素材文件名包含来源标识与时间码，便于追溯（待定具体格式）。
+- 源素材文件名使用 `kebab-case`，至少包含项目内 item key、平台或 source ID、切片起止时间；完整 URL、时间窗、文件 SHA 与派生链以项目 `project-manifest.json`、download receipt 和 `SOURCES.md` 为准，文件名不承担完整 provenance。
 
 ## 素材源平台（硬约束，优先级高于 brief）
 
@@ -73,11 +74,11 @@
 
 ## 固定结尾配音（结构化视频硬约束，优先级高于 brief / 任务提示词）
 
-**每条非自由探索类成片的最后一句旁白固定为这句引流 CTA，逐字照念，不由单期 brief 决定：**
+**每条非自由探索类成片的最后一句旁白固定为这句引流 CTA，逐字照念，不由单期 brief 决定；机器唯一真源是 `tools/video/outro_cta.py::FIXED_OUTRO_CTA`：**
 
 > **你最想为哪一首投票？评论区告诉我。记得点赞、收藏、关注我，下一期，可能就盘到你单曲循环过的那一首。**
 
-**优先级（核心）**：本句是**所有排名、解说、主题叙事视频的统一固定收尾**，优先级**高于单期任务 brief / 提示词**。brief 不写它、不改它，也不能用"这期结尾说点别的 / 换个 CTA / 不要 CTA"来覆盖它。唯一常规例外是项目从启动阶段就明确归类为**完全自由探索类**：以音乐/视觉实验本身为主体、没有排名或解说结构，并在 brief / design 中明确采用无旁白或非结构化声音方案；不能在普通盘点做完后临时借此名义删 CTA。除此以外，只有直接修改本条规范（用户显式说"改结尾词"）才可改变固定句。即便某期 brief 给了自己的结尾文案，那份文案也只能落在「作品自身 outro」，固定句仍在其后照念。
+**优先级（核心）**：本句是**所有排名、解说、主题叙事视频的统一固定收尾**，优先级**高于单期任务 brief / 提示词**。brief 不写它、不改它，也不能用"这期结尾说点别的 / 换个 CTA / 不要 CTA"来覆盖它。唯一常规例外是项目从启动阶段就明确归类为**完全自由探索类**：以音乐/视觉实验本身为主体、没有排名或解说结构，并在 brief / design 中明确采用无旁白或非结构化声音方案；不能在普通盘点做完后临时借此名义删 CTA。固定句不存在项目级变量或替换；只有一次明确的**全局规范变更**同时修改 `FIXED_OUTRO_CTA`、本节与相应测试，才算改变 canonical CTA。即便某期 brief 给了自己的结尾文案，那份文案也只能落在「作品自身 outro」，固定句仍在其后照念。
 
 **位置（铁律）**：永远是**全片最后一句**旁白——排在每期作品自身 outro 之后。结构：
 
@@ -91,15 +92,6 @@
 **音色一致性（铁律）**：固定 CTA 不得另开一条旧 Kokoro 配音。它必须与本期项目级 `voice-selection.json` 的 resolved voice ID 完全一致，并纳入 `verify_voice_usage.py` 门禁。
 
 **防双 CTA（必守）**：既然固定句兜底互动，**每期作品自身 outro 不得再自带投票 / "你会怎么排" / "你心里第一名是谁"之类问句**——否则连问两次投票、像两个结尾。作品 outro 只负责把内容讲完、收在主题升华，互动 ask 一律交给固定句。
-
-**仅两个可换槽**（只为贴合选题，不得改 CTA 本身意图）：
-
-| 槽位 | 默认 | 可换（按选题） |
-|---|---|---|
-| 投票对象 | 哪一首 | 哪一位（歌手 PK）/ 哪个版本（版本对比） |
-| 下期钩子 | 单曲循环过的那一首 | 你的本命 / 你的青春（纯怀旧期可换回） |
-
-骨架（**投票互动 → 点赞收藏关注 → 下期预告**）和"关注我"必须保留，不得删减或改写为其他诉求。换槽只换上表两个名词，其余逐字不动。
 
 **音频 / 时长**：固定句约 +6–7s，`OUTRO_D` 相应拉到 **~22–24s**；音乐床取**副歌段**铺到底再 `afade` 末 1.6s 淡出（**别用歌曲淡出尾**，太轻会 dead-air，见下「片尾 dead-air」），旁白段照常 duck 到 ~20–26%；固定句念完留尾再 fade，不硬切、不死静。
 
@@ -115,7 +107,7 @@
 - **YouTube 登录态**（反爬：不带或缺登录态会报 "Sign in to confirm you're not a bot"）：
   - `all_cookies.txt` 须含 HttpOnly 认证 cookie（`LOGIN_INFO` + `SID/HSID/SSID/SAPISID/APISID` + `__Secure-3PSID`），其中多个在 `.google.com` 域。`python3 tools/video/check_yt_cookie.py` 会正确解析 Netscape `#HttpOnly_` 行，并静态检查字段、文件内 expiry 与 `0600` 权限。
   - **过期与更新**：标称过期约 1 年，但**实际寿命短得多**——YouTube 服务端频繁轮换 `*SIDCC`/`*SIDTS`，实践中常几天～几周失效。`check_yt_cookie.py` 只是**静态预检**，不能验证服务端新鲜度：字段都在却仍 bot 拦，仍可能是服务端已轮换、快照过期。
-    - **bot 拦排查顺序（2026-06 实战）**：① 先 `brew upgrade yt-dlp`（旧版跟不上 YT player 改动也会恒 bot 拦，与 cookie 无关，本次从 2026.3.17→2026.6.9）；② 仍拦再判 cookie 过期 → 在仓库外重新导出原始快照，用 `filter_cookie_jar.py` 过滤并原子覆盖，再运行静态预检。换 `--extractor-args player_client` 对登录态失效无效。
+    - **bot 拦排查顺序（2026-06 经验，禁止自动升级环境）**：① 记录当前 `yt-dlp --version`，运行 `check_yt_cookie.py`，再用 `--skip-download --print` 复现并区分 bot 登录态提示与签名/播放器错误；② 静态字段正常但仍明确 bot 拦时，按仓库外导出 → `filter_cookie_jar.py` → 原子覆盖流程更新快照；③ 只有证据指向 yt-dlp 兼容性且用户允许变更环境时，才安装/切换到明确版本并记录前后版本。不得把 `brew upgrade yt-dlp` 当作自动第一步，也不得用一次升级成功反推 Cookie 当时有效。换 `--extractor-args player_client` 对登录态失效无效。
     - 让 cookie 更耐用：用**无痕窗口**登录 → 只在仓库外导出原始快照 → 用 `filter_cookie_jar.py` 过滤并原子覆盖根目录目标域 jar → **直接关窗口、别登出**（避免主会话把快照轮换掉）；原始快照不得进入 workspace。
   - **另一种 403（非 bot 拦，2026-07 实战，`sandbox/xietingfeng-underrated-top5` 验证）**：cookie 有效、`check_yt_cookie.py` 通过，但下载 adaptive(dash) 流（itag 137/140/251 等）持续 `HTTP 403 Forbidden`，日志显示走的是 `tv downgraded player API` + `[jsc:deno] Solving JS challenges` 链路——这是该 client 的签名解密偶发失效，与登录态无关（区别于上面 line 99 的 bot 拦场景）。单独 `--extractor-args "youtube:player_client=web"` 能避开 403，但格式表被裁到只剩 itag 18（360p）。**修法**：四个 client 一起传 `--extractor-args "youtube:player_client=web,web_embedded,web_music,mweb"` → 格式表恢复完整（含 1080p），下载不再 403。遇到"cookie 明明有效却仍 403（不是 bot 拦提示语）"时先试这个，而不是急着重新导出 cookie。
 - **B站登录态**（无登录态只能拿到 ≤720P；大会员/番剧/4K 必须）：
@@ -137,7 +129,7 @@
   - B站：4K 流是 AV1 + 单声道音频；想要立体声选 1080P：`-f "bv*[height<=1080]+ba"`（实测张韶涵《大小孩》4K 流为 mono）。
   - **B站「修复版」常是 Live 演唱会版本，不等于棚版 MV**：搜结果里 "修复版" 头条往往清晰度更高（甚至 4K60 杜比视界），但内容与官方棚版 MV 调性差很多。**选源先匹配 brief 意图，再看分辨率**——brief 要"原版 MV 棚拍"，就别被 1080P Live 修复版替换走。
   - **「李荣浩 直拍」「XX 直拍」类搜索常返回别人**：B站标题党严重，多个 "李荣浩直拍" 实测是红发青年乐手，不是本人。当事人特写要找具体节目源（《我是歌手》《天赐的声音》《歌手》等综艺纯享版，或本人确认的官方 Live），抓帧后**用户/我先肉眼验真再用**。
-- 源信息（URL、时间码、下载时间、所选平台与原因）记录方式：_待定_（产物文件名已含 id + 时间段）。
+- **源信息记录**：每条入选素材在 `project-manifest.json` 绑定双平台候选、selection 与脱敏 download receipt；`SOURCES.md` 记录人工搜索过程和取舍理由。receipt 记录 URL、下载时间、raw→clip 时间窗/时长与 SHA 派生链，但不复制 Cookie、HTTP headers 或 yt-dlp 原始 `info_json`。
 
 ## Bash / 后台任务
 
@@ -148,15 +140,15 @@
 
 ## HyperFrames composition 规范
 
-- 版本：当前用 `hyperframes@0.6.47`（init 时写入各项目 package.json scripts，含 dev/check/render/publish）。
+- **版本固定**：新项目统一 pin `hyperframes@0.6.69`，并把精确版本写入项目 `package.json` 与 lockfile/scripts；命令使用项目自己的 `npm run ...`，或显式 `npx --yes hyperframes@0.6.69 ...`。禁止省略包版本，也禁止使用浮动的 latest tag。历史项目继续使用其自身已提交的精确 pin/lockfile，不为追新自动改版本；只有显式迁移并重跑 lint/render/终片 QA 才升级。
 - 渲染链路已验证：`init --example blank` → 编辑 `index.html` → `npm run check` → `npm run render`，产物 1920x1080 h264 30fps MP4。
 - 每个计时元素必须 `class="clip"` + `data-start`/`data-duration`/`data-track-index`；timeline 须 `paused` 并注册到 `window.__timelines["<composition-id>"]`。
 - 只允许确定性逻辑：禁用 `Date.now()`、`Math.random()`、网络 fetch（否则渲染不可复现）。
-- **写/改 composition 前先调用 `/hyperframes` 等 skill**——模式不在通用 web 文档里。项目内 `CLAUDE.md` 有完整规则表。
-- 统一画布尺寸 / 帧率：blank 默认 1920x1080 横屏 30fps；自媒体短视频若走竖屏需改为 1080x1920，_待定_。
-- composition-id 命名规则：_待定_。
+- **写/改 composition 前先读仓库 `AGENTS.md`、本文件和 `tools/video/README.md`，并使用当前任务适用的 HyperFrames skills**；不要依赖历史项目内另存的一份 `CLAUDE.md` 规则副本。
+- **画布尺寸 / 帧率**：新启动的自媒体视频默认竖屏 `1080×1920 / 30fps`；只有 brief 明确要求横屏或其他交付规格时才改变，并把规格写入项目 manifest/design。blank 示例的 1920×1080 不是成片默认。
+- **composition-id**：使用项目 slug 的 `kebab-case` 稳定 ID；重渲同一 composition 不随日期、进程或输出文件名变化。
 - 动画库默认选型（GSAP / anime.js / …）：blank 默认 GSAP。
-- 字幕样式、品牌片头模板：_待定_。**片尾固定 CTA 已定** → 见「固定结尾配音」硬约束章节。
+- **字幕 / 包装**：不设跨选题强制视觉模板；每期由 `design.md` 固定样式。旁白字幕默认禁止，只有用户明确要求才创建；片尾口播必须使用本文件「固定结尾配音」定义的 canonical CTA。
 
 ## 全链路（footage 进 composition）— 已验证
 
@@ -167,7 +159,7 @@
 - **音频独立**：原片声音用单独 `<audio src="同一个mp4">`，否则成片没声音。
 - **层级靠 CSS `z-index`**，`data-track-index` 不决定视觉层级（footage z-index:0，叠加层更高）。
 - **动画只碰视觉属性**，不要 `video.play()`；timeline `paused` 注册到 `window.__timelines["main"]`。
-- **字体**：`-apple-system` 等不在自动解析表里会 lint 告警并回退通用字体。CJK 在 headless Chrome 能正常渲染（实测中文无方框），但正式成片应放 `.woff2` 到 `fonts/` 并加 `@font-face` 锁定字形。
+- **字体**：正式成片首选把有明确授权的 `.woff2` 放进项目 `fonts/`，用相对 URL 的 `@font-face` 锁定字形；禁止依赖渲染时网络请求或远程字体自动下载。`local()` 只允许在明确锁定本机/OS、记录字体名称且不要求跨机复现的历史或本机专用项目中使用。
 - 渲染日志里 `[non-blocking] ... 404` 无害，可忽略。
 - 10s/1080p 含 footage 渲染约 31s（blank 纯图形那条仅 6s，footage 更慢）。
 
@@ -184,13 +176,13 @@
   ```bash
   ffmpeg -i in.mp4 -c:v libx264 -r 30 -g 30 -keyint_min 30 -movflags +faststart -c:a copy out.mp4
   ```
-- CJK 字体：命名 `PingFang SC` 等会 lint 告警（不在自动嵌入表），但本机系统装了该字体，headless Chrome 实测能正常渲染中文。
+- CJK 系统字体曾在当前机器验证可用，但 `PingFang SC` 等 `local()` 字体不构成跨机可复现资产；新项目仍按上条优先提交有授权的项目内 WOFF2。
 
 ## 自媒体视频（通用能力与默认）
 
 > ⚠️ 不要思维定势：成片**不止 TOP 盘点**，也有不区分排名的形式（人物/歌曲解读、主题串烧、科普合集等）。下面是**跨格式通用**的能力和默认；具体"格式"只是呈现方式，按当期任务定。
 
-**通用默认（用户已确认，可被单期任务覆盖）：**
+**通用默认**：只有某一条自身明确写出可覆盖条件时，单期 brief 才能覆盖该条默认；标为“硬约束”或由门禁执行的规则不能被一句临时提示词降级。
 - **画幅**：竖屏 **1080×1920**（短视频主流）。
 - **素材来源**：默认**我来搜并选**——用户给歌手+歌名/主题+倾向，我**同时在 YouTube 和 B站搜**（见"素材源平台"硬约束）。先保证目标歌手/版本身份正确，再优先官方 MV；官方 MV 画质稍差也不因此降级。拿不准的版本先给候选并标明各平台候选规格。
 - **解说文案**：默认**混合模式**——用户写重点句/必须准确的点，其余我扩写成口播稿，出片前可审。
@@ -215,13 +207,13 @@
 **(A) 竖屏化默认 = letterbox 保原比例，禁止激进裁切放大。**
 - **默认**：footage **全宽呈现、保留 MV/Live 原始横纵比**（信箱式：fg 缩到 1080 宽居中、上下用模糊背景填充），**不放大画面**。只裁掉烧死歌词/台标/水印的**横向窄带**（全宽保留）。
 - **禁止**：把画面裁成竖条再放大贴宽——会把主体裁出画 / 只剩半边。**男女合唱 / 双人 / 多人 / 宽机位**素材尤其禁止（两个主体分布在画面左右，任何竖裁都会切掉一个人）。
-- **唯一例外**：单主体**全程稳定居中**且逐帧确认裁切框不切到主体时，才可用"竖向裁切放大贴宽"。拿不准就 letterbox。
+- **历史兼容例外，不是新项目默认选项**：既有工程若已批准“单主体全程稳定居中”的竖向裁切，可按其自身 design/pin 复现；新项目只有用户明确要求该构图、并对完整候选窗逐帧确认不切主体后才能采用，且须在 design/QA 留证。拿不准或只是为了“更满”一律 letterbox。
 - 实现：复用 `tools/video/vfill.sh`——把 crop 传**全宽横带**（`W=源宽 : H=裁掉烧词后的高度 : 0 : Y`）即得 letterbox；传**窄竖条**才是放大裁切（默认别这么做）。
 - "清晰度 / 画幅没源那么满"可接受（用户已确认）；"人物被裁半 / 看不全"**不可接受**。
 
 **(B) 展示段 = 一段连续副歌（含前后余量），不要碎镜快闪、不要把歌切短。**
 - 每首给**一段连续**的副歌 / 代表段，**前后都留余量**（前奏带入 + 副歌 + 收尾），让观众"听得爽"。
-- **时长与旁白体量匹配**：旁白长，展示也要长——**不得旁白讲很久、歌却随便放一小段就跳过**。解说盘点类单首展示 **≥ ~25s**（甚至更长，**不设上限，以观赏体验为准**）；只有用户明确要求成片受 60–90s 平台硬时长约束时，才考虑 12–18s 短段，并且仍只能落在完整乐句边界。
+- **时长与旁白体量匹配**：旁白长，展示也要长——**不得旁白讲很久、歌却随便放一小段就跳过**。解说盘点类单首展示 **≥ ~25s**（甚至更长，**不设上限，以观赏体验为准**）。历史 60–90s 短榜单及其 12–18s 切片只是旧项目局部方案，不是新项目默认；若用户明确给出平台硬时长，应优先减少条目和重复信息，任何保留段仍只能落在完整乐句边界。
 - **优先「连续整段 + letterbox」**：让 footage 窗 == 音乐窗（同源同窗）→ 口型天然同步，且 MV 自身的内部剪辑照常出现没问题。**不要**默认把多个碎镜头拼成蒙太奇。
 - **「歌手镜头蒙太奇」仅作救场**：当连续段实在不可用（全程拍不到主体 / 大量空镜 / 烧字裁不净）时才拼，且救场段也要够长、并逐镜抽帧验证。
 - QA：抽帧确认长 clip **播放到末尾无黑屏 / 冻结**（`<video> data-duration ≤ clip 实际时长`，clip 切到 SHOW+余量）；各首副歌响度一致（~-15dB）。
@@ -275,10 +267,27 @@
 
 ### 冷启动执行：从 brief 到成片
 
-新窗口接到视频 brief，照 **`tools/video/README.md` 的 Runbook** 跑（0 启动自检 → 1 解析 → 2 样片 → 3 素材 → 4 旁白 → 5 音频 → 6 合成 → 7 渲染+mux → 8 QA）。复用脚本都在 `tools/`，不在可丢弃的 `sandbox/`：
+新窗口接到视频 brief，照 **`tools/video/README.md` 的 Runbook** 跑；不要复制旧章节编号，因为 Runbook 会随门禁扩展。复用源码都在 `tools/`，当期输入和生成物才放可丢弃的 `sandbox/<slug>/`：
 - `tools/tts/narrate.py`、`tools/video/narrate_segments.py` — 配音
 - `tools/video/vfill.sh` — 竖屏填充
 - `tools/video/countdown_build.py` — 音轨 + 合成构建模板（按 brief 改 songs/时长/文案）
+
+**三门禁顺序（标准盘点 / 叙事 / 自由探索项目不可调换）：**
+
+1. **VOICE GATE**：解析一次 `voice-selection.json`、用中央入口生成全部旁白后，运行 `tools/tts/verify_voice_usage.py`。它证明 selection、sidecar、模型/reference 声明和当前 WAV/path/hash 在本地诚实工作流中一致；不证明旁白已混入终片、实际可听或音色来源具有对抗性证明。
+2. **PROJECT CONTRACT**：任何 build 写 `master.wav`、HTML 或其他产物前，运行 `tools/video/verify_project.py --project sandbox/<slug>`。它证明结构、TOP 顺序、旁白绑定、逐曲 evidence、双平台来源声明及本地下载派生链满足门禁；不联网认证上传者/“官方”身份，也不证明最终画面或听感。
+3. **FINAL VIDEO QA**：HyperFrames 画面 render 后，用预混 `master.wav` 完成 post-mux，再对 mux 后 MP4 运行 `tools/video/verify_final_video.py --project sandbox/<slug> --manifest qa/final-video-qa.json`。它只证明可机械复算的媒体、ASR、hash 和当前人工 evidence 记录一致；不能冒充机器已理解画面美感、水印语义、最佳高光，也不能认证本地 `reviewer_kind: human` 的真实身份。
+
+```bash
+python3 tools/tts/verify_voice_usage.py \
+  --selection sandbox/<slug>/voice-selection.json --project-root sandbox/<slug>
+python3 tools/video/verify_project.py --project sandbox/<slug>
+# build → HyperFrames render --sdr → 用 master.wav post-mux
+python3 tools/video/verify_final_video.py \
+  --project sandbox/<slug> --manifest qa/final-video-qa.json
+```
+
+任一门禁失败都回到其输入修正，禁止先产出再补写 evidence，或把下游 PASS 当成上游豁免。AI 克隆整首 MV 不冒充这套标准 project/final schema，按 `tools/video/templates/ai-voice-mv/` durable builder 的 `--check` 与独立 QA 边界执行。
 
 **用户 brief 的标准格式**（缺省项按本规范默认值处理）：
 ```
@@ -300,24 +309,24 @@
 ### QA 方法论（我看不到画面、听不到声音 → 必须用工具验证，不能凭感觉说“好了”）
 
 - **画面**：`ffmpeg -ss N -i v.mp4 -frames:v 1 f.png` 抽帧，用 **Read 工具实际查看**；多帧可 `hstack` 成 contact sheet。下载的每段素材也要先抽帧确认是真动态 MV、记录水印/字幕/画幅。
-- **音频**：`silencedetect`（无 >1s 静音）、`volumedetect`（各首副歌均值一致、旁白段音乐明显更低）。**绝不靠“应该没问题”下结论**。
+- **静音唯一口径（标准 post-mux 终片）**：以 `verify_final_video.py` 对 mux 后 MP4 的实时检测为机器真源。连续静音 `1.0–1.5s` 一律进入 REVIEW，必须有绑定当前 final SHA 的人工 context；`>1.5s` 一律 hard fail，不能由人工批准覆盖。跨 chapter boundary 只说明归属，**不会**把命中自动降级或放行。小于 1.0s 不触发该机器门槛，仍需人工判断是否是突兀硬切。禁止为绕过 gate 铺白噪音、brown noise、无关 ambient 或仅为抬过阈值的假音乐床；若停顿不合叙事，应从剪辑、旁白时机或与内容相关的真实音乐衔接修复。
+- **响度**：用 `volumedetect` / loudness 检查各首副歌趋于一致、旁白段音乐明显更低；最终仍以 mux 后 AAC 为准。**绝不靠“应该没问题”下结论**。
 - **泄漏**：确认成片画面内无水印/网址/提示词/路径/项目内部词（裁切 + 干净叠层）。
 - **⚠ `ffmpeg -ss T -i x.wav ... volumedetect` 精确到零点几秒的窗口抽查可能不可信（2026-07 许美静最被低估5首验证）**：曾用它抽查 ducking 效果，测出"旁白段音乐几乎没被压低"的假警报（bed vs show 几乎同响度），一度怀疑 envelope/loudnorm 链路有 bug；改用 Python `wave`/`numpy` 按精确 sample offset 直接读取同一份 WAV，同一窗口测出的真实结果是 bed ~-46~-51dB vs show ~-11~-18dB（差 30+dB，ducking 完全正常）。根因是 `-ss`（无论放 `-i` 前后）在纯 PCM WAV 上的定位在某些环境下有明显偏差，对短窗口（<1s）尤其失真，但对秒级以上的粗粒度检查（如比较整段旁白 vs 整段展示段）误差不明显、不易察觉。**结论**：QA 阶段要做"零点几秒级"精确窗口的音量分析（如验证 ducking envelope 前几百 ms 是否真的压低），别用 `ffmpeg -ss` 抽查，改用 `wave`/`numpy` 按 sample offset 直接读取（或渲染后的 MP4 同样验证一遍，确认问题不是 mux 引入的）；`-ss` 抽帧做画面 QA、抽整段做粗粒度音量对比不受此问题影响，仍可正常使用。
 
 ### 旁白与音乐的节奏（硬规则，来自 wemedia/AGENTS.md 实战经验）
 
 - **先配音，后进音乐**：章节/开场的介绍旁白先讲，期间音乐**最多是低音量床**（或无），不要一上来 voice+music 同时全量"轰炸"。**真正全量的音乐留给无旁白的副歌/展示段**。
-- **旁白收尾留消化位**：每段介绍旁白讲完保留 **0.8–1.2s** 缓冲再切歌/进下一段；不得最后一个字刚落就硬切，也不得变成死静——这段用音乐床淡入 / 画面轻微运动 / 素材预入声支撑。
-- **章节交界**不得出现"配音停 + 音乐未起 + 画面静止"的空等。
+- **旁白收尾留消化位**：每段介绍旁白讲完保留 **0.8–1.2s** 缓冲再切歌/进下一段；不得最后一个字刚落就硬切。需要声音支撑时只用与内容相关的音乐淡入或素材预入声，不以噪声/无关底床填门禁。
+- **章节交界**避免出现"配音停 + 音乐未起 + 画面静止"的无意空等；有叙事意图的停顿仍按上面的统一静音阈值进入 REVIEW 或 hard fail，不因位于交界而自动放行。
 - 典型每首结构：介绍旁白（音乐床）→ 消化位（床淡入/swell 起）→ 副歌展示（音乐全量、无旁白）。
-- **QA**：成片跑 `ffmpeg -af silencedetect=n=-35dB:d=1`，不得有 >1s 整片静音；并抽测旁白段 vs 展示段音乐音量确认有明显高低差。
+- **QA**：成片运行终片 gate；单独排障可用 `ffmpeg -af silencedetect=n=-35dB:d=1` 观察区间，但不得用手工命令结果替代 gate manifest、当前 hash 与人工 context。另抽测旁白段 vs 展示段音乐音量确认有明显高低差。
 
 ### 多段成片的实战经验（张韶涵暗黑面全片验证）
 
 - **全片响度统一**：不同歌曲源响度差异大（实测副歌 -11～-28dB）。每首音乐先 `loudnorm=I=-14:TP=-1.0:LRA=11` 归一化；暗调/安静的歌（如《全面沦陷》）loudnorm 后仍偏低，再加一档静态增益（+7dB 左右）补偿。目标各首副歌均落在 ~-15dB。
 - **逐段建音轨再 concat**：每首一个自包含音频段（旁白+该曲 床→swell→展示），用 `ffmpeg -f concat` 拼成总 master，比一条巨型 filtergraph 可控。
-- **竖屏适配**：中心**竖向裁切(~4:5)放大贴宽 + 模糊背景填满边距**，比"16:9 居中小带"饱满得多，且顺带裁掉边角台标。**暗调/Live 多机位**素材要用更温和的裁切（保留更多宽度），否则镜头切到全景时主体被切出画。
-  > ⚠️ **此条仅适用「单主体全程居中」**。双人/合唱/多人/宽机位一律改 **letterbox 保原比例**（不放大），否则主体被裁半——见上「展示段硬规则 (A)」。
+- **历史竖裁例外（不得当成新默认）**：该期曾对单主体全程居中素材使用约 4:5 竖向裁切放大；新项目默认仍是 **letterbox 保原比例、不放大**。只有用户明确要求且完整候选窗逐帧证明主体安全时，才按「展示段硬规则 (A)」的历史兼容例外留证采用；双人/合唱/多人/宽机位禁止复用。
 - **相邻 footage 交替轨道**（track 0/6 轮换）：HyperFrames 里同轨片段**首尾相接也算重叠**会报错；交替轨道规避（视觉层级仍靠 z-index）。
 - **媒体元素必须有 `id`**：`<video>`/`<audio>` 没 id 渲染会被冻结/静音（lint 会报 media_missing_id）。
 - **非 TOP 的主题叙事片可以按脚本顺序**：历史项目可用 1→5 的立论曲→高潮收尾结构，但标题、brief 与画面必须明确它不是 TOP / 排名 / 榜单。一旦属于 TOP 类，统一执行 N→1，不能再用“主题盘点”作为正序例外。
@@ -361,36 +370,37 @@
 
 - **`--sdr` 必加**：HF 渲染会从 **任意一个** 源做 HDR auto-detect。Bili「杜比视界」流（如 LIKE A STAR 巡演 BV15m411k7Yi）一旦进 footage，整片输出会被升级成 **HLG (BT.2020) 10-bit H.265**——抖音/小红书/视频号普遍不收，播放器色彩翻车。Render 命令一律：
   ```bash
-  npx hyperframes render --output renders/full_raw.mp4 --sdr
+  npx --yes hyperframes@0.6.69 render --output renders/full_raw.mp4 --sdr
   ```
+  已有历史项目优先运行其 package scripts/lockfile 固定的版本，不用上面命令强行跨版本。
 - **`<video>` 不能控 `currentTime`**：HF 渲染期间会把 video 元素的 currentTime 锁到合成时间。要让 footage 从源的某个时间码起播，**必须 ffmpeg 输出端预切**（`-ss S -i in -t L -c:v libx264 -g 30 -keyint_min 30 -an out.mp4`），切完的视频从 0 开始播。
 - **同轨 footage 不能贴边**：相邻 footage 片段交替放在 track 0/6（详见上文）。
 - **⚠ 多段 footage 长片：拼成单条 footage_track，HTML 只挂 1 个 `<video>`（硬规则，2026-06 柯南TOP10 验证）**：一条竖屏长片若挂 **多个 `<video>` 元素**（如 12 段 footage 各一个），HF 渲染会在页面初始化时**同时为每个 video 建 frame-player**，Chrome 直接挂死——报 `Runtime.callFunctionOn timed out / protocolTimeout`，**帧 0 就超时**，多 worker（-w4）会 thrash 更快崩、**单 worker（-w1）也卡在 setup 不出帧**。**解法**：把所有 footage 段按时间线顺序 ffmpeg concat 成**一条连续 `footage_track.mp4`**（与各段时长对齐），HTML 只挂**一个** `<video data-start=0 data-duration=total src="footage_track.mp4">`。单 video = 已验证的 clip-demo 轻量模式，一次过（16110 帧 -w2 约 11min）。叠加层（scrim/卡片/字幕）照常多 track。**`HYPERFRAMES_EXTRACT_CACHE_DIR` 环境变量**可缓存抽帧、重试不重抽。
 - **GSAP exit hard kill**：每个 `tl.to(..., {opacity:0})` 后要加 `tl.set("...", {opacity:0}, end_time)`；否则非线性 seek 时 footage / overlay 可能残留可见——lint 会以 `gsap_exit_missing_hard_kill` 告警。
-- **字体：用本机 @font-face local()，别指望 Noto auto-fetch（0.6.69 验证）**：`hyperframes@0.6.69` 的 lint 把 `Noto Serif/Sans SC/JP` 判为**不在 auto-resolve 列表**→ 渲染回退默认字体、字形错。**改用本机系统字体 + `@font-face{src:local(...)}`**：中文无衬线 `PingFang SC`、中文衬线 `Songti SC`、**日文（含片假名，如クロノスタシス/スピッツ）用 `Hiragino Mincho ProN`/`Hiragino Sans`**；等宽 `JetBrains Mono` 仍可 auto-fetch。headless Chrome 能正常渲染这些 local 字体。
+- **字体（0.6.69 验证）**：不得依赖 Noto/Google Fonts auto-fetch、远程 `<link>`、CSS `@import` 或渲染时网络请求。首选把有明确授权的 WOFF2 冻结到项目 `fonts/` 并用相对 URL `@font-face`；这样 lint/render 不受网络和系统字体漂移影响。`local()` 仅供明确锁定本机/OS 的历史或本机专用工程，须在 design/README 记录字体族与系统边界，不能宣称跨机可复现。
 - **`composition_file_too_large` warning 可忽略**：单线性长片（330+ 行）不适合拆 sub-composition；这条 warning 是文档建议不是 error。
 
 ### 长篇叙事盘点 / 音乐时间线的实战补充（李荣浩×杨丞琳时间线验证）
 
 > 历史验证：`sandbox/lirh-yangcl-timeline/` 曾完成 5 首歌 6:33 竖屏纪录片式时间线，后按 sandbox 生命周期删除。可复用的无媒体骨架已迁到 `tools/video/templates/longform-timeline/`，新项目不得依赖旧路径。
 
-**与 60-90s TOP 盘点的关键差异**：单片 6-8 分钟，5 首歌每首 60-90s，每首要求"进入 → 旁白铺垫 → 消化位 → swell → 副歌展示 → 中段金句 → 转场"七阶段。
+**历史项目对比（非新项目时长默认）**：该期 brief 是 6–8 分钟长篇，曾与当时的 60–90s 短榜单做对比；这些总时长和单曲分钟数仅描述该期，不构成新项目模板。可复用的是“进入 → 旁白铺垫 → 消化位 → swell → 副歌展示 → 中段金句 → 转场”的七阶段结构。
 
 - **时长基线**（5 首歌 ~7 分钟总时长）：
-  - `LEAD ≈ 0.15s`（不要用 0.6，否则章节交界会出现 >1s 静音）
+  - `LEAD ≈ 0.15s`（该期用于避免章节交界拖沓，只是历史节奏参数，不定义静音 gate 阈值）
   - `PRE_VOICE ≈ 0.8s` 音乐床起 ramp
   - `POST_VOICE ≈ 1.2s` 消化位
   - `SWELL ≈ 1.5s` 音乐升起
   - `HIGH_BASE ≈ 40-45s` 副歌展示（前 4 首），`HIGH_LAST ≈ 55s`（finale）
   - `MID_OVER ≈ 5s` 中段金句叠副歌后半段
   - 整片 ≈ `intro 17s + 5 首 × (~70s) + outro 16s ≈ 393s = 6:33`，落在 brief 6:30-8:30 的目标区。
-- **章节交界防死静**（CRITICAL，QA 必查）：每首歌段开头 `LEAD` 是音乐床为 0 的硅。如果上一段（如 intro）结尾也无音乐，跨段会形成 **>1s 静音**——违反节奏硬规则。**修法：intro 段必须铺低音量 ambient bed**（用 s5 或任意一首歌的器乐尾声作 0.18-0.20 增益床，全程 fade in/out）。intro 不能是"纯人声 + 静音背景"。
+- **章节交界防无意空等**（QA 必查）：该历史工程每首开头的静音 `LEAD` 与上一段尾部叠加后曾形成突兀停顿。新项目按本文件「QA 方法论」的唯一静音口径判定：`1.0–1.5s` REVIEW、`>1.5s` hard fail，跨章不自动放行。若需修复，只使用与内容相关的真实音乐/素材衔接并重新混音；禁止复制该期“全程 ambient bed”做法或铺噪声绕 gate。
 - **多 footage 段必须预切**（见上 HyperFrames render 章节）：每首歌段 `<video src="clips_seg/<key>.mp4">`，其中 `clips_seg/<key>.mp4` 是从 `vert_<song>.mp4` 输出端切出的对应段（按 mseek 起始）。HF 不能在 render 时控 currentTime。
 - **跨章节响度统一**（同张韶涵章节规则）：副歌段 5 首 -14.8 ~ -16dB，差 <1.2dB 即达标；旁白段 -21 ~ -24dB（与副歌差 7-10dB 体现 ducking）。
 
 ### 长篇片的封面（cover frame）
 
-封面要求**第 1 帧可直接作社交平台缩略图**。**必带真人头像**（用户多次明确要求 — 见 [cover-needs-real-people 用户偏好]）。
+封面要求**第 1 帧可直接作社交平台缩略图**。该长篇人物项目要求**真人头像**；新项目的人物与封面通用规则见本文件「首屏封面」，不要依赖不存在的外部偏好引用。
 
 - **头像优先级**：① **用户直接提供合照**（如 `raw/li-yang.jpg` 婚纱照） > ② 当事人确认的官方 4K Live 直拍 > ③ 综艺纯享版正脸帧。**绝不**用：MV 演员替身（如李荣浩《年少有为》《模特》MV 主角是演员不是他本人）、Topic 静态图、第三方搜出来的 "XX 直拍"（标题党严重）。
 - **当 brief 涉及双人**（如"A 写给 B 的歌"），**第一时间问用户要 2 人合照**，比花 30 分钟在源里翻找快几倍。把图放 `raw/li-yang.jpg` 这类位置，build 时 ffmpeg crop 两个 280×280 头像到 `hf/cover_assets/`。
@@ -429,17 +439,19 @@
 - **找连续窗的工具链**：① 6 帧总览联系表定场景；② 候选窗每 2s 密集抽帧确认主体是否全程在场；③ RMS 扫描（`ffmpeg volumedetect` 逐 5s 窗）定副歌能量峰做音乐 `W`，比凭感觉准。
 - **「主题同框」只作有证据的官方 MV 不可用例外**：历史项目《有形的翅膀》因官方 MV 目标段主要穿插剧情男主、无法完成“词作者与演唱者同框”的明确叙事任务，才改用 **张韶涵 feat. 吴青峰同台合唱 Live**。新项目不能仅因 Live 更高清或更热闹就放弃官方 MV；只有官方 MV 对目标主题/人物存在结构性缺口，或用户明确要求特定同框叙事时，才可换官方 Live，并在 `SOURCES.md` 记录证据和旁白调整。
 - **多歌手盘点封面**：主题围绕"幕后创作者"时，封面主角放**词曲作者本人正脸**（非各演唱者拼贴），更聚焦、更切题（满足真人封面硬约束）。
-- **片头/片尾 dead-air**：封面 5s 若纯静音→silencedetect 报开头 >1.5s 静音。补**低音乐床**（该期某曲 loudnorm 后 vol~0.20 fade-in，非白噪音）。outro 床**别用歌曲淡出尾**（本身太轻→片尾又 dead-air），取副歌段，末 1.6s fade。
+- **片头/片尾 dead-air**：封面 5s 若纯静音会触发 `>1.5s` hard fail。先从口播/画面/剪辑节奏解决；确需声音衔接时只能使用与内容相关的真实歌曲段，并按听感设计，而不是为过阈值铺白噪音、ambient 或无关底床。outro 的内容音乐可取合适副歌并自然 fade，仍须重跑终片 gate。
 
 ### 格式之一：音乐 TOP 盘点
 
 在通用能力之上加排名呈现：**所有 TOP / 排名 / 榜单一律倒数揭晓 N→1**，每条在自己的转场才出现大号排名 + 歌手 + 歌名。封面和 intro 可以写主题与“TOP N”，但禁止提前列完整歌单、展示排序或泄露第一名；悬念必须保留到逐条揭晓。非排名类视频不套排名件，也不要用 TOP 命名。
 
-TOP 默认保留**开头旁白 + 每首转场旁白 + 作品 outro + 固定 CTA**，并且整期不设时长上限、质量优先。只有用户明确要求 60–90s 平台硬时长时，才考虑每首 12–18s；即使如此也必须停在完整乐句边界。带长解说的盘点（旁白每首 15s+）按「展示段硬规则 (B)」给连续 ≥~25s 的副歌，不能为了做短把歌切掉。
+TOP 默认保留**开头旁白 + 每首转场旁白 + 作品 outro + 固定 CTA**，并且整期不设时长上限、质量优先。历史 60–90s 榜单及每首 12–18s 是旧项目局部方案，不再作为默认；用户确有平台硬时长时优先减少条目/重复信息，保留片段仍必须停在完整乐句边界。带长解说的盘点（旁白每首 15s+）按「展示段硬规则 (B)」给连续 ≥~25s 的副歌，不能为了做短把歌切掉。
 
-### 格式之二：AI 跨时空同台（音乐实验）
+### 格式之二：AI 跨时空同台（历史自由探索实验）
 
 > 验证项目：`sandbox/dbmh-ai-stage/`（窦唯/王菲/窦靖童《Don't Break My Heart》三人接力实验，2:54）。
+
+> **历史自由探索例外，不是“带 AI 即可省略结构”的新默认**：只有新项目从启动时就以 `project_kind: free_exploration` 写明非空 rationale、brief/design 明确音乐实验方案，并通过 project gate，才可按创意减少旁白或不使用 canonical CTA；否则仍执行开头、逐项转场、作品 outro、固定 CTA 的完整结构。
 
 把同一首歌的多个不同年代/不同版本拼成"AI 同台接力"，让观众感觉三人/多人像在同一场演出里依次接唱。本质上是**音乐实验**，不是盘点解说。
 
@@ -447,7 +459,7 @@ TOP 默认保留**开头旁白 + 每首转场旁白 + 作品 outro + 固定 CTA*
 - 不分排名、不分章节解说，**主体是音乐而非旁白**。
 - 旁白只用在**开头 + 结尾**（声明 + 收尾），中段全程让音乐和画面说话。
 - 必须显式声明 **"AI 剪辑实验｜非真实同台演出"**（开头小字 + 全程右下角小角标 + 结尾文案），避免误导观众以为是真实演出。
-- 不能出现描述视频自身机制的 meta 文案（同[no-meta-text-in-video 用户偏好]）。
+- 不能出现描述视频自身机制的 meta 文案；这是本仓库的成片泄漏规则，不依赖不存在的外部偏好引用。
 
 **接力时间码定位（核心）：**
 
@@ -515,7 +527,7 @@ voice_rms = np.sqrt(np.mean(S[voice_mask] ** 2, axis=0))
 **QA：**
 - `ffprobe` 确认最终 MP4 时长与训练 WAV 对齐，视频为 H.264、音频为 AAC。
 - 抽 `1s` 和中段帧用 Read 看：角标存在、非黑屏、无平台/UP 主水印、无路径/提示词泄漏。
-- `silencedetect` 若报静音，必须对照训练 WAV。e200 源可能自带开头/中段/结尾静音；源自带静音不强行剪掉，以免破坏音频与 MV 时长对齐。
+- **AI 整首 MV 的独立静音边界**：该格式不使用标准 `verify_final_video.py` schema，按 durable builder `--check` 与本节 QA 处理。`silencedetect` 命中必须与当前训练 WAV 的相同时间窗、当前 hash 对照；只有能证明是用户训练源自带、且剪除会破坏整首对齐的静音才可保留并在交付中说明。这个例外不能移植到标准盘点/叙事终片，也不能靠添加噪声或无关底床掩盖。
 - `volumedetect` 目标与上一批保持接近，实测本目录多首 mean volume 约 `-17.4 dB`，max volume 保持低于 0dB。
 
 ### 首屏封面（首帧可作封面，硬约束）
@@ -586,9 +598,9 @@ video A fade-out 结束时刻 = video B fade-in 起始时刻 → 中间会有 0.
 
 **用户对背景白噪音零容忍**（最严格的偏好之一）：
 - 全片 ambient 底床（即便 sub-bass + brown noise 综合 -47dB）**用户能听到，会立即抱怨"轰隆隆"**。
-- 别用全片 pad 兜底 silencedetect。允许少量 1-1.5s **自然短暂静音**（叙事性停顿/段间气口），用户的偏好顺序是：**真静音 > 任何形式的底床/白噪音**。
-- 替代策略：① 章节末 `afade out` 拉长到 2-2.5s 形成自然衰落；② 段间气口用对应章节音乐的极低音量（-14 ~ -16dB）做 4-8s 桥接 lead-in；③ 接受 silence_duration < 1.5s 的短暂停顿。
-- **修正 L171 节奏规则**：原"不得有 >1s 整片静音"过严。新规则：**段内 > 1.5s 整片静音不可接受，但段与段交界 1-1.5s 自然停顿 OK**；判别看是否有"音乐床淡入预热"或"画面运动接续"，有就行。
+- 禁止用全片 pad、白噪音、brown noise 或无关 ambient 兜底 `silencedetect`；用户偏好顺序是：**有意图的真停顿 > 为过 gate 伪造的底床/噪声**。
+- 可从内容本身修复：章节末自然 `afade out`、调整旁白/镜头时机，或使用同章节真实音乐做有叙事意义的 bridge；不能只把电平抬过检测阈值。
+- 阈值没有项目级例外：`1.0–1.5s` 即使是自然停顿或跨章节也只能 REVIEW，`>1.5s` hard fail；统一以「QA 方法论」和终片 gate 为准。
 
 **短视频开头节奏（用户硬偏好）**：
 - 0-1s **必须有视觉动作**（卡片缩放/path 绘制/光点点亮均可），不能纯静止。
@@ -615,16 +627,10 @@ video A fade-out 结束时刻 = video B fade-in 起始时刻 → 中间会有 0.
 - 修法：TTS 文本里把英文歌名改写成"这首歌/这段旋律/这段歌"；**屏幕字幕仍可保留英文**（视觉与听觉分流）。
 - 适用于：英文歌名、品牌名、人物英文译名等夹杂场景。
 
-**字体选择对纪录片质感的决定性影响**：
-- 中文系统 fallback（PingFang SC）虽能渲染，但**没有衬线字体的纪录片质感**。
-- 用户对 V3 之前的"普通无衬线 + 居中对齐"评价是"PPT 解说不够漂亮"。换 Google Fonts 后明显升级。
-- 推荐组合（V5 验证）：
-  - 中文衬线主标：**Noto Serif SC** (400/600/700)
-  - 西文斜体优雅：**Cormorant Garamond** (italic 300/400)（封面英文歌名 / 强调短语）
-  - 中文无衬线 UI：**Noto Sans SC**
-  - 数字/代码 mono：**JetBrains Mono**（年份、章节番号、tag）
-- HyperFrames 编译时自动 fetch Google Fonts 并 inline，**不需要本地 woff2**（lint 会提示但渲染正常）。
-- `<link href="https://fonts.googleapis.com/css2?family=...&display=swap" rel="stylesheet">` 直接放 `<head>`，HF 会处理。
+**字体选择对纪录片质感的决定性影响（历史视觉经验，执行仍服从当前字体边界）**：
+- 衬线主标、优雅西文斜体、清晰无衬线 UI 与 mono 数字的层级组合通常优于全局同一种系统无衬线；具体字体按当期 design 和授权选择。
+- 历史项目曾使用 Noto Serif/Sans SC、Cormorant Garamond、JetBrains Mono；新项目若继续使用，必须确认授权并把实际 WOFF2 冻结到项目 `fonts/`，不能只写字体名称或依赖远程服务。
+- 禁止 Google Fonts `<link>`、CSS `@import`、HyperFrames auto-fetch 等渲染时远程字体路径。`local()` 只允许在明确本机锁定的历史/本机专用项目，并记录 OS 与字体族；它不是跨机交付方案。
 
 **Section 时间线集中管理（避免散布 hardcoded 数字）**：
 - 早期版本散布在 GSAP 里的 `tl.fromTo(... , 38)` / `tl.to(... , 85)` / `transitionShow('#trans1', 85, 13)` 等硬编码 timestamp，**改一个段的时长要改十几处**。
@@ -645,7 +651,7 @@ video A fade-out 结束时刻 = video B fade-in 起始时刻 → 中间会有 0.
 - "白噪音/底噪" → 删 ambient pad，自然静音
 - "动画太慢/开头静音太长" → 压缩入场动画 + TTS 前移
 - "文字重叠/被挡" → 列所有元素 (x, y, w, h) 表 + 手算 collision
-- "标题/字体/排版普通" → 引入衬线 + Mono 系统字体；左对齐 > 全局居中；金/银/紫色调取代纯白
+- "标题/字体/排版普通" → 调整衬线/Mono 层级、对齐与色彩；新项目把有授权的实际 WOFF2 放进项目，不能只写系统字体名。只有明确的本机专用工程才可按本节字体边界使用 `local()`。
 - "转场文案意义不明（只有年份）" → 加诗意主文案，年份做装饰小字
 - "黑屏没画面只有文字" → outro/CTA 期保持 footage 衬底，文字浮在上方
 
@@ -657,11 +663,5 @@ video A fade-out 结束时刻 = video B fade-in 起始时刻 → 中间会有 0.
 
 ## 环境坑（已踩）
 
-- ~~npm 缓存有 root-owned 文件导致 `npx hyperframes` 报 EEXIST/EACCES~~ **已于 2026-05-27 用 `sudo chown -R $(whoami) ~/.npm-cache` 根治**，现在 npx 用默认缓存正常。
+- ~~npm 缓存曾有 root-owned 文件导致显式版本命令报 EEXIST/EACCES~~ **已于 2026-05-27 修复**；新项目仍使用项目 lockfile/scripts 或 `npx --yes hyperframes@0.6.69`，不因缓存恢复而省略包版本或改用浮动 latest tag。
 - Docker 未装：仅容器化渲染需要，本地用系统 Chrome 渲染不需要，可忽略。
-
-## 待办 / 决策记录
-
-- [ ] 确定竖屏/横屏与默认分辨率帧率
-- [ ] 确定源素材与时间码的记录格式
-- [ ] 沉淀第一个可复用的 composition 模板
