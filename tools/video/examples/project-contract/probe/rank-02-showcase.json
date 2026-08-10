@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "kind": "vocal_showcase",
+  "status": "OK",
+  "item_id": "rank-02",
+  "clip": "clips/rank-02.mp4",
+  "clip_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "analysis": {
+    "path": "probe/vocal-analysis.json",
+    "sha256": "3deddadaf81116583c34c71f189ea617e876ced465407a479a9d74aa565e7cdf"
+  },
+  "analysis_key": "synthetic-rank-02",
+  "window": {
+    "narr_end_src": 8.0,
+    "show_start_src": 10.0,
+    "show_end_src": 40.0
+  }
+}

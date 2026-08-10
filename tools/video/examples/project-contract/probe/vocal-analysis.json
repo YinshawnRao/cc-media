@@ -1,0 +1,18 @@
+{
+  "schema_version": 2,
+  "name": "rank-02",
+  "duration": 45.0,
+  "source_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "lead_segments": [
+    [7.5, 39.7]
+  ],
+  "boundary_segments": [
+    [7.5, 39.7]
+  ],
+  "boundary_evidence": "whisper_word_timestamps",
+  "safe_cut_intervals": [
+    [39.95, 40.2]
+  ],
+  "evidence_level": "multi_evidence",
+  "detector": "synthetic_contract_fixture"
+}

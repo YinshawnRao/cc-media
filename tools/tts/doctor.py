@@ -5,10 +5,18 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
+import subprocess
 import wave
 from pathlib import Path
 
+from model_provenance import (
+    ProvenanceError,
+    create_full_hash_receipt,
+    first_model_directory,
+    manifest_path,
+    receipt_path,
+    validate_receipt,
+)
 from narrate import resolve_runtime
 from text_normalizer import PronunciationPolicy, normalize_tts_text
 from voice_registry import VoiceRegistry, file_sha256
@@ -17,21 +25,17 @@ from voice_registry import VoiceRegistry, file_sha256
 TTS_ROOT = Path(__file__).resolve().parent
 
 
-def resolve_model(config: dict) -> Path | None:
-    runtime = config["runtime"]
-    candidates: list[Path] = []
-    for env_name in runtime["qwen_base_model_envs"]:
-        value = os.environ.get(env_name)
-        if value:
-            path = Path(value).expanduser()
-            candidates.append(path if path.is_absolute() else path.absolute())
-    for value in runtime["qwen_base_model_candidates"]:
-        path = Path(value)
-        candidates.append(path if path.is_absolute() else (TTS_ROOT / path).resolve())
-    return next(
-        (path for path in candidates if path.is_dir() and (path / "config.json").is_file()),
-        None,
+def probe_mlx_audio_version(python: Path) -> str:
+    probe = (
+        "import importlib.metadata as m; "
+        "print(m.version('mlx-audio'), end='')"
     )
+    completed = subprocess.run(
+        [str(python), "-c", probe], capture_output=True, text=True, timeout=10
+    )
+    if completed.returncode != 0 or not completed.stdout.strip():
+        raise ProvenanceError("cannot read mlx-audio distribution version")
+    return completed.stdout.strip()
 
 
 def main() -> int:
@@ -42,50 +46,86 @@ def main() -> int:
         help="SHA-256 every model file (about 2 GB of reads)",
     )
     args = parser.parse_args()
-    registry = VoiceRegistry.load()
     errors: list[str] = []
+    python: Path | None = None
+    actual_mlx_audio_version: str | None = None
+
+    try:
+        registry = VoiceRegistry.load()
+    except (OSError, KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
+        print("TTS DOCTOR: FAIL")
+        print(f"- cannot load TTS config/registry: {exc}")
+        return 1
 
     try:
         python = resolve_runtime(registry.config, registry.config["qwen_base"]["engine"])
-        print(f"runtime: {python}")
-    except SystemExit as exc:
+        actual_mlx_audio_version = probe_mlx_audio_version(python)
+        expected_version = registry.config["qwen_base"]["mlx_audio_version"]
+        if actual_mlx_audio_version != expected_version:
+            raise ProvenanceError(
+                "mlx-audio version mismatch: "
+                f"expected {expected_version}, got {actual_mlx_audio_version}"
+            )
+        print(f"runtime: {python}  mlx-audio={actual_mlx_audio_version}")
+    except (OSError, subprocess.TimeoutExpired, SystemExit, ProvenanceError) as exc:
         errors.append(str(exc))
 
-    model = resolve_model(registry.config)
-    if model is None:
-        errors.append("pinned Qwen Base model not found")
-    else:
-        print(f"model: {model}")
-        manifest_path = TTS_ROOT / registry.config["qwen_base"]["model_file_manifest"]
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        for record in manifest["files"]:
-            path = model / record["path"]
-            if not path.is_file():
-                errors.append(f"missing model file: {record['path']}")
-                continue
-            if path.stat().st_size != record["bytes"]:
-                errors.append(f"model size mismatch: {record['path']}")
-                continue
-            if args.full_model_hash and file_sha256(path) != record["sha256"]:
-                errors.append(f"model SHA mismatch: {record['path']}")
-        print(
-            f"model-manifest: files={manifest['file_count']} bytes={manifest['total_bytes']} "
-            f"full_hash={args.full_model_hash}"
-        )
+    if actual_mlx_audio_version is not None:
+        try:
+            model = first_model_directory(registry.config, TTS_ROOT)
+            if model is None:
+                raise ProvenanceError("pinned Qwen Base model not found")
+            source_manifest = manifest_path(registry.config, TTS_ROOT)
+            verification_receipt = receipt_path(registry.config, TTS_ROOT)
+            print(f"model: {model}")
+            if args.full_model_hash:
+                create_full_hash_receipt(
+                    model_root=model,
+                    manifest_file=source_manifest,
+                    qwen=registry.config["qwen_base"],
+                    mlx_audio_version=actual_mlx_audio_version,
+                    tts_root=TTS_ROOT,
+                )
+            validation = validate_receipt(
+                model_root=model,
+                manifest_file=source_manifest,
+                qwen=registry.config["qwen_base"],
+                mlx_audio_version=actual_mlx_audio_version,
+                tts_root=TTS_ROOT,
+            )
+            print(
+                "model-verification: "
+                f"files={validation['model_file_count']} "
+                f"bytes={validation['model_total_bytes']} "
+                f"full_tree_hash={validation['full_tree_hash_verified']} "
+                f"receipt={verification_receipt}"
+            )
+        except (OSError, KeyError, TypeError, ProvenanceError) as exc:
+            errors.append(str(exc))
 
     voices_root = TTS_ROOT / "voices"
+    verified_voice_count = 0
     for voice in registry.voices:
-        reference = voices_root / voice["reference_audio"]
-        if not reference.is_file():
-            errors.append(f"missing reference: {voice['id']}")
-            continue
-        if file_sha256(reference) != voice["reference_sha256"]:
-            errors.append(f"reference SHA mismatch: {voice['id']}")
-            continue
-        with wave.open(str(reference), "rb") as handle:
-            if handle.getnchannels() != 1 or handle.getframerate() != 24000:
-                errors.append(f"invalid reference WAV format: {voice['id']}")
-    print(f"voice-assets: {len(registry.voices)} references verified")
+        voice_id = str(voice.get("id", "<unknown>"))
+        try:
+            reference = voices_root / voice["reference_audio"]
+            if not reference.is_file():
+                errors.append(f"missing reference: {voice_id}")
+                continue
+            if file_sha256(reference) != voice["reference_sha256"]:
+                errors.append(f"reference SHA mismatch: {voice_id}")
+                continue
+            with wave.open(str(reference), "rb") as handle:
+                if handle.getnchannels() != 1 or handle.getframerate() != 24000:
+                    errors.append(f"invalid reference WAV format: {voice_id}")
+                    continue
+            verified_voice_count += 1
+        except (OSError, KeyError, TypeError, wave.Error) as exc:
+            errors.append(f"cannot validate reference {voice_id}: {exc}")
+    print(
+        f"voice-assets: {verified_voice_count}/{len(registry.voices)} "
+        "references verified"
+    )
 
     try:
         policy = PronunciationPolicy.load()

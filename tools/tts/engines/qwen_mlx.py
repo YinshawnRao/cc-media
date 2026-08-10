@@ -5,11 +5,13 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.metadata
 import json
 import os
 import random
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 import wave
@@ -19,6 +21,20 @@ from pathlib import Path
 TTS_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_PATH = TTS_ROOT / "config.json"
 REGISTRY_PATH = TTS_ROOT / "voices" / "registry.json"
+sys.path.insert(0, str(TTS_ROOT))
+
+from model_provenance import (  # noqa: E402
+    ProvenanceError,
+    manifest_path,
+    model_candidates,
+    validate_receipt,
+)
+from qwen_contract import (  # noqa: E402
+    derived_seed,
+    fingerprint,
+    fingerprint_inputs,
+    model_validation_cache_matches,
+)
 
 
 def bootstrap_offline_runtime() -> None:
@@ -75,32 +91,47 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def fingerprint(value: dict) -> str:
-    payload = json.dumps(
-        value, ensure_ascii=False, sort_keys=True, separators=(",", ":")
-    ).encode("utf-8")
-    return hashlib.sha256(payload).hexdigest()
+def installed_mlx_audio_version() -> str:
+    try:
+        return importlib.metadata.version("mlx-audio")
+    except importlib.metadata.PackageNotFoundError as exc:
+        raise SystemExit("mlx-audio distribution metadata is unavailable") from exc
 
 
-def resolve_model(config: dict) -> Path:
-    runtime = config["runtime"]
-    candidates: list[Path] = []
-    for env_name in runtime["qwen_base_model_envs"]:
-        value = os.environ.get(env_name)
-        if value:
-            candidate = Path(value).expanduser()
-            candidates.append(candidate if candidate.is_absolute() else candidate.resolve())
-    for value in runtime["qwen_base_model_candidates"]:
-        candidate = Path(value)
-        candidates.append(candidate if candidate.is_absolute() else (TTS_ROOT / candidate).resolve())
-    for candidate in candidates:
-        if candidate.is_dir() and (candidate / "config.json").is_file():
-            return candidate
-    rendered = "\n  - ".join(str(path) for path in candidates)
+def resolve_verified_model(config: dict, mlx_audio_version: str) -> tuple[Path, dict]:
+    qwen = config["qwen_base"]
+    if mlx_audio_version != qwen["mlx_audio_version"]:
+        raise SystemExit(
+            "mlx-audio version mismatch: "
+            f"expected {qwen['mlx_audio_version']}, got {mlx_audio_version}"
+        )
+    try:
+        source_manifest = manifest_path(config, TTS_ROOT)
+    except ProvenanceError as exc:
+        raise SystemExit(f"invalid pinned Qwen provenance configuration: {exc}") from exc
+    rejected: list[str] = []
+    for candidate in model_candidates(config, TTS_ROOT):
+        if not candidate.is_dir():
+            rejected.append(f"{candidate} (missing directory)")
+            continue
+        try:
+            validation = validate_receipt(
+                model_root=candidate,
+                manifest_file=source_manifest,
+                qwen=qwen,
+                mlx_audio_version=mlx_audio_version,
+                tts_root=TTS_ROOT,
+            )
+        except (OSError, ProvenanceError) as exc:
+            rejected.append(f"{candidate} ({exc})")
+            continue
+        return candidate.resolve(), validation
+    rendered = "\n  - ".join(rejected)
     raise SystemExit(
-        "Qwen Base model is unavailable; refusing to fall back to Kokoro. Checked:\n"
+        "Qwen Base model lacks a current trusted full-hash verification; "
+        "refusing to generate or fall back to Kokoro. Checked:\n"
         f"  - {rendered}\n"
-        "Set CC_MEDIA_QWEN_BASE_MODEL to the pinned local model directory."
+        "Run `python3 tools/tts/doctor.py --full-model-hash` for the pinned model."
     )
 
 
@@ -108,11 +139,6 @@ def set_seed(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
     mx.random.seed(seed)
-
-
-def derived_seed(base: int, voice_id: str, text: str, language: str) -> int:
-    payload = f"{base}\0{voice_id}\0{language}\0{text}".encode("utf-8")
-    return int.from_bytes(hashlib.sha256(payload).digest()[:4], "big")
 
 
 def flatten_audio(results: list) -> tuple[np.ndarray, int, list[dict]]:
@@ -207,12 +233,21 @@ def write_audio(path: Path, audio: np.ndarray, sample_rate: int, speed: float) -
         os.replace(final, path)
 
 
-def cached(sidecar: Path, output: Path, expected_fingerprint: str) -> dict | None:
+def cached(
+    sidecar: Path,
+    output: Path,
+    expected_fingerprint: str,
+    expected_model_validation: dict,
+) -> dict | None:
     if not sidecar.is_file() or not output.is_file():
         return None
     try:
         value = read_json(sidecar)
         if value.get("fingerprint") != expected_fingerprint:
+            return None
+        if not model_validation_cache_matches(
+            value.get("model_validation"), expected_model_validation
+        ):
             return None
         if value.get("output_sha256") != sha256_file(output):
             return None
@@ -247,33 +282,32 @@ def main() -> int:
 
     qwen = config["qwen_base"]
     generation = qwen["generation"]
-    model_path = resolve_model(config)
+    actual_mlx_audio_version = installed_mlx_audio_version()
+    model_path, model_validation = resolve_verified_model(
+        config, actual_mlx_audio_version
+    )
     pending: list[tuple[dict, str, Path, Path, dict]] = []
     for item in request["items"]:
         output = Path(item["output"]).resolve()
         sidecar = output.with_suffix(output.suffix + ".tts.json")
         speed = float(item.get("speed", 1.0))
         language = item.get("language") or qwen["language"]
-        fp_inputs = {
-            "engine": qwen["engine"],
-            "model_id": qwen["model_id"],
-            "model_revision": qwen["model_revision"],
-            "model_tree_sha256": qwen["model_tree_sha256"],
-            "mlx_audio_version": qwen["mlx_audio_version"],
-            "voice_id": voice_id,
-            "selection": selection,
-            "reference_sha256": actual_reference_sha,
-            "reference_text": registry["reference_text"],
-            "text": item["text"],
-            "language": language,
-            "speed": speed,
-            "generation": generation,
-        }
-        if "source_text" in item:
-            fp_inputs["source_text"] = item["source_text"]
-            fp_inputs["text_normalization"] = item["text_normalization"]
+        fp_inputs = fingerprint_inputs(
+            qwen=qwen,
+            selection=selection,
+            voice_id=voice_id,
+            reference_sha256=actual_reference_sha,
+            reference_text=registry["reference_text"],
+            item=item,
+            language=language,
+            speed=speed,
+        )
         fp = fingerprint(fp_inputs)
-        hit = None if request.get("force") else cached(sidecar, output, fp)
+        hit = (
+            None
+            if request.get("force")
+            else cached(sidecar, output, fp, model_validation)
+        )
         if hit is not None:
             print(f"reuse {output}  voice={voice_id} dur={hit['wav']['duration_seconds']:.2f}s")
         else:
@@ -285,6 +319,22 @@ def main() -> int:
     started = time.perf_counter()
     model = load_model(model_path)
     model_load_seconds = time.perf_counter() - started
+    # Revalidate after model loading closes the cheap receipt/stat TOCTOU window:
+    # generation only starts if the exact validated tree remained unchanged.
+    try:
+        post_load_validation = validate_receipt(
+            model_root=model_path,
+            manifest_file=manifest_path(config, TTS_ROOT),
+            qwen=qwen,
+            mlx_audio_version=actual_mlx_audio_version,
+            tts_root=TTS_ROOT,
+        )
+    except (OSError, ProvenanceError) as exc:
+        raise SystemExit(
+            f"Qwen model provenance changed while loading; refusing generation: {exc}"
+        ) from exc
+    if post_load_validation != model_validation:
+        raise SystemExit("Qwen model validation changed while loading; refusing generation")
     print(f"loaded {qwen['model_id']} in {model_load_seconds:.2f}s")
 
     for item, fp, output, sidecar, fp_inputs in pending:
@@ -332,6 +382,7 @@ def main() -> int:
             "model_id": qwen["model_id"],
             "model_revision": qwen["model_revision"],
             "model_tree_sha256": qwen["model_tree_sha256"],
+            "model_validation": model_validation,
             "reference_audio": str(reference.relative_to(TTS_ROOT)),
             "reference_sha256": actual_reference_sha,
             "language": language,
@@ -342,7 +393,7 @@ def main() -> int:
             "model_metrics": metrics,
             "fingerprint": fp,
             "fingerprint_inputs": fp_inputs,
-            "output": str(output),
+            "output": os.path.relpath(output, start=sidecar.parent),
             "output_sha256": sha256_file(output),
             "wav": info,
         }

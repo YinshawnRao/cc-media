@@ -1,0 +1,765 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cc-media.local/schemas/project-manifest.schema.json",
+  "title": "cc-media authoring project contract",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "project_kind",
+    "voice_selection",
+    "cover",
+    "narration_sequence",
+    "items"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "project_kind": {
+      "enum": ["top_ranking", "narrative", "free_exploration"]
+    },
+    "rationale": {
+      "type": "string"
+    },
+    "voice_selection": {
+      "$ref": "#/$defs/projectPath"
+    },
+    "cover": {
+      "type": "object",
+      "required": ["text", "disclosed_item_ids"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "disclosed_item_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "narration_sequence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/narration"
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/item"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "required": ["project_kind"],
+        "properties": {
+          "project_kind": {
+            "const": "free_exploration"
+          }
+        }
+      },
+      "then": {
+        "required": ["rationale"],
+        "properties": {
+          "rationale": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["project_kind"],
+        "properties": {
+          "project_kind": {
+            "const": "top_ranking"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "cover": {
+            "properties": {
+              "disclosed_item_ids": {
+                "maxItems": 0
+              }
+            }
+          },
+          "items": {
+            "minItems": 2,
+            "items": {
+              "required": ["rank"]
+            }
+          },
+          "narration_sequence": {
+            "minItems": 5
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["project_kind"],
+        "properties": {
+          "project_kind": {
+            "enum": ["narrative", "free_exploration"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "items": {
+            "items": {
+              "not": {
+                "required": ["rank"]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": ["project_kind"],
+        "properties": {
+          "project_kind": {
+            "const": "narrative"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "items": {
+            "minItems": 1
+          },
+          "narration_sequence": {
+            "minItems": 4
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "projectPath": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Project-relative path without '..'; semantic containment and symlink checks are enforced by verify_project.py."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "fileRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/projectPath"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "narration": {
+      "type": "object",
+      "required": ["id", "role", "text", "wav", "sidecar"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "enum": ["intro", "transition", "work_outro", "outro_cta", "free"]
+        },
+        "item_id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "wav": {
+          "$ref": "#/$defs/projectPath"
+        },
+        "sidecar": {
+          "$ref": "#/$defs/projectPath"
+        },
+        "disclosed_item_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "required": [
+        "url",
+        "performer",
+        "version_kind",
+        "asset_type",
+        "official",
+        "usable"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https?://"
+        },
+        "performer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version_kind": {
+          "enum": ["original", "cover"]
+        },
+        "asset_type": {
+          "enum": ["mv", "live", "show", "secondary"]
+        },
+        "official": {
+          "type": "boolean"
+        },
+        "usable": {
+          "type": "boolean"
+        },
+        "reject_reason": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "platformSearch": {
+      "type": "object",
+      "required": ["searched", "search_queries", "candidates"],
+      "properties": {
+        "searched": {
+          "const": true
+        },
+        "search_queries": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/candidate"
+          }
+        },
+        "no_usable_reason": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "sources": {
+      "type": "object",
+      "required": [
+        "target_version",
+        "platforms",
+        "selection",
+        "cover_fallback",
+        "official_choice"
+      ],
+      "properties": {
+        "target_version": {
+          "type": "object",
+          "required": ["kind", "performer"],
+          "properties": {
+            "kind": {
+              "enum": ["original", "cover"]
+            },
+            "performer": {
+              "type": "string",
+              "minLength": 1
+            },
+            "original_artist": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "platforms": {
+          "type": "object",
+          "required": ["youtube", "bilibili"],
+          "properties": {
+            "youtube": {
+              "$ref": "#/$defs/platformSearch"
+            },
+            "bilibili": {
+              "$ref": "#/$defs/platformSearch"
+            }
+          }
+        },
+        "selection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["platform", "url", "decision_reason", "download_receipt"],
+          "properties": {
+            "platform": {
+              "enum": ["youtube", "bilibili"]
+            },
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https?://"
+            },
+            "decision_reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "download_receipt": {
+              "$ref": "#/$defs/fileRef"
+            }
+          }
+        },
+        "cover_fallback": {
+          "type": "object",
+          "required": ["used"],
+          "properties": {
+            "used": {
+              "type": "boolean"
+            },
+            "youtube_reason": {
+              "type": ["string", "null"]
+            },
+            "bilibili_reason": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "official_choice": {
+          "type": "object",
+          "required": ["selected_tier", "fallback_reason"],
+          "properties": {
+            "selected_tier": {
+              "enum": ["official_mv", "official_performance", "secondary"]
+            },
+            "fallback_reason": {
+              "type": ["string", "null"]
+            }
+          }
+        }
+      }
+    },
+    "sourceDerivation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_sha256",
+        "tool",
+        "operation",
+        "source_start_sec",
+        "source_end_sec",
+        "output",
+        "output_duration_sec"
+      ],
+      "properties": {
+        "input_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "tool": {
+          "type": "string",
+          "minLength": 1
+        },
+        "operation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_start_sec": {
+          "type": "number",
+          "minimum": 0
+        },
+        "source_end_sec": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "output": {
+          "$ref": "#/$defs/fileRef"
+        },
+        "output_duration_sec": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "selectedDownloadReceipt": {
+      "description": "External hash-bound receipt schema. Keep only these redacted local-consistency fields; never copy yt-dlp info_json, cookies or HTTP headers.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "platform",
+        "url",
+        "downloaded_at",
+        "raw_asset",
+        "raw_duration_sec",
+        "derivation"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "selected_download"
+        },
+        "platform": {
+          "enum": ["youtube", "bilibili"]
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https?://"
+        },
+        "downloaded_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "raw_asset": {
+          "$ref": "#/$defs/fileRef"
+        },
+        "raw_duration_sec": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "derivation": {
+          "$ref": "#/$defs/sourceDerivation"
+        }
+      }
+    },
+    "showcaseWindow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["narr_end_src", "show_start_src", "show_end_src"],
+      "properties": {
+        "narr_end_src": {
+          "type": "number",
+          "minimum": 0
+        },
+        "show_start_src": {
+          "type": "number",
+          "minimum": 0
+        },
+        "show_end_src": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "reviewApproval": {
+      "description": "One entry inside an external approval artifact's approvals object.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "clip",
+        "analysis_sha256",
+        "window",
+        "reason",
+        "evidence",
+        "reviewer",
+        "reviewed_at",
+        "evidence_files"
+      ],
+      "properties": {
+        "status": {
+          "const": "approved"
+        },
+        "clip": {
+          "$ref": "#/$defs/projectPath"
+        },
+        "analysis_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "window": {
+          "$ref": "#/$defs/showcaseWindow"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reviewer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reviewed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "evidence_files": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/fileRef"
+          }
+        }
+      }
+    },
+    "vocalShowcaseEvidence": {
+      "description": "External hash-bound vocal evidence schema.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "status",
+        "item_id",
+        "clip",
+        "clip_sha256",
+        "analysis",
+        "analysis_key",
+        "window"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "vocal_showcase"
+        },
+        "status": {
+          "enum": ["OK", "APPROVED"]
+        },
+        "item_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clip": {
+          "$ref": "#/$defs/projectPath"
+        },
+        "clip_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "analysis": {
+          "$ref": "#/$defs/fileRef"
+        },
+        "analysis_key": {
+          "type": "string",
+          "minLength": 1
+        },
+        "window": {
+          "$ref": "#/$defs/showcaseWindow"
+        },
+        "approval": {
+          "$ref": "#/$defs/fileRef"
+        }
+      }
+    },
+    "manualEvidenceRefs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/fileRef"
+      }
+    },
+    "instrumentalEvidence": {
+      "description": "External hash-bound instrumental-plan schema.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "status",
+        "item_id",
+        "clip",
+        "clip_sha256",
+        "clip_duration_sec",
+        "window",
+        "continuity",
+        "boundaries"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "kind": {
+          "const": "instrumental_plan"
+        },
+        "status": {
+          "const": "OK"
+        },
+        "item_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clip": {
+          "$ref": "#/$defs/projectPath"
+        },
+        "clip_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "clip_duration_sec": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "window": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["start_sec", "end_sec"],
+          "properties": {
+            "start_sec": {
+              "type": "number",
+              "minimum": 0
+            },
+            "end_sec": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
+          }
+        },
+        "continuity": {
+          "type": "object",
+          "required": [
+            "status",
+            "continuous_duration_sec",
+            "method",
+            "reason",
+            "evidence_files"
+          ],
+          "properties": {
+            "status": {
+              "const": "verified"
+            },
+            "continuous_duration_sec": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "method": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "evidence_files": {
+              "$ref": "#/$defs/manualEvidenceRefs"
+            }
+          }
+        },
+        "boundaries": {
+          "type": "object",
+          "required": ["start", "end"],
+          "properties": {
+            "start": {
+              "$ref": "#/$defs/instrumentalBoundary"
+            },
+            "end": {
+              "$ref": "#/$defs/instrumentalBoundary"
+            }
+          }
+        }
+      }
+    },
+    "instrumentalBoundary": {
+      "type": "object",
+      "required": ["status", "kind", "time_sec", "reason", "review", "evidence_files"],
+      "properties": {
+        "status": {
+          "const": "verified"
+        },
+        "kind": {
+          "enum": [
+            "source_head",
+            "strong_attack",
+            "phrase_start",
+            "loop_boundary",
+            "natural_decay",
+            "phrase_end",
+            "complete_source"
+          ]
+        },
+        "time_sec": {
+          "type": "number",
+          "minimum": 0
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "review": {
+          "type": "object",
+          "required": ["method", "reviewed_at"],
+          "properties": {
+            "method": {
+              "type": "string",
+              "minLength": 1
+            },
+            "reviewed_at": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        },
+        "evidence_files": {
+          "$ref": "#/$defs/manualEvidenceRefs"
+        }
+      }
+    },
+    "item": {
+      "type": "object",
+      "required": [
+        "id",
+        "title",
+        "performer",
+        "clip",
+        "clip_sha256",
+        "audio_mode",
+        "evidence",
+        "sources"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rank": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "performer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clip": {
+          "$ref": "#/$defs/projectPath"
+        },
+        "clip_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "audio_mode": {
+          "enum": ["vocal", "instrumental"]
+        },
+        "evidence": {
+          "$ref": "#/$defs/fileRef"
+        },
+        "sources": {
+          "$ref": "#/$defs/sources"
+        }
+      }
+    }
+  }
+}

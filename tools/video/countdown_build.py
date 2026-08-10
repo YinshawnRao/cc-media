@@ -9,7 +9,23 @@
 之后：npx hyperframes lint → render → ffmpeg mux master.wav（见 tools/video/README.md 第 8 步）。
 """
 import subprocess, wave, contextlib
+import sys as _sys
 from pathlib import Path
+
+_repo = Path(__file__).resolve()
+while _repo != _repo.parent and not (_repo / "tools" / "video" / "verify_project.py").exists():
+    _repo = _repo.parent
+_sys.path.insert(0, str(_repo))
+from tools.video.verify_project import verify_project as _verify_project  # noqa: E402
+
+# 必须在读取旁白、运行 showcase gate 或写任何 build 产物之前通过项目契约。
+_project_root = Path.cwd()
+_contract_errors = _verify_project(_project_root)
+if _contract_errors:
+    print("PROJECT CONTRACT: FAIL", file=_sys.stderr)
+    for _contract_error in _contract_errors:
+        print(f"- {_contract_error}", file=_sys.stderr)
+    raise SystemExit(2)
 
 def dur(wav):
     with contextlib.closing(wave.open(str(wav), 'r')) as w:
@@ -41,11 +57,11 @@ d_intro = dur(f"{A}/intro.wav")
 d = {k: dur(f"{A}/{k}.wav") for k in ["p1_pandora","p2_nahan","p3_pojian","p4_quanmian","p5_adiao","outro","outro_cta"]}
 
 songs = [
-    ("p1_pandora", "vert_pandora", "01", "《潘朵拉》",  "天使嗓音，也能打开<b>暗黑魔盒</b>"),
-    ("p2_nahan",   "vert_nahan",   "02", "《呐喊》",    "不是安慰，是把<b>情绪撕开</b>"),
+    ("p1_pandora", "vert_pandora", "05", "《潘朵拉》",  "天使嗓音，也能打开<b>暗黑魔盒</b>"),
+    ("p2_nahan",   "vert_nahan",   "04", "《呐喊》",    "不是安慰，是把<b>情绪撕开</b>"),
     ("p3_pojian",  "vert_pojian",  "03", "《破茧》",    "不是飞翔，是从<b>深渊里破开</b>"),
-    ("p4_quanmian","vert_quanmian","04", "《全面沦陷》","明知道危险，<b>还是往里走</b>"),
-    ("p5_adiao",   "vert_adiao",   "05", "《阿刁》",    "她唱的不是励志，<b>是活下来</b>"),
+    ("p4_quanmian","vert_quanmian","02", "《全面沦陷》","明知道危险，<b>还是往里走</b>"),
+    ("p5_adiao",   "vert_adiao",   "01", "《阿刁》",    "她唱的不是励志，<b>是活下来</b>"),
 ]
 
 # ---------- 计算时间轴 ----------
@@ -61,7 +77,7 @@ blocks = []  # (key, clip, start, end, narr_start, narr_end, full_start, no, nam
 # Block A: intro + 潘朵拉
 blocks.append(dict(key="A", clip="vert_pandora", start=0.0, end=A_end,
                    narr_start=p1_start, narr_end=p1_end, full_start=A_full,
-                   no="01", name="《潘朵拉》", tag="天使嗓音，也能打开<b>暗黑魔盒</b>",
+                   no="05", name="《潘朵拉》", tag="天使嗓音，也能打开<b>暗黑魔盒</b>",
                    vid_start=CUT, mseek=-CUT))  # 潘朵拉画面从 3.5 起；mseek=-CUT：音乐在段内延后 CUT 对齐 clip-0
 # Blocks B-E: 其余 4 首
 t = A_end
@@ -88,12 +104,8 @@ TOTAL = F_end
 #               ② 展示段结尾落在唱完一句之后 / 器乐 gap，不切半句（问题2：别暴力裁切）。
 # 旧频带候选只会 REVIEW；多证据结果才能自动 OK。REVIEW 用绑定 clip/分析摘要/时间窗的
 # showcase_approvals.json 逐曲留证；硬边界 FAIL 不允许批准跳过。
-import sys as _sys
-_repo = Path(__file__).resolve()
-while _repo != _repo.parent and not (_repo / "tools" / "video" / "showcase_align.py").exists():
-    _repo = _repo.parent
-_sys.path.insert(0, str(_repo))
 from tools.video import showcase_align  # noqa: E402
+from tools.video.outro_cta import FIXED_OUTRO_CTA  # noqa: E402
 showcase_align.gate(blocks, "probe/vocal_analysis.json",
                     consts=dict(POST=0.2, DIG=DIG), plan_path="probe/showcase_plan.json")
 
@@ -244,8 +256,7 @@ body += f'''<div id="outro" class="clip" data-start="{round(F_voice+0.2,3)}" dat
 <div class="o2">她只是把黑暗，<br>唱成了光</div>
 <div class="bar"></div></div>
 <div id="cta" class="clip" data-start="{round(F_cta-0.2,3)}" data-duration="{round(F_end-F_cta+0.2,3)}" data-track-index="5">
-<div class="v">为你的第一名，评论区投票</div>
-<div class="f">点赞 · 收藏 · 关注</div></div>
+<div class="v">{FIXED_OUTRO_CTA.replace("。记得", "。<br>记得")}</div></div>
 '''
 body += f'<audio id="master" data-start="0" data-duration="{TOTAL}" data-track-index="3" src="master.wav" data-volume="1"></audio>'
 

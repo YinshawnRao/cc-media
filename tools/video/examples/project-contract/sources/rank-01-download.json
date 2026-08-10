@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "kind": "selected_download",
+  "platform": "bilibili",
+  "url": "https://www.bilibili.com/video/BV1Contract01",
+  "downloaded_at": "2026-08-10T12:00:00+08:00",
+  "raw_asset": {
+    "path": "sources/raw/rank-01.mp4",
+    "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "raw_duration_sec": 45.0,
+  "derivation": {
+    "input_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "tool": "ffmpeg",
+    "operation": "synthetic test clip",
+    "source_start_sec": 0.0,
+    "source_end_sec": 45.0,
+    "output": {
+      "path": "clips/rank-01.mp4",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "output_duration_sec": 45.0
+  }
+}

@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "project_kind": "top_ranking",
+  "voice_selection": "voice-selection.json",
+  "cover": {
+    "text": "合成素材 TOP 2｜结构门禁示例",
+    "disclosed_item_ids": []
+  },
+  "narration_sequence": [
+    {
+      "id": "intro",
+      "role": "intro",
+      "text": "这是项目结构门禁的合成示例，排名会逐项揭晓。",
+      "disclosed_item_ids": [],
+      "wav": "narration/intro.wav",
+      "sidecar": "narration/intro.wav.tts.json"
+    },
+    {
+      "id": "transition-rank-02",
+      "role": "transition",
+      "item_id": "rank-02",
+      "text": "第二名的转场旁白，在这一项出现时才揭晓标题。",
+      "wav": "narration/rank-02.wav",
+      "sidecar": "narration/rank-02.wav.tts.json"
+    },
+    {
+      "id": "transition-rank-01",
+      "role": "transition",
+      "item_id": "rank-01",
+      "text": "第一名的转场旁白，把悬念留到最后一项。",
+      "wav": "narration/rank-01.wav",
+      "sidecar": "narration/rank-01.wav.tts.json"
+    },
+    {
+      "id": "work-outro",
+      "role": "work_outro",
+      "text": "以上是作品本身的总结与收束。",
+      "wav": "narration/work-outro.wav",
+      "sidecar": "narration/work-outro.wav.tts.json"
+    },
+    {
+      "id": "outro-cta",
+      "role": "outro_cta",
+      "text": "你最想为哪一首投票？评论区告诉我。记得点赞、收藏、关注我，下一期，可能就盘到你单曲循环过的那一首。",
+      "wav": "narration/outro-cta.wav",
+      "sidecar": "narration/outro-cta.wav.tts.json"
+    }
+  ],
+  "items": [
+    {
+      "id": "rank-02",
+      "rank": 2,
+      "title": "示例歌曲甲",
+      "performer": "示例歌手",
+      "clip": "clips/rank-02.mp4",
+      "clip_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "audio_mode": "vocal",
+      "evidence": {
+        "path": "probe/rank-02-showcase.json",
+        "sha256": "610ffd7c9d7bd57212c9a0588a3fd5aed7083f81e5e8850afc3879de33d72f99"
+      },
+      "sources": {
+        "target_version": {
+          "kind": "original",
+          "performer": "示例歌手",
+          "original_artist": "示例歌手"
+        },
+        "platforms": {
+          "youtube": {
+            "searched": true,
+            "search_queries": [
+              "示例歌手 示例歌曲甲 official MV"
+            ],
+            "candidates": [
+              {
+                "url": "https://www.youtube.com/watch?v=contractRank02",
+                "performer": "示例歌手",
+                "version_kind": "original",
+                "asset_type": "mv",
+                "official": true,
+                "usable": true,
+                "reject_reason": null
+              }
+            ]
+          },
+          "bilibili": {
+            "searched": true,
+            "search_queries": [
+              "示例歌手 示例歌曲甲 官方"
+            ],
+            "candidates": [
+              {
+                "url": "https://www.bilibili.com/video/BV1Contract02",
+                "performer": "示例歌手",
+                "version_kind": "original",
+                "asset_type": "live",
+                "official": true,
+                "usable": true,
+                "reject_reason": null
+              }
+            ]
+          }
+        },
+        "selection": {
+          "platform": "youtube",
+          "url": "https://www.youtube.com/watch?v=contractRank02",
+          "decision_reason": "正确版本的官方 MV 优先于官方现场。",
+          "download_receipt": {
+            "path": "sources/rank-02-download.json",
+            "sha256": "d8dce2e31fd9f075f90cd9f5fb08431f426776da36987772521626bf01e86669"
+          }
+        },
+        "cover_fallback": {
+          "used": false,
+          "youtube_reason": null,
+          "bilibili_reason": null
+        },
+        "official_choice": {
+          "selected_tier": "official_mv",
+          "fallback_reason": null
+        }
+      }
+    },
+    {
+      "id": "rank-01",
+      "rank": 1,
+      "title": "示例歌曲乙",
+      "performer": "示例翻唱者",
+      "clip": "clips/rank-01.mp4",
+      "clip_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "audio_mode": "instrumental",
+      "evidence": {
+        "path": "probe/rank-01-instrumental.json",
+        "sha256": "dfc494968105e9e27ce858d96eb567e8c904982e48941cc6d1ead091f3038f29"
+      },
+      "sources": {
+        "target_version": {
+          "kind": "cover",
+          "performer": "示例翻唱者",
+          "original_artist": "原唱示例"
+        },
+        "platforms": {
+          "youtube": {
+            "searched": true,
+            "search_queries": [
+              "示例翻唱者 示例歌曲乙 cover"
+            ],
+            "candidates": [
+              {
+                "url": "https://youtu.be/contractRank01",
+                "performer": "示例翻唱者",
+                "version_kind": "cover",
+                "asset_type": "live",
+                "official": false,
+                "usable": true,
+                "reject_reason": null
+              }
+            ]
+          },
+          "bilibili": {
+            "searched": true,
+            "search_queries": [
+              "示例翻唱者 示例歌曲乙 官方 MV"
+            ],
+            "candidates": [
+              {
+                "url": "https://www.bilibili.com/video/BV1Contract01",
+                "performer": "示例翻唱者",
+                "version_kind": "cover",
+                "asset_type": "mv",
+                "official": true,
+                "usable": true,
+                "reject_reason": null
+              }
+            ]
+          }
+        },
+        "selection": {
+          "platform": "bilibili",
+          "url": "https://www.bilibili.com/video/BV1Contract01",
+          "decision_reason": "选择翻唱者本人对应版本的官方 MV。",
+          "download_receipt": {
+            "path": "sources/rank-01-download.json",
+            "sha256": "8e672fece61601ffbfbafb0d250579fd1d293f2152aa1d8b39bbfea9de77cd08"
+          }
+        },
+        "cover_fallback": {
+          "used": false,
+          "youtube_reason": null,
+          "bilibili_reason": null
+        },
+        "official_choice": {
+          "selected_tier": "official_mv",
+          "fallback_reason": null
+        }
+      }
+    }
+  ]
+}

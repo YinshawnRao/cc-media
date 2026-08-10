@@ -130,7 +130,7 @@ def main() -> int:
             "speed": speed,
             "fingerprint": fp,
             "fingerprint_inputs": fp_inputs,
-            "output": str(output),
+            "output": os.path.relpath(output, start=sidecar.parent),
             "output_sha256": sha256_file(output),
             "wav": info,
         }

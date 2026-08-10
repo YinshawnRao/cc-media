@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "kind": "instrumental_plan",
+  "status": "OK",
+  "item_id": "rank-01",
+  "clip": "clips/rank-01.mp4",
+  "clip_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "clip_duration_sec": 45.0,
+  "window": {
+    "start_sec": 0.0,
+    "end_sec": 40.0
+  },
+  "continuity": {
+    "status": "verified",
+    "continuous_duration_sec": 40.0,
+    "method": "manual source-timeline inspection",
+    "reason": "The synthetic audit record binds one continuous source window without an edit point.",
+    "evidence_files": [
+      {
+        "path": "probe/instrumental-continuity.txt",
+        "sha256": "d1578677755d691414f867be66c05cf1f26e401e9571d47767046f6ba70fe7c3"
+      }
+    ]
+  },
+  "boundaries": {
+    "start": {
+      "status": "verified",
+      "kind": "source_head",
+      "time_sec": 0.0,
+      "reason": "The complete source head is the intended entry.",
+      "review": {
+        "method": "manual frame and waveform review",
+        "reviewed_at": "2026-08-10"
+      },
+      "evidence_files": [
+        {
+          "path": "probe/instrumental-start-boundary.txt",
+          "sha256": "c3d2b1b6422e0da74ab1c5d9d2baa5ffd0bdaa8036c6e9c76a428e6353a76fc9"
+        }
+      ]
+    },
+    "end": {
+      "status": "verified",
+      "kind": "natural_decay",
+      "time_sec": 40.0,
+      "reason": "The selected window reaches the audited natural decay.",
+      "review": {
+        "method": "manual listening and waveform review",
+        "reviewed_at": "2026-08-10"
+      },
+      "evidence_files": [
+        {
+          "path": "probe/instrumental-end-boundary.txt",
+          "sha256": "d4383376eb0899b720af89cbff7ea1bb04814396ff8b5080a1582056e0f877d4"
+        }
+      ]
+    }
+  }
+}

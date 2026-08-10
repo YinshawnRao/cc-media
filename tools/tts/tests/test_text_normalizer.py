@@ -13,6 +13,12 @@ REPO_ROOT = TTS_ROOT.parents[1]
 sys.path.insert(0, str(TTS_ROOT))
 
 from narrate import normalize_qwen_items
+from qwen_contract import (
+    derived_seed,
+    fingerprint,
+    fingerprint_inputs,
+    model_validation_cache_matches,
+)
 from text_normalizer import PronunciationPolicy, normalize_tts_text
 
 
@@ -57,10 +63,13 @@ class LatinPronunciationTests(unittest.TestCase):
         self.assertEqual(self.normalized("S.H.E.和G.E.M."), "S H E和G E M")
 
     def test_obvious_short_word_uses_word_pronunciation(self) -> None:
-        self.assertEqual(self.normalized("TOP ONE"), "Top One")
+        self.assertEqual(self.normalized("TOP ONE GO UP"), "Top One Go Up")
 
     def test_nonword_without_a_pronounceable_vowel_uses_letters(self) -> None:
         self.assertEqual(self.normalized("XQRT"), "X Q R T")
+
+    def test_alphabet_run_nonword_uses_letters(self) -> None:
+        self.assertEqual(self.normalized("ABCD"), "A B C D")
 
     def test_literal_and_project_overrides(self) -> None:
         self.assertEqual(self.normalized("AC/DC 和 KPOP"), "A C D C 和 K-pop")
@@ -119,6 +128,107 @@ class LatinPronunciationTests(unittest.TestCase):
             normalize_qwen_items(items)
         self.assertEqual(items, [{"id": "pure-zh", "text": text}])
 
+    def test_pure_chinese_seed_and_cache_fingerprint_contract(self) -> None:
+        config = json.loads((TTS_ROOT / "config.json").read_text(encoding="utf-8"))
+        qwen = config["qwen_base"]
+        text = "第一名，《无泪的遗憾》。这段旋律值得压轴。"
+        selection = {
+            "schema_version": "1.0.0",
+            "requested_voice": None,
+            "resolved_voice_id": "CV002",
+            "resolved_voice_name": "治愈少女",
+            "engine": qwen["engine"],
+            "resolution_reason": "default_no_request",
+            "matched_by": "default",
+            "fallback": False,
+            "registry_sha256": "r" * 64,
+            "config_sha256": "c" * 64,
+            "task_prompt_sha256": None,
+        }
+        item = {
+            "id": "pure-zh",
+            "text": text,
+            "output": "/tmp/ignored.wav",
+            "language": "Auto",
+            "speed": 1.0,
+            "pronunciation_overrides": {},
+        }
+        normalize_qwen_items([item])
+        self.assertEqual(
+            item,
+            {
+                "id": "pure-zh",
+                "text": text,
+                "output": "/tmp/ignored.wav",
+                "language": "Auto",
+                "speed": 1.0,
+            },
+        )
+        inputs = fingerprint_inputs(
+            qwen=qwen,
+            selection=selection,
+            voice_id="CV002",
+            reference_sha256="a" * 64,
+            reference_text="欢迎来到今天的动漫点歌台，让我们一起听听这段旋律。",
+            item=item,
+            language="Auto",
+            speed=1.0,
+        )
+        self.assertEqual(
+            list(inputs),
+            [
+                "engine",
+                "model_id",
+                "model_revision",
+                "model_tree_sha256",
+                "mlx_audio_version",
+                "voice_id",
+                "selection",
+                "reference_sha256",
+                "reference_text",
+                "text",
+                "language",
+                "speed",
+                "generation",
+            ],
+        )
+        self.assertEqual(
+            fingerprint(inputs),
+            "d801a32b891cd505517af122e00c90192220b803435b852e7aeba0a2a4e1ba96",
+        )
+        self.assertEqual(
+            derived_seed(qwen["generation"]["seed"], "CV002", text, "Auto"),
+            2857820530,
+        )
+
+    def test_cache_requires_portable_model_evidence_without_binding_raw_receipt(self) -> None:
+        current = {
+            "portable_claim_kind": "qwen-model-portable-claim-v1",
+            "verification_kind": "qwen-full-model-hash-receipt-v1",
+            "model_id": "synthetic/qwen",
+            "model_revision": "fixed",
+            "qwen_config_sha256": "1" * 64,
+            "manifest_sha256": "2" * 64,
+            "verified_model_tree_sha256": "3" * 64,
+            "model_file_count": 14,
+            "model_total_bytes": 1991299138,
+            "mlx_audio_version": "0.4.5",
+            "portable_claim_sha256": "4" * 64,
+            "receipt_sha256": "5" * 64,
+            "full_tree_hash_verified": True,
+        }
+        self.assertFalse(model_validation_cache_matches(None, current))
+        self.assertTrue(
+            model_validation_cache_matches(
+                {**current, "receipt_sha256": "6" * 64}, current
+            )
+        )
+        self.assertFalse(
+            model_validation_cache_matches(
+                {**current, "qwen_config_sha256": "0" * 64}, current
+            )
+        )
+
     def test_preview_cli_outputs_json(self) -> None:
         completed = subprocess.run(
             [
@@ -154,10 +264,11 @@ class PronunciationPolicyDocumentationTests(unittest.TestCase):
 
     def test_qwen_sidecar_records_source_and_normalized_text(self) -> None:
         worker = (TTS_ROOT / "engines" / "qwen_mlx.py").read_text(encoding="utf-8")
+        contract = (TTS_ROOT / "qwen_contract.py").read_text(encoding="utf-8")
         self.assertIn('"source_text"', worker)
         self.assertIn('"normalized_text"', worker)
         self.assertIn('"text_normalization"', worker)
-        self.assertIn('if "source_text" in item:', worker)
+        self.assertIn('if "source_text" in item:', contract)
 
 
 if __name__ == "__main__":

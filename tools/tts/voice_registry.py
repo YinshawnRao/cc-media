@@ -161,12 +161,48 @@ IMPERATIVE = re.compile(
 REVERSED_IMPERATIVE = re.compile(
     r"(?:配音|音色|声线|旁白声音)\s*(?:请)?(?:改用|换成|指定|选择|使用|用)?\s*[“\"「]?([^，。；;\n]{1,32})"
 )
-NEGATIVE_PREFIX = re.compile(r"(?:不要|别用|禁止|不用|排除)\s*$")
+POSITIVE_REPLACEMENT_START = r"(?:而是|(?:请\s*)?(?:改用|换成|指定|选择|使用|用))"
+NEGATIVE_PREFIX = re.compile(
+    r"(?:不要(?:了)?|别(?:再)?用?|禁止|不用|不使用|不想(?:使用|用)?|"
+    r"拒绝(?:使用|用)?|不考虑|请\s*勿|勿用?|不能用?|不可用?|"
+    r"并非|不是|排除|避免|除了?)\s*$"
+)
+NEGATIVE_PREFIX_CLAUSE = re.compile(
+    r"(?:(?:我|这期|本期|这次)\s*)?(?:请\s*)?"
+    r"(?:不要(?:了)?|别(?:再)?|禁止|不用|不使用|不想|拒绝|"
+    r"不考虑|勿|不能|不可|并非|不是|排除|避免|除了?)\s*"
+    r"(?:再\s*)?(?:使用|用|选择|指定|换成|改用)?\s*"
+    rf"(?:(?![，,。；;\n]|{POSITIVE_REPLACEMENT_START}\s)[^，,。；;\n])*"
+)
+NEGATIVE_POSTFIX_CLAUSE = re.compile(
+    r"(?i)\b(?:CV\d{3}|kokoro:[a-z0-9_]+)\b\s*"
+    r"(?:也\s*)?(?:不要(?:了)?|别用|不用|不使用|不考虑|不能用|不可用|不行|除外)"
+)
+NEGATIVE_NAMED_POSTFIX_CLAUSE = re.compile(
+    r"[A-Za-z_\-\u3400-\u9fff]{2,32}\s*(?:也\s*)?(?:不考虑|不要了)"
+)
+POSITIVE_REPLACEMENT = re.compile(
+    r"(?:而是|(?:请\s*)?(?:改用|换成))\s*[“\"「]?"
+    r"([^，。；;\n]{1,32}?)[”\"」]?\s*"
+    r"(?:(?:来)?(?:配音|音色|声线|声音|旁白|解说|来讲|来配))?"
+    r"(?=$|[，,。；;\n])"
+)
+
+
+def _without_negative_clauses(value: str) -> str:
+    """Mask negative voice clauses before any selector or bare-ID matching."""
+
+    # Postfix forms must be removed first. Otherwise the prefix grammar can
+    # consume only the trailing marker (for example ``除外``) and leave its
+    # rejected selector behind as a false positive.
+    value = NEGATIVE_POSTFIX_CLAUSE.sub(" ", value)
+    value = NEGATIVE_NAMED_POSTFIX_CLAUSE.sub(" ", value)
+    return NEGATIVE_PREFIX_CLAUSE.sub(" ", value)
 
 
 def _positive_imperative_fragments(prompt: str) -> list[str]:
     values: list[str] = []
-    for pattern in (IMPERATIVE, REVERSED_IMPERATIVE):
+    for pattern in (POSITIVE_REPLACEMENT, IMPERATIVE, REVERSED_IMPERATIVE):
         for match in pattern.finditer(prompt):
             prefix = prompt[max(0, match.start() - 6) : match.start()]
             if NEGATIVE_PREFIX.search(prefix):
@@ -238,10 +274,26 @@ def resolve_selector(registry: VoiceRegistry, selector: str) -> dict:
 
 
 def resolve_task_prompt(registry: VoiceRegistry, prompt: str) -> dict:
-    fields = [value.strip() for value in STRUCTURED_FIELD.findall(prompt)]
-    fragments = fields if fields else _positive_imperative_fragments(prompt)
+    fields = [
+        _without_negative_clauses(value).strip()
+        for value in STRUCTURED_FIELD.findall(prompt)
+    ]
+    fields = [
+        value
+        for value in fields
+        if re.search(r"[A-Za-z0-9\u3400-\u9fff]", value)
+    ]
+    # Remove complete structured lines before examining prose. A fully masked
+    # negative field otherwise leaves a bare "配音：" label that the reversed
+    # imperative grammar could mistake for an unmatched positive request.
+    body_prompt = STRUCTURED_FIELD.sub("", prompt)
+    positive_prompt = _without_negative_clauses(body_prompt)
+    fragments = fields if fields else _positive_imperative_fragments(positive_prompt)
 
-    direct_ids = re.findall(r"(?i)\bCV\d{3}\b", prompt)
+    # Direct IDs are only a last-resort positive signal. Read them from the
+    # negation-masked prompt so "不要使用 CV004" cannot re-enter here after
+    # the imperative parser correctly ignored it.
+    direct_ids = re.findall(r"(?i)\bCV\d{3}\b", positive_prompt)
     if not fragments and direct_ids:
         fragments = direct_ids
 

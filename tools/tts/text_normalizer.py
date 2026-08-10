@@ -115,6 +115,14 @@ def _looks_like_word(token: str, policy: PronunciationPolicy) -> bool:
         return True
     if len(letters) < 4:
         return False
+    # ABCD-style alphabet runs are labels/placeholders, not pronounceable
+    # English words. Catch both ascending and descending runs before the broad
+    # vowel heuristic; registered words/initialisms still take precedence.
+    steps = [ord(right) - ord(left) for left, right in zip(letters, letters[1:])]
+    if steps and (
+        all(step == 1 for step in steps) or all(step == -1 for step in steps)
+    ):
+        return False
     return any(letter in VOWELS for letter in letters)
 
 

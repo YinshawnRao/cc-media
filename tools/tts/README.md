@@ -12,16 +12,17 @@
 2. 没有结构化字段时，只识别带配音语境的唯一、肯定式精确匹配。
 3. 没指定、指定不存在、描述模糊、同时命中多个角色：全部回退 `CV002「治愈少女」`。
 4. 不做相似度猜测。“男声”“女声”“可爱一点”“二次元声音”等无法唯一定位的描述仍按 CV002。
-5. 每个项目只解析一次；intro、排名转场、作品 outro、固定 CTA 共用同一份 `voice-selection.json`。
-6. Qwen runtime、固定模型或参考母带缺失时硬失败，禁止静默换 Kokoro。
+5. 否定式不是选择：`不要/不使用/不想用/拒绝使用/不考虑/请勿使用/不能用/不可用/不是/避免/除了` 等前置否定，以及 `CV004 除外/不用/不考虑/不要了/不能用/不行` 等后置否定，都按未指定处理并使用 CV002；裸 `CVxxx` 也不能绕过同一句否定。若后面另有唯一肯定式替换（如“我不想用 CV004，请改用 CV003”），则只采用肯定指定。
+6. 每个项目只解析一次；intro、排名转场、作品 outro、固定 CTA 共用同一份 `voice-selection.json`。
+7. Qwen runtime、固定模型或参考母带缺失时硬失败，禁止静默换 Kokoro。
 
 ## 新盘点标准流程
 
-先做默认链路自检；正式机器初始化或模型变更后再加 `--full-model-hash`：
+首次初始化、模型/runtime 版本变化或 receipt 失效时，先做一次完整模型哈希（约 2 GB 顺序读取）；它只会在固定且被忽略的 `tools/tts/runtime/model-verifications/` 闭包中原子写入 `0600` receipt。manifest 只允许来自 `tools/tts/model-manifests/`。两者及其项目内父目录均拒绝 symlink；关键文件必须属于当前 UID，且不能 group/world writable。日常自检核对 receipt、manifest、实际 MLX-Audio 版本、模型 realpath、完整文件集合及含 `ctime_ns` 的每文件 stat 签名，不会重复读取 2 GB；worker 在加载模型前后各验证一次：
 
 ```bash
-python3 tools/tts/doctor.py
 python3 tools/tts/doctor.py --full-model-hash
+python3 tools/tts/doctor.py
 ```
 
 先把用户原始任务提示词保存为 UTF-8 文件或直接传给 resolver：
@@ -46,7 +47,7 @@ python3 tools/tts/narrate.py "第五名，真正让人记住的，是情绪突�
   "blocks": [
     {"id": "intro", "text": "今天盘点五首经典作品。", "output": "narration/intro.wav"},
     {"id": "p5", "text": "第五名，先从这一首开始。", "output": "narration/p5.wav"},
-    {"id": "outro_cta", "text": "你最想为哪一首投票？评论区告诉我。", "output": "narration/outro-cta.wav"}
+    {"id": "outro_cta", "text": "你最想为哪一首投票？评论区告诉我。记得点赞、收藏、关注我，下一期，可能就盘到你单曲循环过的那一首。", "output": "narration/outro-cta.wav"}
   ]
 }
 ```
@@ -56,7 +57,7 @@ python3 tools/tts/narrate.py --batch sandbox/<slug>/narration-request.json \
   --selection-file sandbox/<slug>/voice-selection.json
 ```
 
-每个 WAV 会生成一个 `.wav.tts.json` sidecar，记录 resolved voice ID、模型 revision、参考母带 SHA、文本 SHA、输出 SHA 和生成参数。完成后运行：
+每个 WAV 会生成一个 `.wav.tts.json` sidecar，记录 resolved voice ID、模型 revision、完整模型验证 receipt 摘要、参考母带 SHA、文本 SHA、输出 SHA 和生成参数。`output` 使用相对 sidecar 的可迁移路径。新 Qwen sidecar 必须先通过当前机器的本地 receipt 校验，再与当前模型比较可迁移 claim（包含 model/revision、manifest/tree、MLX-Audio、文件数/字节数和 `qwen_config_sha256`）。原始 receipt SHA 只保留为生成机器审计值，跨机器移动时不要求相等。完成后运行：
 
 ```bash
 python3 tools/tts/verify_voice_usage.py \
@@ -65,6 +66,12 @@ python3 tools/tts/verify_voice_usage.py \
 ```
 
 必须输出 `VOICE GATE: PASS`。
+
+中央门禁会拒绝项目外或经 symlink 读取的 selection、sidecar、output，并对当前 Qwen sidecar 重算完整 canonical contract：严格检查 `1.0.0` 纯中文 / `1.1.0` 归一化字段集合与类型，绑定项目 selection、模型与参考母带、language/speed、生成参数、fingerprint inputs/fingerprint、派生 seed、文本 SHA，以及实际 WAV 的 SHA 和格式元数据；缺字段、自相矛盾或冒充出来的额外派生字段都会失败。门禁同时暴露每个 sidecar 的 canonical 原始口播（有 `source_text` 时取它，否则取 `text`）及 provenance mode。只有复现历史工程时，才可显式加 `--allow-legacy-qwen-sidecars` 接受旧式 absolute-output、无 receipt 的 Qwen sidecar；结果会标记 `legacy_explicit` 并警告，默认不兼容性放行。
+
+### Receipt 的诚实信任边界
+
+receipt、canonical sidecar contract 与 WAV 哈希都是本地、同一 UID 的诚实工作流一致性证据，用来发现版本漂移、字段手改、错模型和“不完整 sidecar + 任意 WAV”式冒充；它们**不是音色来源证明，也不是抵抗同 UID 主动伪造的密码学证明**。拥有同一用户权限的人仍可替换 WAV，并同时重算或改写仓库配置、manifest、模型、receipt 与项目 JSON。若要把这一边界升级为对抗性证明，需要受信生成器签名、不可变或外部验签存储，并处理模型读取和产物落盘竞态；当前离线制作流程不声称提供该能力。
 
 ## 显式选择
 
@@ -84,7 +91,7 @@ python3 tools/tts/narrate.py script.txt --voice CV999 -o out.wav
 
 ## 混合文本发音与纯中文稳定性
 
-Qwen 默认使用 `language=Auto`，允许中英日等混合文本；不要再套用 Kokoro 的“外文一律跳过”。明显英文单词优先按词发音：连续全大写明显单词会先转为正常词形，例如 `BEYOND → Beyond`；明确的首字母缩写或不可自然词读的字母串才展开为逐字母读，例如 `BTS → B T S`、`S.H.E. → S H E`。画面标题仍可保留官方大写写法。
+Qwen 默认使用 `language=Auto`，允许中英日等混合文本；不要再套用 Kokoro 的“外文一律跳过”。明显英文单词优先按词发音：连续全大写明显单词会先转为正常词形，例如 `BEYOND → Beyond`、`GO UP → Go Up`；明确的首字母缩写或不可自然词读的字母串才展开为逐字母读，例如 `BTS → B T S`、`S.H.E. → S H E`、`ABCD → A B C D`。画面标题仍可保留官方大写写法。
 
 这个预处理是窄范围的：未提供显式覆盖时，纯中文文本、中文标点、数字和原有措辞逐字原样透传，并跳过发音策略加载；生成 seed、请求结构和旧缓存 fingerprint 均不改变。它不会为了修英文而给中文分词、加空格或转拼音。
 
@@ -124,7 +131,7 @@ python3 tools/tts/narrate.py "BTOB的这首作品。" \
 2. `tools/tts/qwen.venv/` 与 `tools/tts/models/` 下固定版本。
 3. 当前同级参考项目 `../local-anime-avatar-workflow` 已验证的 MLX-Audio 0.4.5 venv 和 Base 8-bit 固定权重。
 
-模型不会在生成过程中静默联网下载，也不会复制进每个视频项目。当前固定 Base revision 为 `50f45ef0047cde7e84c2ef04326acb8ada2436a7`，模型树 SHA-256 为 `e536317ea04672c76a6baa12d2cf72efe88358db6b7f8f1588a6a8b203153903`。
+模型不会在生成过程中静默联网下载，也不会复制进每个视频项目。当前固定 Base revision 为 `50f45ef0047cde7e84c2ef04326acb8ada2436a7`，模型树 SHA-256 为 `e536317ea04672c76a6baa12d2cf72efe88358db6b7f8f1588a6a8b203153903`，实际 MLX-Audio 必须为 `0.4.5`。worker 只有在完整哈希 receipt 与当前模型文件 stat、manifest、runtime 版本全部一致，且模型加载后复验仍完全相同时才允许生成；缺 receipt 或任一文件变化都会 fail closed，并提示重新运行 `doctor.py --full-model-hash`。receipt 只在 ignored runtime 目录复用，不写进项目，也不改变纯中文的 text、seed、请求形状或既有 cache fingerprint；但安全升级前生成、尚无 portable model validation 的旧 sidecar 不再算 cache hit，下一次请求会基于真实当前模型一次性重新生成，绝不向旧音频补写伪 provenance。
 
 不要把 MLX/Qwen 依赖塞进现有 `tools/tts/venv`；该 venv 继续服务 Kokoro legacy、Whisper 与人声检测。
 
