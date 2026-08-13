@@ -13,11 +13,13 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import http.client
 import http.cookiejar
 import json
 import re
 import stat
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -34,6 +36,35 @@ MIXIN_TAB = [
     37, 48, 7, 16, 24, 55, 40, 61, 26, 17, 0, 1, 60, 51, 30, 4,
     22, 25, 54, 21, 56, 59, 6, 63, 57, 62, 11, 36, 20, 34, 44, 52,
 ]
+
+EXIT_EMPTY = 1
+EXIT_COOKIE_PRECHECK = 2
+EXIT_API_ERROR = 3
+EXIT_RESPONSE_INVALID = 4
+EXIT_REQUEST_FAILED = 5
+
+
+class BiliSearchError(Exception):
+    """Base class for safe, classified remote-search failures."""
+
+
+class ApiResponseError(BiliSearchError):
+    def __init__(self, stage: str, code: int):
+        super().__init__(f"{stage}:{code}")
+        self.stage = stage
+        self.code = code
+
+
+class ResponseParseError(BiliSearchError):
+    def __init__(self, stage: str):
+        super().__init__(stage)
+        self.stage = stage
+
+
+class SearchRequestError(BiliSearchError):
+    def __init__(self, stage: str):
+        super().__init__(stage)
+        self.stage = stage
 
 
 def default_cookie_path(repo_root: Path | None = None) -> Path:
@@ -76,9 +107,41 @@ def build_opener(path: Path | str):
     return opener
 
 
-def get_json(url: str, opener):
-    with opener.open(url, timeout=20) as response:
-        return json.load(response)
+def get_json(url: str, opener, *, stage: str = "response"):
+    try:
+        with opener.open(url, timeout=20) as response:
+            return json.load(response)
+    except (json.JSONDecodeError, UnicodeDecodeError, ValueError):
+        # Never attach the response body to an error: API/edge responses can
+        # contain account or anti-bot details that must not reach CLI output.
+        # ``json`` may also raise a plain ValueError for oversized integer
+        # tokens, so classify that as malformed remote data instead of
+        # leaking a traceback and stopping the surrounding goal.
+        raise ResponseParseError(stage) from None
+    except (
+        urllib.error.URLError,
+        TimeoutError,
+        OSError,
+        http.client.HTTPException,
+    ):
+        raise SearchRequestError(stage) from None
+
+
+def api_data(payload, *, stage: str) -> dict:
+    if not isinstance(payload, dict):
+        raise ResponseParseError(stage)
+    code = payload.get("code")
+    if isinstance(code, bool) or not isinstance(code, int):
+        raise ResponseParseError(stage)
+    if code != 0:
+        # Bilibili's numeric business code is safe and useful for recovery;
+        # its free-form message and the original payload are deliberately not
+        # retained or printed.
+        raise ApiResponseError(stage, code)
+    data = payload.get("data")
+    if not isinstance(data, dict):
+        raise ResponseParseError(stage)
+    return data
 
 
 def mixin_key(original: str) -> str:
@@ -86,10 +149,25 @@ def mixin_key(original: str) -> str:
 
 
 def get_keys(opener) -> tuple[str, str]:
-    nav = get_json("https://api.bilibili.com/x/web-interface/nav", opener)
-    wbi = nav["data"]["wbi_img"]
-    image_key = wbi["img_url"].rsplit("/", 1)[1].split(".")[0]
-    sub_key = wbi["sub_url"].rsplit("/", 1)[1].split(".")[0]
+    nav = get_json(
+        "https://api.bilibili.com/x/web-interface/nav",
+        opener,
+        stage="nav",
+    )
+    data = api_data(nav, stage="nav")
+    wbi = data.get("wbi_img")
+    if not isinstance(wbi, dict):
+        raise ResponseParseError("nav")
+    image_url = wbi.get("img_url")
+    sub_url = wbi.get("sub_url")
+    if not isinstance(image_url, str) or not isinstance(sub_url, str):
+        raise ResponseParseError("nav")
+    image_key = image_url.rsplit("/", 1)[-1].split(".", 1)[0]
+    sub_key = sub_url.rsplit("/", 1)[-1].split(".", 1)[0]
+    if not re.fullmatch(r"[0-9a-fA-F]{32}", image_key) or not re.fullmatch(
+        r"[0-9a-fA-F]{32}", sub_key
+    ):
+        raise ResponseParseError("nav")
     return image_key, sub_key
 
 
@@ -106,6 +184,29 @@ def enc_wbi(params: dict, image_key: str, sub_key: str) -> dict:
     return signed
 
 
+def result_line(result: object) -> str:
+    if not isinstance(result, dict):
+        raise ResponseParseError("search")
+    fields = {
+        "bvid": result.get("bvid"),
+        "duration": result.get("duration"),
+        "author": result.get("author"),
+        "title": result.get("title"),
+    }
+    if not all(isinstance(value, str) for value in fields.values()):
+        raise ResponseParseError("search")
+    fields["title"] = re.sub("<[^>]+>", "", fields["title"])
+    for key, value in fields.items():
+        # Collapse line breaks and remove control/ANSI characters so remote
+        # fields cannot forge additional CLI status lines.
+        printable = "".join(char if char.isprintable() else " " for char in value)
+        fields[key] = " ".join(printable.split())
+    return (
+        f"{fields['bvid'][:64]} | {fields['duration'][:32]} | "
+        f"{fields['author'][:160]} | {fields['title'][:240]}"
+    )
+
+
 def search(
     keyword: str,
     n: int = 8,
@@ -113,6 +214,8 @@ def search(
     cookie_path: Path | str | None = None,
     opener=None,
 ) -> list[dict]:
+    if n <= 0:
+        raise ValueError("result count must be positive")
     if opener is None:
         selected = default_cookie_path() if cookie_path is None else cookie_path
         opener = build_opener(selected)
@@ -127,27 +230,45 @@ def search(
         "https://api.bilibili.com/x/web-interface/wbi/search/type?"
         + urllib.parse.urlencode(params)
     )
-    data = get_json(url, opener)
-    if data.get("code") != 0:
-        print("ERR", data.get("code"), data.get("message"))
+    payload = get_json(url, opener, stage="search")
+    data = api_data(payload, stage="search")
+    results = data.get("result")
+    if not isinstance(results, list):
+        raise ResponseParseError("search")
+    # Only an actual empty list is an EMPTY result. Missing/null/malformed
+    # result fields are response failures and must not be reported as no hits.
+    if not results:
         return []
-    results = (data.get("data") or {}).get("result") or []
     selected_results = results[:n]
-    for result in selected_results:
-        title = re.sub("<[^>]+>", "", result.get("title", ""))
-        print(
-            f'{result.get("bvid")} | {result.get("duration")} | '
-            f'{result.get("author")} | {title}'
-        )
+    lines = [result_line(result) for result in selected_results]
+    for line in lines:
+        print(line)
     return selected_results
+
+
+def positive_result_count(raw: str) -> int:
+    try:
+        value = int(raw)
+    except ValueError:
+        raise argparse.ArgumentTypeError("n 必须是正整数") from None
+    if value <= 0:
+        raise argparse.ArgumentTypeError("n 必须是正整数")
+    return value
 
 
 def parse_args(argv: list[str] | None = None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("keyword")
-    parser.add_argument("n", nargs="?", type=int, default=8)
+    parser.add_argument("n", nargs="?", type=positive_result_count, default=8)
     parser.add_argument("--cookies")
     return parser.parse_args(argv)
+
+
+def print_recovery_hint() -> None:
+    print(
+        "RECOVERY: goal 应自动换关键词重试；已有 BV/URL 时直接按 BV 验证或下载；"
+        "同时继续另一平台（YouTube）检索，不因单次 B站搜索失败停止整个 goal。"
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -155,18 +276,41 @@ def main(argv: list[str] | None = None) -> int:
     cookie_path = default_cookie_path() if args.cookies is None else args.cookies
     try:
         opener = build_opener(cookie_path)
-    except ValueError as error:
-        print(f"COOKIE PRECHECK: FAIL — {error}")
-        return 2
+    except ValueError:
+        # The rejected CLI value may itself be an accidentally pasted cookie
+        # token. Never echo it or a user-local path back to logs.
+        print(
+            "COOKIE PRECHECK: FAIL — 路径/存在性/权限检查未通过；"
+            "请使用现有 Netscape jar、路径不含 '='，并设置 chmod 600"
+        )
+        return EXIT_COOKIE_PRECHECK
     except http.cookiejar.LoadError:
         print("COOKIE PRECHECK: FAIL — Netscape cookie jar 格式无效")
-        return 2
+        return EXIT_COOKIE_PRECHECK
     except OSError as error:
         detail = error.strerror or error.__class__.__name__
         print(f"COOKIE PRECHECK: FAIL — 文件读取错误: {detail}")
-        return 2
+        return EXIT_COOKIE_PRECHECK
     time.sleep(0.3)
-    search(args.keyword, args.n, opener=opener)
+    try:
+        results = search(args.keyword, args.n, opener=opener)
+    except ApiResponseError as error:
+        print(f"BILI SEARCH: API_ERROR stage={error.stage} code={error.code}")
+        print_recovery_hint()
+        return EXIT_API_ERROR
+    except ResponseParseError as error:
+        print(f"BILI SEARCH: RESPONSE_INVALID stage={error.stage}")
+        print_recovery_hint()
+        return EXIT_RESPONSE_INVALID
+    except SearchRequestError as error:
+        print(f"BILI SEARCH: REQUEST_FAILED stage={error.stage}")
+        print_recovery_hint()
+        return EXIT_REQUEST_FAILED
+    if not results:
+        print("BILI SEARCH: EMPTY")
+        print_recovery_hint()
+        return EXIT_EMPTY
+    print(f"BILI SEARCH: PASS results={len(results)}")
     return 0
 
 

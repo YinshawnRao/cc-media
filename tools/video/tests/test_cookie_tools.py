@@ -2,6 +2,7 @@ import contextlib
 import http.cookiejar
 import importlib
 import io
+import json
 import os
 import tempfile
 import unittest
@@ -173,6 +174,35 @@ class BilibiliCookieJarTests(unittest.TestCase):
 
 
 class BilibiliSearchCookieTests(unittest.TestCase):
+    @staticmethod
+    def nav_payload() -> dict:
+        return {
+            "code": 0,
+            "data": {
+                "wbi_img": {
+                    "img_url": f"https://i0.hdslb.com/bfs/wbi/{'a' * 32}.png",
+                    "sub_url": f"https://i0.hdslb.com/bfs/wbi/{'b' * 32}.png",
+                }
+            },
+        }
+
+    def run_search_main(self, search_payload: object) -> tuple[int, str]:
+        stdout = io.StringIO()
+        with (
+            mock.patch.object(bili_search, "build_opener", return_value=object()),
+            mock.patch.object(
+                bili_search,
+                "get_json",
+                side_effect=[self.nav_payload(), search_payload],
+            ),
+            mock.patch.object(bili_search.time, "sleep"),
+            contextlib.redirect_stdout(stdout),
+        ):
+            result = bili_search.main(
+                ["synthetic keyword", "--cookies", "/tmp/synthetic-jar.txt"]
+            )
+        return result, stdout.getvalue()
+
     def test_import_does_not_load_any_cookie_jar(self):
         with mock.patch.object(
             http.cookiejar.MozillaCookieJar, "load"
@@ -236,6 +266,131 @@ class BilibiliSearchCookieTests(unittest.TestCase):
         self.assertEqual(2, result)
         self.assertIn("格式无效", output)
         self.assertNotIn(SYNTHETIC_VALUE, output)
+
+    def test_missing_cookie_path_does_not_echo_accidentally_pasted_token(self):
+        stdout = io.StringIO()
+        with tempfile.TemporaryDirectory() as tmp:
+            missing = Path(tmp) / SYNTHETIC_VALUE
+            with contextlib.redirect_stdout(stdout):
+                result = bili_search.main(
+                    ["synthetic", "--cookies", str(missing)]
+                )
+        output = stdout.getvalue()
+        self.assertEqual(bili_search.EXIT_COOKIE_PRECHECK, result)
+        self.assertIn("COOKIE PRECHECK: FAIL", output)
+        self.assertIn("路径/存在性/权限检查未通过", output)
+        self.assertNotIn(SYNTHETIC_VALUE, output)
+
+    def test_api_business_error_is_nonzero_and_does_not_echo_api_message(self):
+        result, output = self.run_search_main(
+            {
+                "code": -412,
+                "message": SYNTHETIC_VALUE,
+                "data": {"remote_detail": SYNTHETIC_VALUE},
+            }
+        )
+        self.assertEqual(bili_search.EXIT_API_ERROR, result)
+        self.assertIn("BILI SEARCH: API_ERROR stage=search code=-412", output)
+        self.assertNotIn("RESPONSE_INVALID", output)
+        self.assertNotIn("BILI SEARCH: EMPTY", output)
+        self.assertNotIn(SYNTHETIC_VALUE, output)
+        self.assert_recovery_hint(output)
+
+    def test_malformed_success_payload_is_not_misreported_as_empty(self):
+        result, output = self.run_search_main(
+            {
+                "code": 0,
+                "message": SYNTHETIC_VALUE,
+                "data": {"result": {"remote_detail": SYNTHETIC_VALUE}},
+            }
+        )
+        self.assertEqual(bili_search.EXIT_RESPONSE_INVALID, result)
+        self.assertIn("BILI SEARCH: RESPONSE_INVALID stage=search", output)
+        self.assertNotIn("API_ERROR", output)
+        self.assertNotIn("BILI SEARCH: EMPTY", output)
+        self.assertNotIn(SYNTHETIC_VALUE, output)
+        self.assert_recovery_hint(output)
+
+    def test_invalid_json_body_is_sanitized_as_response_invalid(self):
+        opener = mock.Mock()
+        opener.open.side_effect = [
+            io.BytesIO(json.dumps(self.nav_payload()).encode("utf-8")),
+            io.BytesIO(f"not-json:{SYNTHETIC_VALUE}".encode("utf-8")),
+        ]
+        stdout = io.StringIO()
+        with (
+            mock.patch.object(bili_search, "build_opener", return_value=opener),
+            mock.patch.object(bili_search.time, "sleep"),
+            contextlib.redirect_stdout(stdout),
+        ):
+            result = bili_search.main(
+                ["synthetic keyword", "--cookies", "/tmp/synthetic-jar.txt"]
+            )
+        output = stdout.getvalue()
+        self.assertEqual(bili_search.EXIT_RESPONSE_INVALID, result)
+        self.assertIn("BILI SEARCH: RESPONSE_INVALID stage=search", output)
+        self.assertNotIn(SYNTHETIC_VALUE, output)
+        self.assert_recovery_hint(output)
+
+    def test_oversized_json_integer_is_sanitized_as_response_invalid(self):
+        opener = mock.Mock()
+        opener.open.side_effect = [
+            io.BytesIO(json.dumps(self.nav_payload()).encode("utf-8")),
+            io.BytesIO(("{\"code\":0,\"data\":{\"result\":" + "9" * 5000 + "}}")
+                       .encode("utf-8")),
+        ]
+        stdout = io.StringIO()
+        with (
+            mock.patch.object(bili_search, "build_opener", return_value=opener),
+            mock.patch.object(bili_search.time, "sleep"),
+            contextlib.redirect_stdout(stdout),
+        ):
+            result = bili_search.main(
+                ["synthetic keyword", "--cookies", "/tmp/synthetic-jar.txt"]
+            )
+        output = stdout.getvalue()
+        self.assertEqual(bili_search.EXIT_RESPONSE_INVALID, result)
+        self.assertIn("BILI SEARCH: RESPONSE_INVALID stage=search", output)
+        self.assertNotIn("Traceback", output)
+        self.assert_recovery_hint(output)
+
+    def test_true_empty_result_is_a_distinct_nonzero_outcome(self):
+        result, output = self.run_search_main(
+            {"code": 0, "message": SYNTHETIC_VALUE, "data": {"result": []}}
+        )
+        self.assertEqual(bili_search.EXIT_EMPTY, result)
+        self.assertIn("BILI SEARCH: EMPTY", output)
+        self.assertNotIn("API_ERROR", output)
+        self.assertNotIn("RESPONSE_INVALID", output)
+        self.assertNotIn(SYNTHETIC_VALUE, output)
+        self.assert_recovery_hint(output)
+
+    def test_successful_nonempty_search_is_the_only_remote_exit_zero(self):
+        result, output = self.run_search_main(
+            {
+                "code": 0,
+                "data": {
+                    "result": [
+                        {
+                            "bvid": "BVsynthetic",
+                            "duration": "03:21",
+                            "author": "synthetic author",
+                            "title": "<em class=\"keyword\">synthetic</em> title",
+                        }
+                    ]
+                },
+            }
+        )
+        self.assertEqual(0, result)
+        self.assertIn("BVsynthetic | 03:21 | synthetic author | synthetic title", output)
+        self.assertIn("BILI SEARCH: PASS results=1", output)
+        self.assertNotIn("RECOVERY:", output)
+
+    def assert_recovery_hint(self, output: str) -> None:
+        self.assertIn("自动换关键词", output)
+        self.assertIn("直接按 BV", output)
+        self.assertIn("另一平台（YouTube）", output)
+        self.assertIn("不因单次 B站搜索失败停止整个 goal", output)
 
 
 class FilterCookieJarTests(unittest.TestCase):
