@@ -11,6 +11,7 @@ import sys
 import tempfile
 from pathlib import Path
 
+from metal_preflight import EXIT_UNAVAILABLE, FAIL_MESSAGE, PASS_MESSAGE
 from text_normalizer import (
     PronunciationPolicy,
     normalize_tts_text,
@@ -26,6 +27,7 @@ from voice_registry import (
 
 
 TTS_ROOT = Path(__file__).resolve().parent
+METAL_PREFLIGHT_TIMEOUT_SECONDS = 10
 
 
 def read_input(value: str, base: Path | None = None) -> str:
@@ -92,6 +94,45 @@ def resolve_runtime(config: dict, engine: str) -> Path:
         f"{label} runtime is unavailable. Checked:\n  - {rendered}\n"
         f"Set {env_name} to the required Python interpreter."
     )
+
+
+def qwen_metal_available(python: Path, *, runner=None) -> bool:
+    """Probe Metal in a safe child process before the MLX worker can start."""
+
+    run = runner or subprocess.run
+    try:
+        completed = run(
+            [str(python), str(TTS_ROOT / "metal_preflight.py")],
+            capture_output=True,
+            text=True,
+            timeout=METAL_PREFLIGHT_TIMEOUT_SECONDS,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return completed.returncode == 0 and completed.stdout.strip() == PASS_MESSAGE
+
+
+def run_worker(
+    *,
+    python: Path,
+    worker: Path,
+    request: dict,
+    requires_metal: bool,
+    runner=None,
+) -> int:
+    """Run one engine request, guarding Qwen before its worker is launched."""
+
+    run = runner or subprocess.run
+    if requires_metal and not qwen_metal_available(python, runner=run):
+        print(FAIL_MESSAGE, file=sys.stderr)
+        return EXIT_UNAVAILABLE
+    with tempfile.TemporaryDirectory(prefix="cc-media-tts-") as temporary:
+        request_path = Path(temporary) / "request.json"
+        request_path.write_text(
+            json.dumps(request, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+        )
+        completed = run([str(python), str(worker), "--request", str(request_path)])
+    return completed.returncode
 
 
 def load_selection_file(path: Path, registry: VoiceRegistry) -> dict:
@@ -342,7 +383,8 @@ def main() -> int:
         ]
 
     engine = selection["engine"]
-    if engine == registry.config["qwen_base"]["engine"]:
+    qwen_engine = engine == registry.config["qwen_base"]["engine"]
+    if qwen_engine:
         normalize_qwen_items(items)
     else:
         legacy_overrides = [item.pop("pronunciation_overrides", {}) for item in items]
@@ -360,13 +402,12 @@ def main() -> int:
         "items": items,
         "force": args.force,
     }
-    with tempfile.TemporaryDirectory(prefix="cc-media-tts-") as temporary:
-        request_path = Path(temporary) / "request.json"
-        request_path.write_text(
-            json.dumps(request, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
-        )
-        completed = subprocess.run([str(python), str(worker), "--request", str(request_path)])
-    return completed.returncode
+    return run_worker(
+        python=python,
+        worker=worker,
+        request=request,
+        requires_metal=qwen_engine,
+    )
 
 
 if __name__ == "__main__":

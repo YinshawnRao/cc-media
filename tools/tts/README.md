@@ -14,16 +14,32 @@
 4. 不做相似度猜测。“男声”“女声”“可爱一点”“二次元声音”等无法唯一定位的描述仍按 CV002。
 5. 否定式不是选择：`不要/不使用/不想用/拒绝使用/不考虑/请勿使用/不能用/不可用/不是/避免/除了` 等前置否定，以及 `CV004 除外/不用/不考虑/不要了/不能用/不行` 等后置否定，都按未指定处理并使用 CV002；裸 `CVxxx` 也不能绕过同一句否定。若后面另有唯一肯定式替换（如“我不想用 CV004，请改用 CV003”），则只采用肯定指定。
 6. 每个项目只解析一次；intro、排名转场、作品 outro、固定 CTA 共用同一份 `voice-selection.json`。
-7. Qwen runtime、固定模型或参考母带缺失时硬失败，禁止静默换 Kokoro。
+7. Qwen runtime、固定模型或参考母带缺失时只让当前 TTS 步骤硬失败；代理修复固定环境、模型、母带或 receipt 后重跑当前步骤及受影响下游门禁，禁止静默换 Kokoro，也不得因此暂停整个 goal。
+8. Qwen dispatcher 与 direct worker 在 import MLX 前都必须先运行 stdlib-only Metal preflight。当前执行上下文拿不到 Metal 时固定快速返回，不启动 native worker、不产生 Python crash 弹窗；goal 应自动切换到具备 Metal 权限的执行上下文重跑。多个 goal 可同时合成，禁止用共享锁、队列、sleep 或等待另一个配音完成来串行化。
 
 ## 新盘点标准流程
 
-首次初始化、模型/runtime 版本变化或 receipt 失效时，先做一次完整模型哈希（约 2 GB 顺序读取）；它只会在固定且被忽略的 `tools/tts/runtime/model-verifications/` 闭包中原子写入 `0600` receipt。manifest 只允许来自 `tools/tts/model-manifests/`。两者及其项目内父目录均拒绝 symlink；关键文件必须属于当前 UID，且不能 group/world writable。日常自检核对 receipt、manifest、实际 MLX-Audio 版本、模型 realpath、完整文件集合及含 `ctime_ns` 的每文件 stat 签名，不会重复读取 2 GB；worker 在加载模型前后各验证一次：
+首次初始化、模型/runtime 版本变化或 receipt 失效时，先做一次完整模型哈希（约 2 GB 顺序读取）；它只会在固定且被忽略的 `tools/tts/runtime/model-verifications/` 闭包中原子写入 `0600` receipt。manifest 只允许来自 `tools/tts/model-manifests/`。两者及其项目内父目录均拒绝 symlink；关键文件必须属于当前 UID，且不能 group/world writable。日常自检核对 receipt、manifest、实际 MLX-Audio 版本、模型 realpath、完整文件集合及含 `ctime_ns` 的每文件 stat 签名，不会重复读取 2 GB。默认 doctor 只校验核心 runtime/model 和默认 CV002 母带，不会因未使用角色或纯中文不需要的混合脚本策略阻断；worker 仍会在真正生成前重新校验本期已选母带，并在加载模型后复验模型：
 
 ```bash
 python3 tools/tts/doctor.py --full-model-hash
 python3 tools/tts/doctor.py
 ```
+
+若任务明确选了其他编号，resolver 完成后用解析出的准确 ID 检查本期实际音色；doctor 的 `--voice` 只接受唯一精确的编号、名称或注册别名，不做默认回退：
+
+```bash
+python3 tools/tts/doctor.py --voice CV004
+```
+
+声音库维护、角色母带变更或混合文本能力回归时，再显式运行完整审计。`--full-model-hash` 只表示重建模型树 receipt，不隐含全声音库或 mixed-script 检查；需要时可组合：
+
+```bash
+python3 tools/tts/doctor.py --full-library --check-mixed-script
+python3 tools/tts/doctor.py --full-model-hash --full-library --check-mixed-script
+```
+
+纯中文生成本来就不读取 `pronunciation.json`，因此日常 doctor 跳过 mixed-script policy 与实际生成语义一致；含 ASCII 大写 token 或显式发音覆盖的任务仍会在 `narrate.py` 中按需加载该策略并 fail closed，也可提前用 `--check-mixed-script` 单独验明。
 
 先把用户原始任务提示词保存为 UTF-8 文件或直接传给 resolver：
 
@@ -132,6 +148,8 @@ python3 tools/tts/narrate.py "BTOB的这首作品。" \
 3. 当前同级参考项目 `../local-anime-avatar-workflow` 已验证的 MLX-Audio 0.4.5 venv 和 Base 8-bit 固定权重。
 
 模型不会在生成过程中静默联网下载，也不会复制进每个视频项目。当前固定 Base revision 为 `50f45ef0047cde7e84c2ef04326acb8ada2436a7`，模型树 SHA-256 为 `e536317ea04672c76a6baa12d2cf72efe88358db6b7f8f1588a6a8b203153903`，实际 MLX-Audio 必须为 `0.4.5`。worker 只有在完整哈希 receipt 与当前模型文件 stat、manifest、runtime 版本全部一致，且模型加载后复验仍完全相同时才允许生成；缺 receipt 或任一文件变化都会 fail closed，并提示重新运行 `doctor.py --full-model-hash`。receipt 只在 ignored runtime 目录复用，不写进项目，也不改变纯中文的 text、seed、请求形状或既有 cache fingerprint；但安全升级前生成、尚无 portable model validation 的旧 sidecar 不再算 cache hit，下一次请求会基于真实当前模型一次性重新生成，绝不向旧音频补写伪 provenance。
+
+Metal preflight 只检查**当前进程上下文**能否取得默认设备，不 import `mlx` / `mlx_audio`，也不输出底层 IOKit、用户路径或 native 异常。它不是跨 goal 调度器：每条命令独立检查后立即继续，两个或更多具备权限的 goal 仍会并行运行。
 
 不要把 MLX/Qwen 依赖塞进现有 `tools/tts/venv`；该 venv 继续服务 Kokoro legacy、Whisper 与人声检测。
 

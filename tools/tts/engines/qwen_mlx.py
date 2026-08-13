@@ -35,6 +35,12 @@ from qwen_contract import (  # noqa: E402
     fingerprint_inputs,
     model_validation_cache_matches,
 )
+from metal_preflight import (  # noqa: E402
+    EXIT_UNAVAILABLE,
+    FAIL_MESSAGE,
+    MetalUnavailable,
+    require_default_metal_device,
+)
 
 
 def bootstrap_offline_runtime() -> None:
@@ -71,12 +77,21 @@ def bootstrap_offline_runtime() -> None:
     )
 
 
-bootstrap_offline_runtime()
+def load_mlx_runtime() -> tuple[object, object, object, object]:
+    """Import the native runtime only after the safe Metal preflight passes."""
 
-import mlx.core as mx  # noqa: E402
-import numpy as np  # noqa: E402
-from mlx_audio.audio_io import write as audio_write  # noqa: E402
-from mlx_audio.tts.utils import load_model  # noqa: E402
+    import mlx.core as mlx_core
+    import numpy as numpy_module
+    from mlx_audio.audio_io import write as mlx_audio_write
+    from mlx_audio.tts.utils import load_model as mlx_load_model
+
+    return mlx_core, numpy_module, mlx_audio_write, mlx_load_model
+
+
+def initialize_mlx_runtime() -> tuple[object, object, object, object]:
+    require_default_metal_device()
+    bootstrap_offline_runtime()
+    return load_mlx_runtime()
 
 
 def read_json(path: Path) -> dict:
@@ -256,10 +271,17 @@ def cached(
         return None
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--request", required=True, type=Path)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+
+    global mx, np, audio_write, load_model
+    try:
+        mx, np, audio_write, load_model = initialize_mlx_runtime()
+    except MetalUnavailable:
+        print(FAIL_MESSAGE, file=sys.stderr)
+        return EXIT_UNAVAILABLE
 
     request = read_json(args.request)
     config = read_json(CONFIG_PATH)
