@@ -6,8 +6,6 @@
 **字体**：Noto Serif SC（歌名/标题）+ JetBrains Mono（排名数字/番号）+ Cormorant Garamond italic（西文）+ Noto Sans SC（UI）。
 **Hook**：反差——「看似松弛 → 实则华语最难复刻的强混现场」。
 **用户偏好落实**：① 每首副歌/精彩人声展示段加长（常规 SHOW=14s，压轴《灵魂歌手》=18s），不刚听就切走；② 黑夜中选「梁博本人画面占比多 + 综合质量高」的一边。
-**用途**：本地测试，未发布。发布前需另行评估 YouTube / B站 源素材授权（见根 CLAUDE.md Copyright stance）。
-
 ## 揭晓顺序与素材来源（两边都查过 — 硬约束）
 
 切片：`yt-dlp <URL> --cookies <ck> --download-sections "*<起>-<止>" -f "bv*[height<=1080]+ba/b"`

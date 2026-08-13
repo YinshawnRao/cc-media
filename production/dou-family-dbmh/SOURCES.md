@@ -77,12 +77,6 @@ ffmpeg -y -ss <START> -i clips/vert_<NAME>_full.mp4 -t <DUR> -c copy clips/clip_
 > **AV1 输入侧 seek 不准**——抽 cover 帧必须用 output-side seek：  
 > `ffmpeg -i raw.mp4 -ss <T> -frames:v 1 -q:v 2 out.jpg`（`-ss` 放 `-i` 之后）。
 
-## 版权立场
-
-- 本片仅本地测试，**不对外发布、不商用**。
-- 各源平台条款未做发布前的逐项授权评估；若日后要发布，需重新评估 YouTube + B站 平台条款。
-- 片尾已在画面内标注三个素材出处。
-
 ## 时间线总览（V5 终版）
 
 | 段 | t 起 | t 止 | 时长 | 内容 |

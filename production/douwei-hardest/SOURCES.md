@@ -1,7 +1,6 @@
 # 窦唯最难的5首歌 — 溯源与复现
 
 成片：`douwei-hardest.mp4`（1080×1920 / H.264 30fps / AAC / 3:35 / 倒数 5→1）。
-仅本地测试，未发布、未商用（见仓库 CLAUDE.md 版权说明）。
 
 ## 复现步骤
 1. `build/narrate_segments.py` → 女声旁白（Kokoro `zf_xiaoyi`）到 `audio/<key>.wav`。已归档，可跳过。

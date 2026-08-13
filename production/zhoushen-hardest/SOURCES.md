@@ -2,8 +2,6 @@
 
 **成片**：`zhoushen-hardest.mp4`（竖屏 1080×1920，约 2:46，h264+aac）
 **形式**：难度盘点，倒数 5→1（最难压轴）。极光天籁配色（冰青→紫→金），男声旁白 `zm_yunxi`。
-**用途**：本地测试，未发布。发布前需另行评估 YouTube 源素材授权（见根 CLAUDE.md Copyright stance）。
-
 ## 揭晓顺序与素材来源
 
 切片：`yt-dlp <URL> --cookies <ck> --download-sections "*<起>-<止>" -f "bv*[height<=1080]+ba/b"`
