@@ -47,6 +47,8 @@ REQUIRED_CLIS = (
     TTS_ROOT / "doctor.py",
     TTS_ROOT / "verify_voice_usage.py",
     VIDEO_ROOT / "verify_project.py",
+    VIDEO_ROOT / "verify_publishing.py",
+    VIDEO_ROOT / "prepare_final_qa.py",
     VIDEO_ROOT / "verify_final_video.py",
     VIDEO_ROOT / "showcase_align.py",
 )
@@ -324,6 +326,343 @@ class ActiveDocumentationPolicyTests(unittest.TestCase):
         )
         for required in ("用户明确要求", "完整候选窗", "逐帧", "design/QA"):
             self.assertIn(required, line)
+
+    def test_goal_video_tasks_default_to_one_shot_final_delivery(self) -> None:
+        agents = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        conventions = (REPO_ROOT / "CONVENTIONS.md").read_text(encoding="utf-8")
+        runbook = (VIDEO_ROOT / "README.md").read_text(encoding="utf-8")
+        root_readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("goal / 视频制作默认一次交付整片", agents)
+        self.assertIn("goal / 视频制作默认一次完成", conventions)
+        self.assertIn("默认一次完成整片", runbook)
+        self.assertIn("一次完成整片", root_readme)
+        for document in (agents, conventions, runbook, root_readme):
+            self.assertIn("用户明确要求", document)
+            self.assertIn("renders/<slug>.mp4", document)
+            self.assertIn("publishing/xiaohongshu.md", document)
+            self.assertIn("四道门禁", document)
+            for gate in ("VOICE", "PROJECT", "PUBLISHING", "FINAL"):
+                self.assertIn(gate, document)
+        active_text = "\n".join(line.text for line in self.active_lines)
+        self.assertNotIn("样片先行铁律", active_text)
+        self.assertNotIn("确认后再批量", active_text)
+
+    def test_new_sandbox_media_outputs_are_fixed_under_renders(self) -> None:
+        documents = (
+            REPO_ROOT / "AGENTS.md",
+            REPO_ROOT / "CONVENTIONS.md",
+            REPO_ROOT / "README.md",
+            VIDEO_ROOT / "README.md",
+            VIDEO_ROOT / "templates" / "README.md",
+        )
+        invalid_directory = re.compile(r"(?<![\w-])(?:final|output)/", re.IGNORECASE)
+        invalid_commands = (
+            re.compile(r"--output\s+(?!renders/)", re.IGNORECASE),
+            re.compile(r"--final\s+(?!renders/)", re.IGNORECASE),
+            re.compile(r"-shortest\s+(?!renders/)[^\s`]+\.mp4", re.IGNORECASE),
+        )
+        failures: list[str] = []
+
+        for path in documents:
+            lines = markdown_lines(path)
+            text = path.read_text(encoding="utf-8")
+            self.assertIn("renders/", text, path)
+            for line in lines:
+                if line.historical:
+                    continue
+                for match in invalid_directory.finditer(line.text):
+                    if occurrence_is_policy_prohibition(line.text, match.start()):
+                        continue
+                    failures.append(f"{line.label}: active output directory {match.group(0)!r}")
+                for pattern in invalid_commands:
+                    for match in pattern.finditer(line.text):
+                        if occurrence_is_policy_prohibition(line.text, match.start()):
+                            continue
+                        failures.append(f"{line.label}: unsafe output command {match.group(0)!r}")
+
+        self.assertEqual([], failures, "\n".join(failures))
+
+        delivery_docs = {
+            "AGENTS.md": (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8"),
+            "CONVENTIONS.md": (REPO_ROOT / "CONVENTIONS.md").read_text(encoding="utf-8"),
+            "README.md": (REPO_ROOT / "README.md").read_text(encoding="utf-8"),
+            "tools/video/README.md": (VIDEO_ROOT / "README.md").read_text(encoding="utf-8"),
+        }
+        for label, document in delivery_docs.items():
+            with self.subTest(document=label):
+                self.assertIn("renders/<slug>.mp4", document)
+                self.assertRegex(document, r"raw render.{0,100}renders/")
+                self.assertRegex(document, r"mux.{0,120}renders/")
+                self.assertRegex(
+                    document,
+                    r"(?:禁止|不得).{0,80}final/.{0,40}output/.{0,80}项目根",
+                )
+
+    def test_publishing_copy_is_a_post_build_pre_final_delivery_gate(self) -> None:
+        documents = {
+            "AGENTS.md": (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8"),
+            "CONVENTIONS.md": (REPO_ROOT / "CONVENTIONS.md").read_text(encoding="utf-8"),
+            "README.md": (REPO_ROOT / "README.md").read_text(encoding="utf-8"),
+            "tools/video/README.md": (VIDEO_ROOT / "README.md").read_text(encoding="utf-8"),
+        }
+        cli = "python3 tools/video/verify_publishing.py --project sandbox/<slug>"
+        for label, document in documents.items():
+            with self.subTest(document=label):
+                self.assertIn("publishing/xiaohongshu.md", document)
+                self.assertIn(cli, document)
+                self.assertIn("project-manifest.json", document)
+                self.assertRegex(document, r"(?:build|post-mux).{0,100}(?:后|完成后)")
+                self.assertRegex(document, r"(?:FINAL 前|才进入 FINAL|进入 FINAL)")
+                self.assertRegex(
+                    document,
+                    r"(?:不属于|不得提前|不改变).{0,100}project-manifest\.json",
+                )
+                self.assertRegex(document, r"1[–-]5 个")
+                self.assertRegex(document, r"默认(?:给)?\s*3 个")
+                self.assertRegex(document, r"第一条.{0,12}首选")
+                self.assertRegex(document, r"最后一行.{0,16}hashtags")
+                self.assertRegex(document, r"不得出现.{0,20}歌曲名称")
+                for required in ("真实主题", "歌手", "选题角度", "泛化", "杜撰"):
+                    self.assertIn(required, document)
+                self.assertIn("renders/<slug>.mp4", document)
+                self.assertIn("四道门禁", document)
+
+        runbook = documents["tools/video/README.md"]
+        self.assertLess(runbook.index("## 8. 渲染 + MUX"), runbook.index("## 9. 小红书发布文案"))
+        self.assertLess(runbook.index("## 9. 小红书发布文案"), runbook.index("## 10. 终片 QA"))
+        for fixed_markdown in (
+            "# 小红书发布文案",
+            "## 标题候选（第一条为首选）",
+            "## 正文",
+            "3–12 个 hashtags",
+        ):
+            self.assertIn(fixed_markdown, runbook)
+
+    def test_internal_failure_repairs_and_reruns_before_goal_can_pause(self) -> None:
+        documents = {
+            "AGENTS.md": (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8"),
+            "CONVENTIONS.md": (REPO_ROOT / "CONVENTIONS.md").read_text(encoding="utf-8"),
+            "README.md": (REPO_ROOT / "README.md").read_text(encoding="utf-8"),
+            "tools/video/README.md": (VIDEO_ROOT / "README.md").read_text(encoding="utf-8"),
+        }
+
+        for label, document in documents.items():
+            with self.subTest(document=label):
+                self.assertIn(
+                    "内部步骤首次失败只停止当前步骤，不停止整个 goal",
+                    document,
+                )
+                self.assertIn("诊断 → 修复 → 重跑", document)
+                self.assertIn("最近失败步骤", document)
+                self.assertIn("受影响下游门禁", document)
+                self.assertIn(
+                    "不得因可自行修复的内部失败暂停、等待用户确认或标记 `blocked`",
+                    document,
+                )
+                self.assertRegex(
+                    document,
+                    r"机械红线.{0,80}(?:不得|不能).{0,30}(?:降级|放松)",
+                )
+
+        combined = "\n".join(documents.values())
+        self.assertNotIn("其他阻断项", combined)
+        self.assertIn("同一外部阻断连续三次 goal turn", combined)
+        self.assertRegex(
+            combined,
+            r"首次出现.{0,80}(?:不得立即|不立即|只请求).{0,80}blocked",
+        )
+        for required in (
+            "用户明确要求小样",
+            "用户独占的必需输入",
+            "AI WAV",
+            "穷尽安全替代",
+            "新凭据",
+            "权限",
+            "外部能力",
+            "歌单",
+            "排名",
+            "歌手版本",
+            "平台排除",
+            "硬时长",
+            "显式发布",
+            "真人终验",
+        ):
+            with self.subTest(pause_boundary=required):
+                self.assertIn(required, combined)
+
+        for internal_recovery in (
+            "普通公开下载",
+            "备选源",
+            "模型可安装",
+            "TTS/ASR/sidecar",
+            "render/mux",
+            "manifest/evidence",
+            "门禁 FAIL/REVIEW",
+        ):
+            with self.subTest(internal_recovery=internal_recovery):
+                self.assertIn(internal_recovery, combined)
+
+    def test_sandbox_delivery_has_no_unsolicited_release_or_rights_boilerplate(self) -> None:
+        documents = {
+            "AGENTS.md": (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8"),
+            "CONVENTIONS.md": (REPO_ROOT / "CONVENTIONS.md").read_text(encoding="utf-8"),
+            "README.md": (REPO_ROOT / "README.md").read_text(encoding="utf-8"),
+            "tools/video/README.md": (VIDEO_ROOT / "README.md").read_text(encoding="utf-8"),
+        }
+
+        for label, document in documents.items():
+            with self.subTest(document=label):
+                self.assertIn("本地机械", document)
+                self.assertIn("Sandbox 成片", document)
+                self.assertIn("不得自动附加", document)
+                self.assertIn("默认交付", document)
+                self.assertIn("blocked", document)
+                self.assertRegex(
+                    document,
+                    r"只有用户.{0,40}(?:主动询问|明确请求|明确要求)",
+                )
+
+        combined = "\n".join(documents.values())
+        for forbidden in (
+            "Copyright " + "stance",
+            "素材" + "授权",
+            "授权" + "评估",
+            "版权" + "评估",
+            "本地测试优先",
+            "当前仅**本地测试**",
+            "HUMAN REVIEW: PENDING",
+            "profile=local_test",
+            "human_review=pending",
+        ):
+            with self.subTest(forbidden_boilerplate=forbidden):
+                self.assertNotIn(forbidden, combined)
+
+        # Strict review remains an explicit opt-in capability, not a default
+        # sandbox-delivery footer.
+        self.assertIn("--require-human-review", combined)
+        self.assertIn("REVIEW_REQUIRED", combined)
+        self.assertIn(">1.5s", combined)
+        self.assertRegex(combined, r"(?:不得|不能).{0,30}(?:伪造|冒充).{0,30}(?:人审|human)")
+
+    def test_showcase_review_has_local_observation_and_human_release_modes(self) -> None:
+        documents = {
+            "AGENTS.md": (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8"),
+            "CONVENTIONS.md": (REPO_ROOT / "CONVENTIONS.md").read_text(encoding="utf-8"),
+            "README.md": (REPO_ROOT / "README.md").read_text(encoding="utf-8"),
+            "tools/video/README.md": (VIDEO_ROOT / "README.md").read_text(encoding="utf-8"),
+        }
+        for label, document in documents.items():
+            with self.subTest(document=label):
+                self.assertIn("multi → 换窗 → 换源", document)
+                self.assertIn("FAIL=0", document)
+                self.assertIn("reviewer_kind=agent", document)
+                self.assertIn("OBSERVED", document)
+                self.assertIn("--require-human-review", document)
+                self.assertIn("reviewer_kind=human", document)
+                self.assertIn("APPROVED", document)
+
+        combined = "\n".join(documents.values())
+        self.assertIn("status=observed, reviewer_kind=agent", combined)
+        self.assertIn("status=approved, reviewer_kind=human", combined)
+        self.assertRegex(
+            combined,
+            r"OBSERVED.{0,80}(?:仅本地|local-only|local only)",
+        )
+        self.assertRegex(
+            combined,
+            r"--require-human-review.{0,100}(?:只接受|只认).{0,60}(?:human|reviewer_kind=human)",
+        )
+        self.assertRegex(
+            combined,
+            r"硬.{0,20}FAIL.{0,80}(?:不能|不可).{0,40}(?:覆盖|跳过)",
+        )
+
+    def test_final_qa_preparer_is_required_before_the_central_gate(self) -> None:
+        documents = {
+            "AGENTS.md": (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8"),
+            "CONVENTIONS.md": (REPO_ROOT / "CONVENTIONS.md").read_text(encoding="utf-8"),
+            "README.md": (REPO_ROOT / "README.md").read_text(encoding="utf-8"),
+            "tools/video/README.md": (VIDEO_ROOT / "README.md").read_text(encoding="utf-8"),
+        }
+
+        self.assertIn(VIDEO_ROOT / "prepare_final_qa.py", REQUIRED_CLIS)
+        for label, document in documents.items():
+            with self.subTest(document=label):
+                self.assertIn("tools/video/prepare_final_qa.py", document)
+                self.assertIn("tools/video/verify_final_video.py", document)
+                self.assertLess(
+                    document.index("tools/video/prepare_final_qa.py"),
+                    document.index("tools/video/verify_final_video.py"),
+                )
+                self.assertIn("qa/final-video-qa.json", document)
+                self.assertIn("--human-review-input", document)
+                self.assertIn("--require-human-review", document)
+                self.assertIn("标准结构化盘点/叙事", document)
+                self.assertIn("project_kind: free_exploration", document)
+                self.assertIn("AI 音色 MV", document)
+                self.assertRegex(document, r"(?:不强套|不得(?:强套|声称|冒充))")
+
+        combined = "\n".join(documents.values())
+        self.assertRegex(
+            combined,
+            r"(?:必须|运行|调用).{0,80}prepare_final_qa\.py",
+        )
+        self.assertRegex(
+            combined,
+            r"prepare_final_qa\.py.{0,240}同一进程.{0,240}(?:FINAL|gate)",
+        )
+        self.assertRegex(
+            combined,
+            r"--human-review-input.{0,120}--require-human-review",
+        )
+
+    def test_multi_goal_resource_budget_never_serializes_goals(self) -> None:
+        documents = {
+            "AGENTS.md": (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8"),
+            "CONVENTIONS.md": (REPO_ROOT / "CONVENTIONS.md").read_text(encoding="utf-8"),
+            "README.md": (REPO_ROOT / "README.md").read_text(encoding="utf-8"),
+            "tools/video/README.md": (VIDEO_ROOT / "README.md").read_text(
+                encoding="utf-8"
+            ),
+        }
+
+        for label, document in documents.items():
+            with self.subTest(document=label):
+                lowered = document.lower()
+                self.assertIn("多个 goal", lowered)
+                self.assertRegex(lowered, r"(?:同时|持续).{0,30}(?:推进|继续|并发)")
+                self.assertIn("4 → 3 → 2", document)
+                self.assertIn("resource_budget.py", document)
+                self.assertIn("1–4", document)
+                self.assertRegex(
+                    lowered,
+                    r"(?:禁止|不得|不建立).{0,80}(?:全局|跨 goal).{0,80}"
+                    r"(?:锁|semaphore|队列|等待)",
+                )
+                self.assertIn("同一进程", document)
+                self.assertRegex(lowered, r"(?:standalone|独立复核|独立机械复核)")
+                self.assertRegex(lowered, r"(?:不要|不得|不再).{0,80}(?:重复|立刻再跑)")
+
+        combined = "\n".join(documents.values())
+        for required in (
+            "resource_budget.py",
+            "Metal preflight",
+            "CC_MEDIA_ASR_THREADS=1..4",
+            "CC_MEDIA_FFMPEG_THREADS=1..4",
+            "CC_MEDIA_HYPERFRAMES_WORKERS=1..4",
+            "不 import MLX",
+            "不信任项目内自报 diagnostics",
+        ):
+            with self.subTest(required=required):
+                self.assertIn(required, combined)
+        self.assertRegex(
+            combined,
+            r"(?:不得|禁止).{0,60}(?:直接调用裸|直接运行裸).{0,30}whisper",
+        )
+        self.assertRegex(combined, r"PID.{0,40}(?:启动|start)")
+        self.assertRegex(combined, r"注册表.{0,40}(?:回退|fallback).{0,20}2")
+        self.assertNotRegex(combined, r"--workers\s+auto")
 
 
 class SharedTemplateAstTests(unittest.TestCase):

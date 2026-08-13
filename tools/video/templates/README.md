@@ -17,7 +17,8 @@ sandbox/<slug>/
 ├── raw/                       # 本地 MV 视频，不进 git
 ├── audio/                     # 用户明确提供并复制进本项目的训练 WAV，不进 git
 ├── voice/                     # narrate.py 生成的 intro WAV + sidecar，不进 git
-└── final/YYYY-MM-DD/          # 一首一个 MP4，不进 git
+├── renders/YYYY-MM-DD/        # 一首一个 MP4，不进 git
+└── publishing/xiaohongshu.md  # 与 renders 并列的最终小红书文案
 ```
 
 先生成项目级声线选择和 intro；没有显式指定时 resolver 会得到默认 CV002，显式有效指定则沿用指定角色：
@@ -48,6 +49,8 @@ python3 tools/video/templates/ai-voice-mv/build.py \
 ```
 
 模板会：精确裁切可选的全宽污染带、补足略短视频尾帧、修剪 intro 首尾静音、intro 期间 duck 训练音轨、叠加 `AI训练，仅供娱乐`，最后输出 H.264/AAC MP4。配置必须提供项目内透明角标 PNG；随模板保留的 `watermark.swift` 只负责离线生成这张当期输入图，不含媒体或人物信息。模板不会下载素材、读取仓库外目录或生成 TTS。
+
+构建完成后仍要按全局结构写 `publishing/xiaohongshu.md`：1–5 个标题候选、可直接使用的正文、末行 hashtags，全部对外文字禁止直接出现本期歌曲名称。AI config 当前没有标准项目门禁所需的 performer/cover-theme 上下文，因此继续用 durable `--check` 与人工逐项核对，不得为调用 `verify_publishing.py` 伪造 `project-manifest.json`。
 
 硬前置：`video` 必须已经与训练音频从同一歌曲起点对齐；视频允许比训练 WAV 短不超过 0.5 秒，模板仅用尾帧补足这种编码级差异，不能修复剧情片头或错误歌曲偏移。intro 修剪后还必须比训练音频至少短 1 秒，给正歌留下有效展示。`--check` 会验证这些时长关系，并确认每条 intro sidecar 内嵌的 selection 与项目 `voice-selection.json` 完全一致、记录的输出 SHA-256 与当前 WAV 一致。
 
@@ -87,11 +90,11 @@ shasum -a 256 sandbox/<slug>/audio/segments/song-01.wav
 
 这些 selection、mapping 与 SHA 校验建立的是 **provenance 绑定**：证明旁白被声明绑定到该段、指定的预混文件被用于构建；不能证明旁白波形确实已经混入预混文件，也不能证明成片里一定可听、咬字正确或没有被音乐遮蔽。实际可听性仍必须以 mux 后终片的 isolated narration ASR、final AAC ASR、响度/静音检测和抽检 QA 为准。
 
-构建后再编写/更新 HyperFrames composition，执行 `--sdr` render，并以预混 `master.wav` 后期 mux。最终交付和 QA 对象始终是 mux 后 MP4，不是 `footage_track.mp4`、raw render 或 `master.wav`。
+构建后再编写/更新 HyperFrames composition，执行 `--sdr` render，并以预混 `master.wav` 后期 mux。最终交付和 QA 对象始终是 `renders/` 内的 mux 后 MP4，不是 `footage_track.mp4`、raw render 或 `master.wav`。
 
 ## 安全与仓库边界
 
 - 配置内只接受项目目录中的相对路径，拒绝绝对路径和 `..`。
 - 模板不接收 Cookie 参数，也不会输出 Cookie 或环境变量。
 - 示例配置只有占位名称，不含真实 URL、账号、人物路径或真实媒体哈希；64 个 `0` 是刻意不可通过素材校验的 SHA-256 占位值。
-- `*.wav`、`*.mp4`、`raw/`、`audio/`、`final/` 等仍由根 `.gitignore` 排除。
+- `*.wav`、`*.mp4`、`raw/`、`audio/`、`renders/` 等仍由根 `.gitignore` 排除。

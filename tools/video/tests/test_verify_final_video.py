@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import io
 import json
+import os
 import shutil
 import subprocess
 import tempfile
@@ -61,6 +63,7 @@ class FakeMediaTools:
         self.integrated_lufs = -14.0
         self.true_peak_dbtp = -1.0
         self.audio_sdr_db = 35.0
+        self.authoring_review_modes: list[bool] = []
 
     def probe(self, path: Path) -> dict:
         if path.suffix == ".wav":
@@ -110,7 +113,14 @@ class FakeMediaTools:
             ],
         }
 
-    def verify_authoring(self, project: Path, manifest: str) -> list[str]:
+    def verify_authoring(
+        self,
+        project: Path,
+        manifest: str,
+        *,
+        require_human_review: bool = False,
+    ) -> list[str]:
+        self.authoring_review_modes.append(require_human_review)
         return []
 
     def analyze_final(
@@ -161,14 +171,26 @@ class FakeAsrMediaTools(gate.MediaTools):
     ) -> dict:
         return fake_live_receipt(sources, parameters, kind)
 
-    def verify_authoring(self, project: Path, manifest: str) -> list[str]:
+    def verify_authoring(
+        self,
+        project: Path,
+        manifest: str,
+        *,
+        require_human_review: bool = False,
+    ) -> list[str]:
         return []
 
 
 class RealAsrFakeAuthoringTools(gate.MediaTools):
     """Real media/ASR mechanics with only the authoring dependency injected."""
 
-    def verify_authoring(self, project: Path, manifest: str) -> list[str]:
+    def verify_authoring(
+        self,
+        project: Path,
+        manifest: str,
+        *,
+        require_human_review: bool = False,
+    ) -> list[str]:
         return []
 
 
@@ -178,7 +200,7 @@ class ProjectFixture:
         self.project.mkdir()
         self.files: dict[str, Path] = {}
         for relative, payload in (
-            ("final/final.mp4", b"current muxed final"),
+            ("renders/final.mp4", b"current muxed final"),
             ("renders/render.mp4", b"render-only container"),
             ("audio/master.wav", b"pcm master"),
             ("audio/narration-only.wav", b"isolated narration"),
@@ -249,8 +271,22 @@ class ProjectFixture:
             text_field: text,
         }
 
+    @staticmethod
+    def pending(final_sha: str, text_field: str, *, evidence=None) -> dict:
+        row = {
+            "status": "pending_human_review",
+            "reviewer_kind": None,
+            "reviewer": "",
+            "reviewed_at": "",
+            "final_sha256": final_sha,
+            text_field: "",
+        }
+        if evidence is not None:
+            row["evidence"] = evidence
+        return row
+
     def _manifest(self) -> dict:
-        final_sha = gate.sha256_file(self.files["final/final.mp4"])
+        final_sha = gate.sha256_file(self.files["renders/final.mp4"])
         expected = "你好"
         final_parameters = {
             "engine": "openai-whisper",
@@ -283,7 +319,7 @@ class ProjectFixture:
             "narration_mode": "free_exploration",
             "authoring_manifest": self.asset("project-manifest.json"),
             "assets": {
-                "final": self.asset("final/final.mp4"),
+                "final": self.asset("renders/final.mp4"),
                 "render": self.asset("renders/render.mp4"),
                 "master": self.asset("audio/master.wav"),
             },
@@ -317,7 +353,7 @@ class ProjectFixture:
             "asr_evidence": {
                 "final_aac_asr": {
                     "artifact": {"path": "qa/final-aac-asr.json", "sha256": "0" * 64},
-                    "sources": [self.asset("final/final.mp4")],
+                    "sources": [self.asset("renders/final.mp4")],
                     "parameters": final_parameters,
                 },
                 "isolated_narration_asr": {
@@ -393,6 +429,43 @@ class ProjectFixture:
         self.manifest["reviews"][key].append(row)
         self.write_manifest()
 
+    def add_pending_interval(self, key: str, interval: gate.Interval) -> None:
+        final_sha = self.manifest["assets"]["final"]["sha256"]
+        row = self.pending(final_sha, "context")
+        row.update({"start_sec": interval.start, "end_sec": interval.end})
+        self.manifest["reviews"][key].append(row)
+        self.write_manifest()
+
+    def set_global_reviews_pending(self) -> None:
+        final_sha = self.manifest["assets"]["final"]["sha256"]
+        visual_evidence = self.manifest["reviews"]["visual_frames"]["evidence"]
+        self.manifest["reviews"]["visual_frames"] = self.pending(
+            final_sha,
+            "notes",
+            evidence=visual_evidence,
+        )
+        for key in ("leakage", "release_safety"):
+            self.manifest["reviews"][key] = self.pending(
+                final_sha,
+                "notes",
+                evidence=[],
+            )
+        self.write_manifest()
+
+    def set_asr_reviews_pending(self) -> None:
+        for kind, relative in (
+            ("final_aac_asr", "qa/final-aac-asr.json"),
+            ("isolated_narration_asr", "qa/isolated-narration-asr.json"),
+        ):
+            path = self.files[relative]
+            evidence = json.loads(path.read_text(encoding="utf-8"))
+            for assertion in evidence["assertions"]:
+                assertion["disposition"] = "human_review"
+                assertion.pop("review", None)
+            path.write_text(json.dumps(evidence, ensure_ascii=False), encoding="utf-8")
+            self.manifest["asr_evidence"][kind]["artifact"]["sha256"] = gate.sha256_file(path)
+        self.write_manifest()
+
     def set_visual_samples(self, timestamps: list[float]) -> None:
         if not any(abs(timestamp) <= 0.000001 for timestamp in timestamps):
             timestamps = [0.0, *timestamps]
@@ -412,6 +485,211 @@ class ProjectFixture:
 class FinalVideoGateUnitTests(unittest.TestCase):
     def make_fixture(self, temporary: str) -> ProjectFixture:
         return ProjectFixture(Path(temporary) / "project")
+
+    def test_pending_human_and_asr_records_are_local_advisories(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.make_fixture(temporary)
+            fixture.set_global_reviews_pending()
+            fixture.set_asr_reviews_pending()
+
+            local_tools = FakeMediaTools()
+            result = gate.verify_project(fixture.project, tools=local_tools)
+            self.assertEqual([False, False], local_tools.authoring_review_modes)
+            self.assertEqual(5, len(result.human_review_advisories))
+            self.assertIn("reviews.visual_frames", result.human_review_advisories)
+            self.assertTrue(
+                any("final_aac_asr" in label for label in result.human_review_advisories)
+            )
+
+            release_tools = FakeMediaTools()
+            with self.assertRaises(gate.HumanReviewRequired) as captured:
+                gate.verify_project(
+                    fixture.project,
+                    tools=release_tools,
+                    require_human_review=True,
+                )
+            self.assertEqual([True, True], release_tools.authoring_review_modes)
+            self.assertEqual(result.human_review_advisories, captured.exception.labels)
+
+    def test_heavy_ffmpeg_commands_have_explicit_thread_budget_and_fast_seek(self) -> None:
+        tools = gate.MediaTools.__new__(gate.MediaTools)
+        commands: list[list[str]] = []
+
+        def fake_run(command: list[str], _label: str):
+            commands.append(command)
+            if "framemd5" in command:
+                return subprocess.CompletedProcess(
+                    command,
+                    0,
+                    stdout=(
+                        "#format: frame checksums\n"
+                        "#tb 0: 1/24\n"
+                        "0, 0, 300, 1, 3, " + "a" * 64 + "\n"
+                    ),
+                    stderr="",
+                )
+            if "loudnorm=I=-14:LRA=11:TP=-1:print_format=json" in command:
+                return subprocess.CompletedProcess(
+                    command,
+                    0,
+                    stdout="",
+                    stderr='{"input_i":"-14.0","input_tp":"-1.0"}',
+                )
+            if any("asdr" in token for token in command):
+                return subprocess.CompletedProcess(
+                    command, 0, stdout="", stderr="SDR ch0: 30.0 dB"
+                )
+            return subprocess.CompletedProcess(command, 0, stdout="", stderr="")
+
+        tools._run = fake_run  # type: ignore[method-assign]
+        with mock.patch.dict(
+            os.environ,
+            {gate.resource_budget.FFMPEG_THREADS_ENV: "2"},
+        ):
+            tools.analyze_final(Path("final.mp4"), 2.0)
+            tools.video_decode_receipt(Path("final.mp4"))
+            receipt = tools.frame_rgb_receipt(Path("final.mp4"), 12.5)
+            tools.loudness(Path("final.mp4"))
+            tools.audio_sdr(Path("master.wav"), Path("final.mp4"), 2.0)
+
+        self.assertAlmostEqual(12.5, receipt.pts_sec)
+        for command in commands:
+            self.assertIn("-threads", command)
+            self.assertEqual("2", command[command.index("-threads") + 1])
+            self.assertIn("-filter_threads", command)
+            self.assertEqual("2", command[command.index("-filter_threads") + 1])
+        frame_command = next(
+            command for command in commands if "-ss" in command and "framemd5" in command
+        )
+        self.assertLess(frame_command.index("-ss"), frame_command.index("-i"))
+        self.assertIn("-copyts", frame_command)
+        for command in (commands[0], commands[-1]):
+            self.assertIn("-filter_complex_threads", command)
+            self.assertEqual(
+                "2", command[command.index("-filter_complex_threads") + 1]
+            )
+        self.assertEqual(2, commands[-1].count("-threads"))
+
+    def test_human_approved_authoring_and_final_pass_both_modes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.make_fixture(temporary)
+            local_tools = FakeMediaTools()
+            gate.verify_project(fixture.project, tools=local_tools)
+            self.assertEqual([False, False], local_tools.authoring_review_modes)
+
+            release_tools = FakeMediaTools()
+            result = gate.verify_project(
+                fixture.project,
+                tools=release_tools,
+                require_human_review=True,
+            )
+            self.assertEqual([True, True], release_tools.authoring_review_modes)
+            self.assertEqual((), result.human_review_advisories)
+
+    def test_pending_reviews_cannot_impersonate_a_human_or_skip_frame_hashes(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.make_fixture(temporary)
+            fixture.set_global_reviews_pending()
+            fixture.manifest["reviews"]["visual_frames"]["reviewer_kind"] = "human"
+            fixture.write_manifest()
+            with self.assertRaisesRegex(gate.GateFailure, "must be null"):
+                gate.verify_project(fixture.project, tools=FakeMediaTools())
+
+            fixture = ProjectFixture(Path(temporary) / "agent-approved")
+            fixture.manifest["reviews"]["visual_frames"]["reviewer_kind"] = "agent"
+            fixture.write_manifest()
+            with self.assertRaisesRegex(gate.GateFailure, "machine approval is not accepted"):
+                gate.verify_project(fixture.project, tools=FakeMediaTools())
+
+            fixture = ProjectFixture(Path(temporary) / "stale-pending-frame")
+            fixture.set_global_reviews_pending()
+            fixture.manifest["reviews"]["visual_frames"]["evidence"][0]["sha256"] = "0" * 64
+            fixture.write_manifest()
+            with self.assertRaisesRegex(gate.GateFailure, "SHA-256 mismatch"):
+                gate.verify_project(fixture.project, tools=FakeMediaTools())
+
+    def test_pending_soft_intervals_are_advisory_but_hard_silence_still_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.make_fixture(temporary)
+            silence = gate.Interval(0.2, 1.4)
+            black = gate.Interval(1.1, 1.8)
+            fixture.add_pending_interval("silence", silence)
+            fixture.add_pending_interval("black", black)
+            tools = FakeMediaTools()
+            tools.silences = [silence]
+            tools.black = [black]
+
+            result = gate.verify_project(fixture.project, tools=tools)
+            self.assertEqual(0, result.reviewed_silences)
+            self.assertEqual(0, result.reviewed_black_intervals)
+            self.assertIn("reviews.silence[0]", result.human_review_advisories)
+            self.assertIn("reviews.black[0]", result.human_review_advisories)
+            with self.assertRaises(gate.HumanReviewRequired):
+                gate.verify_project(
+                    fixture.project,
+                    tools=tools,
+                    require_human_review=True,
+                )
+
+            tools.silences = [gate.Interval(0.1, 1.7)]
+            with self.assertRaisesRegex(gate.GateFailure, "hard silence"):
+                gate.verify_project(fixture.project, tools=tools)
+
+    def test_cli_distinguishes_local_pass_from_required_human_review(self) -> None:
+        summary = gate.VerificationSummary(
+            final_path="renders/video.mp4",
+            final_sha256="f" * 64,
+            duration_sec=12.0,
+            video_codec="h264",
+            integrated_lufs=-14.0,
+            true_peak_dbtp=-1.0,
+            master_aac_sdr_db=30.0,
+            reviewed_silences=0,
+            reviewed_black_intervals=0,
+            human_review_advisories=("reviews.visual_frames",),
+        )
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with (
+            mock.patch.object(gate, "verify_project", return_value=summary) as verifier,
+            mock.patch("sys.stdout", stdout),
+            mock.patch("sys.stderr", stderr),
+        ):
+            self.assertEqual(0, gate.main(["--project", "project"]))
+        verifier.assert_called_once_with(
+            Path("project"),
+            "qa/final-video-qa.json",
+            require_human_review=False,
+        )
+        self.assertIn("FINAL VIDEO QA: PASS", stdout.getvalue())
+        self.assertIn("advisories=1", stdout.getvalue())
+        self.assertNotIn("human_review=", stdout.getvalue())
+        self.assertNotIn("HUMAN REVIEW", stdout.getvalue())
+        self.assertNotIn("--require-human-review", stdout.getvalue())
+        self.assertNotIn("local delivery", stdout.getvalue())
+        self.assertNotIn("授权", stdout.getvalue())
+        self.assertNotIn("版权", stdout.getvalue())
+        self.assertEqual("", stderr.getvalue())
+
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        pending = gate.HumanReviewRequired(("reviews.visual_frames",))
+        with (
+            mock.patch.object(gate, "verify_project", side_effect=pending) as verifier,
+            mock.patch("sys.stdout", stdout),
+            mock.patch("sys.stderr", stderr),
+        ):
+            self.assertEqual(
+                2,
+                gate.main(["--project", "project", "--require-human-review"]),
+            )
+        verifier.assert_called_once_with(
+            Path("project"),
+            "qa/final-video-qa.json",
+            require_human_review=True,
+        )
+        self.assertEqual("", stdout.getvalue())
+        self.assertIn("FINAL VIDEO QA: REVIEW_REQUIRED", stderr.getvalue())
 
     def test_offline_asr_toolchain_identity_is_pinned_without_reading_real_model(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -486,6 +764,43 @@ class FinalVideoGateUnitTests(unittest.TestCase):
             self.assertEqual(offline_asr.CHECKPOINT_SHA256, result["checkpoint_sha256"])
             self.assertEqual(offline_asr.WHISPER_VERSION, result["openai_whisper_version"])
 
+    def test_offline_asr_drops_segments_that_cannot_be_evidence(self) -> None:
+        class SyntheticModel:
+            def transcribe(self, *_args, **_kwargs):
+                return {
+                    "text": "有效片段",
+                    "segments": [
+                        {"start": 0.1, "end": 0.4, "text": "有效"},
+                        {"start": 0.4, "end": 0.4, "text": ""},
+                        {"start": 0.4, "end": 0.4, "text": "重复长音"},
+                        {"start": 0.4, "end": 0.8, "text": "   "},
+                        {"start": 0.8, "end": 1.2, "text": "片段"},
+                    ],
+                }
+
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "source.wav"
+            checkpoint = Path(temporary) / "small.pt"
+            source.write_bytes(b"synthetic audio")
+            checkpoint.write_bytes(b"synthetic checkpoint")
+            result = offline_asr.run(
+                {
+                    "model": "small",
+                    "language": "zh",
+                    "jobs": [{"id": "synthetic", "path": str(source)}],
+                },
+                checkpoint=checkpoint,
+                identity_loader=lambda _: {
+                    "checkpoint_sha256": offline_asr.CHECKPOINT_SHA256,
+                    "openai_whisper_version": offline_asr.WHISPER_VERSION,
+                },
+                model_loader=lambda _: SyntheticModel(),
+            )
+            self.assertEqual(
+                ["synthetic:000000", "synthetic:000004"],
+                [row["id"] for row in result["results"][0]["segments"]],
+            )
+
     def test_live_asr_receipt_rejects_replaced_checkpoint_or_distribution(self) -> None:
         receipt = fake_live_receipt([], {"language": "zh"}, "isolated_narration_asr")
         for field, replacement in (
@@ -502,12 +817,43 @@ class FinalVideoGateUnitTests(unittest.TestCase):
             fixture = self.make_fixture(temporary)
             result = gate.verify_project(fixture.project, tools=FakeMediaTools())
             self.assertEqual("h264", result.video_codec)
-            self.assertEqual(gate.sha256_file(fixture.files["final/final.mp4"]), result.final_sha256)
+            self.assertEqual(
+                gate.sha256_file(fixture.files["renders/final.mp4"]),
+                result.final_sha256,
+            )
+
+    def test_final_and_render_must_start_with_lowercase_renders(self) -> None:
+        for asset_key in ("final", "render"):
+            for invalid in (
+                f"{asset_key}.mp4",
+                f"final/{asset_key}.mp4",
+                f"output/{asset_key}.mp4",
+                f"Renders/{asset_key}.mp4",
+            ):
+                with (
+                    self.subTest(asset=asset_key, invalid=invalid),
+                    tempfile.TemporaryDirectory() as temporary,
+                ):
+                    fixture = self.make_fixture(temporary)
+                    source = fixture.files[f"renders/{asset_key}.mp4"]
+                    invalid_path = fixture.project / invalid
+                    invalid_path.parent.mkdir(parents=True, exist_ok=True)
+                    invalid_path.write_bytes(source.read_bytes())
+                    fixture.files[invalid] = invalid_path
+                    fixture.manifest["assets"][asset_key] = fixture.asset(invalid)
+                    fixture.write_manifest()
+
+                    with self.assertRaisesRegex(
+                        gate.GateFailure,
+                        rf"assets\.{asset_key}\.path first path component must be "
+                        r"lowercase 'renders'",
+                    ):
+                        gate.verify_project(fixture.project, tools=FakeMediaTools())
 
     def test_current_final_sha_is_mandatory_before_media_tools_run(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             fixture = self.make_fixture(temporary)
-            fixture.files["final/final.mp4"].write_bytes(b"changed after QA")
+            fixture.files["renders/final.mp4"].write_bytes(b"changed after QA")
             with self.assertRaisesRegex(gate.GateFailure, "manifest is stale"):
                 gate.verify_project(fixture.project, tools=FakeMediaTools())
 
@@ -548,7 +894,7 @@ class FinalVideoGateUnitTests(unittest.TestCase):
     def test_project_file_symlink_is_rejected_even_when_content_hash_matches(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             fixture = self.make_fixture(temporary)
-            final_path = fixture.files["final/final.mp4"]
+            final_path = fixture.files["renders/final.mp4"]
             outside = Path(temporary) / "outside.mp4"
             outside.write_bytes(final_path.read_bytes())
             final_path.unlink()
@@ -811,7 +1157,9 @@ class FinalVideoGateUnitTests(unittest.TestCase):
             }
         }
         receipt = {
-            "sources": [{"id": "final-000", "path": "final.mp4", "sha256": "f" * 64}],
+            "sources": [
+                {"id": "final-000", "path": "renders/final.mp4", "sha256": "f" * 64}
+            ],
             "results": [
                 {
                     "source_id": "final-000",
@@ -970,7 +1318,7 @@ class FinalVideoGateUnitTests(unittest.TestCase):
         }
         receipt = {
             "sources": [
-                {"id": "final-000", "path": "final/final.mp4", "sha256": "f" * 64}
+                {"id": "final-000", "path": "renders/final.mp4", "sha256": "f" * 64}
             ],
             "results": [
                 {
@@ -1025,7 +1373,9 @@ class FinalVideoGateUnitTests(unittest.TestCase):
             }
         }
         receipt = {
-            "sources": [{"id": "final-000", "path": "final.mp4", "sha256": "f" * 64}],
+            "sources": [
+                {"id": "final-000", "path": "renders/final.mp4", "sha256": "f" * 64}
+            ],
             "results": [
                 {
                     "source_id": "final-000",
@@ -1071,7 +1421,7 @@ class FinalVideoGateUnitTests(unittest.TestCase):
             with self.assertRaisesRegex(gate.GateFailure, "changed while"):
                 gate.verify_project(
                     fixture.project,
-                    tools=MutatingTools(fixture.files["final/final.mp4"]),
+                    tools=MutatingTools(fixture.files["renders/final.mp4"]),
                 )
 
     def test_structured_mode_cannot_omit_outro_or_cta_expectations(self) -> None:
@@ -1088,13 +1438,44 @@ class FinalVideoGateUnitTests(unittest.TestCase):
     "ffmpeg/ffprobe are required for the synthetic integration fixture",
 )
 class FinalVideoGateFfmpegIntegrationTest(unittest.TestCase):
+    def test_fast_seek_receipt_matches_prefix_decode_for_dynamic_video(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "dynamic.mp4"
+            subprocess.run(
+                [
+                    "ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i",
+                    "testsrc2=size=160x90:rate=24:duration=3", "-an", "-c:v",
+                    "libx264", "-g", "48", "-pix_fmt", "yuv420p", str(source),
+                ],
+                check=True,
+            )
+            tools = gate.MediaTools()
+            fast = tools.frame_rgb_receipt(source, 1.5)
+            baseline = subprocess.run(
+                [
+                    "ffmpeg", "-hide_banner", "-nostats", "-v", "error", "-xerror",
+                    "-threads", "2", "-filter_threads", "2", "-i", str(source),
+                    "-vf", "select=gte(t\\,1.500000),format=rgb24", "-map", "0:v:0",
+                    "-frames:v", "1", "-fps_mode", "passthrough", "-f", "framemd5",
+                    "-hash", "sha256", "-",
+                ],
+                check=True,
+                text=True,
+                capture_output=True,
+            )
+            baseline_receipt = gate.parse_framemd5(
+                baseline.stdout, "prefix-decode baseline"
+            )[0]
+            self.assertAlmostEqual(baseline_receipt[0], fast.pts_sec, places=6)
+            self.assertEqual(baseline_receipt[2], fast.rgb_sha256)
+
     def test_synthetic_h264_aac_mux_passes_full_decode_and_provenance(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary) / "project"
             project.mkdir()
             render = project / "renders/render.mp4"
             master = project / "audio/master.wav"
-            final = project / "final/final.mp4"
+            final = project / "renders/final.mp4"
             narration = project / "audio/narration-only.wav"
             for path in (render, master, final):
                 path.parent.mkdir(parents=True, exist_ok=True)
@@ -1127,7 +1508,7 @@ class FinalVideoGateFfmpegIntegrationTest(unittest.TestCase):
             fixture = ProjectFixture.__new__(ProjectFixture)
             fixture.project = project
             fixture.files = {
-                "final/final.mp4": final,
+                "renders/final.mp4": final,
                 "renders/render.mp4": render,
                 "audio/master.wav": master,
                 "audio/narration-only.wav": narration,
@@ -1195,7 +1576,7 @@ class FinalVideoGateFfmpegIntegrationTest(unittest.TestCase):
             fixture = ProjectFixture(Path(temporary) / "project")
             render = fixture.files["renders/render.mp4"]
             master = fixture.files["audio/master.wav"]
-            final = fixture.files["final/final.mp4"]
+            final = fixture.files["renders/final.mp4"]
             narration = fixture.files["audio/narration-only.wav"]
             subprocess.run(
                 [

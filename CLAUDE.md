@@ -8,4 +8,4 @@ Before any task, read these files in order:
 2. [`CONVENTIONS.md`](CONVENTIONS.md) — reusable production standards and validated exceptions.
 3. [`tools/video/README.md`](tools/video/README.md) — executable runbook, manifests and QA gates.
 
-If these documents appear inconsistent, stop and reconcile them against `AGENTS.md` and the current tool implementation rather than inventing a fourth copy of the rule.
+If these documents appear inconsistent, reconcile them locally against `AGENTS.md` and the current tool implementation before continuing task actions; do not invent a fourth copy of the rule or turn documentation drift into a user-confirmation blocker.

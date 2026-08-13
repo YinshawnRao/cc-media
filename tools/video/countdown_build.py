@@ -16,6 +16,7 @@ _repo = Path(__file__).resolve()
 while _repo != _repo.parent and not (_repo / "tools" / "video" / "verify_project.py").exists():
     _repo = _repo.parent
 _sys.path.insert(0, str(_repo))
+from tools.video import resource_budget as _resource_budget  # noqa: E402
 from tools.video.verify_project import verify_project as _verify_project  # noqa: E402
 
 # 必须在读取旁白、运行 showcase gate 或写任何 build 产物之前通过项目契约。
@@ -31,8 +32,40 @@ def dur(wav):
     with contextlib.closing(wave.open(str(wav), 'r')) as w:
         return round(w.getnframes() / w.getframerate(), 3)
 
+def _budgeted_ffmpeg_command(cmd, threads):
+    """Apply one lease decision to every FFmpeg codec/filter scope.
+
+    FFmpeg codec options are scoped to the following input/output.  Put the
+    decoder budget before every ``-i`` and the encoder budget immediately
+    before this template's single output, while filter pool limits remain
+    global.  The template's commands all end in ``<output> -y``.
+    """
+
+    if not cmd or Path(cmd[0]).name != "ffmpeg":
+        return list(cmd)
+    if len(cmd) < 3 or cmd[-1] != "-y" or cmd[-2].startswith("-"):
+        raise ValueError("countdown FFmpeg command must end with '<output> -y'")
+    value = str(threads)
+    output_index = len(cmd) - 2
+    result = [
+        cmd[0],
+        "-filter_threads", value,
+        "-filter_complex_threads", value,
+    ]
+    for index, token in enumerate(cmd[1:], start=1):
+        if index == output_index or token == "-i":
+            result.extend(["-threads", value])
+        result.append(token)
+    return result
+
+
 def run(cmd):
-    subprocess.run(cmd, check=True)
+    if not cmd or Path(cmd[0]).name != "ffmpeg":
+        subprocess.run(cmd, check=True)
+        return
+    lease = _resource_budget.resolve_ffmpeg_threads()
+    with lease:
+        subprocess.run(_budgeted_ffmpeg_command(cmd, lease.threads), check=True)
 
 A = "audio"; C = "clips"
 SHOW_DEFAULT = 25.0  # 解说盘点最低起点；实际必须向后对齐完整乐句，不是硬切上限

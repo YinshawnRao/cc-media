@@ -9,8 +9,9 @@
 3. 固定 ASR 幻觉/字幕 credit 过滤；
 4. ``lead_segments``、``safe_cut_intervals``、逐段证据和明确降级状态。
 
-默认 ``--mode auto``：本机已有缓存的 Whisper 模型时跑多证据分析；没有则只输出
-``evidence_level=candidate``，不得被展示段闸门自动当作主唱真值。不会自动下载模型。
+默认 ``--mode multi``：固定使用已有缓存的 Whisper 模型；模型缺失或任一输入无法
+完成分析时 fail closed，且不写不完整输出。``auto`` / ``acoustic`` 只保留为显式
+legacy 候选分析入口，不能作为正式 build 的隐式降级。不会自动下载模型。
 
 兼容用法：
   tools/tts/venv/bin/python tools/video/vocal_segments.py <audio> [audio2 ...]
@@ -25,6 +26,16 @@ import json
 import re
 import sys
 from pathlib import Path
+
+try:
+    from . import resource_budget
+except ImportError:  # Direct script execution.
+    import resource_budget  # type: ignore[no-redef]
+
+
+# OpenMP/BLAS read these settings during import, so configure them before
+# librosa/numpy (and later Whisper/Torch) enter the process.
+ASR_RESOURCE_BUDGET = resource_budget.configure_asr_environment()
 
 import librosa
 import numpy as np
@@ -356,6 +367,8 @@ def load_whisper_model(name="small", device="cpu"):
     if not _whisper_cache_exists(name):
         raise FileNotFoundError(
             f"Whisper 模型未缓存：{name}。正常 build 禁止自动下载；请先显式预取模型。")
+    import torch
+    resource_budget.configure_torch_runtime(torch, ASR_RESOURCE_BUDGET)
     import whisper
     supplied = Path(name).expanduser()
     checkpoint = supplied if supplied.is_file() else (
@@ -525,13 +538,19 @@ def analyze(path: Path, min_dur: float = 2.0, gap_tol: float = 1.5,
 def main():
     parser = argparse.ArgumentParser(description="多证据主唱候选检测")
     parser.add_argument("inputs", nargs="+", help="audio/video files（librosa 可解码格式）")
-    parser.add_argument("-o", "--out", help="合并 JSON；缺省时写 <name>.vocal.json")
+    parser.add_argument(
+        "-o",
+        "--out",
+        help="合并 JSON（输入文件 stem 作为唯一 key，重名即失败）；缺省时写 <name>.vocal.json",
+    )
     parser.add_argument("--min-dur", type=float, default=2.0, help="旧声学候选最短段 (s)")
     parser.add_argument("--gap-tol", type=float, default=1.5, help="旧声学候选段内 gap (s)")
     parser.add_argument("--percentile", type=float, default=60, help="旧声学阈值百分位")
     parser.add_argument(
-        "--mode", choices=("auto", "multi", "acoustic"), default="auto",
-        help="auto=有离线 Whisper 即多证据；multi=缺模型即失败；acoustic=仅候选")
+        "--mode", choices=("multi", "acoustic", "auto"), default="multi",
+        help=(
+            "multi=正式默认，缺离线 Whisper/推理失败即失败；"
+            "acoustic=显式 legacy 候选；auto=显式 legacy 自动降级"))
     parser.add_argument("--whisper-model", default="small", help="已有缓存的模型名或本地 checkpoint")
     parser.add_argument("--device", default="cpu", help="Whisper device；当前默认 cpu")
     parser.add_argument("--language", default=None, help="Whisper 语言，如 zh；缺省自动识别")
@@ -540,34 +559,98 @@ def main():
         help="Live/演唱会必须传 live；无 crowd 模型时禁止自动认作目标主唱")
     args = parser.parse_args()
 
+    def failure_output_notice() -> str:
+        if not args.out:
+            return "本轮未写任何分析输出。"
+        return (
+            "本轮未更新目标输出；若目标文件已存在，它属于旧结果，"
+            "不得据本次失败继续 build。"
+        )
+
+    if args.mode in {"auto", "acoustic"}:
+        print(
+            f"⚠ --mode {args.mode} 是显式 legacy 候选分析；正式 build 请使用默认 "
+            "--mode multi。",
+            file=sys.stderr,
+        )
+
+    inputs: list[Path] = []
+    input_errors: list[str] = []
+    for raw_path in args.inputs:
+        path = Path(raw_path)
+        if not path.is_file():
+            display_name = path.name or "<input>"
+            message = f"输入不可用：{display_name}（不存在或不是普通文件）"
+            input_errors.append(message)
+            print(f"  ✗ {message}", file=sys.stderr)
+            continue
+        inputs.append(path)
+
+    if not inputs:
+        print(
+            "VOCAL ANALYSIS: FAIL — 没有可分析的输入文件；请恢复/重新下载 clip，"
+            f"再用默认 --mode multi 重跑。{failure_output_notice()}",
+            file=sys.stderr,
+        )
+        return 2
+
+    if args.out:
+        key_counts: dict[str, int] = {}
+        for path in inputs:
+            key_counts[path.stem] = key_counts.get(path.stem, 0) + 1
+        conflicting_keys = sorted(
+            key for key, count in key_counts.items() if count > 1
+        )
+        if conflicting_keys:
+            print(
+                "VOCAL ANALYSIS: FAIL — 合并输出 key 冲突："
+                f"{len(conflicting_keys)} 组输入使用了相同 stem；"
+                "请先把输入改成不同文件名再重跑。"
+                f"{failure_output_notice()}",
+                file=sys.stderr,
+            )
+            return 2
+
     model = None
     if args.mode != "acoustic":
         try:
             model = load_whisper_model(args.whisper_model, args.device)
-            print(f"多证据模式：Whisper {args.whisper_model} / {args.device}", flush=True)
+            model_label = Path(str(args.whisper_model)).name or "<model>"
+            print(f"多证据模式：Whisper {model_label} / {args.device}", flush=True)
         except Exception as exc:
             if args.mode == "multi":
-                print(f"多证据模式不可用：{exc}", file=sys.stderr)
+                print(
+                    "VOCAL ANALYSIS: FAIL — 固定 Whisper 模型/runtime 不可用 "
+                    f"({type(exc).__name__})；请修复环境后用默认 --mode multi 重跑。"
+                    f"{failure_output_notice()}",
+                    file=sys.stderr,
+                )
                 return 2
-            print(f"⚠ Whisper 不可用，降级为 acoustic candidate：{exc}", file=sys.stderr)
-
-    combined = {}
-    multi_failed = False
-    for raw_path in args.inputs:
-        path = Path(raw_path)
-        if not path.exists():
-            print(f"skip {raw_path} (not found)", file=sys.stderr)
-            continue
-        print(f"分析 {path.name} ...", flush=True)
-        result = analyze(
-            path, args.min_dur, args.gap_tol, args.percentile,
-            whisper_model=model, whisper_model_name=args.whisper_model,
-            language=args.language, source_kind=args.source_kind)
-        if args.mode == "multi" and result["capabilities"].get("whisper") != "available":
-            multi_failed = True
             print(
-                f"  ✗ --mode multi 要求 Whisper 成功，实际为 "
-                f"{result['capabilities'].get('whisper')}", file=sys.stderr)
+                "⚠ Whisper 不可用，显式 legacy 模式继续输出 acoustic candidate "
+                f"({type(exc).__name__})。",
+                file=sys.stderr,
+            )
+
+    analyzed: list[tuple[Path, dict]] = []
+    analysis_errors = list(input_errors)
+    for path in inputs:
+        print(f"分析 {path.name} ...", flush=True)
+        try:
+            result = analyze(
+                path, args.min_dur, args.gap_tol, args.percentile,
+                whisper_model=model, whisper_model_name=args.whisper_model,
+                language=args.language, source_kind=args.source_kind)
+        except Exception as exc:
+            message = f"{path.name}: 无法分析（{type(exc).__name__}）"
+            analysis_errors.append(message)
+            print(f"  ✗ {message}", file=sys.stderr)
+            continue
+        if args.mode == "multi" and result["capabilities"].get("whisper") != "available":
+            message = f"{path.name}: --mode multi 未获得可用 Whisper evidence"
+            analysis_errors.append(message)
+            print(f"  ✗ {message}", file=sys.stderr)
+            continue
         print(
             f"  dur={result['duration']}s  candidate={len(result['candidate_segments'])} "
             f"vocal={len(result['vocal_segments'])} lead={len(result.get('lead_segments', []))} "
@@ -577,18 +660,30 @@ def main():
                 f"    {score['start']:6.2f}-{score['end']:6.2f}  {score['label']} "
                 f"chars/s={score['char_rate']:.2f} words={score['word_coverage']:.2f} "
                 f"center={score['center_db']}")
-        if args.out:
-            combined[path.stem] = result
-        else:
-            output = path.with_suffix(".vocal.json")
-            output.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
-            print(f"  -> {output}")
+        analyzed.append((path, result))
+
+    if analysis_errors:
+        print(
+            f"VOCAL ANALYSIS: FAIL — analyzed={len(analyzed)} "
+            f"failed={len(analysis_errors)}；修复/重新下载全部输入后，用默认 "
+            f"--mode multi 重跑。{failure_output_notice()}",
+            file=sys.stderr,
+        )
+        return 2
+
     if args.out:
+        combined = {path.stem: result for path, result in analyzed}
         output = Path(args.out)
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(json.dumps(combined, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"-> {output}")
-    return 2 if multi_failed else 0
+    else:
+        for path, result in analyzed:
+            output = path.with_suffix(".vocal.json")
+            output.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+            print(f"  -> {output}")
+    print(f"VOCAL ANALYSIS: PASS analyzed={len(analyzed)} mode={args.mode}")
+    return 0
 
 
 if __name__ == "__main__":

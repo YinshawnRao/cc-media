@@ -6,7 +6,7 @@
 
 ## 目录约定
 
-- `sandbox/<项目名>/` — 每期实际项目、测试和生成物；内容可丢弃，且不得成为复用脚本、schema 或规范的唯一副本。
+- `sandbox/<项目名>/` — 每期实际项目、测试和生成物；内容可丢弃，且不得成为复用脚本、schema 或规范的唯一副本。新项目的 raw render 与 mux 后最终 MP4 统一在 `renders/`，最终交付固定为 `renders/<slug>.mp4`；发布文案统一在并列的 `publishing/`。
 - `production/<项目名>/` — 需要长期保留的正式工程；每个项目独立，保存可复现输入与轻量证据，不把最终 MP4 当作唯一交付依据。
 - `tools/` — 跨项目复用的源码、schema 与 durable 模板（如 `tools/tts/`、`tools/video/templates/`）；验证稳定后从 `sandbox/` 迁到这里。
 - **Git 边界**：提交源码、文档、配置、schema 和轻量 QA 证据；下载媒体、普通 WAV/MP4、渲染缓存、模型/runtime、Cookie、token 与其他敏感信息必须由 `.gitignore` 隔离，并在提交前检查 staged 清单。根目录被忽略的 `all_cookies.txt` 是下载运行时输入，不是可提交资产。
@@ -23,11 +23,14 @@
   ```bash
   python3 tools/tts/resolve_voice.py --task-prompt-file brief.txt \
     -o sandbox/<slug>/voice-selection.json
+  # 仅当 resolved_id 不是 CV002 时，精确检查本期实际母带
+  python3 tools/tts/doctor.py --voice <resolved_id>
   python3 tools/tts/narrate.py script.txt \
     --selection-file sandbox/<slug>/voice-selection.json -o out.wav
   ```
+  默认 doctor 只验核心模型/runtime 与 CV002；`--full-library --check-mixed-script` 只用于声音库维护和混合文本能力回归。未使用角色或纯中文不依赖的策略不得阻断本期任务。
 - **唯一正式生成入口**：新项目只能调用 `tools/tts/narrate.py`（单条或 batch）；禁止直接 `from kokoro import KPipeline`、禁止在项目脚本里硬编码 `VOICE = ...`。每个 WAV 必须生成 `.wav.tts.json` sidecar，记录 resolved ID、模型 revision、参考母带 SHA、文本与输出 SHA。
-- **硬失败而不是换声**：CV002/Qwen 的运行环境、固定模型或参考母带缺失/校验失败时必须停止构建，**不得静默降级 Kokoro**，否则无法保证默认音色。
+- **当前步骤硬失败，而不是换声或停止整个 goal**：CV002/Qwen 的运行环境、固定模型或参考母带缺失/校验失败时，只让当前 TTS 步骤 fail closed；代理必须按 doctor 输出修复固定环境、模型、母带或 receipt，再重跑旁白及受影响下游门禁。**不得静默降级 Kokoro**，也不得把可修复问题转成用户确认点，否则无法保证默认音色。
 - **构建门禁**：新项目旁白完成后运行 `tools/tts/verify_voice_usage.py`；所有旁白 sidecar 必须与项目级 selection 同一 ID，项目脚本不得绕过中央入口。
 - **显式其他声音**：`CV001–CV008` 的编号、名称、别名与实际样音见 `tools/tts/voices/listen.html`。无效显式选择仍按 CV002，并在 selection 中记录 fallback 原因。
 - **口播文本**：新盘点 intro 第一段**禁止出现“接下来”**。默认 Qwen `Auto` 允许中英日等混合文本，不再沿用 Kokoro 的“非中文一律跳过”经验；外文专名必须先听样音/做内容 QA。只有实际发音不自然、歧义大或不可懂时，才改用通行中文译名、音译/发音友好的谐音字，或从口播省略并只在画面保留原文。
@@ -39,7 +42,7 @@
 - **Legacy Kokoro 专属：⚠ 长句（~15s+）独立 `pipeline()` 调用会吞掉开头第一小句（2026-07 实战，`xietingfeng-underrated-top5` 排查）**。本条及下面的“垫话”修法**只用于明确复现 Kokoro 的旧项目，不得复制到 Qwen/CV002 新流程**；Qwen 会把“接下来”等垫话正常念出来。TOP 盘点每首的整段旧旁白（"第X名，《歌名》。它收录在……" 一大段，单次 `pipeline(text, voice=..., speed=1.0)` 调用生成，时长 15-19s）有概率把开头第一句吞掉或吞掉一部分。
   - **根因**：与文本内容无关（把无意义的垫话放在最前面，垫话会被吞、真正内容才是"被吞对象"），是 Kokoro 对**长独立发声**开头的一个通病；短句（<10s）或"同一大段里第一句"都不受影响，只在"这段话本身是一次孤立的长 `pipeline()` 调用"时出现。**同一系列此前项目（如 `xuruyun-underrated-top5`）用 Whisper 抽查也复现同一问题**——过去这个 bug 一直存在但没被发现，因为没人用 ASR 逐句核对过旁白。
   - **旧项目修法（仅 Kokoro）**：给每段旁白文本前面拼接一句垫话（如"接下来，"），再送进旧 `pipeline()`。只在严格复现 legacy Kokoro 时保留；新 Qwen/CV002 文案不得自动添加垫话。
-  - **验证方法**：改完必须用 Whisper 转录旁白 wav 抽查开头（`ffmpeg -ar 16000 -ac 1` 转好再喂 `whisper-cli --language zh`），确认"第X名"完整出现，不能只看 RMS/时长判断——那看不出"内容被吞"。
+  - **验证方法**：改完必须通过 `tools/video/offline_asr.py` 或调用它的中央 FINAL preparer 转录旁白，抽查开头“第X名”完整出现；不能只看 RMS/时长判断——那看不出“内容被吞”。不得裸跑 `whisper-cli` 绕过固定工具链与自适应预算。
 
 ## 命名约定
 
@@ -128,7 +131,7 @@
   - YouTube：默认最佳 ≤1080p 往往是 **AV1**。若下游要 FFmpeg 重剪/拼接，AV1 解码慢，改用 H.264：`-f "bv*[height<=1080][vcodec^=avc]+ba"`。
   - B站：4K 流是 AV1 + 单声道音频；想要立体声选 1080P：`-f "bv*[height<=1080]+ba"`（实测张韶涵《大小孩》4K 流为 mono）。
   - **B站「修复版」常是 Live 演唱会版本，不等于棚版 MV**：搜结果里 "修复版" 头条往往清晰度更高（甚至 4K60 杜比视界），但内容与官方棚版 MV 调性差很多。**选源先匹配 brief 意图，再看分辨率**——brief 要"原版 MV 棚拍"，就别被 1080P Live 修复版替换走。
-  - **「李荣浩 直拍」「XX 直拍」类搜索常返回别人**：B站标题党严重，多个 "李荣浩直拍" 实测是红发青年乐手，不是本人。当事人特写要找具体节目源（《我是歌手》《天赐的声音》《歌手》等综艺纯享版，或本人确认的官方 Live），抓帧后**用户/我先肉眼验真再用**。
+  - **「李荣浩 直拍」「XX 直拍」类搜索常返回别人**：B站标题党严重，多个 "李荣浩直拍" 实测是红发青年乐手，不是本人。当事人特写要找具体节目源（《我是歌手》《天赐的声音》《歌手》等综艺纯享版，或本人确认的官方 Live），由代理先核官方元数据、逐帧抽图和 ASR/节目上下文；无法证实就换源，不把普通身份核验变成用户确认点。
 - **源信息记录**：每条入选素材在 `project-manifest.json` 绑定双平台候选、selection 与脱敏 download receipt；`SOURCES.md` 记录人工搜索过程和取舍理由。receipt 记录 URL、下载时间、raw→clip 时间窗/时长与 SHA 派生链，但不复制 Cookie、HTTP headers 或 yt-dlp 原始 `info_json`。
 
 ## Bash / 后台任务
@@ -136,6 +139,15 @@
 - **后台 bash（`run_in_background`）不继承前台 cwd**：foreground 用 `cd` 切到子目录后跑 bg 命令，bg 命令仍在调用时的 cwd（项目根）。**bg 命令一律用绝对路径**，相对路径会 silently fail。
 - **zsh nomatch 失败终止脚本**：`rm renders/work-*` 在没匹配时 zsh 默认报错并退出（bg 任务以 exit 1 结束）。改写 `rm -rf renders/work-* 2>/dev/null` 或 `setopt -u nomatch`。
 - **bg 任务空文件 ≠ 完成**：`until [ -f X ]` 在 ffmpeg 创建空头文件时立即满足条件→提前退出。判完成用文件大小 `[ "$(wc -c < X)" -gt N ]` 或 ffprobe 能解析。
+
+## 多 Goal 并发与单进程资源预算（硬约束）
+
+- **多个 goal / 所有 goal 同时推进**：禁止用跨 goal `flock`、全局 semaphore、任务队列、sleep 轮询或“前一个完成后再启动”的方式控资源。不得让一个 goal 因另一个 goal 正在 render / ASR / TTS 而进入应用层挂起；只允许限制各自进程的并行宽度，并消除同一 goal 内的重复计算。
+- **启动时自适应预算**：Whisper/Torch/BLAS、重 FFmpeg 与 HyperFrames 都通过 `tools/video/resource_budget.py` 发布当前 PID + 启动身份后立即计数；当前只有 1 个重任务时用 4，出现第 2 个时新任务用 3，达到 3 个及以上时新任务用 2（`4 → 3 → 2`）。已经运行的进程保持启动时预算，不暂停、不动态改速。PyTorch inter-op 默认仍为 1。
+- **显式覆盖优先但仍可见**：手动覆盖范围统一为 1–4，只允许 `CC_MEDIA_ASR_THREADS=1..4` / `CC_MEDIA_ASR_INTEROP_THREADS=1..4`、`CC_MEDIA_FFMPEG_THREADS=1..4`、`CC_MEDIA_HYPERFRAMES_WORKERS=1..4`，或 HyperFrames 命令中唯一一个 `--workers 1..4`；显式覆盖的任务仍登记 active，供其他 goal 自动收敛。`0`、`auto`、重复 `--workers` 和大于 4 全部拒绝。
+- **标记不是锁**：私有临时标记不写 slug、路径、prompt 或媒体信息；注册表没有 flock/semaphore/queue/wait/sleep。后续进程用操作系统 PID + 启动时间清理 SIGKILL 残留和 PID reuse；注册表不可读写时直接回退 2 线程继续，不能把预算探测失败变成 goal blocker。
+- **入口不可绕过**：视频任务不得直接调用裸 `whisper` / `whisper-cli`；使用 `tools/video/vocal_segments.py`、`tools/video/offline_asr.py` 或中央 FINAL preparer。Qwen worker 启动前必须用不 import MLX 的 Metal preflight；当前执行上下文无 Metal 时快速退出当前 TTS 步骤并按 goal 自恢复协议切换到具备权限的执行上下文，不得先触发 native abort，也不得用全局锁把多个 Qwen goal 串行化。
+- **FINAL 只做一轮重活**：标准 structured 流程由 `prepare_final_qa.py` 在同一进程生成 ASR/抽帧后立即运行中央机械 gate，并复用本轮只存在于内存、且绑定当前 path/SHA/参数的 evidence；standalone `verify_final_video.py` 仅用于显式独立复核或诊断。默认 preparer 已 PASS 后禁止立刻再跑 standalone verifier，避免重复 Whisper、逐帧 decode、SDR、black/silence 和 loudness。
 
 
 ## HyperFrames composition 规范
@@ -234,13 +246,13 @@
   - `vocal_segments.py --mode multi` 组合：Whisper 有效歌词密度和 word timestamps、固定字幕/credit 幻觉过滤、声学候选重叠、stereo mid/side 中心性。强一致才写 `lead_segments + evidence_level=multi_evidence`；单声道、宽混音对唱、观众/合唱风险或证据冲突写 `REVIEW`。
   - Live / 演唱会 / 观众明显的源必须传 `--source-kind live`。在 crowd/choir 事件模型尚未接入前，Live 即使歌词和中心性都强也保持 REVIEW，防止整齐观众合唱假绿。
   - `no_speech_prob` 只记录；`avg_logprob` 只能与极低 word probability 组合成“低置信冲突→REVIEW”。两者都不能单独判唱声：历史真唱的 no-speech 可高于假群声。
-  - 烧死卡拉 OK 歌词“逐句推进”可作人工辅助证据，但静态 lingering 歌词不是唱声。拿不准 / 用户重点曲：导出 showcase mp3 人工耳验，并把文件/抽帧/转录证据写进逐曲批准记录。
+  - 烧死卡拉 OK 歌词“逐句推进”只能作辅助证据，静态 lingering 歌词不是唱声。普通 goal 拿不准时严格按 **multi → 换窗 → 换源** 恢复，不得首次 REVIEW 就要求用户耳验。该路径确已穷尽且硬 `FAIL=0` 后，本地才可以绑定当前 hash/窗口的 `reviewer_kind=agent` 工具辅助观察闭环为 `OBSERVED`；它不是真人批准。只有用户已经明确进行了逐曲听音，才可写入 `reviewer_kind=human` 的人工批准记录，代理不得代签 human。
 - **出点对齐（问题2，硬规则）**：`show_end_src` 落在 active word/唱声中，只容忍 0.12s 分帧误差，直接 `FAIL`。落在 gap 也不能立刻算安全：尾音后至少留 0.30s，且向前看 3.0s；若下一 onset 很快出现，视为句内气口并继续向后吞句。Whisper 自动生成的 `safe_cut_intervals` 仍必须通过 3s 前向保护；只有显式 `manual/verified` 乐句证据可覆盖这条启发式，而且任何证据都不能覆盖“仍落在 active 唱声中”的硬失败。
 - QA 收尾：成片对每首展示段（旁白结束后那 30s）抽查确实有人声，不是只有伴奏；并核展示段最后 2s 是收在句末/器乐，不是切在唱字中间。
 
 **🔒 展示段对齐闸门（机械化强制，build 不过就不出 master）— 反复犯 → 不再靠人肉算。**
 
-`tools/video/showcase_align.py`：使用多证据 `vocal_analysis.json` 校验上面两条，状态为 `OK / APPROVED / REVIEW / FAIL / MISS`。只有 `OK/APPROVED` 能继续 build；旧能量数据不会再假绿。它把“凭感觉填 `ch_off/show`”变成可验证、可审计的闸门。
+`tools/video/showcase_align.py`：使用多证据 `vocal_analysis.json` 校验上面两条，状态为 `OK / OBSERVED / APPROVED / REVIEW / FAIL / MISS`。本地模式的 `OBSERVED` 只来自显式 `status=observed, reviewer_kind=agent` 记录；`APPROVED` 只来自真人记录。发布模式追加 `--require-human-review` 后不接受 `OBSERVED`。旧能量数据不会再假绿，硬 `FAIL` 不能被任何记录覆盖。它把“凭感觉填 `ch_off/show`”变成可验证、可审计的闸门。
 
 - **接入（build 算完 blocks、建 master 之前，一行）**——`countdown_build.py` 模板已内置，复用 `full_build.py` 时照抄：
   ```python
@@ -251,15 +263,15 @@
   ```
   `blocks` 每首需含 `clip/start/narr_end/full_start/end`（可选 `mseek`=预切 `-ss`）。闸门自动换算源时间码：
   `narr_end_src=mseek+(narr_end-start)`、`show_start_src=mseek+(full_start-start)`、`show_end_src=mseek+(end-start)`。
-- **前置**：build 前跑 `tools/tts/venv/bin/python tools/video/vocal_segments.py clips/vert_*.mp4 -o probe/vocal_analysis.json --mode multi --language zh`（按歌曲实际语言调整；时间基准 = 各 vert clip 源时间）。正式 build 用 `--mode multi`，模型缺失必须退出，不得静默退回能量候选。
+- **前置**：build 前跑 `tools/tts/venv/bin/python tools/video/vocal_segments.py clips/vert_*.mp4 -o probe/vocal_analysis.json --mode multi --language zh`（按歌曲实际语言调整；时间基准 = 各 vert clip 源时间）。正式 build 用 `--mode multi`；模型缺失只让当前分析步骤退出，代理修复固定模型/runtime 后重跑，不得静默退回能量候选，也不得因此停止整个 goal。
 - **反推切点（别手填）**：拿不准 `ch_off`/`show` 就让工具算：
   ```bash
   tools/tts/venv/bin/python tools/video/showcase_align.py plan \
       --vocals probe/vocal_analysis.json --clip vert_p4_wait --voice-dur 14.0 --near 105
   ```
   它按“人声入点 = 旁白收尾前 2s”给 `ch_off`，从 ≥25s 目标开始只向后找完整乐句；推荐值还会走同一个 `verify_song()` 自检，自己判 FAIL 的值不会提示写入 build。
-- **单独复核**（QA 阶段）：`showcase_align.py check --plan probe/showcase_plan.json --vocals probe/vocal_analysis.json`，要求 `FAIL=0 REVIEW=0 MISS=0`。同目录 `showcase_approvals.json` 自动读取。
-- **REVIEW 人工复核**：先生成全部为 pending 的骨架：`showcase_align.py approval-template --plan probe/showcase_plan.json --vocals probe/vocal_analysis.json`。逐曲试听后填写具体 `reason/evidence` 并改 `status=approved`；记录会绑定 clip、分析 SHA-256、`narr_end/show_start/show_end`，任一变化即失效。
+- **单独复核**（QA 阶段）：`showcase_align.py check --plan probe/showcase_plan.json --vocals probe/vocal_analysis.json`，要求 `FAIL=0 REVIEW=0 MISS=0`。工具不自动读取同目录记录；需闭环 REVIEW 时必须显式追加 `--approvals probe/showcase_approvals.json`。本地 agent observation 必须是 `status=observed, reviewer_kind=agent`；真人记录必须是 `status=approved, reviewer_kind=human`。两者都要非空 reviewer、带时区 `reviewed_at` 并绑定当前窗口与 analysis hash；发布模式必须追加 `--require-human-review` 且只接受 human。
+- **REVIEW 恢复顺序**：普通 goal 严格按 **multi → 换窗 → 换源** 恢复，优先得到机器 `OK`；不得把 pending 骨架当成等待用户的默认分支。只有该顺序确已穷尽且硬 `FAIL=0` 时，才可留下 hash/窗口绑定的 agent observation，并且结果必须叫 `OBSERVED` / local-only，不得叫 human / `APPROVED`。`showcase_align.py approval-template` 仍只供用户人工复核；代理不得把该 pending 模板改为 human approved。任一输入变化都使记录失效。
 - **禁止全局逃生**：`SHOWCASE_OVERRIDE` 已废弃。逐曲批准只能解决证据不足的 REVIEW，不能覆盖 active word、短气口等硬边界 FAIL。
 
 > 验证项目：`sandbox/zwtl-duet-pk/`（周王陶林男女合唱PK，4:25）。早期用竖裁放大→双人被裁半、副歌 14s 太短被吐槽；改 letterbox 全宽 + 连续 27–32s 副歌后达标。
@@ -272,22 +284,48 @@
 - `tools/video/vfill.sh` — 竖屏填充
 - `tools/video/countdown_build.py` — 音轨 + 合成构建模板（按 brief 改 songs/时长/文案）
 
-**三门禁顺序（标准盘点 / 叙事 / 自由探索项目不可调换）：**
+**四门禁顺序（标准盘点 / 叙事 / 自由探索项目不可调换）：**
 
 1. **VOICE GATE**：解析一次 `voice-selection.json`、用中央入口生成全部旁白后，运行 `tools/tts/verify_voice_usage.py`。它证明 selection、sidecar、模型/reference 声明和当前 WAV/path/hash 在本地诚实工作流中一致；不证明旁白已混入终片、实际可听或音色来源具有对抗性证明。
 2. **PROJECT CONTRACT**：任何 build 写 `master.wav`、HTML 或其他产物前，运行 `tools/video/verify_project.py --project sandbox/<slug>`。它证明结构、TOP 顺序、旁白绑定、逐曲 evidence、双平台来源声明及本地下载派生链满足门禁；不联网认证上传者/“官方”身份，也不证明最终画面或听感。
-3. **FINAL VIDEO QA**：HyperFrames 画面 render 后，用预混 `master.wav` 完成 post-mux，再对 mux 后 MP4 运行 `tools/video/verify_final_video.py --project sandbox/<slug> --manifest qa/final-video-qa.json`。它只证明可机械复算的媒体、ASR、hash 和当前人工 evidence 记录一致；不能冒充机器已理解画面美感、水印语义、最佳高光，也不能认证本地 `reviewer_kind: human` 的真实身份。
+3. **PUBLISHING COPY**：只在 build、HyperFrames render 与 post-mux 已完成后生成 `publishing/xiaohongshu.md`，再运行 `tools/video/verify_publishing.py`；它在 FINAL 前执行，不得提前塞进 build 前的 `project-manifest.json` 门禁。只有 `PUBLISHING COPY: PASS` 才能继续交付。
+4. **FINAL VIDEO QA（默认本地机械终验）**：HyperFrames 画面 render 后，用预混 `master.wav` 完成 post-mux。raw render 与 mux 后 final 都必须位于 `renders/`。对有 intro / song / outro / CTA timeline 与完整旁白的**标准结构化盘点/叙事项目**，调用中央 `tools/video/prepare_final_qa.py`，由它从当前 timeline、authoring manifest、final、render 与 master 生成 `qa/final-video-qa.json`、实时 ASR artifacts、逐章无损抽帧和机械诊断，并在同一进程内调用中央 FINAL gate；不得跳过 preparer 手写或复制旧 QA manifest。该命令输出 `FINAL VIDEO QA: PASS` 即完成默认机械终验，不再紧跟第二次 standalone verifier。`verify_final_video.py` 仍保留为显式独立复核/故障诊断入口，独立运行时继续 live 重算而不信任项目内自报 diagnostics。默认不要求真人代签，机械通过即可完成普通视频 goal。pending human review、需要人判断的自然黑淡变或语义项保存在 QA 文件中，不把普通 goal 标记为 `blocked`，默认交付只报告 advisory 数量。只有用户明确要求公开发布、发布验收或可发布交付时，才由真人完成 preparer 生成并绑定当前 final SHA 的 `qa/human-review-input.template.json`，再以 `--human-review-input` + `--require-human-review` 重新 prepare 并完成严格终验。`project_kind: free_exploration` 不得强套这个 structured preparer，仍按其当期 project/final schema 准备 QA；AI 音色 MV 继续走 durable builder 与独立 `--check`。所有模式都不能冒充工具理解了画面美感、水印语义或最佳高光，也不能伪造 `reviewer_kind: human`。
 
 ```bash
 python3 tools/tts/verify_voice_usage.py \
   --selection sandbox/<slug>/voice-selection.json --project-root sandbox/<slug>
 python3 tools/video/verify_project.py --project sandbox/<slug>
-# build → HyperFrames render --sdr → 用 master.wav post-mux
-python3 tools/video/verify_final_video.py \
-  --project sandbox/<slug> --manifest qa/final-video-qa.json
+# build → 在项目目录用 resource_budget.py hyperframes wrapper + --sdr 自适应 render 到 renders/full.mp4 → 用 master.wav post-mux
+python3 tools/video/verify_publishing.py --project sandbox/<slug>
+python3 tools/video/prepare_final_qa.py \
+  --project sandbox/<slug> \
+  --final renders/<slug>.mp4 --render renders/full.mp4
+# 上一命令已在同一进程运行中央 FINAL gate；不要默认重复执行 standalone verifier。
+# 只有显式独立复核/诊断时才运行：
+# python3 tools/video/verify_final_video.py \
+#   --project sandbox/<slug> --manifest qa/final-video-qa.json
+# 仅当用户明确要求发布级终验，且真人已完成当前 SHA 模板时：
+python3 tools/video/prepare_final_qa.py \
+  --project sandbox/<slug> \
+  --final renders/<slug>.mp4 --render renders/full.mp4 \
+  --human-review-input qa/human-review-input.json \
+  --require-human-review
+# strict gate 已由上一条 preparer 在同一进程执行。
 ```
 
-任一门禁失败都回到其输入修正，禁止先产出再补写 evidence，或把下游 PASS 当成上游豁免。AI 克隆整首 MV 不冒充这套标准 project/final schema，按 `tools/video/templates/ai-voice-mv/` durable builder 的 `--check` 与独立 QA 边界执行。
+VOICE、PROJECT、PUBLISHING 或 FINAL 的机械红线失败都回到其输入修正，禁止先产出再补写 evidence，或把下游 PASS 当成上游豁免。默认本地终验中的 human-review advisory 不是机械失败，也不是 goal blocker；显式 `--require-human-review` 返回 `REVIEW_REQUIRED` 才表示发布终验仍待真人。AI 克隆整首 MV 不冒充这套标准 project/final schema，按 `tools/video/templates/ai-voice-mv/` durable builder 的 `--check` 与独立 QA 边界执行；其输出仍按并列目录生成发布文案，但当前 AI config 缺少标准 performer/theme 上下文，不能伪造 `project-manifest.json` 冒充通过标准 PUBLISHING CLI。
+
+**小红书发布文案（硬约束）**：每个完成型新 Sandbox 项目必须创建与 `renders/` 并列的 `publishing/`，固定文件为 `publishing/xiaohongshu.md`。文件提供 1–5 个爆款标题候选，默认 3 个，第一条就是首选；正文必须是无需再改写即可发布的完整描述，最后一行必须是 hashtags。标题候选、正文、互动句和 hashtags 的全部对外文字都不得出现本期任何歌曲名称，避免剧透。写作前必须核对本期真实主题、歌手、选题角度、旁白和最终内容，文案要与作品强相关，不得用可替换到任意项目的泛化模板，也不得杜撰事实。具有标准 `project-manifest.json` 的盘点、叙事与自由探索项目，完成后运行 `python3 tools/video/verify_publishing.py --project sandbox/<slug>`，必须得到 `PUBLISHING COPY: PASS`。这一门禁发生在 build/post-mux 之后、FINAL 之前，不改变 `project-manifest.json` 的 build 前职责；专用 durable 流程不得为调用该 CLI 伪造标准 manifest。
+
+**Sandbox 成片交付收尾（硬约束）**：新项目的 raw render 和 mux 后最终 MP4 只能写在 `renders/`；最终交付固定为 `renders/<slug>.mp4`，禁止使用 `final/`、`output/`、项目根终片或其他目录。普通成片的最终回复同时报告 `renders/<slug>.mp4` 与 `publishing/xiaohongshu.md`、最终 MP4 当前 SHA、VOICE / PROJECT / PUBLISHING / FINAL 四道门禁结果、实际修复和确实影响成片的问题。发布文案是必需内容产物，不属于被禁止的“未来发布建议”；内部 pending、review template 和严格模式入口留在 QA 文件与 Runbook 中。仍不得自动附加用途定位、权利或条款免责声明、额外真人复核建议。只有用户在当期任务中主动询问相应主题时才回答，且不能把这类提示写进 `QA.md`、`SOURCES.md`、README、checklist 或 CLI 默认输出。
+
+### Goal 自动恢复与真正阻断边界
+
+内部步骤首次失败只停止当前步骤，不停止整个 goal。统一执行“**诊断 → 修复 → 重跑**”：保留错误、当前输入与 hash，先判断是素材、环境、配置还是产物问题；在不改变 brief、不伪造 evidence、不降低 gate 的前提下修复，或使用本文件已经验证的替代路径；然后从最近失败步骤继续，并重跑所有受影响下游门禁。不得因可自行修复的内部失败暂停、等待用户确认或标记 `blocked`；机械红线不得降级或放松。
+
+- **必须自行恢复**：普通公开下载或单个候选失败就切换客户端、关键词、平台和同版本备选源；模型可安装或 receipt/runtime 漂移就修复固定环境；TTS/ASR/sidecar、render/mux、manifest/evidence 以及门禁 FAIL/REVIEW 都回到相应上游修正并复跑。下载、TTS、渲染或 QA 第一次非零退出不是用户 blocker。
+- **展示 REVIEW 不等于等用户**：先重跑 `--mode multi`，调整切点与完整乐句窗，再换同版本官方 MV / 官方 Live / 另一平台干净来源，优先拿到机器 `OK`。不得由代理填写“人工 approved”，硬 FAIL 也不能批准覆盖；只有穷尽正确版本和安全窗口后，继续又必须改变核心 brief 时才进入下面的用户决策边界。
+- **允许暂停的唯一窄边界**：用户明确要求小样或阶段确认；缺少用户独占的必需输入（如用户指定但未提供的 AI WAV）；已穷尽安全替代、公开双平台来源、备用 client 和安全重试后，仍需要模型无法取得的新凭据、权限或外部能力；继续必须改变歌单、排名、歌手版本、平台排除、硬时长等核心 brief；显式发布任务缺少真人终验。进入这些边界前必须记录已尝试方案并保留可恢复产物，不能把内部工具报错转嫁成用户确认；首次出现真实外部边界只请求必需输入/权限，不立即标记 `blocked`，只有同一外部阻断连续三次 goal turn 仍存在且无法继续时才可标记。
 
 **用户 brief 的标准格式**（缺省项按本规范默认值处理）：
 ```
@@ -309,7 +347,7 @@ python3 tools/video/verify_final_video.py \
 ### QA 方法论（我看不到画面、听不到声音 → 必须用工具验证，不能凭感觉说“好了”）
 
 - **画面**：`ffmpeg -ss N -i v.mp4 -frames:v 1 f.png` 抽帧，用 **Read 工具实际查看**；多帧可 `hstack` 成 contact sheet。下载的每段素材也要先抽帧确认是真动态 MV、记录水印/字幕/画幅。
-- **静音唯一口径（标准 post-mux 终片）**：以 `verify_final_video.py` 对 mux 后 MP4 的实时检测为机器真源。连续静音 `1.0–1.5s` 一律进入 REVIEW，必须有绑定当前 final SHA 的人工 context；`>1.5s` 一律 hard fail，不能由人工批准覆盖。跨 chapter boundary 只说明归属，**不会**把命中自动降级或放行。小于 1.0s 不触发该机器门槛，仍需人工判断是否是突兀硬切。禁止为绕过 gate 铺白噪音、brown noise、无关 ambient 或仅为抬过阈值的假音乐床；若停顿不合叙事，应从剪辑、旁白时机或与内容相关的真实音乐衔接修复。
+- **静音唯一口径（标准 post-mux 终片）**：以 `verify_final_video.py` 对 mux 后 MP4 的实时检测为机器真源。连续静音 `>1.5s` 在默认本地终验和发布终验中都一律 hard fail，不能由人工批准覆盖；`1.0–1.5s` 与跨 chapter boundary 的检测结果在默认本地终验中如实记录为非阻断 advisory，显式 `--require-human-review` 时才必须有绑定当前 final SHA 的真人 context。`blackdetect` 命中同理：默认记录区间供用户查看，发布终验才要求真人确认它是自然淡入淡出还是故障。小于 1.0s 不触发该机器门槛，仍应由代理通过波形和上下文检查是否突兀。禁止为绕过 gate 铺白噪音、brown noise、无关 ambient 或仅为抬过阈值的假音乐床；若停顿不合叙事，应从剪辑、旁白时机或与内容相关的真实音乐衔接修复。
 - **响度**：用 `volumedetect` / loudness 检查各首副歌趋于一致、旁白段音乐明显更低；最终仍以 mux 后 AAC 为准。**绝不靠“应该没问题”下结论**。
 - **泄漏**：确认成片画面内无水印/网址/提示词/路径/项目内部词（裁切 + 干净叠层）。
 - **⚠ `ffmpeg -ss T -i x.wav ... volumedetect` 精确到零点几秒的窗口抽查可能不可信（2026-07 许美静最被低估5首验证）**：曾用它抽查 ducking 效果，测出"旁白段音乐几乎没被压低"的假警报（bed vs show 几乎同响度），一度怀疑 envelope/loudnorm 链路有 bug；改用 Python `wave`/`numpy` 按精确 sample offset 直接读取同一份 WAV，同一窗口测出的真实结果是 bed ~-46~-51dB vs show ~-11~-18dB（差 30+dB，ducking 完全正常）。根因是 `-ss`（无论放 `-i` 前后）在纯 PCM WAV 上的定位在某些环境下有明显偏差，对短窗口（<1s）尤其失真，但对秒级以上的粗粒度检查（如比较整段旁白 vs 整段展示段）误差不明显、不易察觉。**结论**：QA 阶段要做"零点几秒级"精确窗口的音量分析（如验证 ducking envelope 前几百 ms 是否真的压低），别用 `ffmpeg -ss` 抽查，改用 `wave`/`numpy` 按 sample offset 直接读取（或渲染后的 MP4 同样验证一遍，确认问题不是 mux 引入的）；`-ss` 抽帧做画面 QA、抽整段做粗粒度音量对比不受此问题影响，仍可正常使用。
@@ -318,9 +356,9 @@ python3 tools/video/verify_final_video.py \
 
 - **先配音，后进音乐**：章节/开场的介绍旁白先讲，期间音乐**最多是低音量床**（或无），不要一上来 voice+music 同时全量"轰炸"。**真正全量的音乐留给无旁白的副歌/展示段**。
 - **旁白收尾留消化位**：每段介绍旁白讲完保留 **0.8–1.2s** 缓冲再切歌/进下一段；不得最后一个字刚落就硬切。需要声音支撑时只用与内容相关的音乐淡入或素材预入声，不以噪声/无关底床填门禁。
-- **章节交界**避免出现"配音停 + 音乐未起 + 画面静止"的无意空等；有叙事意图的停顿仍按上面的统一静音阈值进入 REVIEW 或 hard fail，不因位于交界而自动放行。
+- **章节交界**避免出现"配音停 + 音乐未起 + 画面静止"的无意空等；有叙事意图的停顿仍按上面的统一静音阈值进入默认本地 advisory、发布 REVIEW 或 hard fail，不因位于交界而绕过实时检测。
 - 典型每首结构：介绍旁白（音乐床）→ 消化位（床淡入/swell 起）→ 副歌展示（音乐全量、无旁白）。
-- **QA**：成片运行终片 gate；单独排障可用 `ffmpeg -af silencedetect=n=-35dB:d=1` 观察区间，但不得用手工命令结果替代 gate manifest、当前 hash 与人工 context。另抽测旁白段 vs 展示段音乐音量确认有明显高低差。
+- **QA**：成片运行终片 gate；单独排障可用 `ffmpeg -af silencedetect=n=-35dB:d=1` 观察区间，但不得用手工命令结果替代 gate manifest、当前 hash 与实时检测。默认本地终验把需要真人判断的区间保留为 advisory；显式发布终验的人工 context 必须绑定当前 final SHA。另抽测旁白段 vs 展示段音乐音量确认有明显高低差。
 
 ### 多段成片的实战经验（张韶涵暗黑面全片验证）
 
@@ -362,15 +400,16 @@ python3 tools/video/verify_final_video.py \
 - 备选（确定性更强，推荐用于"床→swell"这种结构化动态）：用 `volume='<分段表达式>':eval=frame` 脚本化音量包络（按时间窗给不同增益 + 边界做斜坡）。
 - **关键坑：HyperFrames 渲染会对音频做响度归一化，压平你精心做的动态**（实测旁白段 vs 展示段从 7.6dB 差被压到 2.6dB）。render 没有关闭开关。所以**精确混音必须后期 mux**：让 HyperFrames 只渲画面，再用预混 `master.wav` 覆盖成片音轨——
   ```bash
-  ffmpeg -i rendered.mp4 -i master.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 192k -shortest final.mp4
+  ffmpeg -i renders/full.mp4 -i master.wav -map 0:v -map 1:a -c:v copy -c:a aac -b:a 192k -shortest renders/<slug>.mp4
   ```
-  成片以 `final.mp4`（mux 后）为准，而非 HyperFrames 直接产物。
+  成片以 `renders/<slug>.mp4`（mux 后）为准，而非 HyperFrames raw render；两类 MP4 都不得离开 `renders/`。
 
 ### HyperFrames render 默认参数（短视频自媒体）
 
 - **`--sdr` 必加**：HF 渲染会从 **任意一个** 源做 HDR auto-detect。Bili「杜比视界」流（如 LIKE A STAR 巡演 BV15m411k7Yi）一旦进 footage，整片输出会被升级成 **HLG (BT.2020) 10-bit H.265**——抖音/小红书/视频号普遍不收，播放器色彩翻车。Render 命令一律：
   ```bash
-  npx --yes hyperframes@0.6.69 render --output renders/full_raw.mp4 --sdr
+  python3 ../../tools/video/resource_budget.py hyperframes -- \
+    npx --yes hyperframes@0.6.69 render --output renders/full_raw.mp4 --sdr
   ```
   已有历史项目优先运行其 package scripts/lockfile 固定的版本，不用上面命令强行跨版本。
 - **`<video>` 不能控 `currentTime`**：HF 渲染期间会把 video 元素的 currentTime 锁到合成时间。要让 footage 从源的某个时间码起播，**必须 ffmpeg 输出端预切**（`-ss S -i in -t L -c:v libx264 -g 30 -keyint_min 30 -an out.mp4`），切完的视频从 0 开始播。
@@ -394,7 +433,7 @@ python3 tools/video/verify_final_video.py \
   - `HIGH_BASE ≈ 40-45s` 副歌展示（前 4 首），`HIGH_LAST ≈ 55s`（finale）
   - `MID_OVER ≈ 5s` 中段金句叠副歌后半段
   - 整片 ≈ `intro 17s + 5 首 × (~70s) + outro 16s ≈ 393s = 6:33`，落在 brief 6:30-8:30 的目标区。
-- **章节交界防无意空等**（QA 必查）：该历史工程每首开头的静音 `LEAD` 与上一段尾部叠加后曾形成突兀停顿。新项目按本文件「QA 方法论」的唯一静音口径判定：`1.0–1.5s` REVIEW、`>1.5s` hard fail，跨章不自动放行。若需修复，只使用与内容相关的真实音乐/素材衔接并重新混音；禁止复制该期“全程 ambient bed”做法或铺噪声绕 gate。
+- **章节交界防无意空等**（QA 必查）：该历史工程每首开头的静音 `LEAD` 与上一段尾部叠加后曾形成突兀停顿。新项目按本文件「QA 方法论」的唯一静音口径判定：`1.0–1.5s` 在默认本地终验中为非阻断 advisory，显式发布终验才进入真人 REVIEW；`>1.5s` 两种模式都 hard fail，跨章不自动放行。hard fail 由代理调整旁白/镜头、使用相关真实音乐衔接、重混并重跑，不等于 goal blocked；禁止复制该期“全程 ambient bed”做法或铺噪声绕 gate。
 - **多 footage 段必须预切**（见上 HyperFrames render 章节）：每首歌段 `<video src="clips_seg/<key>.mp4">`，其中 `clips_seg/<key>.mp4` 是从 `vert_<song>.mp4` 输出端切出的对应段（按 mseek 起始）。HF 不能在 render 时控 currentTime。
 - **跨章节响度统一**（同张韶涵章节规则）：副歌段 5 首 -14.8 ~ -16dB，差 <1.2dB 即达标；旁白段 -21 ~ -24dB（与副歌差 7-10dB 体现 ducking）。
 
@@ -403,7 +442,7 @@ python3 tools/video/verify_final_video.py \
 封面要求**第 1 帧可直接作社交平台缩略图**。该长篇人物项目要求**真人头像**；新项目的人物与封面通用规则见本文件「首屏封面」，不要依赖不存在的外部偏好引用。
 
 - **头像优先级**：① **用户直接提供合照**（如 `raw/li-yang.jpg` 婚纱照） > ② 当事人确认的官方 4K Live 直拍 > ③ 综艺纯享版正脸帧。**绝不**用：MV 演员替身（如李荣浩《年少有为》《模特》MV 主角是演员不是他本人）、Topic 静态图、第三方搜出来的 "XX 直拍"（标题党严重）。
-- **当 brief 涉及双人**（如"A 写给 B 的歌"），**第一时间问用户要 2 人合照**，比花 30 分钟在源里翻找快几倍。把图放 `raw/li-yang.jpg` 这类位置，build 时 ffmpeg crop 两个 280×280 头像到 `hf/cover_assets/`。
+- **当 brief 涉及双人**（如"A 写给 B 的歌"），先自行从已验证官方 MV / Live / 节目源寻找合照或同框帧并核验身份；只有用户明确要求使用其私有合照而尚未提供，才把它视为用户独占的必需输入。采用用户提供图时放 `raw/li-yang.jpg` 这类位置，build 时 ffmpeg crop 两个 280×280 头像到 `hf/cover_assets/`。
 - **圆形头像必须脸部居中**：双人合照里裁单人，crop 框右/左边缘不得带入另一人的肩膀/衣物。靠近时 crop 收紧到 220×220 而非 280×280；脸对正横向中心；多个人物的头像 crop 框宽度要一致以视觉对称。
 - **背景模糊层用同一张合照**两次（一左一右），blur 40px + brightness 0.45 + scale 1.2 + 上叠 `linear-gradient(180deg, rgba(6,8,15,.45) 0%, rgba(6,8,15,.92) 100%)` 暗夜叠层，避免纯黑封面。
 
@@ -422,9 +461,9 @@ python3 tools/video/verify_final_video.py \
 
 ### 渲染迭代成本
 
-- 一次 1080×1920 6:30 全片渲染 ≈ **8-10 分钟**（5 workers），加 mux/QA 抽帧约 12 分钟一轮。
-- **每次迭代前先把 QA frames 全列给用户审**，避免"改了一处再渲 10 分钟才发现另一处也错"。
-- **样片先行铁律的例外**：当 brief 极详细（设计稿/调色/排版都明示），且用户希望直接出全片，可跳过 90s 样片步骤直接全渲——但必须提前对齐缩水的部分（粒子动画、专业 AE 形变转场等），避免渲完才发现缺。
+- 历史基准中一次 1080×1920 6:30 全片渲染用 5 workers 约 **8-10 分钟**；这是旧单任务测速，不是当前默认。现在统一经 wrapper 启动时自适应为 `4 → 3 → 2` 并去重 FINAL 重活；不要为了追单条速度恢复 5 workers / auto。
+- **goal / 视频制作默认一次完成**：用户要求制作或完成一期视频时，直接从 brief 持续执行到 `renders/<slug>.mp4`、`publishing/xiaohongshu.md`、VOICE / PROJECT / PUBLISHING / 本地机械 FINAL 四道门禁与当期 QA，不以“新风格”为由先交 90s 样片或开场 + 首段后暂停等待确认，也不得因 pending human review 暂停或把 goal 标记为 `blocked`。内部可做 lint、抽帧、短区间试渲等低成本自检，但它们不是阶段性交付，也不能中断最终产物目标；只有用户明确要求发布级终验时，`--require-human-review` 才成为完成条件。
+- **只有用户明确要求才交小样**：用户明确写出“小样 / 预览 / 先看风格”时，才可把局部渲染作为阶段性交付并等待反馈。若首轮全片 QA 发现问题需要重渲，应先在内部合并所有已发现问题再统一修复，减少多轮渲染；不要把每次内部迭代变成用户确认点。
 
 ### 展示段选源：概念/多机位 MV 的「歌手镜头蒙太奇」（吴青峰为别人写的歌 TOP5 验证）
 
@@ -476,7 +515,7 @@ voice_rms = np.sqrt(np.mean(S[voice_mask] ** 2, axis=0))
 # 平滑 + 60th percentile 阈值 → 连续 >2s 视为有效 vocal 段；>1.5s gap 视为段间
 ```
 
-正式运行用 `--mode multi`，优先读取 `lead_segments`；`vocal_segments` 仅为兼容字段。若 `evidence_level!=multi_evidence`，不得仅按区间密度自动认定 verse/chorus，必须结合歌词结构或人工复核：
+正式运行用 `--mode multi`，优先读取 `lead_segments`；`vocal_segments` 仅为兼容字段。若 `evidence_level!=multi_evidence`，不得仅按区间密度自动认定 verse/chorus：普通 goal 严格按 **multi → 换窗 → 换源** 恢复；穷尽且硬 `FAIL=0` 后，本地可消费 hash-bound agent observation 并且只能得到 `OBSERVED`，发布 `--require-human-review` 仍只接受 human。不能把首次分析不足变成等待用户的默认分支：
 - **verse 1** = 早期第一个长 vocal 段（通常源开始后 30-90s 之间的一段连唱）。
 - **verse 2** = 中段第二个长 vocal 段（通常 130-180s 之间）。
 - **final chorus** = 接近尾段的高密度 vocal 段（通常 200-250s 之间，多句连唱）。
@@ -507,7 +546,7 @@ voice_rms = np.sqrt(np.mean(S[voice_mask] ** 2, axis=0))
 **固定流程：**
 - 源音频：把用户给的训练 WAV 复制到当期项目 `audio/`，不要重新推理、不要改训练音色文件本身。若音频来自 `cc-voice`，只允许复制用户明确给出的 WAV 路径或目录内 WAV 到本项目；不得对 `cc-voice` 做目录扫描、状态检查、哈希/时长探测、进程检查或任何写操作。时长/静音/哈希等校验一律在复制到 `cc-media` 后对本地副本执行。批量目录导入时，文件名含 `废弃` 的 WAV 直接跳过。
 - 源视频：每首仍按“素材源平台”硬约束同时查 YouTube + B站。版本身份正确后优先官方 MV，官方 MV 画质稍差也继续优先；第三方 4K 升级源不能仅凭分辨率胜出。仍需抽帧确认目标段可用，只有官方 MV 存在结构性缺口时才按总则换源并在 `SOURCES.md` 留证。
-- 构建：按 `tools/video/templates/README.md` 填写项目 `build/config.json`，运行 `tools/video/templates/ai-voice-mv/build.py`；一首输出一个 `final/YYYY-MM-DD/<配置输出名>.mp4`。视频必须先与训练 WAV 对齐；仅允许用 `tpad` 补视频短于音频不超过约 0.5s 的编码级差异，不能靠它掩盖剧情片头或错误偏移。
+- 构建：按 `tools/video/templates/README.md` 填写项目 `build/config.json`，运行 `tools/video/templates/ai-voice-mv/build.py`；一首输出一个 `renders/YYYY-MM-DD/<配置输出名>.mp4`。视频必须先与训练 WAV 对齐；仅允许用 `tpad` 补视频短于音频不超过约 0.5s 的编码级差异，不能靠它掩盖剧情片头或错误偏移。
 - intro：先从用户原始 prompt 解析一次项目 `voice-selection.json`，再用 `tools/tts/narrate.py <文案> --selection-file ... -o ... --speed 1.12` 生成“如果某歌手唱《歌名》。”类提示；未指定时自然落到默认 CV002，显式有效指定则按指定。构建脚本会校验 sidecar 与项目选择一致，并修剪 TTS 首尾静音。
 - 混音：intro 期间训练音频 duck 到约 25%，intro 结束后 350ms 恢复；最终音频直接由 FFmpeg 预混/编码，不走 HyperFrames 音频归一化。单首训练音频若明显低于本目录响度基线，可在 `Song` 配置轻微 `audio_gain`，但最终 max volume 必须低于 0dB。
 - 角标：全程叠加 `AI训练，仅供娱乐`。用 durable 模板内保留的 `watermark.swift` 离线生成当期项目透明 PNG，再由构建脚本 `overlay`；源码可复用，生成的工具和 PNG 仍留在 `sandbox/<slug>/`。
@@ -600,7 +639,7 @@ video A fade-out 结束时刻 = video B fade-in 起始时刻 → 中间会有 0.
 - 全片 ambient 底床（即便 sub-bass + brown noise 综合 -47dB）**用户能听到，会立即抱怨"轰隆隆"**。
 - 禁止用全片 pad、白噪音、brown noise 或无关 ambient 兜底 `silencedetect`；用户偏好顺序是：**有意图的真停顿 > 为过 gate 伪造的底床/噪声**。
 - 可从内容本身修复：章节末自然 `afade out`、调整旁白/镜头时机，或使用同章节真实音乐做有叙事意义的 bridge；不能只把电平抬过检测阈值。
-- 阈值没有项目级例外：`1.0–1.5s` 即使是自然停顿或跨章节也只能 REVIEW，`>1.5s` hard fail；统一以「QA 方法论」和终片 gate 为准。
+- 阈值没有项目级例外：`1.0–1.5s` 即使是自然停顿或跨章节，在默认本地终验中也必须记录为非阻断 advisory，显式发布终验才需真人 REVIEW；`>1.5s` 始终 hard fail，并由代理修剪/重混/重渲后复验；统一以「QA 方法论」和终片 gate 为准。
 
 **短视频开头节奏（用户硬偏好）**：
 - 0-1s **必须有视觉动作**（卡片缩放/path 绘制/光点点亮均可），不能纯静止。
@@ -658,6 +697,7 @@ video A fade-out 结束时刻 = video B fade-in 起始时刻 → 中间会有 0.
 ## 渲染与产物
 
 - `npm run render` 输出到项目内 `renders/<id>_<时间戳>.mp4`。
+- raw render 与 mux 后最终 MP4 必须始终留在 `renders/`；最终交付命名为 `renders/<slug>.mp4`，不得使用 `final/`、`output/` 或项目根终片。
 - 渲染吃内存（headless Chrome 截帧），`doctor` 报过低内存告警；大渲染前留意可用内存。
 - 产物归档策略（保留可复现输入而非仅 MP4）：见各目录 README。`renders/`、`*.mp4`、下载素材已在 `.gitignore` 排除。
 

@@ -458,7 +458,7 @@
       }
     },
     "reviewApproval": {
-      "description": "One entry inside an external approval artifact's approvals object.",
+      "description": "One hash-bound agent observation or human approval inside an external review artifact.",
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -468,13 +468,14 @@
         "window",
         "reason",
         "evidence",
+        "reviewer_kind",
         "reviewer",
         "reviewed_at",
         "evidence_files"
       ],
       "properties": {
         "status": {
-          "const": "approved"
+          "enum": ["observed", "approved"]
         },
         "clip": {
           "$ref": "#/$defs/projectPath"
@@ -497,6 +498,9 @@
             "minLength": 1
           }
         },
+        "reviewer_kind": {
+          "enum": ["agent", "human"]
+        },
         "reviewer": {
           "type": "string",
           "minLength": 1
@@ -512,7 +516,21 @@
             "$ref": "#/$defs/fileRef"
           }
         }
-      }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "status": {"const": "observed"},
+            "reviewer_kind": {"const": "agent"}
+          }
+        },
+        {
+          "properties": {
+            "status": {"const": "approved"},
+            "reviewer_kind": {"const": "human"}
+          }
+        }
+      ]
     },
     "vocalShowcaseEvidence": {
       "description": "External hash-bound vocal evidence schema.",
@@ -537,7 +555,7 @@
           "const": "vocal_showcase"
         },
         "status": {
-          "enum": ["OK", "APPROVED"]
+          "enum": ["OK", "OBSERVED", "APPROVED"]
         },
         "item_id": {
           "type": "string",

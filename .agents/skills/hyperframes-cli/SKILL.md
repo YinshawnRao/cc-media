@@ -92,13 +92,13 @@ implementation file, but do not label it as the project or preview surface.
 
 ## Rendering
 
+In this repository, `AGENTS.md` overrides the generic commands below: run the
+pinned renderer through the non-blocking resource wrapper so concurrent goals
+receive the adaptive worker budget, and keep every render under `renders/`.
+
 ```bash
-npx hyperframes render                                # standard MP4
-npx hyperframes render --output final.mp4             # named output
-npx hyperframes render --quality draft                # fast iteration
-npx hyperframes render --fps 60 --quality high        # final delivery
-npx hyperframes render --format webm                  # transparent WebM
-npx hyperframes render --docker                       # byte-identical
+python3 ../../tools/video/resource_budget.py hyperframes -- \
+  npx --yes hyperframes@0.6.69 render --output renders/<slug>_raw.mp4 --sdr
 ```
 
 | Flag                 | Options               | Default                    | Notes                                                              |
@@ -107,7 +107,7 @@ npx hyperframes render --docker                       # byte-identical
 | `--fps`              | 24, 30, 60            | 30                         | 60fps doubles render time                                          |
 | `--quality`          | draft, standard, high | standard                   | draft for iterating                                                |
 | `--format`           | mp4, webm             | mp4                        | WebM supports transparency                                         |
-| `--workers`          | 1-8 or auto           | auto                       | Each spawns Chrome                                                 |
+| `--workers`          | 1-4 in this repository | injected by wrapper        | Each spawns Chrome; do not use `auto`                              |
 | `--docker`           | flag                  | off                        | Reproducible output                                                |
 | `--gpu`              | flag                  | off                        | GPU-accelerated encoding                                           |
 | `--strict`           | flag                  | off                        | Fail on lint errors                                                |

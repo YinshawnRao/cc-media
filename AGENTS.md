@@ -15,7 +15,7 @@ The repository is in an **exploration phase** and is already an initialized Git 
 
 ## Layout
 
-- `sandbox/` — 单期视频的下载素材、渲染产物和可丢弃试验区；内容不承诺长期保留。
+- `sandbox/` — 单期视频的下载素材、渲染产物和可丢弃试验区；内容不承诺长期保留。新项目的 raw render 与 mux 后最终 MP4 全部放在 `sandbox/<slug>/renders/`，发布文案放在并列的 `sandbox/<slug>/publishing/`。
 - `production/<项目名>/` — 正式成片，每个项目一个子目录，保留可复现输入。
 - `tools/` — 跨项目复用工具。可复用的工具调研放 `tools/<domain>/research/`，不能因为仍在试验就塞进视频成品目录；`tools/tts/` = 编号化本地中文配音库（Qwen3-TTS 角色声音 + Kokoro legacy），实际母带与样音放 `tools/tts/voices/`。
 - `CONVENTIONS.md` — 全局规范，验证可行的做法沉淀到这里。
@@ -24,12 +24,28 @@ The repository is in an **exploration phase** and is already an initialized Git 
 
 接到任何视频制作 brief（如"做一个音乐盘点/主题视频…"），动手前先：
 1. 读 `CONVENTIONS.md`（全局规范 + brief 格式 + QA 方法论）和 `tools/video/README.md`（从 brief 到成片的 Runbook）。
-2. 先运行 `python3 tools/tts/doctor.py`；初始化机器或模型/runtime 变化后运行一次 `--full-model-hash`。必须得到 `TTS DOCTOR: PASS default=CV002`，缺模型、参考母带或固定运行环境时停止。
-3. **新启动的盘点视频先解析一次配音**：把用户原始任务提示词交给 `tools/tts/resolve_voice.py`，将结果保存为项目级 `voice-selection.json`。唯一精确匹配的编号/名称/注册别名优先；未指定、无法匹配、描述模糊或同时命中多个声音，一律回退 `CV002「治愈少女」`。
+2. 先运行 `python3 tools/tts/doctor.py`；初始化机器或模型/runtime 变化后运行一次 `--full-model-hash`。必须得到 `TTS DOCTOR: PASS default=CV002`。缺模型、参考母带、receipt 或固定运行环境时只停止当前 TTS 步骤：先按 doctor 输出修复/安装固定依赖、恢复模型与母带并重建 receipt，再重跑 doctor、旁白及所有受影响下游门禁；不得静默降级 Kokoro，也不得把可修复的环境问题变成普通 goal 的用户确认点。
+3. **新启动的盘点视频先解析一次配音**：把用户原始任务提示词交给 `tools/tts/resolve_voice.py`，将结果保存为项目级 `voice-selection.json`。唯一精确匹配的编号/名称/注册别名优先；未指定、无法匹配、描述模糊或同时命中多个声音，一律回退 `CV002「治愈少女」`。若解析结果不是 CV002，再运行 `python3 tools/tts/doctor.py --voice <resolved_id>` 精确检查本期母带；日常 doctor 不因未使用角色或纯中文不需要的 mixed-script 策略阻断。
 4. 复用脚本在 `tools/`（配音 `tools/tts/`、竖屏 `tools/video/vfill.sh`、音轨+合成模板 `tools/video/countdown_build.py`）——不要重造。新项目旁白必须把同一个 `voice-selection.json` 传给中央入口 `tools/tts/narrate.py`；不得直接 `KPipeline(...)`、不得在项目里硬编码 `VOICE`。旁白生成完运行 `python3 tools/tts/verify_voice_usage.py --selection sandbox/<slug>/voice-selection.json --project-root sandbox/<slug>`，必须得到 `VOICE GATE: PASS`。
 5. 涉及联网下载（yt-dlp）统一读取仓库根目录 `all_cookies.txt`；用 `tools/video/filter_cookie_jar.py` 从仓库外、权限 `0600` 的原始导出中过滤 YouTube / Google / B站域并原子写入。旧 `www.*_cookies.txt` 仅作脚本回退。原始全量导出不得进入仓库，Cookie 不得复制到 `sandbox/`；产物写 `sandbox/<slug>/`。静态 Cookie 检查不等于服务端登录态有效，公开资源可下载也不等于已登录；不得输出 Cookie 值、header 或原始 info JSON。
 6. 盘点、叙事和自由探索项目在正式 build 前填写项目级 `project-manifest.json`，运行 `python3 tools/video/verify_project.py --project sandbox/<slug>`，必须得到 `PROJECT CONTRACT: PASS`；不能先出产物再补来源、旁白或展示证据。
-7. **关键铁律**：① 渲染后必须用预混 `master.wav` **后期 mux**（HyperFrames 会压平音频动态）；② mux 后按 `tools/video/README.md` 填写终片 QA manifest，运行 `python3 tools/video/verify_final_video.py --project sandbox/<slug> --manifest qa/final-video-qa.json`，只有 `FINAL VIDEO QA: PASS` 才算机械验收完成；③ 抽帧人工查看、FFmpeg 音量/静音分析和人耳复核仍不可省略，机械 PASS 不代表工具已经理解画面、排版或听感；④ 成片里不得出现水印/网址/提示词/路径；⑤ **禁止自定义旁白字幕**（不要把 TTS 口播再叠成底部字幕条；用户未显式要求就一律不加，详见 `CONVENTIONS.md`「禁止自定义旁白字幕」）。
+7. **关键铁律**：① HyperFrames raw render 与用预混 `master.wav` 后期 mux 的最终 MP4 都必须写入项目 `renders/`；最终交付文件固定为 `renders/<slug>.mp4`，不得写入 `final/`、`output/`、项目根或其他目录；② 对具有标准 `project-manifest.json` 的盘点、叙事与自由探索项目，build、render 和 post-mux 完成后，按本期真实主题、歌手与选题角度写 `publishing/xiaohongshu.md`，运行 `python3 tools/video/verify_publishing.py --project sandbox/<slug>`，必须得到 `PUBLISHING COPY: PASS` 后才进入 FINAL；发布文案不属于 build 前 `project-manifest.json` 门禁；③ 对有 intro / song / outro / CTA timeline 与完整旁白的**标准结构化盘点/叙事项目**，mux 后必须运行中央 `tools/video/prepare_final_qa.py`：它从当前 timeline、authoring manifest、final、render 与 master 生成 `qa/final-video-qa.json`、实时 ASR、抽帧及诊断证据，并在同一进程内完成本地机械 FINAL；不得跳过 preparer 手写一份看似可过的 manifest，只有该命令输出 `FINAL VIDEO QA: PASS` 才算机械验收完成。`tools/video/verify_final_video.py` 保留给独立复核或故障诊断，默认流程不得在 preparer PASS 后立刻再跑一遍重复 ASR/解码；④ `project_kind: free_exploration` 不得冒充 preparer 已支持的 structured timeline，按其当期 project/final schema 准备 QA；AI 音色 MV 继续走 durable builder 与独立 `--check`，不得为套用标准 PUBLISHING/FINAL schema 伪造 `project-manifest.json`；⑤ 解码、媒体结构、当前 hash、音轨一致性、固定 ASR 工具链、响度/true peak 与 `>1.5s` 静音等机械红线在本地和发布模式都不能放松；⑥ 代理仍要抽帧实际查看并做 FFmpeg 音量/静音分析，但不得把代理判断、自动生成记录或 pending 模板伪装成 `reviewer_kind: human`；⑦ 只有用户明确要求“公开发布 / 发布验收 / 可发布交付”时，才由真人完成 preparer 生成的当前 SHA 模板，使用 `prepare_final_qa.py --human-review-input <项目相对路径> --require-human-review` 合并批准并完成严格终验；普通 sandbox 制作中的 pending 状态只保存在 QA 文件，不作为默认交付话术；⑧ 成片里不得出现水印/网址/提示词/路径；⑨ **禁止自定义旁白字幕**（不要把 TTS 口播再叠成底部字幕条；用户未显式要求就一律不加，详见 `CONVENTIONS.md`「禁止自定义旁白字幕」）。
+8. **goal / 视频制作默认一次交付整片**：用户用 goal 或直接 brief 要求“制作 / 完成一期视频”时，默认终止条件是拿到 `renders/<slug>.mp4` 与 `publishing/xiaohongshu.md`；具有标准 manifest 的项目还必须通过 VOICE / PROJECT / PUBLISHING / 本地机械 FINAL 四道门禁并完成当期 QA，AI durable 等专用流程则完成其明确列出的独立检查；不得因为是新风格就只做开场或首个揭晓段后暂停等待确认，也不得因为真人终验尚未进行就暂停或把 goal 标记为 `blocked`。只有用户明确要求“小样 / 预览 / 先看风格”时才可把样片设为阶段性交付；只有显式发布任务才把 `--require-human-review` 的真人批准作为终止条件。内部进度更新不得中断继续制作。
+
+## Goal 自恢复协议（硬约束）
+
+内部步骤首次失败只停止当前步骤，不停止整个 goal。核心循环是“**诊断 → 修复 → 重跑**”：保存错误、当前输入与 hash，分类根因；在不改变 brief、不伪造 evidence、不绕过 gate 的前提下修复上游输入/配置/产物，或使用本仓库已经记录的安全替代路径；随后从最近失败步骤继续，并重跑所有受影响下游门禁。不得因可自行修复的内部失败暂停、等待用户确认或标记 `blocked`；机械红线不得降级或放松。
+
+- 普通公开下载失败、单个候选不可用、Cookie 静态检查异常但仍有公开/备选源、模型可安装、TTS/ASR/sidecar 异常、render/mux 失败、发布文案结构或歌曲名剧透、manifest/evidence 过期，以及 VOICE / PROJECT / PUBLISHING / FINAL 或展示门禁 FAIL/REVIEW，全部属于内部恢复：依次尝试修环境、换客户端、换双平台同版本备选源、换安全窗口、修正文案、重建产物/证据并复跑。展示 `REVIEW` 必须严格按 **multi → 换窗 → 换源** 恢复；只有该顺序确已穷尽且硬 `FAIL=0` 时，普通本地 goal 才可显式写入绑定当前 clip/window/analysis hash 的 `status=observed, reviewer_kind=agent` 工具辅助观察，计为 `OBSERVED` 且仅本地有效，不得称为真人 `APPROVED`。发布模式 `--require-human-review` 只接受 `status=approved, reviewer_kind=human`；代理不得代签 human。硬 `FAIL` 只能修，不能被任何观察/批准覆盖。
+- 只有以下窄边界允许暂停并请求用户：用户明确要求小样或阶段确认；缺少用户独占的必需输入（如用户指定但未提供的 AI WAV）；已穷尽安全替代、公开双平台来源、备用 client 与安全重试后，仍确实需要模型无法取得的新凭据、权限或外部能力；继续必须实质改变歌单、排名、歌手版本、平台排除、硬时长等核心 brief；或显式发布任务缺少真人终验。即便如此，也要先保留可恢复现场并汇报已经尝试的路径，不能把一次命令失败包装成用户 blocker；首次出现真实外部边界时只请求所需输入/权限，不得立即把 goal 标为 `blocked`，只有同一外部阻断连续三次 goal turn 均存在且无法继续时才可标记。
+
+## 多 Goal 并发资源协议（硬约束）
+
+多个 goal 必须持续并发推进；禁止为了“保护机器”新增跨 goal 的 `flock`、全局 semaphore、任务队列、sleep 轮询或“等另一个任务完成再开始”的调度。标准重任务统一走 `tools/video/resource_budget.py` 的**启动时自适应预算**：进程先发布不含项目内容的 PID/启动身份标记并立即计数，当前第 1 个重任务使用 4 线程/worker，第 2 个使用 3，达到 3 个及以上时新任务使用 2（`4 → 3 → 2`）；已经运行的任务不暂停、不动态改速。Whisper/Torch/BLAS、重 FFmpeg 和 HyperFrames render 都必须继承该预算；显式 `CC_MEDIA_ASR_THREADS=1..4`、`CC_MEDIA_FFMPEG_THREADS=1..4`、`CC_MEDIA_HYPERFRAMES_WORKERS=1..4` 或 HyperFrames 唯一的 `--workers 1..4` 优先，但任务仍登记为 active 供其他 goal 计数。禁止 `auto` 和 1–4 外的值。
+
+活跃标记只用于计数，不是调度锁：不得在注册表上等待或轮询。正常/异常退出、PID 复用或崩溃残留由后续任务按操作系统 PID + 进程启动时间清理；注册表不可用时当前任务立即回退 2 线程继续，不能因此阻断 goal。FFmpeg 走中央 wrapper，HyperFrames 从项目目录使用 `python3 ../../tools/video/resource_budget.py hyperframes -- <固定版本 render 命令>`，不得绕开 wrapper 手写 `auto`。
+
+视频任务禁止直接运行裸 `whisper` / `whisper-cli`；统一走 `tools/video/vocal_segments.py`、`tools/video/offline_asr.py` 或调用它们的中央 QA，从而继承同一资源预算。Qwen/MLX 必须先经过 stdlib-only Metal preflight；受限执行上下文只让当前 TTS 命令快速、干净失败并由 goal 自恢复到具备 Metal 权限的执行上下文，不能先 import MLX 触发原生崩溃，也不能用等待锁串行化多个配音任务。
 
 ## 新盘点内容硬约束
 
@@ -41,13 +57,14 @@ The repository is in an **exploration phase** and is already an initialized Git 
 - **旁白结构默认完整**：一般视频默认在开头、每首歌曲转场、作品结尾与固定 CTA 都安排配音；没有明确要求不等于可以省略。只有完全自由探索类、以音乐/视觉实验本身为主体且不承担排名或解说结构的视频，才可在 brief/design 明确记录后按创意需要精简部分或全部旁白。
 - **质量优先、总时长默认不设上限**：除非用户明确给出平台硬时长，不能为了压缩总时长牺牲内容、节奏或完整乐句。某首的完整副歌/演唱段需要更长就保留更长；若确有硬时长，应优先减少条目或精简旁白，不得掐断唱句、尾音或高光段。
 - **封面排版与安全区同时过关**：标题必须按语义短语和视觉层级选择自然换行，禁止机械等字数拆行、留下孤字或让重点词断裂；歌手名字号应与同层级主要文字相同或更大，不能被缩成次要小字。标题、排名、主题等关键信息不得拆到画面最顶端和最底端，也不得整块死居中遮住人物/主体；应放在一个中上或侧向安全信息区，并通过首帧抽帧检查排版美感、主体避让和发布裁剪后的完整可读性。
+- **小红书发布文案默认随片交付**：固定写入 `publishing/xiaohongshu.md`。标题候选允许 1–5 个、默认给 3 个，第一条是首选；正文必须可直接发布，最后一行必须是 hashtags。标题、正文、互动句和 hashtags 的全部对外文字都不得出现本期任何歌曲名称，以免剧透；内容必须强关联真实主题、歌手与选题角度，不得泛化套模板或杜撰作品事实。
 
 ## AI 克隆歌手音色 MV durable 模板协议
 
 当 brief 明确是“AI 克隆/训练歌手音色制作 MV”“如果某歌手唱某歌”，且用户提供了可直接使用的训练音频 WAV 时，新建当期 `sandbox/<slug>/`，并复用 `tools/video/templates/ai-voice-mv/`；历史 `sandbox/angela-ai-mv-covers/` 已删除，不得恢复或继续依赖。先读 `tools/video/templates/README.md`，再按 `CONVENTIONS.md` 的“格式之三：AI 克隆歌手音色 MV（整首 MV 换训练音轨）”执行。
 
 固定做法：
-- 只把用户明确给出的训练 WAV 复制到当期项目 `audio/`，填写项目 `build/config.json`；用中央 durable builder 一首输出一个独立 MP4，不在 `sandbox/` 留唯一脚本副本。
+- 只把用户明确给出的训练 WAV 复制到当期项目 `audio/`，填写项目 `build/config.json`；用中央 durable builder 一首输出一个位于 `renders/` 内的独立 MP4，不在 `sandbox/` 留唯一脚本副本。
 - 仍然必须双平台查源（YouTube + B站），记录候选和取舍到 `SOURCES.md`。
 - intro 必须复用当期 `voice-selection.json` 调用 `tools/tts/narrate.py`；未指定时 resolver 默认 CV002，唯一有效指定则按指定。歌曲音频在 intro 期间 duck，随后恢复。
 - 全程叠加 `AI训练，仅供娱乐`，并通过抽帧确认无平台/UP 主水印、无网址、无路径、无提示词泄漏。
@@ -57,11 +74,11 @@ The repository is in an **exploration phase** and is already an initialized Git 
 
 ## 配音
 
-新启动的盘点视频统一用 `tools/tts/` 编号声音库，默认 `CV002「治愈少女」`。任务提示词若唯一精确指定 `CV001–CV008`、正式名称或注册别名，则使用指定角色；未知、模糊、冲突指定仍用 CV002，不做相似度猜测。同一期 intro、全部排名转场、作品 outro 与固定 CTA 必须共享同一 resolved voice ID，并通过 `verify_voice_usage.py` 校验。Qwen 运行环境、模型或参考母带缺失时必须停止，**不得静默降级 Kokoro**。Kokoro 只保留给显式 legacy ID 与历史工程复现。Qwen 的外文策略只处理 ASCII 拉丁 token；未提供显式覆盖时，纯中文文本、中文标点、数字、seed、请求结构和既有缓存 fingerprint 必须保持原样。不要用 HyperFrames 内置 TTS 做中文。receipt、sidecar 和哈希只证明当前本地工作流的一致性，不证明音色来源，也不抵抗同一用户权限下的主动篡改。详见 `CONVENTIONS.md` 配音规范和 `tools/tts/README.md`。
+新启动的盘点视频统一用 `tools/tts/` 编号声音库，默认 `CV002「治愈少女」`。任务提示词若唯一精确指定 `CV001–CV008`、正式名称或注册别名，则使用指定角色；未知、模糊、冲突指定仍用 CV002，不做相似度猜测。同一期 intro、全部排名转场、作品 outro 与固定 CTA 必须共享同一 resolved voice ID，并通过 `verify_voice_usage.py` 校验。Qwen 运行环境、模型或参考母带缺失时必须 fail closed 当前生成步骤，然后自动修复固定环境并重跑，**不得静默降级 Kokoro，也不得因此停止整个 goal**。Kokoro 只保留给显式 legacy ID 与历史工程复现。Qwen 的外文策略只处理 ASCII 拉丁 token；未提供显式覆盖时，纯中文文本、中文标点、数字、seed、请求结构和既有缓存 fingerprint 必须保持原样。不要用 HyperFrames 内置 TTS 做中文。receipt、sidecar 和哈希只证明当前本地工作流的一致性，不证明音色来源，也不抵抗同一用户权限下的主动篡改。详见 `CONVENTIONS.md` 配音规范和 `tools/tts/README.md`。
 
-## Copyright stance
+## Sandbox 成片交付收尾（硬约束）
 
-当前仅**本地测试**，不对外发布、不商用。若后期要发布，再单独评估 YouTube / B站 源素材的使用授权（两个平台条款不同，需分别评估）。
+所有新 Sandbox 项目的 raw render 与 mux 后最终 MP4 都直接写入 `sandbox/<slug>/renders/`，最终成片固定为 `renders/<slug>.mp4`；不得另建 `final/`、`output/`，也不得把终片放在项目根或其他目录。与 `renders/` 并列创建 `publishing/`，默认交付 `publishing/xiaohongshu.md`。最终回复同时报告这两个文件、最终 MP4 当前 SHA、VOICE / PROJECT / PUBLISHING / FINAL 结果、实际修复和确实影响成片的问题；发布文案是必需内容产物，不属于被禁止的“未来发布建议”。仍不得自动附加用途定位、权利或条款免责声明、额外真人复核建议等套话；QA 报告、`SOURCES.md`、README、checklist、manifest 生成器和 CLI 默认输出同样不得生成这类套话。只有用户在当期任务中主动询问相应主题时才回答，且不得把它写成固定结尾或成片完成条件。
 
 ## How the two tools fit together
 
@@ -95,8 +112,6 @@ yt-dlp --write-auto-subs --sub-langs "en,zh-Hans" --skip-download "<URL>"
 yt-dlp -x --audio-format mp3 "<URL>"
 ```
 
-Note: 本地测试阶段不涉及发布；发布前的授权评估见上文 Copyright stance。
-
 ## HyperFrames — setup and dev loop
 
 HyperFrames renders HTML compositions to video. Compositions are plain HTML files with `data-*` attributes (no React/DSL). Animations are driven by GSAP (or anime.js, Lottie, Three.js, WAAPI, CSS).
@@ -112,7 +127,8 @@ npx skills add heygen-com/hyperframes
 
 # Dev loop
 npx --yes hyperframes@0.6.69 preview
-npx --yes hyperframes@0.6.69 render --output output.mp4 --sdr
+python3 ../../tools/video/resource_budget.py hyperframes -- \
+  npx --yes hyperframes@0.6.69 render --output renders/output.mp4 --sdr
 npx --yes hyperframes@0.6.69 lint
 npx --yes hyperframes@0.6.69 inspect
 npx --yes hyperframes@0.6.69 doctor

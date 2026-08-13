@@ -69,7 +69,151 @@ class TemplatePathSafetyTests(unittest.TestCase):
                     module.ensure_safe_output(project, output)
 
 
+class TemplateResourceBudgetTests(unittest.TestCase):
+    class FakeLease:
+        threads = 3
+
+        def __init__(self) -> None:
+            self.entered = False
+            self.exited = False
+
+        def __enter__(self):
+            self.entered = True
+            return self
+
+        def __exit__(self, _exc_type, _exc, _traceback) -> None:
+            self.exited = True
+
+    def test_each_template_holds_an_adaptive_lease_for_each_ffmpeg_process(self) -> None:
+        for module in (AI_MV, LONGFORM):
+            with self.subTest(template=module.__name__):
+                lease = self.FakeLease()
+                completed = mock.Mock(returncode=0)
+                with (
+                    mock.patch.object(
+                        module.resource_budget,
+                        "resolve_ffmpeg_threads",
+                        return_value=lease,
+                    ) as resolve,
+                    mock.patch.object(module.subprocess, "run", return_value=completed) as run,
+                ):
+                    result = module.run(
+                        ["ffmpeg", "-v", "error", "-i", "input.mp4", "output.mp4"],
+                        "fixture",
+                        REPO_ROOT,
+                    )
+
+                self.assertIs(completed, result)
+                resolve.assert_called_once_with()
+                self.assertTrue(lease.entered)
+                self.assertTrue(lease.exited)
+                command = run.call_args.args[0]
+                self.assertEqual("ffmpeg", command[0])
+                self.assertEqual(2, command.count("-threads"))
+                self.assertEqual("3", command[command.index("-filter_threads") + 1])
+                self.assertEqual(
+                    "3",
+                    command[command.index("-filter_complex_threads") + 1],
+                )
+                self.assertEqual("output.mp4", command[-1])
+                self.assertEqual("3", command[-2])
+                self.assertEqual("-threads", command[-3])
+
+    def test_ffprobe_does_not_register_as_heavy_work(self) -> None:
+        fixtures = (
+            (
+                AI_MV,
+                lambda module: module.probe_json(Path("fixture.mp4"), "format=duration"),
+            ),
+            (
+                LONGFORM,
+                lambda module: module.probe(Path("fixture.mp4"), "format=duration"),
+            ),
+        )
+        for module, invoke in fixtures:
+            with self.subTest(template=module.__name__), mock.patch.object(
+                module.resource_budget,
+                "resolve_ffmpeg_threads",
+            ) as resolve, mock.patch.object(
+                module.subprocess,
+                "check_output",
+                return_value='{"format":{"duration":"1.0"}}',
+            ):
+                invoke(module)
+            resolve.assert_not_called()
+
+    def test_ai_speech_probe_uses_the_same_budgeted_runner(self) -> None:
+        completed = mock.Mock(returncode=0, stderr="")
+        with (
+            mock.patch.object(AI_MV, "duration", return_value=2.0),
+            mock.patch.object(AI_MV, "run", return_value=completed) as run,
+        ):
+            self.assertEqual((0.0, 2.0), AI_MV.speech_window(Path("voice.wav")))
+        command = run.call_args.args[0]
+        self.assertEqual("ffmpeg", command[0])
+        self.assertTrue(run.call_args.kwargs["capture_output"])
+        self.assertTrue(run.call_args.kwargs["text"])
+
+
 class AiVoiceTemplateTests(unittest.TestCase):
+    @staticmethod
+    def config(*, output_dir: str | None = None) -> dict:
+        value = {
+            "schema_version": 1,
+            "voice_selection": "voice-selection.json",
+            "watermark_png": "assets/watermark.png",
+            "songs": [
+                {
+                    "key": "song",
+                    "title": "Song",
+                    "video": "raw/song.mp4",
+                    "song_audio": "audio/song.wav",
+                    "intro_voice": "voice/intro.wav",
+                    "output": "song.mp4",
+                    "crop": None,
+                    "audio_gain": 1.0,
+                }
+            ],
+        }
+        if output_dir is not None:
+            value["output_dir"] = output_dir
+        return value
+
+    def test_output_dir_defaults_to_and_only_allows_renders(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary).resolve()
+            songs, settings = AI_MV.parse_config(project, self.config())
+            self.assertEqual(project / "renders", settings["output_dir"])
+            dated_output = settings["output_dir"] / "2026-08-12" / songs[0].output_name
+            self.assertEqual(
+                Path("renders/2026-08-12/song.mp4"),
+                dated_output.relative_to(project),
+            )
+
+            songs, settings = AI_MV.parse_config(
+                project,
+                self.config(output_dir="renders"),
+            )
+            self.assertEqual(project / "renders", settings["output_dir"])
+            self.assertEqual("song.mp4", songs[0].output_name)
+
+            for invalid in (
+                "final",
+                "output",
+                "Renders",
+                "./renders",
+                "renders/",
+                "renders/nested",
+            ):
+                with self.subTest(invalid=invalid), self.assertRaisesRegex(
+                    SystemExit,
+                    "output_dir must be exactly 'renders'",
+                ):
+                    AI_MV.parse_config(
+                        project,
+                        self.config(output_dir=invalid),
+                    )
+
     def test_trimmed_voice_cache_symlink_is_rejected_before_write(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             base = Path(temporary)

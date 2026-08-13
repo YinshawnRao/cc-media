@@ -112,6 +112,7 @@ REVIEW_APPROVAL_REQUIRED = frozenset(
         "window",
         "reason",
         "evidence",
+        "reviewer_kind",
         "reviewer",
         "reviewed_at",
         "evidence_files",
@@ -190,12 +191,14 @@ class ProjectVerifier:
         *,
         voice_registry: Any = None,
         current_model_validation: dict[str, Any] | None = None,
+        require_human_review: bool = False,
     ) -> None:
         self.project = Path(os.path.abspath(project))
         self.errors: list[str] = []
         self.project_valid = True
         self.voice_registry = voice_registry
         self.current_model_validation = current_model_validation
+        self.require_human_review = require_human_review
         self._voice_sidecars: dict[str, Any] = {}
         try:
             resolved = self.project.resolve(strict=True)
@@ -901,6 +904,14 @@ class ProjectVerifier:
             self.error(
                 f"{label} approval must contain exactly {sorted(REVIEW_APPROVAL_REQUIRED)}"
             )
+        reviewer_kind = row.get("reviewer_kind")
+        if reviewer_kind not in {"agent", "human"}:
+            self.error(f"{label} approval.reviewer_kind must be agent or human")
+        elif self.require_human_review and reviewer_kind != "human":
+            self.error(
+                f"{label} approval.reviewer_kind must be human in release mode; "
+                "agent observation is local-only"
+            )
         if not isinstance(row.get("reviewer"), str) or not row["reviewer"].strip():
             self.error(f"{label} approval.reviewer must be non-empty")
         if parse_aware_datetime(row.get("reviewed_at")) is None:
@@ -1008,14 +1019,19 @@ class ProjectVerifier:
                             item.get("clip"),
                             expected_window=window,
                             expected_analysis=analysis,
+                            require_human_review=self.require_human_review,
                         )
                     except (KeyError, TypeError, ValueError) as exc:
                         approval, approval_error = None, f"malformed approval: {exc}"
                     if approval is not None:
-                        computed_status = "APPROVED"
+                        computed_status = (
+                            "APPROVED"
+                            if approval["reviewer_kind"] == "human"
+                            else "OBSERVED"
+                        )
                     else:
                         self.error(f"{label}.evidence approval is invalid: {approval_error}")
-        if computed_status not in {"OK", "APPROVED"}:
+        if computed_status not in {"OK", "OBSERVED", "APPROVED"}:
             self.error(f"{label}.evidence recomputed showcase status is {computed_status}")
         if evidence.get("status") != computed_status:
             self.error(
@@ -1223,11 +1239,13 @@ def verify_project(
     *,
     voice_registry: Any = None,
     current_model_validation: dict[str, Any] | None = None,
+    require_human_review: bool = False,
 ) -> list[str]:
     verifier = ProjectVerifier(
         project,
         voice_registry=voice_registry,
         current_model_validation=current_model_validation,
+        require_human_review=require_human_review,
     )
     if not verifier.project_valid:
         return verifier.errors
@@ -1241,8 +1259,17 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project", required=True, type=Path)
     parser.add_argument("--manifest", default="project-manifest.json")
+    parser.add_argument(
+        "--require-human-review",
+        action="store_true",
+        help="发布级严格模式：展示 REVIEW 只接受 reviewer_kind=human",
+    )
     args = parser.parse_args()
-    errors = verify_project(args.project, args.manifest)
+    errors = verify_project(
+        args.project,
+        args.manifest,
+        require_human_review=args.require_human_review,
+    )
     if errors:
         print("PROJECT CONTRACT: FAIL")
         for error in errors:

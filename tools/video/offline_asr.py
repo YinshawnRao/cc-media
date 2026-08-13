@@ -17,6 +17,15 @@ import sys
 from pathlib import Path
 from typing import Any, Callable
 
+try:
+    from . import resource_budget
+except ImportError:  # Direct script execution.
+    import resource_budget  # type: ignore[no-redef]
+
+
+# Must run before importing vocal_segments -> Whisper/Torch/numeric libraries.
+ASR_RESOURCE_BUDGET = resource_budget.configure_asr_environment()
+
 
 MODEL = "small"
 CHECKPOINT_SHA256 = "9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794"
@@ -170,8 +179,13 @@ def run(
             start = _finite_number(raw_segment.get("start"), "segment.start")
             end = _finite_number(raw_segment.get("end"), "segment.end")
             text = raw_segment.get("text")
-            if start < 0 or end <= start or not isinstance(text, str):
+            if start < 0 or end < start or not isinstance(text, str):
                 raise ValueError(f"Whisper segment {job_id}:{segment_index} is invalid")
+            # Whisper can emit zero-duration or blank bookkeeping segments at
+            # repeated sung syllables. They cannot carry temporal/textual
+            # evidence, so exclude them while keeping malformed ranges strict.
+            if end == start or not text.strip():
+                continue
             segments.append(
                 {
                     "id": f"{job_id}:{segment_index:06d}",

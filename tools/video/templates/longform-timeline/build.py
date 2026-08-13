@@ -13,8 +13,16 @@ import json
 import re
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any, NoReturn
+
+
+REPO_ROOT = Path(__file__).resolve().parents[4]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from tools.video import resource_budget  # noqa: E402
 
 
 KEY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
@@ -93,9 +101,35 @@ def require_tools() -> None:
         fail(f"missing required command(s): {', '.join(missing)}")
 
 
-def run(command: list[str], label: str, cwd: Path) -> None:
+def _budgeted_ffmpeg_command(command: list[str], threads: int) -> list[str]:
+    """Apply one lease's decoder/filter/encoder budget to an FFmpeg command."""
+
+    if len(command) < 2 or Path(command[0]).name != "ffmpeg":
+        raise ValueError("run() only accepts an FFmpeg command")
+    value = str(threads)
+    return [
+        command[0],
+        "-threads",
+        value,
+        "-filter_threads",
+        value,
+        "-filter_complex_threads",
+        value,
+        *command[1:-1],
+        "-threads",
+        value,
+        command[-1],
+    ]
+
+
+def run(command: list[str], label: str, cwd: Path) -> subprocess.CompletedProcess[Any]:
     print(f"[run] {label}")
-    subprocess.run(command, cwd=cwd, check=True)
+    with resource_budget.resolve_ffmpeg_threads() as lease:
+        return subprocess.run(
+            _budgeted_ffmpeg_command(command, lease.threads),
+            cwd=cwd,
+            check=True,
+        )
 
 
 def probe(path: Path, entries: str, stream: str | None = None) -> dict[str, Any]:

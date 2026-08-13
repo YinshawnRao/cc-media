@@ -2,7 +2,7 @@
   "schema_version": 1,
   "voice_selection": "voice-selection.json",
   "watermark_png": "assets/ai-training-watermark.png",
-  "output_dir": "final",
+  "output_dir": "renders",
   "songs": [
     {
       "key": "song-key",

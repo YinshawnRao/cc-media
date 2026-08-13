@@ -3,8 +3,9 @@
 
 The gate consumes one project-local QA manifest. It never downloads anything,
 loads cookies, runs TTS, or claims to understand images. Mechanical checks are
-performed with ffmpeg/ffprobe; semantic visual/release checks remain explicit
-human approvals bound to the current final-video SHA-256.
+performed with ffmpeg/ffprobe. Semantic visual states remain explicit,
+hash-bound review data inside the manifest; ``--require-human-review`` is a
+separate strict-mode opt-in.
 """
 
 from __future__ import annotations
@@ -22,12 +23,14 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from fractions import Fraction
 from pathlib import Path
-from typing import Any, NoReturn
+from typing import Any, Callable, NoReturn
 
 try:
+    from . import resource_budget
     from . import verify_project as authoring_contract
     from .outro_cta import FIXED_OUTRO_CTA
 except ImportError:  # Direct ``python tools/video/verify_final_video.py`` execution.
+    import resource_budget  # type: ignore[no-redef]
     import verify_project as authoring_contract  # type: ignore[no-redef]
     from outro_cta import FIXED_OUTRO_CTA  # type: ignore[no-redef]
 
@@ -39,6 +42,7 @@ MP4_FORMAT_NAMES = {"mov", "mp4", "m4a", "3gp", "3g2", "mj2"}
 NARRATION_MODES = {"structured", "free_exploration"}
 REQUIRED_ASR_KINDS = ("final_aac_asr", "isolated_narration_asr")
 REQUIRED_HUMAN_APPROVALS = ("visual_frames", "leakage", "release_safety")
+RENDERS_DIRECTORY = "renders"
 PINNED_WHISPER_CHECKPOINT_SHA256 = (
     "9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794"
 )
@@ -66,6 +70,19 @@ OFFLINE_ASR_TIMEOUT_MAX_SECONDS = 900
 
 class GateFailure(ValueError):
     """A deterministic verification failure safe to show to the caller."""
+
+
+class HumanReviewRequired(RuntimeError):
+    """Mechanical QA passed, but an explicitly strict run still needs a person."""
+
+    def __init__(self, labels: tuple[str, ...]):
+        self.labels = labels
+        preview = ", ".join(labels[:5])
+        if len(labels) > 5:
+            preview += f", ... (+{len(labels) - 5})"
+        super().__init__(
+            f"{len(labels)} current human-review item(s) remain pending: {preview}"
+        )
 
 
 def fail(message: str) -> NoReturn:
@@ -131,6 +148,7 @@ class VerificationSummary:
     master_aac_sdr_db: float
     reviewed_silences: int
     reviewed_black_intervals: int
+    human_review_advisories: tuple[str, ...]
 
 
 def sha256_file(path: Path) -> str:
@@ -183,6 +201,20 @@ def require_string(value: Any, label: str) -> str:
     if not isinstance(value, str) or not value.strip():
         fail(f"{label} must be a non-empty string")
     return value
+
+
+def starts_with_renders_directory(value: Any) -> bool:
+    """Return whether a project-relative output starts with lowercase renders/."""
+
+    if not isinstance(value, str) or not value.strip():
+        return False
+    candidate = Path(value)
+    return (
+        not candidate.is_absolute()
+        and ".." not in candidate.parts
+        and len(candidate.parts) >= 2
+        and candidate.parts[0] == RENDERS_DIRECTORY
+    )
 
 
 def require_number(value: Any, label: str) -> float:
@@ -383,9 +415,15 @@ def parse_authoring_contract(
     value: Any,
     narration_mode: str,
     authoring_verifier: Any,
+    *,
+    require_human_review: bool = False,
 ) -> tuple[Asset, dict[str, dict[str, Any]]]:
     asset = parse_asset(project, value, "authoring_manifest")
-    errors = authoring_verifier(project, asset.raw_path)
+    errors = authoring_verifier(
+        project,
+        asset.raw_path,
+        require_human_review=require_human_review,
+    )
     if errors:
         fail("authoring project contract failed: " + " | ".join(errors))
     manifest = read_json(asset.path, "authoring_manifest")
@@ -576,6 +614,49 @@ def validate_human_record(
     return row
 
 
+def validate_review_record(
+    value: Any,
+    label: str,
+    final_sha256: str,
+    *,
+    text_field: str,
+    advisories: list[str],
+) -> tuple[dict[str, Any], bool]:
+    """Validate an approved human record or an honest pending placeholder.
+
+    Pending records are deliberately narrow: they cannot name a reviewer, carry a
+    review timestamp, or contain human-authored conclusions.  They remain bound to
+    the current final SHA and are reported separately from mechanical PASS.
+    """
+
+    row = require_object(value, label)
+    status = row.get("status")
+    if status == "approved":
+        return (
+            validate_human_record(
+                row,
+                label,
+                final_sha256,
+                text_field=text_field,
+            ),
+            True,
+        )
+    if status != "pending_human_review":
+        fail(f"{label}.status must be approved or pending_human_review")
+    if row.get("reviewer_kind") is not None:
+        fail(f"{label}.reviewer_kind must be null while human review is pending")
+    if row.get("reviewer") not in (None, ""):
+        fail(f"{label}.reviewer must be empty while human review is pending")
+    if row.get("reviewed_at") not in (None, ""):
+        fail(f"{label}.reviewed_at must be empty while human review is pending")
+    if require_sha(row.get("final_sha256"), f"{label}.final_sha256") != final_sha256:
+        fail(f"{label} is stale: final_sha256 does not match the current final video")
+    if row.get(text_field) not in (None, ""):
+        fail(f"{label}.{text_field} must be empty while human review is pending")
+    advisories.append(label)
+    return row, False
+
+
 def parse_interval(value: Any, label: str) -> Interval:
     row = require_object(value, label)
     start = require_number(row.get("start_sec"), f"{label}.start_sec")
@@ -591,9 +672,10 @@ def validate_evidence_artifacts(
     label: str,
     *,
     require_sample_time: bool = False,
+    require_nonempty: bool = True,
 ) -> tuple[list[dict[str, Any]], list[float]]:
     rows = require_list(value, f"{label}.evidence")
-    if not rows:
+    if require_nonempty and not rows:
         fail(f"{label}.evidence must contain at least one hashed artifact")
     artifacts: list[dict[str, Any]] = []
     sample_times: list[float] = []
@@ -630,12 +712,14 @@ def validate_manual_approvals(
     project: Path,
     value: Any,
     final_sha256: str,
+    advisories: list[str] | None = None,
 ) -> tuple[
-    dict[str, dict[str, Any]],
+    dict[str, Any],
     list[float],
     list[dict[str, Any]],
     list[dict[str, Any]],
 ]:
+    advisory_sink = [] if advisories is None else advisories
     reviews = require_object(value, "reviews")
     expected_review_keys = set(REQUIRED_HUMAN_APPROVALS) | {"silence", "black"}
     if set(reviews) != expected_review_keys:
@@ -648,12 +732,19 @@ def validate_manual_approvals(
     all_artifacts: list[dict[str, Any]] = []
     for key in REQUIRED_HUMAN_APPROVALS:
         label = f"reviews.{key}"
-        row = validate_human_record(reviews.get(key), label, final_sha256, text_field="notes")
+        row, approved = validate_review_record(
+            reviews.get(key),
+            label,
+            final_sha256,
+            text_field="notes",
+            advisories=advisory_sink,
+        )
         artifacts, times = validate_evidence_artifacts(
             project,
             row.get("evidence"),
             label,
             require_sample_time=key == "visual_frames",
+            require_nonempty=approved or key == "visual_frames",
         )
         if key == "visual_frames" and any(
             artifact["path"].suffix.lower() != ".png"
@@ -677,13 +768,28 @@ def parse_interval_reviews(
     value: Any,
     label: str,
     final_sha256: str,
+    advisories: list[str] | None = None,
 ) -> list[dict[str, Any]]:
+    advisory_sink = [] if advisories is None else advisories
     rows = require_list(value, label)
     parsed: list[dict[str, Any]] = []
     for index, raw in enumerate(rows):
         row_label = f"{label}[{index}]"
-        row = validate_human_record(raw, row_label, final_sha256, text_field="context")
-        parsed.append({**row, "interval": parse_interval(row, row_label), "used": False})
+        row, approved = validate_review_record(
+            raw,
+            row_label,
+            final_sha256,
+            text_field="context",
+            advisories=advisory_sink,
+        )
+        parsed.append(
+            {
+                **row,
+                "interval": parse_interval(row, row_label),
+                "used": False,
+                "approved": approved,
+            }
+        )
     return parsed
 
 
@@ -693,9 +799,11 @@ def validate_asr_assertions(
     expectations: dict[str, dict[str, Any]],
     final_sha256: str,
     label: str,
+    advisories: list[str] | None = None,
     *,
     kind: str,
 ) -> None:
+    advisory_sink = [] if advisories is None else advisories
     rows = require_list(evidence.get("assertions"), f"{label}.assertions")
     by_id: dict[str, dict[str, Any]] = {}
     for index, raw in enumerate(rows):
@@ -826,15 +934,24 @@ def validate_asr_assertions(
             }
             if not variants or normalized_observed not in variants:
                 fail(f"{assertion_label} is not a registered acceptable variant")
-        elif disposition == "human_review":
-            validate_human_record(
-                row.get("review"),
-                f"{assertion_label}.review",
-                final_sha256,
-                text_field="reason",
-            )
+        elif disposition in {"human_review", "pending_human_review"}:
+            review_label = f"{assertion_label}.review"
+            review = row.get("review")
+            if review is None:
+                advisory_sink.append(review_label)
+            else:
+                validate_review_record(
+                    review,
+                    review_label,
+                    final_sha256,
+                    text_field="reason",
+                    advisories=advisory_sink,
+                )
         else:
-            fail(f"{assertion_label}.disposition must be exact, accepted_variant or human_review")
+            fail(
+                f"{assertion_label}.disposition must be exact, accepted_variant, "
+                "human_review or pending_human_review"
+            )
 
 
 def validate_live_asr_identity(receipt: Any, label: str) -> dict[str, Any]:
@@ -868,7 +985,9 @@ def validate_asr_evidence(
     assets: dict[str, Asset],
     expectations: dict[str, dict[str, Any]],
     tools: "MediaTools",
+    advisories: list[str] | None = None,
 ) -> tuple[list[Asset], list[Asset]]:
+    advisory_sink = [] if advisories is None else advisories
     rows = require_object(value, "asr_evidence")
     if set(rows) != set(REQUIRED_ASR_KINDS):
         fail(f"asr_evidence must contain exactly {list(REQUIRED_ASR_KINDS)}")
@@ -927,6 +1046,7 @@ def validate_asr_evidence(
             expectations,
             assets["final"].sha256,
             f"{label}.artifact",
+            advisory_sink,
             kind=kind,
         )
         evidence_assets.append(artifact)
@@ -1049,6 +1169,25 @@ class MediaTools:
             fail(f"{label} failed with exit code {process.returncode}")
         return process
 
+    def _run_ffmpeg(
+        self,
+        command_builder: Callable[[str], list[str]],
+        label: str,
+    ) -> subprocess.CompletedProcess[str]:
+        """Run one FFmpeg command under an invocation-local adaptive lease.
+
+        The lease only selects this newly starting command's thread budget.  It
+        never waits for another goal and it never changes a command that is
+        already running.
+        """
+
+        try:
+            lease = resource_budget.resolve_ffmpeg_threads()
+        except ValueError:
+            fail("adaptive FFmpeg resource budget is unavailable")
+        with lease:
+            return self._run(command_builder(str(lease.threads)), label)
+
     def probe(self, path: Path) -> dict[str, Any]:
         process = self._run(
             [
@@ -1062,8 +1201,18 @@ class MediaTools:
             "ffprobe output",
         )
 
-    def verify_authoring(self, project: Path, manifest: str) -> list[str]:
-        return authoring_contract.verify_project(project, manifest)
+    def verify_authoring(
+        self,
+        project: Path,
+        manifest: str,
+        *,
+        require_human_review: bool = False,
+    ) -> list[str]:
+        return authoring_contract.verify_project(
+            project,
+            manifest,
+            require_human_review=require_human_review,
+        )
 
     def analyze_final(
         self,
@@ -1076,9 +1225,11 @@ class MediaTools:
             f"[0:a:0]silencedetect=noise={SILENCE_NOISE_DB}dB:"
             f"d={SILENCE_DETECT_MIN_SECONDS}[audio]"
         )
-        process = self._run(
-            [
+        process = self._run_ffmpeg(
+            lambda threads: [
                 "ffmpeg", "-hide_banner", "-nostats", "-v", "info", "-xerror",
+                "-threads", threads, "-filter_threads", threads,
+                "-filter_complex_threads", threads,
                 "-i", str(path), "-filter_complex", graph,
                 "-map", "[video]", "-map", "[audio]", "-f", "null", "-",
             ],
@@ -1090,9 +1241,10 @@ class MediaTools:
         )
 
     def video_decode_receipt(self, path: Path) -> VideoDecodeReceipt:
-        process = self._run(
-            [
+        process = self._run_ffmpeg(
+            lambda threads: [
                 "ffmpeg", "-hide_banner", "-nostats", "-v", "error", "-xerror",
+                "-threads", threads, "-filter_threads", threads,
                 "-i", str(path), "-map", "0:v:0", "-an", "-pix_fmt", "rgb24",
                 "-f", "framemd5", "-hash", "sha256", "-",
             ],
@@ -1113,23 +1265,27 @@ class MediaTools:
     def frame_rgb_receipt(
         self, path: Path, timestamp_sec: float | None = None
     ) -> FrameReceipt:
-        command = [
-            "ffmpeg", "-hide_banner", "-nostats", "-v", "error", "-xerror",
-            "-i", str(path),
-        ]
-        if timestamp_sec is not None:
-            command.extend(
-                ["-vf", f"select=gte(t\\,{timestamp_sec:.6f}),format=rgb24"]
-            )
-        else:
-            command.extend(["-vf", "format=rgb24"])
-        command.extend(
-            [
+        def build_command(threads: str) -> list[str]:
+            command = [
+                "ffmpeg", "-hide_banner", "-nostats", "-v", "error", "-xerror",
+                "-threads", threads, "-filter_threads", threads,
+            ]
+            if timestamp_sec is not None:
+                # Input-side seek keeps chapter sampling proportional to the GOP
+                # distance instead of decoding every prefix from t=0.  ``-copyts``
+                # preserves the absolute source PTS used by the gate.
+                command.extend(["-ss", f"{timestamp_sec:.6f}", "-copyts"])
+            command.extend(["-i", str(path), "-vf", "format=rgb24"])
+            command.extend([
                 "-map", "0:v:0", "-frames:v", "1", "-fps_mode", "passthrough",
                 "-f", "framemd5", "-hash", "sha256", "-",
-            ]
+            ])
+            return command
+
+        process = self._run_ffmpeg(
+            build_command,
+            "visual evidence RGB-frame decode",
         )
-        process = self._run(command, "visual evidence RGB-frame decode")
         records = parse_framemd5(process.stdout, "visual evidence RGB-frame receipt")
         if len(records) != 1:
             fail("visual evidence decode must emit exactly one frame")
@@ -1222,9 +1378,11 @@ class MediaTools:
         }
 
     def loudness(self, path: Path) -> Loudness:
-        process = self._run(
-            [
-                "ffmpeg", "-hide_banner", "-nostats", "-v", "info", "-i", str(path),
+        process = self._run_ffmpeg(
+            lambda threads: [
+                "ffmpeg", "-hide_banner", "-nostats", "-v", "info",
+                "-threads", threads, "-filter_threads", threads,
+                "-i", str(path),
                 "-map", "0:a:0", "-af",
                 "loudnorm=I=-14:LRA=11:TP=-1:print_format=json", "-f", "null", "-",
             ],
@@ -1233,10 +1391,13 @@ class MediaTools:
         return parse_loudnorm(process.stderr)
 
     def audio_sdr(self, master: Path, final: Path, duration_sec: float) -> float:
-        process = self._run(
-            [
+        process = self._run_ffmpeg(
+            lambda threads: [
                 "ffmpeg", "-hide_banner", "-nostats", "-v", "info", "-xerror",
-                "-i", str(master), "-i", str(final), "-filter_complex",
+                "-threads", threads, "-filter_threads", threads,
+                "-filter_complex_threads", threads,
+                "-i", str(master), "-threads", threads, "-i", str(final),
+                "-filter_complex",
                 (
                     f"[0:a:0]aresample=48000:first_pts=0,apad,"
                     f"atrim=duration={duration_sec:.6f}[master];"
@@ -1464,14 +1625,19 @@ def chapter_for_interval(interval: Interval, chapters: list[Chapter]) -> Chapter
     return None
 
 
-def consume_matching_review(interval: Interval, reviews: list[dict[str, Any]], label: str) -> None:
+def consume_matching_review(
+    interval: Interval,
+    reviews: list[dict[str, Any]],
+    label: str,
+) -> bool:
     matches = [row for row in reviews if not row["used"] and interval_matches(interval, row["interval"])]
     if len(matches) != 1:
         fail(
             f"{label} interval {interval.start:.3f}-{interval.end:.3f}s requires exactly "
-            "one current human review"
+            "one current review record (pending or approved)"
         )
     matches[0]["used"] = True
+    return bool(matches[0]["approved"])
 
 
 def validate_detected_intervals(
@@ -1497,18 +1663,20 @@ def validate_detected_intervals(
                 f"hard silence inside chapter {chapter.key}: "
                 f"{interval.start:.3f}-{interval.end:.3f}s ({interval.duration:.3f}s)"
             )
-        consume_matching_review(interval, silence_reviews, "silence REVIEW")
-        reviewed_silences += 1
+        if consume_matching_review(interval, silence_reviews, "silence REVIEW"):
+            reviewed_silences += 1
 
+    reviewed_black = 0
     for interval in black_intervals:
-        consume_matching_review(interval, black_reviews, "blackdetect REVIEW")
+        if consume_matching_review(interval, black_reviews, "blackdetect REVIEW"):
+            reviewed_black += 1
     stale_silence = [row for row in silence_reviews if not row["used"]]
     stale_black = [row for row in black_reviews if not row["used"]]
     if stale_silence:
         fail("reviews.silence contains stale entries not found in the current final video")
     if stale_black:
         fail("reviews.black contains stale entries not found in the current final video")
-    return reviewed_silences, len(black_intervals)
+    return reviewed_silences, reviewed_black
 
 
 def validate_visual_sample_coverage(
@@ -1546,6 +1714,7 @@ def verify_project(
     manifest_relative: str = "qa/final-video-qa.json",
     *,
     tools: MediaTools | None = None,
+    require_human_review: bool = False,
 ) -> VerificationSummary:
     if project.is_symlink():
         fail("project directory must not be a symlink")
@@ -1579,6 +1748,7 @@ def verify_project(
         manifest.get("authoring_manifest"),
         narration_mode,
         media_tools.verify_authoring,
+        require_human_review=require_human_review,
     )
     authoring_manifest_value = read_json(authoring_asset.path, "authoring_manifest")
     authoring_inputs = collect_project_file_inputs(project, authoring_manifest_value)
@@ -1586,6 +1756,13 @@ def verify_project(
     assets_raw = require_object(manifest.get("assets"), "assets")
     if set(assets_raw) != {"final", "render", "master"}:
         fail("assets must contain exactly final, render and master")
+    for key in ("final", "render"):
+        asset_row = require_object(assets_raw[key], f"assets.{key}")
+        if not starts_with_renders_directory(asset_row.get("path")):
+            fail(
+                f"assets.{key}.path first path component must be lowercase "
+                f"'{RENDERS_DIRECTORY}'"
+            )
     assets = {
         key: parse_asset(project, assets_raw[key], f"assets.{key}")
         for key in ("final", "render", "master")
@@ -1603,14 +1780,24 @@ def verify_project(
         chapters,
         authoring_narration,
     )
+    human_review_advisories: list[str] = []
     reviews, sample_times, visual_artifacts, approval_artifacts = validate_manual_approvals(
-        project, manifest.get("reviews"), assets["final"].sha256
+        project,
+        manifest.get("reviews"),
+        assets["final"].sha256,
+        human_review_advisories,
     )
     silence_reviews = parse_interval_reviews(
-        reviews.get("silence"), "reviews.silence", assets["final"].sha256
+        reviews.get("silence"),
+        "reviews.silence",
+        assets["final"].sha256,
+        human_review_advisories,
     )
     black_reviews = parse_interval_reviews(
-        reviews.get("black"), "reviews.black", assets["final"].sha256
+        reviews.get("black"),
+        "reviews.black",
+        assets["final"].sha256,
+        human_review_advisories,
     )
     isolated_asr_sources, asr_assets = validate_asr_evidence(
         project,
@@ -1618,6 +1805,7 @@ def verify_project(
         assets,
         expectations,
         media_tools,
+        human_review_advisories,
     )
 
     probes = {key: media_tools.probe(asset.path) for key, asset in assets.items()}
@@ -1712,7 +1900,7 @@ def verify_project(
     for artifact in approval_artifacts:
         tracked_inputs[artifact["path"]] = (
             artifact["sha256"],
-            f"human evidence {artifact['raw_path']}",
+            f"review evidence {artifact['raw_path']}",
         )
     for path, expected_hash in authoring_inputs.items():
         tracked_inputs[path] = (expected_hash, f"authoring input {path.relative_to(project)}")
@@ -1721,9 +1909,17 @@ def verify_project(
             fail(f"{label} changed while final-video QA was running")
     if sha256_file(manifest_path) != manifest_initial_hash:
         fail("final-video QA manifest changed while verification was running")
-    authoring_errors = media_tools.verify_authoring(project, authoring_asset.raw_path)
+    authoring_errors = media_tools.verify_authoring(
+        project,
+        authoring_asset.raw_path,
+        require_human_review=require_human_review,
+    )
     if authoring_errors:
         fail("authoring project contract changed or failed during QA: " + " | ".join(authoring_errors))
+
+    advisory_labels = tuple(dict.fromkeys(human_review_advisories))
+    if require_human_review and advisory_labels:
+        raise HumanReviewRequired(advisory_labels)
 
     return VerificationSummary(
         final_path=assets["final"].raw_path,
@@ -1735,6 +1931,7 @@ def verify_project(
         master_aac_sdr_db=audio_sdr,
         reviewed_silences=reviewed_silences,
         reviewed_black_intervals=reviewed_black,
+        human_review_advisories=advisory_labels,
     )
 
 
@@ -1746,13 +1943,25 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default="qa/final-video-qa.json",
         help="project-relative QA manifest path",
     )
+    parser.add_argument(
+        "--require-human-review",
+        action="store_true",
+        help="strict opt-in requiring all hash-bound human reviews",
+    )
     return parser.parse_args(argv)
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     try:
-        summary = verify_project(Path(args.project), args.manifest)
+        summary = verify_project(
+            Path(args.project),
+            args.manifest,
+            require_human_review=args.require_human_review,
+        )
+    except HumanReviewRequired as exc:
+        print(f"FINAL VIDEO QA: REVIEW_REQUIRED — {exc}", file=sys.stderr)
+        return 2
     except (GateFailure, FileNotFoundError) as exc:
         print(f"FINAL VIDEO QA: FAIL — {exc}", file=sys.stderr)
         return 1
@@ -1761,12 +1970,12 @@ def main(argv: list[str] | None = None) -> int:
         f"final={summary.final_path} sha256={summary.final_sha256} "
         f"duration={summary.duration_sec:.3f}s codec={summary.video_codec} "
         f"I={summary.integrated_lufs:.2f}LUFS TP={summary.true_peak_dbtp:.2f}dBTP "
-        f"audio_sdr={summary.master_aac_sdr_db:.2f}dB"
+        f"audio_sdr={summary.master_aac_sdr_db:.2f}dB "
+        f"advisories={len(summary.human_review_advisories)}"
     )
-    print(
-        "Human records are hash-bound only; this tool did not understand frames, "
-        "leakage semantics, release safety, or pronunciation."
-    )
+    # The default sandbox command ends at the machine result.  Do not append
+    # unsolicited next-step or manual-review boilerplate.
+    # Explicit strict-mode requests still use the REVIEW_REQUIRED branch above.
     return 0
 
 

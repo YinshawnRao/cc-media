@@ -13,6 +13,7 @@ import unittest
 import wave
 from contextlib import contextmanager
 from pathlib import Path
+from unittest import mock
 
 from tools.video import verify_project as gate
 
@@ -296,11 +297,17 @@ class VerifyProjectTests(unittest.TestCase):
             shutil.copytree(self.hydrated_example, root)
             yield root
 
-    def errors(self, root: Path) -> list[str]:
+    def errors(
+        self,
+        root: Path,
+        *,
+        require_human_review: bool = False,
+    ) -> list[str]:
         return gate.verify_project(
             root,
             voice_registry=self.registry,
             current_model_validation=self.current_model_validation,
+            require_human_review=require_human_review,
         )
 
     def assert_error(self, errors: list[str], text: str) -> None:
@@ -344,6 +351,53 @@ class VerifyProjectTests(unittest.TestCase):
         self.assertEqual(
             set(gate.REVIEW_APPROVAL_REQUIRED),
             set(defs["reviewApproval"]["required"]),
+        )
+        self.assertEqual(
+            {"agent", "human"},
+            set(defs["reviewApproval"]["properties"]["reviewer_kind"]["enum"]),
+        )
+        self.assertEqual(
+            {"observed", "approved"},
+            set(defs["reviewApproval"]["properties"]["status"]["enum"]),
+        )
+        self.assertEqual(
+            {
+                ("observed", "agent"),
+                ("approved", "human"),
+            },
+            {
+                (
+                    branch["properties"]["status"]["const"],
+                    branch["properties"]["reviewer_kind"]["const"],
+                )
+                for branch in defs["reviewApproval"]["oneOf"]
+            },
+        )
+        self.assertEqual(
+            {"OK", "OBSERVED", "APPROVED"},
+            set(defs["vocalShowcaseEvidence"]["properties"]["status"]["enum"]),
+        )
+
+    def test_cli_propagates_explicit_release_mode(self) -> None:
+        with (
+            mock.patch.object(
+                sys,
+                "argv",
+                [
+                    "verify_project.py",
+                    "--project",
+                    "project",
+                    "--require-human-review",
+                ],
+            ),
+            mock.patch.object(gate, "verify_project", return_value=[]) as verify,
+            mock.patch("builtins.print"),
+        ):
+            self.assertEqual(0, gate.main())
+        verify.assert_called_once_with(
+            Path("project"),
+            "project-manifest.json",
+            require_human_review=True,
         )
 
     def test_top_requires_strict_descending_ranks(self) -> None:
@@ -840,6 +894,7 @@ class VerifyProjectTests(unittest.TestCase):
                         },
                         "reason": "Synthetic manual identity and phrase-boundary review",
                         "evidence": ["synthetic listening record"],
+                        "reviewer_kind": "human",
                         "reviewer": "fixture-human-reviewer",
                         "reviewed_at": "2026-08-10T12:00:00+08:00",
                         "evidence_files": [
@@ -865,6 +920,70 @@ class VerifyProjectTests(unittest.TestCase):
             self.update_item_evidence_hash(root, manifest, 0)
             self.save_manifest(root, manifest)
             self.assertEqual([], self.errors(root))
+            self.assertEqual([], self.errors(root, require_human_review=True))
+
+            agent_observation = json.loads(json.dumps(approval))
+            agent_row = agent_observation["approvals"]["rank-02"]
+            agent_row.update({
+                "status": "observed",
+                "reviewer_kind": "agent",
+                "reviewer": "codex-tool-assisted-review",
+                "reason": "Tool-assisted audiovisual observation; human ear pending",
+            })
+            write_json(approval_path, agent_observation)
+            evidence["status"] = "OBSERVED"
+            evidence["approval"]["sha256"] = gate.sha256_file(approval_path)
+            write_json(evidence_path, evidence)
+            self.update_item_evidence_hash(root, manifest, 0)
+            self.save_manifest(root, manifest)
+            self.assertEqual([], self.errors(root))
+            self.assert_error(
+                self.errors(root, require_human_review=True),
+                "approval.reviewer_kind must be human in release mode",
+            )
+
+            evidence["status"] = "APPROVED"
+
+            invalid_reviews = (
+                (
+                    "unknown reviewer kind",
+                    lambda row: row.update({"reviewer_kind": "automation"}),
+                    "approval.reviewer_kind must be agent or human",
+                ),
+                (
+                    "null reviewer kind",
+                    lambda row: row.update({"reviewer_kind": None}),
+                    "approval.reviewer_kind must be agent or human",
+                ),
+                (
+                    "blank reviewer",
+                    lambda row: row.update({"reviewer": ""}),
+                    "approval.reviewer must be non-empty",
+                ),
+                (
+                    "naive review time",
+                    lambda row: row.update({"reviewed_at": "2026-08-10T12:00:00"}),
+                    "approval.reviewed_at must be ISO-8601 with timezone",
+                ),
+            )
+            for name, mutate, expected in invalid_reviews:
+                with self.subTest(name=name):
+                    invalid = json.loads(json.dumps(approval))
+                    mutate(invalid["approvals"]["rank-02"])
+                    write_json(approval_path, invalid)
+                    evidence["approval"]["sha256"] = gate.sha256_file(approval_path)
+                    write_json(evidence_path, evidence)
+                    self.update_item_evidence_hash(root, manifest, 0)
+                    self.save_manifest(root, manifest)
+                    self.assert_error(self.errors(root), expected)
+
+            write_json(approval_path, approval)
+            evidence["approval"]["sha256"] = gate.sha256_file(approval_path)
+            write_json(evidence_path, evidence)
+            self.update_item_evidence_hash(root, manifest, 0)
+            self.save_manifest(root, manifest)
+            self.assertEqual([], self.errors(root))
+            self.assertEqual([], self.errors(root, require_human_review=True))
 
             analysis["detector"] = "changed-after-approval"
             write_json(analysis_path, analysis)

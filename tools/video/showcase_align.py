@@ -37,15 +37,19 @@ build 内联用法（最强约束 —— 不对齐就不出 master）：
        plan_path=ROOT/"build"/"showcase_plan.json")
 
 旧版 ``vocal_segments.py`` 只有频带能量区间，不能证明是目标歌手本人演唱，也不能证明区间端点
-就是歌词/乐句边界。此类数据只允许得到 REVIEW，必须有逐曲人工批准记录，不能再靠全局环境变量
-跳过。新版分析可提供 ``lead_segments``、``safe_cut_intervals`` 和 ``evidence_level`` 后再自动 OK。
+就是歌词/乐句边界。此类数据只允许得到 REVIEW；普通 goal 应先严格按 multi → 换窗 → 换源
+重跑。该路径确已穷尽且硬 FAIL=0 后，本地才可用 hash/window-bound agent observation 得到
+OBSERVED；发布 ``--require-human-review`` 仍只接受 human APPROVED。新版分析可提供
+``lead_segments``、``safe_cut_intervals`` 和 ``evidence_level`` 后再自动 OK。
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
+import math
 import sys
+from datetime import datetime
 from pathlib import Path
 
 # ---- 可调阈值（改这里即可全局调松紧）----
@@ -62,6 +66,58 @@ APPROVAL_TIME_TOL = 0.02  # 批准绑定到具体时间窗；时间码变化即�
 
 TRUSTED_EVIDENCE = {"multi_evidence", "manual", "verified"}
 TRUSTED_BOUNDARY_ACTIVITY = {"whisper_word_timestamps", "manual", "verified"}
+
+AUTO_RECOVERY_GUIDANCE = (
+    "普通 goal 先自动执行：vocal_segments.py --mode multi 多证据分析 "
+    "→ 换完整乐句窗/切点 → 换同版本官方或另一平台来源并重跑；"
+    "只有以上路径确已穷尽且硬 FAIL=0 时，本地模式才可使用绑定当前窗口/hash 的 "
+    "reviewer_kind=agent 工具辅助观察（结果仅为 OBSERVED，不是真人批准）；"
+    "发布模式仍只接受 human，代理不得代签 human。")
+
+
+def _reject_json_constant(value):
+    raise ValueError(f"JSON 不能包含非有限数值 {value}")
+
+
+def _reject_duplicate_keys(pairs):
+    data = {}
+    for key, value in pairs:
+        if key in data:
+            raise ValueError("JSON 不能包含重复字段")
+        data[key] = value
+    return data
+
+
+def _load_json(path):
+    """按标准 JSON 读取，拒绝 Python 默认容忍的 NaN/Infinity 和重复字段。"""
+    return json.loads(
+        Path(path).read_text(encoding="utf-8"),
+        parse_constant=_reject_json_constant,
+        object_pairs_hook=_reject_duplicate_keys,
+    )
+
+
+def _finite_number(value):
+    if isinstance(value, bool):
+        return None
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def _aware_datetime(value):
+    if not isinstance(value, str) or not value.strip():
+        return None
+    text = value.strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo is not None and parsed.utcoffset() is not None else None
 
 
 def _overlap(a0, a1, b0, b1):
@@ -214,7 +270,8 @@ def verify_song(vocal_segments, narr_end_src, show_start_src, show_end_src,
             f"前奏硬起模式要求 show_start_src=0，当前为 {show_start_src:.2f}s")
     if not reliable:
         review_problems.append(
-            "主唱检测证据不足（showcase 邻域几乎无活动；满编曲可能漏报）→ 必须人工复核")
+            "主唱检测证据不足（showcase 邻域几乎无活动；满编曲可能漏报）"
+            "→ 先自动重跑 multi 多证据分析")
     elif not intro_hard_restart:
         if not entry_ok:
             target = hard_problems if trusted_identity else review_problems
@@ -238,7 +295,8 @@ def verify_song(vocal_segments, narr_end_src, show_start_src, show_end_src,
     elif not trusted_identity:
         status = "REVIEW"
         reasons = [
-            f"仅有 {evidence_level} 区间，不能证明是目标歌手而非乐器/观众；需新版多证据分析或人工批准"]
+            f"仅有 {evidence_level} 区间，不能证明是目标歌手而非乐器/观众；"
+            "先自动重跑 multi 多证据分析"]
     elif not trusted_boundary:
         status = "REVIEW"
         reasons = [
@@ -293,7 +351,7 @@ def dump_plan(songs, path, consts=None):
 
 def _load_analysis(vocals_path):
     path = Path(vocals_path)
-    data = json.loads(path.read_text(encoding="utf-8"))
+    data = _load_json(path)
     if isinstance(data, dict) and "clips" in data:
         data = data["clips"]
     # 单文件模式：vocal_segments.py 会直接写 {name,duration,vocal_segments}，
@@ -325,56 +383,83 @@ def _load_approvals(approvals):
         path = Path(approvals)
         if not path.exists():
             return {}
-        approvals = json.loads(path.read_text(encoding="utf-8"))
+        approvals = _load_json(path)
     if isinstance(approvals, dict) and "approvals" in approvals:
         approvals = approvals["approvals"]
     return approvals if isinstance(approvals, dict) else {}
 
 
 def _analysis_fingerprint(analysis):
-    """把实际用于判定的分析对象绑定进人工批准，防止重跑检测后沿用旧记录。"""
+    """把实际用于判定的分析对象绑定进用户复核批准，防止重跑检测后沿用旧记录。"""
     canonical = json.dumps(
-        analysis, ensure_ascii=False, sort_keys=True, separators=(",", ":"), default=str)
+        analysis, ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+        default=str, allow_nan=False)
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def _validate_approval(approvals, key, clip, expected_window=None, expected_analysis=None):
+def _validate_approval(
+        approvals, key, clip, expected_window=None, expected_analysis=None,
+        *, require_human_review=False):
     item = approvals.get(key) or approvals.get(clip)
     if item is None:
         return None, None
-    if not isinstance(item, dict) or item.get("status") != "approved":
-        return None, "批准项必须是对象且 status=approved"
+    if not isinstance(item, dict):
+        return None, "复核项必须是对象"
+    reviewer_kind = item.get("reviewer_kind")
+    if reviewer_kind not in {"agent", "human"}:
+        return None, "复核项 reviewer_kind 必须明确为 agent 或 human"
+    expected_status = "observed" if reviewer_kind == "agent" else "approved"
+    if item.get("status") != expected_status:
+        return None, (
+            f"复核项 reviewer_kind={reviewer_kind} 时 status 必须为 {expected_status}"
+        )
+    if require_human_review and reviewer_kind != "human":
+        return None, "发布模式要求 reviewer_kind=human；agent observation 不能冒充真人批准"
+    reviewer = item.get("reviewer")
+    if not isinstance(reviewer, str) or not reviewer.strip():
+        return None, "复核项 reviewer 必须是非空复核者标识"
+    if _aware_datetime(item.get("reviewed_at")) is None:
+        return None, "复核项 reviewed_at 必须是带时区的 ISO-8601 时间"
     reason = str(item.get("reason", "")).strip()
     evidence = item.get("evidence", [])
     if isinstance(evidence, str):
         evidence = [evidence]
     evidence = [str(x).strip() for x in evidence if str(x).strip()]
     if not reason or not evidence:
-        return None, "批准项缺 reason 或 evidence"
+        return None, "复核项缺 reason 或 evidence"
     if str(item.get("clip", "")).strip() != str(clip):
-        return None, f"批准项 clip 与当前不一致（应为 {clip}）"
+        return None, f"复核项 clip 与当前不一致（应为 {clip}）"
 
-    # 批准必须绑定具体剪辑窗口，防止改了 ch_off/show 后沿用旧批准误放行。
+    # 复核记录必须绑定具体剪辑窗口，防止改了 ch_off/show 后沿用旧记录误放行。
     bound = item.get("window", item)
+    if not isinstance(bound, dict):
+        return None, "复核项 window 必须是对象"
     if expected_window is not None:
         for name in ("narr_end_src", "show_start_src", "show_end_src"):
             if name not in bound:
-                return None, f"批准项缺 window.{name}，无法确认是否对应当前剪辑"
-            try:
-                delta = abs(float(bound[name]) - float(expected_window[name]))
-            except (TypeError, ValueError):
-                return None, f"批准项 window.{name} 不是数字"
+                return None, f"复核项缺 window.{name}，无法确认是否对应当前剪辑"
+            approved_value = _finite_number(bound[name])
+            expected_value = _finite_number(expected_window.get(name))
+            if approved_value is None:
+                return None, f"复核项 window.{name} 必须是有限数值"
+            if expected_value is None:
+                return None, f"当前 window.{name} 必须是有限数值"
+            delta = abs(approved_value - expected_value)
             if delta > APPROVAL_TIME_TOL:
-                return None, (f"批准项已过期：window.{name}={float(bound[name]):.2f}，"
-                              f"当前为 {float(expected_window[name]):.2f}")
+                return None, (f"复核项已过期：window.{name}={approved_value:.2f}，"
+                              f"当前为 {expected_value:.2f}")
     if expected_analysis is not None:
         expected_hash = _analysis_fingerprint(expected_analysis)
         actual_hash = str(item.get("analysis_sha256", "")).strip().lower()
         if not actual_hash:
-            return None, "批准项缺 analysis_sha256，无法确认是否对应当前检测结果"
+            return None, "复核项缺 analysis_sha256，无法确认是否对应当前检测结果"
         if actual_hash != expected_hash:
-            return None, "批准项已过期：analysis_sha256 与当前检测结果不一致"
-    return {"reason": reason, "evidence": evidence}, None
+            return None, "复核项已过期：analysis_sha256 与当前检测结果不一致"
+    return {
+        "reason": reason,
+        "evidence": evidence,
+        "reviewer_kind": reviewer_kind,
+    }, None
 
 
 def _valid_approval(approvals, key, clip, expected_window=None, expected_analysis=None):
@@ -384,7 +469,8 @@ def _valid_approval(approvals, key, clip, expected_window=None, expected_analysi
 
 
 def gate(blocks, vocals, consts=None, plan_path=None, clips_dir="clips",
-         approvals=None, override_env="SHOWCASE_OVERRIDE", verbose=True):
+         approvals=None, override_env="SHOWCASE_OVERRIDE", verbose=True,
+         require_human_review=False):
     """build 内联强制闸门：对齐不过就不出 master（最强约束）。一行接入。
 
     blocks: full_build 风格的 list，每首至少含
@@ -396,9 +482,11 @@ def gate(blocks, vocals, consts=None, plan_path=None, clips_dir="clips",
     vocals: vocal_analysis.json 路径，或 {clip: analysis} dict。
             新版分析对象应带 lead_segments/evidence_level/safe_cut_intervals。
     consts/plan_path: 落盘 showcase_plan.json（可复核/留档）。
-    approvals: 逐曲人工批准 JSON 路径或 dict。每项必须绑定 clip、analysis_sha256、
-               三个时间码，并有 status=approved、reason、evidence。
-    REVIEW 可凭绑定时间窗的逐曲批准放行；硬边界 FAIL 不可批准跳过。
+    approvals: 显式复核 JSON 路径或 dict。每项必须绑定 clip、analysis_sha256、三个时间码，
+               并有 reviewer_kind、reason、evidence。默认本地模式允许
+               status=observed/reviewer_kind=agent 的工具辅助观察；发布模式只接受
+               status=approved/reviewer_kind=human。
+    REVIEW 可凭绑定时间窗的复核记录闭环；硬边界 FAIL 不可批准跳过。
     未获证明即 raise SystemExit。全局 SHOWCASE_OVERRIDE 不再跳过。
 
     用法（build 算完 blocks、建 master 之前）：
@@ -408,16 +496,18 @@ def gate(blocks, vocals, consts=None, plan_path=None, clips_dir="clips",
                             consts=dict(POST=POST, DIG=DIG),
                             plan_path=ROOT/"build"/"showcase_plan.json")
     """
+    if not isinstance(blocks, (list, tuple)) or not blocks:
+        raise SystemExit("✗ 展示段闸门拒绝空 blocks：没有歌曲不能视为通过。")
     vmap = vocals if isinstance(vocals, dict) else _load_analysis(vocals)
     if isinstance(vmap, dict) and "clips" in vmap:
         vmap = vmap["clips"]
-    if approvals is None and plan_path is not None:
-        auto_approvals = Path(plan_path).with_name("showcase_approvals.json")
-        approvals = auto_approvals if auto_approvals.exists() else None
     approval_map = _load_approvals(approvals)
     gate_mode = (consts or {}).get("mode") if isinstance(consts, dict) else None
     songs, results = [], []
-    counts = {"OK": 0, "FAIL": 0, "REVIEW": 0, "APPROVED": 0, "MISS": 0}
+    counts = {
+        "OK": 0, "FAIL": 0, "REVIEW": 0,
+        "OBSERVED": 0, "APPROVED": 0, "MISS": 0,
+    }
     for b in blocks:
         clip = b["clip"]
         mseek = b.get("mseek", 0.0)
@@ -431,22 +521,28 @@ def gate(blocks, vocals, consts=None, plan_path=None, clips_dir="clips",
         analysis = vmap.get(clip)
         if analysis is None:
             results.append((s["key"] or clip, "MISS",
-                            [f"vocal_analysis.json 缺 clip『{clip}』→ 先跑 vocal_segments.py"], None))
+                            [f"vocal_analysis.json 缺 clip『{clip}』→ 先自动跑 "
+                             "vocal_segments.py --mode multi"], None))
             counts["MISS"] += 1
             continue
         v = verify_song(analysis, mode=b.get("mode", gate_mode), **s)
         status, reasons = v["status"], list(v["reasons"])
         approval, approval_error = _validate_approval(
             approval_map, s.get("key"), clip, expected_window=s,
-            expected_analysis=analysis)
+            expected_analysis=analysis,
+            require_human_review=require_human_review)
         if status == "REVIEW" and approval:
-            status = "APPROVED"
-            reasons.append("逐曲人工批准：" + approval["reason"])
+            if approval["reviewer_kind"] == "human":
+                status = "APPROVED"
+                reasons.append("真人逐曲复核批准：" + approval["reason"])
+            else:
+                status = "OBSERVED"
+                reasons.append("代理工具辅助观察（仅本地，不是发布级真人批准）：" + approval["reason"])
             reasons.append("证据：" + ", ".join(approval["evidence"]))
         elif status == "FAIL" and approval:
-            reasons.append("逐曲批准不能覆盖硬边界 FAIL；请修切点或写入校正后的主唱/安全边界分析")
+            reasons.append("逐曲复核记录不能覆盖硬边界 FAIL；请修切点或写入校正后的主唱/安全边界分析")
         elif status in {"FAIL", "REVIEW"} and approval_error:
-            reasons.append("逐曲批准未生效：" + approval_error)
+            reasons.append("逐曲复核记录未生效：" + approval_error)
         results.append((v["key"] or clip, status, reasons, v["metrics"]))
         counts[status] += 1
 
@@ -456,20 +552,24 @@ def gate(blocks, vocals, consts=None, plan_path=None, clips_dir="clips",
     if verbose:
         print("展示段对齐闸门（showcase_align.gate）")
         for name, status, reasons, metrics in results:
-            mark = {"OK": "✓", "APPROVED": "✓", "FAIL": "✗", "REVIEW": "⚠", "MISS": "?"}.get(status, "?")
+            mark = {
+                "OK": "✓", "OBSERVED": "✓", "APPROVED": "✓",
+                "FAIL": "✗", "REVIEW": "⚠", "MISS": "?",
+            }.get(status, "?")
             print(f"  [{mark} {status}] {name}")
             for r in reasons:
                 print(f"        - {r}")
-        print("  → " + " ".join(f"{k}={counts[k]}" for k in ("FAIL", "REVIEW", "MISS", "APPROVED", "OK")))
+        print("  → " + " ".join(
+            f"{k}={counts[k]}"
+            for k in ("FAIL", "REVIEW", "MISS", "OBSERVED", "APPROVED", "OK")))
 
     import os
     if os.environ.get(override_env) and verbose:
-        print(f"  ⚠ {override_env} 已废弃：全局跳过会掩盖其他歌曲问题，请写逐曲 showcase_approvals.json。")
+        print(f"  ⚠ {override_env} 已废弃：全局跳过会掩盖其他歌曲问题。{AUTO_RECOVERY_GUIDANCE}")
     n_block = counts["FAIL"] + counts["REVIEW"] + counts["MISS"]
     if n_block:
         raise SystemExit(
-            f"✗ 展示段闸门仍有 {n_block} 首未获证明。修切点/重跑多证据检测；"
-            "REVIEW 经逐曲试听后在 showcase_approvals.json 记录 reason + evidence。")
+            f"✗ 展示段闸门仍有 {n_block} 首未获证明。{AUTO_RECOVERY_GUIDANCE}")
     return results
 
 
@@ -477,29 +577,32 @@ def _mp3_hint(clip, show_start_src, clips_dir):
     src = f"{clips_dir}/{clip}.mp4" if clips_dir else f"clips/{clip}.mp4"
     ss = max(0.0, show_start_src - 2.0)
     return (f"ffmpeg -ss {ss:.2f} -i {src} -t 26 -vn "
-            f"-af loudnorm out_{clip}.mp3 -y   # 导 26s 试听人工耳验")
+            f"-af loudnorm out_{clip}.mp3 -y   # 导出 26s 诊断片段；不得据此代签用户批准")
 
 
 def cmd_check(args):
     vocals = _load_analysis(args.vocals)
-    approvals_path = args.approvals
-    if approvals_path is None:
-        candidate = Path(args.plan).with_name("showcase_approvals.json")
-        approvals_path = candidate if candidate.exists() else None
-    approvals = _load_approvals(approvals_path)
-    plan = json.loads(Path(args.plan).read_text(encoding="utf-8"))
+    approvals = _load_approvals(args.approvals)
+    plan = _load_json(args.plan)
     songs = plan["songs"] if isinstance(plan, dict) else plan
+    if not isinstance(songs, list) or not songs:
+        print("✗ 展示段闸门拒绝空 songs：没有歌曲不能视为通过。", file=sys.stderr)
+        return 2
     plan_mode = (plan.get("consts", {}).get("mode")
                  if isinstance(plan, dict) else None)
 
     rows = []
-    counts = {"OK": 0, "FAIL": 0, "REVIEW": 0, "APPROVED": 0, "MISS": 0}
+    counts = {
+        "OK": 0, "FAIL": 0, "REVIEW": 0,
+        "OBSERVED": 0, "APPROVED": 0, "MISS": 0,
+    }
     for s in songs:
         clip = s.get("clip") or s.get("key")
         analysis = vocals.get(clip)
         if analysis is None:
             rows.append((s.get("key") or clip, "MISS",
-                         [f"vocal_analysis.json 里找不到 clip『{clip}』的人声数据 → 先跑 vocal_segments.py"]))
+                         [f"vocal_analysis.json 里找不到 clip『{clip}』的人声数据 "
+                          "→ 先自动跑 vocal_segments.py --mode multi"]))
             counts["MISS"] += 1
             continue
         v = verify_song(analysis, key=s.get("key"), clip=clip,
@@ -510,15 +613,20 @@ def cmd_check(args):
         status, reasons = v["status"], list(v["reasons"])
         approval, approval_error = _validate_approval(
             approvals, s.get("key"), clip, expected_window=s,
-            expected_analysis=analysis)
+            expected_analysis=analysis,
+            require_human_review=getattr(args, "require_human_review", False))
         if status == "REVIEW" and approval:
-            status = "APPROVED"
-            reasons.append("逐曲人工批准：" + approval["reason"])
+            if approval["reviewer_kind"] == "human":
+                status = "APPROVED"
+                reasons.append("真人逐曲复核批准：" + approval["reason"])
+            else:
+                status = "OBSERVED"
+                reasons.append("代理工具辅助观察（仅本地，不是发布级真人批准）：" + approval["reason"])
             reasons.append("证据：" + ", ".join(approval["evidence"]))
         elif status == "FAIL" and approval:
-            reasons.append("逐曲批准不能覆盖硬边界 FAIL；请修切点或写入校正后的主唱/安全边界分析")
+            reasons.append("逐曲复核记录不能覆盖硬边界 FAIL；请修切点或写入校正后的主唱/安全边界分析")
         elif status in {"FAIL", "REVIEW"} and approval_error:
-            reasons.append("逐曲批准未生效：" + approval_error)
+            reasons.append("逐曲复核记录未生效：" + approval_error)
         rows.append((v["key"] or clip, status, reasons, v["metrics"], clip))
         counts[status] += 1
 
@@ -526,17 +634,22 @@ def cmd_check(args):
     print("=" * 64)
     for row in rows:
         name, status = row[0], row[1]
-        mark = {"OK": "✓", "APPROVED": "✓", "FAIL": "✗", "REVIEW": "⚠", "MISS": "?"}.get(status, "?")
+        mark = {
+            "OK": "✓", "OBSERVED": "✓", "APPROVED": "✓",
+            "FAIL": "✗", "REVIEW": "⚠", "MISS": "?",
+        }.get(status, "?")
         print(f"[{mark} {status}] {name}")
         for r in row[2]:
             print(f"      - {r}")
         if status == "REVIEW" and len(row) >= 5:
             print(f"      $ {_mp3_hint(row[4], row[3]['show_start_src'], args.clips)}")
     print("=" * 64)
-    print("  ".join(f"{k}={counts[k]}" for k in ("FAIL", "REVIEW", "MISS", "APPROVED", "OK")))
+    print("  ".join(
+        f"{k}={counts[k]}"
+        for k in ("FAIL", "REVIEW", "MISS", "OBSERVED", "APPROVED", "OK")))
     n_block = counts["FAIL"] + counts["REVIEW"] + counts["MISS"]
     if n_block:
-        print("✗ 闸门未过：修切点/重跑分析，或为确属误报的单曲补逐曲批准记录。")
+        print(f"✗ 闸门未过：{AUTO_RECOVERY_GUIDANCE}")
         return 1
     print("✓ 闸门通过。")
     return 0
@@ -568,10 +681,13 @@ def _find_safe_end(segs, show_start, min_show):
 
 
 def cmd_approval_template(args):
-    """从已落盘 plan 生成逐曲批准骨架；默认拒绝覆盖已有人工记录。"""
+    """从已落盘 plan 生成用户复核批准骨架；默认拒绝覆盖已有记录。"""
     plan_path = Path(args.plan)
-    plan = json.loads(plan_path.read_text(encoding="utf-8"))
+    plan = _load_json(plan_path)
     songs = plan["songs"] if isinstance(plan, dict) else plan
+    if not isinstance(songs, list) or not songs:
+        print("拒绝为空 plan 生成批准模板：songs 必须是非空数组", file=sys.stderr)
+        return 2
     analyses = _load_analysis(args.vocals)
     out = Path(args.out) if args.out else plan_path.with_name("showcase_approvals.json")
     if out.exists() and not args.force:
@@ -587,6 +703,9 @@ def cmd_approval_template(args):
             return 2
         approvals[name] = {
             "status": "pending",
+            "reviewer_kind": None,
+            "reviewer": "",
+            "reviewed_at": None,
             "clip": clip,
             "analysis_sha256": _analysis_fingerprint(analysis),
             "window": {
@@ -600,13 +719,16 @@ def cmd_approval_template(args):
     payload = {
         "schema_version": 1,
         "instructions": (
-            "逐曲试听并核对主唱身份、观众声和完整乐句；确认后改 status=approved，"
-            "填写具体 reason 与 evidence。任一时间码或分析内容变化都会让批准失效。"),
+            "本模板仅接受用户已完成逐曲复核后的记录；代理或脚本不得填写、"
+            "不得把 pending 改为 status=approved，不得代签。用户须逐曲试听并核对主唱身份、"
+            "观众声和完整乐句，确认后把 reviewer_kind 填为 human，并填写 reviewer、"
+            "带时区的 reviewed_at、具体 reason 与 evidence。"
+            "任一时间码或分析内容变化都会让批准失效。"),
         "approvals": approvals,
     }
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"已生成 {out}（全部为 pending，不会自动放行）")
+    print(f"已生成 {out}（全部为 pending；仅供用户已完成复核后填写，代理不得代签）")
     return 0
 
 
@@ -655,22 +777,32 @@ def cmd_plan(args):
     v = verify_song(raw_analysis, narr_end_src=narr_end_src,
                     show_start_src=show_start, show_end_src=show_end, clip=args.clip)
     print(f"    [{v['status']}] " + "; ".join(v["reasons"]))
-    print(f"  把这两个数填进 build 的该首 items：ch_off={show_start}, show={show}")
-    if not auto_safe or v["status"] == "FAIL":
-        print("  ✗ 未找到能通过边界自检的自动切点，请人工复核后再写入 build。", file=sys.stderr)
+    if not auto_safe or v["status"] != "OK":
+        print(f"  ✗ 未找到能通过边界自检的自动切点。{AUTO_RECOVERY_GUIDANCE}", file=sys.stderr)
         return 1
+    print(f"  ✓ 自动验证 OK，可写入 build：ch_off={show_start}, show={show}")
     return 0
 
 
 def main():
-    ap = argparse.ArgumentParser(description="展示段对齐机械闸门")
+    ap = argparse.ArgumentParser(
+        description="展示段对齐机械闸门；未过时普通 goal 先自动 multi 分析、换窗、换同版本来源")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    c = sub.add_parser("check", help="按 showcase_plan.json 校验全部歌曲（违规 exit 1）")
+    c = sub.add_parser(
+        "check", help="按 showcase_plan.json 校验全部歌曲（未过先自动修复，exit 1）")
     c.add_argument("--plan", required=True, help="showcase_plan.json 路径")
     c.add_argument("--vocals", required=True, help="vocal_analysis.json 路径")
-    c.add_argument("--clips", default="clips", help="clips 目录（仅用于 REVIEW 时拼 mp3 试听命令）")
-    c.add_argument("--approvals", help="逐曲人工批准 JSON（默认取 plan 同目录）")
+    c.add_argument("--clips", default="clips", help="clips 目录（仅用于 REVIEW 时拼诊断 mp3 命令）")
+    c.add_argument(
+        "--approvals",
+        help=("显式传入逐曲复核 JSON；本地可含 reviewer_kind=agent 的工具辅助观察，"
+              "不自动读取同目录文件，代理不得代签 human"))
+    c.add_argument(
+        "--require-human-review",
+        action="store_true",
+        help="发布级严格模式：REVIEW 只接受 reviewer_kind=human 的真人记录",
+    )
     c.set_defaults(func=cmd_check)
 
     p = sub.add_parser("plan", help="反推某首的 ch_off / show 建议值")
@@ -684,7 +816,8 @@ def main():
     p.add_argument("--min-show", type=float, default=MIN_SHOW)
     p.set_defaults(func=cmd_plan)
 
-    a = sub.add_parser("approval-template", help="按 plan 生成逐曲人工批准骨架")
+    approval_help = "仅供已完成逐曲复核的用户生成批准骨架；代理不得代签"
+    a = sub.add_parser("approval-template", help=approval_help, description=approval_help)
     a.add_argument("--plan", required=True, help="showcase_plan.json 路径")
     a.add_argument("--vocals", required=True, help="与 plan 对应的 vocal_analysis.json")
     a.add_argument("--out", help="输出路径；默认写到 plan 同目录 showcase_approvals.json")
@@ -692,7 +825,12 @@ def main():
     a.set_defaults(func=cmd_approval_template)
 
     args = ap.parse_args()
-    sys.exit(args.func(args))
+    try:
+        exit_code = args.func(args)
+    except (json.JSONDecodeError, KeyError, OSError, TypeError, ValueError):
+        print("SHOWCASE INPUT ERROR: 输入文件不是可用的严格 JSON/结构化数据", file=sys.stderr)
+        exit_code = 2
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":

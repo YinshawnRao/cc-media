@@ -14,10 +14,18 @@ import json
 import re
 import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import Any, NoReturn
+
+
+REPO_ROOT = Path(__file__).resolve().parents[4]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from tools.video import resource_budget  # noqa: E402
 
 
 KEY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
@@ -119,7 +127,10 @@ def parse_config(project: Path, config: dict[str, Any]) -> tuple[list[Song], dic
         fail("unsupported config schema_version; expected 1")
 
     selection = resolve_inside(project, config.get("voice_selection"), "voice_selection")
-    output_dir = resolve_inside(project, config.get("output_dir", "final"), "output_dir")
+    output_dir_raw = config.get("output_dir", "renders")
+    if output_dir_raw != "renders":
+        fail("output_dir must be exactly 'renders'")
+    output_dir = resolve_inside(project, output_dir_raw, "output_dir")
     watermark_png = resolve_inside(project, config.get("watermark_png"), "watermark_png")
 
     rows = config.get("songs")
@@ -234,9 +245,41 @@ def require_tools() -> None:
         fail(f"missing required command(s): {', '.join(missing)}")
 
 
-def run(command: list[str], label: str, cwd: Path) -> None:
+def _budgeted_ffmpeg_command(command: list[str], threads: int) -> list[str]:
+    """Apply one lease's decoder/filter/encoder budget to an FFmpeg command."""
+
+    if len(command) < 2 or Path(command[0]).name != "ffmpeg":
+        raise ValueError("run() only accepts an FFmpeg command")
+    value = str(threads)
+    return [
+        command[0],
+        "-threads",
+        value,
+        "-filter_threads",
+        value,
+        "-filter_complex_threads",
+        value,
+        *command[1:-1],
+        "-threads",
+        value,
+        command[-1],
+    ]
+
+
+def run(
+    command: list[str],
+    label: str,
+    cwd: Path,
+    **subprocess_options: Any,
+) -> subprocess.CompletedProcess[Any]:
     print(f"[run] {label}")
-    subprocess.run(command, cwd=cwd, check=True)
+    with resource_budget.resolve_ffmpeg_threads() as lease:
+        return subprocess.run(
+            _budgeted_ffmpeg_command(command, lease.threads),
+            cwd=cwd,
+            check=True,
+            **subprocess_options,
+        )
 
 
 def probe_json(path: Path, entries: str, select_video: bool = False) -> dict[str, Any]:
@@ -277,14 +320,15 @@ def filtered_video_size(song: Song) -> tuple[int, int]:
 
 def speech_window(path: Path) -> tuple[float, float]:
     total = duration(path)
-    process = subprocess.run(
+    process = run(
         [
             "ffmpeg", "-hide_banner", "-nostats", "-i", str(path),
             "-af", "silencedetect=n=-35dB:d=0.15", "-f", "null", "-",
         ],
+        "detect intro speech window",
+        path.parent,
         text=True,
         capture_output=True,
-        check=True,
     )
     silences: list[tuple[float, float]] = []
     pending_start: float | None = None
