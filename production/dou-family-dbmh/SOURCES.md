@@ -15,19 +15,19 @@
 
 ```bash
 # 窦唯
-yt-dlp --cookies sandbox/www.youtube.com_cookies.txt \
+python3 ../../tools/video/yt_dlp_readonly.py -- \
   -f "bv*[height<=1080]+ba/b[height<=1080]" --merge-output-format mp4 \
   -o "raw/douwei_heibao.%(ext)s" \
   "https://www.youtube.com/watch?v=WLUbs0rCQlI"
 
 # 王菲（B站，需 bilibili cookie）
-yt-dlp --cookies sandbox/www.bilibili.com_cookies.txt \
+python3 ../../tools/video/yt_dlp_readonly.py -- \
   -f "bv*[height<=1080]+ba/b[height<=1080]" --merge-output-format mp4 \
   -o "raw/faye_budokan.%(ext)s" \
   "https://www.bilibili.com/video/BV1PG411d71n/"
 
 # 窦靖童
-yt-dlp --cookies sandbox/www.youtube.com_cookies.txt \
+python3 ../../tools/video/yt_dlp_readonly.py -- \
   -f "bv*[height<=1080]+ba/b[height<=1080]" --merge-output-format mp4 \
   -o "raw/jingtong_singer2026.%(ext)s" \
   "https://www.youtube.com/watch?v=T-HqusHa9eY"

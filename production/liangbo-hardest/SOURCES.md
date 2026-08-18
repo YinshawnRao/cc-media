@@ -8,7 +8,7 @@
 **用户偏好落实**：① 每首副歌/精彩人声展示段加长（常规 SHOW=14s，压轴《灵魂歌手》=18s），不刚听就切走；② 黑夜中选「梁博本人画面占比多 + 综合质量高」的一边。
 ## 揭晓顺序与素材来源（两边都查过 — 硬约束）
 
-切片：`yt-dlp <URL> --cookies <ck> --download-sections "*<起>-<止>" -f "bv*[height<=1080]+ba/b"`
+切片：`python3 ../../tools/video/yt_dlp_readonly.py -- <URL> --download-sections "*<起>-<止>" -f "bv*[height<=1080]+ba/b"`
 竖屏：`tools/video/vfill.sh <in> clips/<out>.mp4 <crop> <bgBrightness> <sat>`
 展示段取该首副歌/高潮的梁博特写，把片段**结尾 trim 到特写帧**（展示=片段末 SHOW 秒）。
 
@@ -28,7 +28,7 @@
 
 ## 复现步骤
 
-1. 重下源切片（上表 URL+时间码，需有效 cookie：`sandbox/www.youtube.com_cookies.txt` / `sandbox/www.bilibili.com_cookies.txt`）。
+1. 重下源切片（上表 URL+时间码；统一通过 `python3 ../../tools/video/yt_dlp_readonly.py -- ...` 使用中央 Cookie，不在 sandbox 保存副本）。
 2. 配音（女声）：`tools/tts/venv/bin/python build/narrate_segments.py` → `audio/*.wav` + `narration.json`。已归档。
 3. 竖屏化：按上表 crop 跑 `vfill.sh` 得 `clips/vert_<song>_full.mp4`，再 `ffmpeg -ss <start> -t <L+1>` 输出端切出 `clips/vert_<song>.mp4`（结尾落在特写帧；start = 特写时刻 − L）。
 4. 合成 + 音频：`python build/full_build.py` → `index.html` + `master.wav`（逐段 床→swell→展示 + 旁白 ducking + 逐首 loudnorm I=-14 + 整体 +3dB）。

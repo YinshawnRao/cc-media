@@ -21,7 +21,7 @@
 ## yt-dlp 命令（实战）
 B站 1080P AVC stereo（30112 是 1080P 高码率 AVC；30280 是 m4a 192k）：
 ```bash
-yt-dlp --cookies sandbox/www.bilibili.com_cookies.txt \
+python3 ../../tools/video/yt_dlp_readonly.py -- \
   --download-sections "*HH:MM:SS-HH:MM:SS" \
   -f "30112+30280/30080+30280" \
   "https://www.bilibili.com/video/<BVID>" \
@@ -29,7 +29,7 @@ yt-dlp --cookies sandbox/www.bilibili.com_cookies.txt \
 ```
 YouTube #07：
 ```bash
-yt-dlp --cookies sandbox/www.youtube.com_cookies.txt \
+python3 ../../tools/video/yt_dlp_readonly.py -- \
   --download-sections "*HH:MM:SS-HH:MM:SS" \
   -f "137+140" \
   "https://www.youtube.com/watch?v=yLiz3PWeKU0" \

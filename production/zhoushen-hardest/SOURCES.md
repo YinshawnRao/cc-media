@@ -4,7 +4,7 @@
 **形式**：难度盘点，倒数 5→1（最难压轴）。极光天籁配色（冰青→紫→金），男声旁白 `zm_yunxi`。
 ## 揭晓顺序与素材来源
 
-切片：`yt-dlp <URL> --cookies <ck> --download-sections "*<起>-<止>" -f "bv*[height<=1080]+ba/b"`
+切片：`python3 ../../tools/video/yt_dlp_readonly.py -- <URL> --download-sections "*<起>-<止>" -f "bv*[height<=1080]+ba/b"`
 竖屏：`tools/video/vfill.sh <in> clips/<out>.mp4 <crop>`（裁台标/烧字 + 模糊填充）
 展示段取该首副歌/高潮的**周深特写**，把片段结尾 trim 到特写帧（展示=片段末 ~6s）。
 

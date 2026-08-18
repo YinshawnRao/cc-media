@@ -41,9 +41,9 @@ production/zhang-shaohan-7albums/
 mkdir -p sandbox/zhang-shaohan-7albums-rebuild/{raw,clips,audio,hf,build}
 cd sandbox/zhang-shaohan-7albums-rebuild
 
-# 2. 下载 7 条源（cookie 见 sandbox/www.{youtube,bilibili}.com_cookies.txt）
+# 2. 下载 7 条源（Cookie 只由中央只读 wrapper 使用，不复制到 sandbox）
 #    URL / 时间码 / 格式编号 见 ../../production/zhang-shaohan-7albums/SOURCES.md
-# yt-dlp --cookies sandbox/www.bilibili.com_cookies.txt --download-sections "*HH:MM:SS-HH:MM:SS" \
+# python3 ../../tools/video/yt_dlp_readonly.py -- --download-sections "*HH:MM:SS-HH:MM:SS" \
 #   -f "30112+30280/30080+30280" "https://www.bilibili.com/video/<BVID>" -o "raw/song_NN.%(ext)s"
 # 重复 7 次（s4 注意 vfill crop 参数）
 
