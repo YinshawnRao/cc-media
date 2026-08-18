@@ -16,6 +16,7 @@ import sys
 import unittest
 from dataclasses import dataclass
 from pathlib import Path
+from unittest.mock import patch
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -51,6 +52,7 @@ REQUIRED_CLIS = (
     VIDEO_ROOT / "prepare_final_qa.py",
     VIDEO_ROOT / "verify_final_video.py",
     VIDEO_ROOT / "showcase_align.py",
+    VIDEO_ROOT / "yt_dlp_readonly.py",
 )
 
 SHARED_PYTHON_TEMPLATES = (
@@ -129,29 +131,38 @@ class MachineSourceContractTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.registry = VoiceRegistry.load()
 
-    def test_default_unknown_and_conflicting_voice_requests_use_cv002(self) -> None:
+    def test_default_unknown_and_conflicting_voice_requests_use_random_pool(self) -> None:
         config = self.registry.config
-        self.assertEqual("CV002", config["default_voice_id"])
-        self.assertEqual("CV002", config["fallback_voice_id"])
-        self.assertEqual("fallback_default", config["selection_policy"]["unknown"])
-        self.assertEqual("fallback_default", config["selection_policy"]["ambiguous"])
+        pool = ["CV001", "CV002", "CV003", "CV004", "CV005", "CV008"]
+        self.assertEqual("CV002", config["preflight_voice_id"])
+        self.assertEqual(pool, config["random_voice_pool"])
+        self.assertEqual("random_voice_pool", config["selection_policy"]["default"])
+        self.assertEqual("random_voice_pool", config["selection_policy"]["unknown"])
+        self.assertEqual("random_voice_pool", config["selection_policy"]["ambiguous"])
         self.assertIs(config["selection_policy"]["fuzzy_matching"], False)
 
-        default = resolve_task_prompt(self.registry, "做一期新的华语音乐盘点。")
-        unknown = resolve_selector(self.registry, "CV999")
-        conflict = resolve_task_prompt(self.registry, "配音：CV003 或 CV004")
+        with patch(
+            "voice_registry.secrets.choice", return_value=self.registry.by_id("CV005")
+        ):
+            default = resolve_task_prompt(self.registry, "做一期新的华语音乐盘点。")
+            unknown = resolve_selector(self.registry, "CV999")
+            conflict = resolve_task_prompt(self.registry, "配音：CV003 或 CV004")
         explicit = resolve_selector(self.registry, "CV004")
 
-        self.assertEqual(("CV002", "default_no_request"), (
+        self.assertEqual(("CV005", "default_no_request"), (
             default["resolved_voice_id"], default["resolution_reason"]
         ))
-        self.assertEqual(("CV002", "fallback_unmatched_selector"), (
+        self.assertEqual(("CV005", "fallback_unmatched_selector"), (
             unknown["resolved_voice_id"], unknown["resolution_reason"]
         ))
-        self.assertEqual(("CV002", "fallback_ambiguous_prompt"), (
+        self.assertEqual(("CV005", "fallback_ambiguous_prompt"), (
             conflict["resolved_voice_id"], conflict["resolution_reason"]
         ))
+        for selection in (default, unknown, conflict):
+            self.assertEqual("random_pool", selection["selection_mode"])
+            self.assertEqual(pool, selection["candidate_voice_ids"])
         self.assertEqual("CV004", explicit["resolved_voice_id"])
+        self.assertEqual("explicit", explicit["selection_mode"])
         self.assertFalse(explicit["fallback"])
 
     def test_canonical_cta_is_the_unique_last_template_narration(self) -> None:
@@ -376,6 +387,12 @@ class ActiveDocumentationPolicyTests(unittest.TestCase):
                         continue
                     failures.append(f"{line.label}: active output directory {match.group(0)!r}")
                 for pattern in invalid_commands:
+                    if (
+                        "filter_cookie_jar.py" in line.text
+                        and "candidate" in line.text
+                        and "仓库外" in line.text
+                    ):
+                        continue
                     for match in pattern.finditer(line.text):
                         if occurrence_is_policy_prohibition(line.text, match.start()):
                             continue
@@ -435,7 +452,7 @@ class ActiveDocumentationPolicyTests(unittest.TestCase):
             "# 小红书发布文案",
             "## 标题候选（第一条为首选）",
             "## 正文",
-            "3–12 个 hashtags",
+            "8–10 个 hashtags",
         ):
             self.assertIn(fixed_markdown, runbook)
 
@@ -664,6 +681,69 @@ class ActiveDocumentationPolicyTests(unittest.TestCase):
         self.assertRegex(combined, r"注册表.{0,40}(?:回退|fallback).{0,20}2")
         self.assertNotRegex(combined, r"--workers\s+auto")
 
+    def test_canonical_cookie_is_user_owned_and_yt_dlp_is_readonly(self) -> None:
+        documents = {
+            "AGENTS.md": (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8"),
+            "CONVENTIONS.md": (REPO_ROOT / "CONVENTIONS.md").read_text(
+                encoding="utf-8"
+            ),
+            "README.md": (REPO_ROOT / "README.md").read_text(encoding="utf-8"),
+            "tools/video/README.md": (VIDEO_ROOT / "README.md").read_text(
+                encoding="utf-8"
+            ),
+        }
+
+        for label, document in documents.items():
+            with self.subTest(document=label):
+                self.assertIn("all_cookies.txt", document)
+                self.assertIn("canonical", document)
+                self.assertRegex(
+                    document,
+                    r"(?:仅用户|只有用户|只由用户|用户本人).{0,40}(?:覆盖|维护)",
+                )
+                self.assertIn("yt_dlp_readonly.py", document)
+                self.assertIn(
+                    "python3 tools/video/yt_dlp_readonly.py -- <yt-dlp 参数>",
+                    document,
+                )
+                self.assertIn("不要求不可变锁", document)
+                for prohibited in (
+                    "chmod",
+                    "touch",
+                    "mv",
+                    "cp",
+                ):
+                    self.assertIn(prohibited, document)
+                self.assertNotIn("chflags", document)
+                self.assertNotIn("解锁", document)
+                self.assertRegex(
+                    document,
+                    r"(?:代理|普通 goal).{0,100}(?:禁止|不得).{0,100}"
+                    r"(?:filter_cookie_jar|过滤|安装)",
+                )
+                self.assertIn("仓库外", document)
+                self.assertIn("candidate", document)
+                self.assertRegex(
+                    document,
+                    r"Cookie.{0,80}(?:不可用|缺失|异常|失效).{0,100}"
+                    r"(?:继续|不得因此).{0,60}goal",
+                )
+
+        combined = "\n".join(documents.values())
+        self.assertIn(
+            "python3 tools/video/filter_cookie_jar.py SOURCE --output "
+            "/absolute/outside/candidate.txt",
+            combined,
+        )
+        self.assertRegex(
+            combined,
+            r"yt-dlp --cookies FILE.{0,120}(?:回写|重新序列化)",
+        )
+        self.assertNotRegex(
+            combined,
+            r"(?m)^\s*yt-dlp[^\n]*--cookies[^\n]*all_cookies\.txt",
+        )
+
 
 class SharedTemplateAstTests(unittest.TestCase):
     def test_shared_python_templates_do_not_bypass_central_tts(self) -> None:
@@ -716,7 +796,7 @@ class SharedTemplateAstTests(unittest.TestCase):
         self.assertNotRegex(generator, stale)
         self.assertIn("Legacy Kokoro", generator)
         self.assertNotRegex(formal_page, stale)
-        self.assertIn("当前默认：CV002 · 治愈少女", formal_page)
+        self.assertIn("当前默认：项目启动时从女声池随机一次", formal_page)
         self.assertIn("Legacy Kokoro", formal_page)
 
 

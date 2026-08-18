@@ -42,6 +42,15 @@ RANK_ONE_RE = re.compile(
     r"(?:第\s*一\s*名|冠\s*军|no\.?\s*0?1\b|#\s*0?1\b|0?1\s*[-—:：])",
     re.IGNORECASE,
 )
+COVER_ORDER_HINT_RE = re.compile(
+    r"(?:"
+    r"(?:0?[2-9]|[1-9]\d+|N)\s*(?:→|->|⇒|⟶|\bto\b)\s*0?1"
+    r"|倒数(?:开始|揭晓)"
+    r"|倒序揭晓"
+    r"|从第?\s*(?:0?[2-9]|[1-9]\d+)\s*名开始"
+    r")",
+    re.IGNORECASE,
+)
 PLATFORM_HOSTS = {
     "youtube": ("youtube.com", "youtu.be"),
     "bilibili": ("bilibili.com", "b23.tv"),
@@ -521,6 +530,8 @@ class ProjectVerifier:
             return
         if disclosed:
             self.error("TOP cover.disclosed_item_ids must be []")
+        if COVER_ORDER_HINT_RE.search(cover_text):
+            self.error("TOP cover.text must not expose internal countdown order hints")
 
         intro = next(
             (

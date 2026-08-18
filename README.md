@@ -27,9 +27,9 @@
 - **版本正确、官方优先**：先确认目标歌手/翻唱版本，再优先可用官方 MV；官方 MV 画质稍差也不因此换成第三方高清修复或二剪。确需换源时在 `SOURCES.md` 留证。
 - **TOP 倒数揭晓**：凡 TOP / 排名 / 榜单都按 N→1 播放；封面和 intro 不提前列完整歌单、排序或第一名，每一名到对应转场才揭晓。
 - **结构完整、质量优先**：一般视频保留开头、歌曲转场和结尾配音；完全自由探索类才可例外。默认不设总时长上限，不为变短牺牲完整乐句或观赏体验。
-- **配音默认稳定**：新盘点默认 `CV002「治愈少女」`。未指定、未知、模糊或冲突选择均回退 CV002；Qwen 缺模型或母带时只让当前 TTS 步骤硬失败，代理修复固定环境后重跑，不静默换 Kokoro，也不停止整个 goal。外文只做窄范围 ASCII token 发音处理，纯中文文本、标点、seed、请求结构和既有缓存 fingerprint 保持不变。
+- **配音项目内稳定**：新盘点若未唯一指定音色，则从 `CV001 / CV002 / CV003 / CV004 / CV005 / CV008` 女声池随机一次，并把结果落盘供整期复用；Qwen 缺模型或母带时只让当前 TTS 步骤硬失败，代理修复固定环境后重跑，不静默换 Kokoro、不重抽声线，也不停止整个 goal。外文只做窄范围 ASCII token 发音处理，纯中文文本、标点、seed、请求结构和既有缓存 fingerprint 保持不变。
 - **封面排版也是 QA**：标题按语义自然换行，歌手名与同层级主要文字同字号或更大；首帧同时检查排版美感、安全区、主体避让和平台裁剪。
-- **源码进仓库，素材留本地**：提交脚本、清单、配置、设计稿、时间码和 QA 记录，不提交下载视频、渲染结果、缓存、cookie 和大体积中间产物。
+- **源码进仓库，素材留本地**：提交脚本、清单、配置、设计稿、时间码和 QA 记录，不提交下载视频、渲染结果、缓存、cookie 和大体积中间产物。根 `all_cookies.txt` 是仅用户可手工覆盖的 canonical 输入，代理不得改变其内容、元数据或路径绑定。
 - **可复现优先**：`production/<项目名>/` 里保留能重建成片的输入，而不是只放一个最终 MP4。
 - **QA 默认先完成本地机械闭环**：不能只凭印象下结论，也不能把机械 PASS 当成工具已经理解画面或听感。渲染后仍要对当前终片做解码、hash、音轨、ASR、音量/静音和抽帧诊断；pending 状态保存在 QA 文件中，不阻断普通 goal，也不作为默认交付话术。只有用户明确要求公开发布、发布验收或可发布交付时，才用 `--require-human-review` 强制绑定当前 final SHA 的真人画面、听感、泄漏与发布安全复核；代理不得伪造人审。
 - **Goal 内部失败自动恢复**：内部步骤首次失败只停止当前步骤，不停止整个 goal。执行“**诊断 → 修复 → 重跑**”，从最近失败步骤继续并重跑受影响下游门禁；不得因可自行修复的内部失败暂停、等待用户确认或标记 `blocked`，机械红线不得降级或放松。普通公开下载、备选源、模型可安装、TTS/ASR/sidecar、render/mux、manifest/evidence 以及门禁 FAIL/REVIEW 都应由代理自行换路、修复并复跑。只有用户明确要求小样、缺用户独占的必需输入（如 AI WAV）、穷尽安全替代后仍需新凭据/权限/外部能力、继续必须改变歌单/排名/歌手版本/平台排除/硬时长等核心 brief，或显式发布缺真人终验时才可暂停；真实外部边界首次出现也只请求必需输入/权限，同一阻断连续三次 goal turn 仍存在且无法继续时才可标记 `blocked`。
@@ -48,7 +48,7 @@
 ├── CLAUDE.md               # Claude 薄入口；业务规则仍以 AGENTS.md 为准
 ├── tools/
 │   ├── video/              # 视频任务 runbook 和复用脚本
-│   └── tts/                # 编号化本地中文配音库；默认 CV002 治愈少女
+│   └── tts/                # 编号化本地中文配音库；新项目从女声池随机一次
 ├── sandbox/                # 实验区，可丢弃，不承诺长期保留
 └── production/             # 正式项目区，保留可复现输入和工程文件
 ```
@@ -96,8 +96,8 @@ brew install ffmpeg yt-dlp
 1. 阅读 `AGENTS.md`、`CONVENTIONS.md` 和 `tools/video/README.md`。
 2. 按 brief 创建 `sandbox/<slug>/`，其中 raw render 和 mux 后最终 MP4 统一放 `renders/`，发布文案放并列的 `publishing/`；跨项目研究与复用代码归 `tools/<domain>/research/` 或相应工具目录。goal / 视频制作任务默认持续到 `renders/<slug>.mp4`、`publishing/xiaohongshu.md`；标准 manifest 项目还要完成 VOICE / PROJECT / PUBLISHING / 本地机械 FINAL 四道门禁和当期 QA，专用 durable 项目完成自身独立检查，一次完成整片；除非用户明确要求小样或预览，不在开场或首个揭晓段暂停等待确认，也不得因 pending human review 暂停或标记 `blocked`。
 3. 运行 `python3 tools/tts/doctor.py`；首次初始化或模型/runtime 变化后运行一次 `--full-model-hash`。
-4. 把原始任务提示词交给 `tools/tts/resolve_voice.py`，保存项目级 `voice-selection.json`。新盘点默认 `CV002「治愈少女」`；未知、模糊或冲突指定也回退 CV002。若解析结果不是 CV002，再以 `python3 tools/tts/doctor.py --voice <resolved_id>` 精确检查本期音色；全声音库与 mixed-script 能力只在维护时显式完整审计，不阻塞无关的纯中文默认任务。
-5. Cookie 原始全量导出只允许临时放仓库外并设为 `0600`；用 `tools/video/filter_cookie_jar.py` 过滤 YouTube / Google / B站域并原子写入根目录 `all_cookies.txt`。旧 `www.*_cookies.txt` 仅作脚本回退，任何 Cookie 文件都不得提交或复制进 `sandbox/`。
+4. 把原始任务提示词交给 `tools/tts/resolve_voice.py`，保存项目级 `voice-selection.json`。唯一精确指定优先；未指定、未知、模糊或冲突时从 `CV001 / CV002 / CV003 / CV004 / CV005 / CV008` 女声池随机一次。若解析结果不是预检声线 CV002，再以 `python3 tools/tts/doctor.py --voice <resolved_id>` 精确检查本期音色；全声音库与 mixed-script 能力只在维护时显式完整审计，不阻塞无关的纯中文任务。
+5. 根 `all_cookies.txt` 只由用户手工维护；canonical 不要求不可变锁，代理禁止覆盖由 `AGENTS.md` 与 `CONVENTIONS.md` 的提示词约束。代理禁止对它直接写入，或执行 `chmod`、`touch`、`mv`、`cp` 和过滤替换。所有需要 Cookie 的 yt-dlp 命令走 `python3 tools/video/yt_dlp_readonly.py -- <yt-dlp 参数>`，不得裸传 `--cookies all_cookies.txt`；wrapper 只操作仓库外私有临时副本。用户需要更新时，可自行运行 `python3 tools/video/filter_cookie_jar.py SOURCE --output /absolute/outside/candidate.txt` 生成仓库外 candidate，检查后亲自安装并设为 `0600`。代理和普通 goal 不运行过滤或安装流程；Cookie 不可用时继续公开下载和双平台备选，不因此停止 goal。
 6. YouTube 和 B站都查源，先确认歌手/表演版本，再优先官方 MV；把候选、取舍理由、URL 和时间码写进 `SOURCES.md`。
 7. 用中央 TTS 入口生成旁白，运行 `python3 tools/tts/verify_voice_usage.py --selection sandbox/<slug>/voice-selection.json --project-root sandbox/<slug>`，必须得到 `VOICE GATE: PASS`。
 8. 填写 `project-manifest.json`，正式 build 前运行 `python3 tools/video/verify_project.py --project sandbox/<slug>`，必须得到 `PROJECT CONTRACT: PASS`。
@@ -114,15 +114,16 @@ brew install ffmpeg yt-dlp
 - `tools/video/narrate_segments.py`：按分段生成旁白。
 - `tools/video/vocal_segments.py`：Whisper 词时间戳 + 声学 + stereo 的多证据主唱候选检测；旧能量法只作候选。
 - `tools/video/showcase_align.py`：阻断式检查主唱入点和完整乐句出点；REVIEW 先按 **multi → 换窗 → 换源** 恢复，穷尽且硬 `FAIL=0` 后本地才可用 `reviewer_kind=agent` 得到仅本地的 `OBSERVED`；`--require-human-review` 只认 `reviewer_kind=human` 的真人 `APPROVED`，硬边界 FAIL 不可跳过。
-- `tools/video/filter_cookie_jar.py`：把仓库外原始导出过滤为根目录目标域 Cookie jar，原子写入且固定 `0600`。
-- `tools/video/check_yt_cookie.py`：静态检查 YouTube Cookie 字段、文件内 expiry、目标域 allowlist 与权限；不能证明服务端会话仍有效。
+- `tools/video/yt_dlp_readonly.py`：唯一允许使用 canonical Cookie 的 yt-dlp 入口；在仓库外创建私有临时工作副本，避免 yt-dlp 退出时回写根文件。
+- `tools/video/filter_cookie_jar.py`：仅供用户维护时把原始导出过滤成仓库外 candidate；不安装、不覆盖根 `all_cookies.txt`，代理和普通 goal 禁止调用。
+- `tools/video/check_yt_cookie.py`：只读检查 YouTube Cookie 字段、文件内 expiry 与权限；canonical 不要求不可变锁。额外域只作不泄露域名的 advisory，不会让有效用户快照 FAIL，也不能证明服务端会话仍有效。
 - `tools/video/bili_search.py`、`tools/video/bili_dl.py`：B站搜索和下载辅助。
 - `tools/video/verify_project.py`：build 前项目结构与来源证据门禁；本地 receipt 只证明声明的 URL 到本地文件派生链一致，不证明上传者或“官方”身份。
 - `tools/video/verify_publishing.py`：具有标准 `project-manifest.json` 的盘点、叙事与自由探索项目，在 build/post-mux 后、FINAL 前使用的小红书发布文案门禁；默认读取固定路径 `publishing/xiaohongshu.md`，检查标题候选、可发布正文、末行 hashtags、歌曲名剧透，以及正文是否命中项目真实歌手或封面主题。AI durable 工程继续走自身独立契约，不得伪造标准 manifest。
 - `tools/video/prepare_final_qa.py`：标准结构化盘点/叙事项目的 mux 后中央 QA manifest/evidence 生成器；默认生成带诚实 pending review 的 `qa/final-video-qa.json`，发布模式只合并显式 `--human-review-input`，绝不自动批准。`project_kind: free_exploration` 与 AI 音色 MV 不强套此工具。
 - `tools/video/verify_final_video.py`：标准 HyperFrames post-mux 项目的终片机械门禁；AI 音色 MV 走 durable builder 的独立检查。
-- `tools/tts/doctor.py`：默认 CV002、固定模型/runtime 与参考母带自检。
-- `tools/tts/resolve_voice.py`：从原始任务提示词确定一次项目级配音；默认及兜底均为 CV002。
+- `tools/tts/doctor.py`：用 CV002 作为稳定预检声线，检查固定模型/runtime 与参考母带；不决定项目成片声线。
+- `tools/tts/resolve_voice.py`：从原始任务提示词确定一次项目级配音；无唯一精确选择时从配置女声池随机一次。
 - `tools/tts/narrate.py`：统一中文旁白入口，读取 `voice-selection.json`；Qwen 缺失时当前步骤 fail closed，修复固定环境后自动重跑，不换声、不暂停整个 goal。
 - `tools/tts/verify_voice_usage.py`：项目配音 sidecar、模型声明与当前 WAV 一致性门禁；本地 receipt 不等于音色来源或抗篡改证明。
 - `tools/tts/voices/listen.html`：CV001–CV008 编号声音、参考母带和实际样音。

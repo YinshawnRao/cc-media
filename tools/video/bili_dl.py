@@ -7,9 +7,10 @@ yt-dlp 的 BiliBili extractor 会被 B站对其请求签名做 412 风控，但*
 
 用法：
     python tools/video/bili_dl.py <bvid> <out.mp4> [--max-h 1080] [--cookies path]
-默认读取仓库根目录过滤后的 all_cookies.txt（含 B站登录态）；缺则回退旧
-www.bilibili.com_cookies.txt。cookie jar 必须为 0600；脚本只把文件路径交给 curl，
-不会把 cookie value 拼进进程参数。优先 AVC(h264) ≤max-h，便于下游重剪。
+默认只读取仓库根目录 all_cookies.txt（含 B站登录态），不回退旧
+www.bilibili.com_cookies.txt。cookie jar 必须为 0600；其安装、覆盖与权限只由
+用户本人维护。脚本只把文件路径交给 curl，不会把 cookie value 拼进
+进程参数。优先 AVC(h264) ≤max-h，便于下游重剪。
 """
 import argparse
 import json
@@ -28,10 +29,7 @@ REPO = Path(__file__).resolve().parents[2]
 
 def default_cookie_path(repo_root: Path | None = None) -> Path:
     root = REPO if repo_root is None else Path(repo_root)
-    preferred = root / "all_cookies.txt"
-    if preferred.is_file():
-        return preferred
-    return root / "www.bilibili.com_cookies.txt"
+    return root / "all_cookies.txt"
 
 
 DEF_CK = default_cookie_path()
@@ -47,7 +45,10 @@ def validate_cookie_jar(path: Path | str) -> Path:
         raise SystemExit(f"!! cookie jar 不存在: {jar}")
     mode = stat.S_IMODE(jar.stat().st_mode)
     if mode & 0o077:
-        raise SystemExit(f"!! cookie jar 权限为 {mode:04o}，请先 chmod 600 {jar}")
+        raise SystemExit(
+            "!! cookie jar 权限不符合要求；canonical 只允许用户本人维护，"
+            "请由用户检查文件权限"
+        )
     return jar
 
 

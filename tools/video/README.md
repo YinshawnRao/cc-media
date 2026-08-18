@@ -10,6 +10,7 @@
 - `verify_publishing.py` — **发布文案门禁**。只在 build/render/post-mux 完成后、FINAL 前运行，默认读取固定的 `publishing/xiaohongshu.md`；它不属于 build 前 `project-manifest.json` 门禁。
 - `prepare_final_qa.py` — **标准结构化盘点/叙事项目的 mux 后中央 QA 入口**。要求 intro / song / outro / CTA timeline 与完整旁白，从当前 authoring manifest、final、render 与 master 生成 `qa/final-video-qa.json`、实时 ASR、逐章 PNG、诊断及当前 SHA 人审模板，并在同一进程运行中央机械 FINAL；默认诚实保留 pending，只有显式 human input 才合并真人批准。`project_kind: free_exploration` 不强套此 preparer，AI 音色 MV 继续走 durable builder。
 - `verify_final_video.py` — **独立终片机械复核入口**。standalone 运行时对当前 manifest/evidence 全量 live 重算，不信任项目内自报 diagnostics；用于显式独立复核或故障诊断。默认 preparer 已在同一进程完成这道 gate，不要紧跟着重复运行。
+- `yt_dlp_readonly.py` — **唯一允许使用 canonical Cookie 的 yt-dlp 入口**。它把根 `all_cookies.txt` 只读复制到仓库外私有临时目录，yt-dlp 只回写临时副本，结束即清理；调用格式固定为 `python3 tools/video/yt_dlp_readonly.py -- <yt-dlp 参数>`。
 - **长篇叙事盘点 / 音乐时间线**：复用 `templates/longform-timeline/` 的无媒体构建骨架，将已验证的章节画面输出端预切后拼成单一 `footage_track.mp4`，将当期预混章节音频拼成 `master.wav`；封面和 HTML 仍按当期 design 创建，render 必加 `--sdr`。历史 `sandbox/lirh-yangcl-timeline/` 已删除，不得依赖。详见 `templates/README.md` 与 CONVENTIONS「长篇叙事盘点」。
 - **整首 AI 音色 MV**：复用 `templates/ai-voice-mv/`；历史 `sandbox/angela-ai-mv-covers/` 已删除。模板只读项目内已复制素材，不含媒体、Cookie、歌单或人物绑定配置。
 
@@ -17,9 +18,9 @@
 
 ## 0. 启动自检
 - 确认在 `cc-media/` 仓库内；读根 `CLAUDE.md` 和 `CONVENTIONS.md`。
-- 依赖：`ffmpeg`、`yt-dlp`、`node>=22`。旁白默认还要求 `tools/tts/` 能找到 Qwen/MLX interpreter、固定 Base 模型与 CV002 参考母带；缺失只让当前步骤 fail closed，代理必须修复/安装固定环境、重建 receipt 并重跑，不能静默换 Kokoro，也不能因此停止整个 goal。多证据检测与终片 ASR 要求 `tools/tts/venv` 内的 `openai-whisper==20250625`，以及已显式预取且完整 SHA-256 为 `9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794` 的 `~/.cache/whisper/small.pt`；只同名或只存在不算通过，缺失时先恢复固定模型/版本再从 ASR 步骤重跑。
-- 开工前运行 `python3 tools/tts/doctor.py`，必须 `TTS DOCTOR: PASS default=CV002`；初始化机器或模型变化后运行一次 `--full-model-hash`。默认只验核心模型/runtime 与 CV002，避免未使用音色或纯中文不需要的 mixed-script 策略误阻断；resolver 若选出其他编号，再运行 `doctor.py --voice <resolved_id>` 精确验本期母带。
-- 新项目 Cookie 唯一入口是仓库根目录 `all_cookies.txt`：原始全量导出必须留在仓库外并为 `0600`；运行 `python3 tools/video/filter_cookie_jar.py /仓库外/原始导出.txt`，脚本只保留 YouTube / Google / B站域并以 `0600` 原子写入。旧 `www.*_cookies.txt` 仅作回退；不得在 `sandbox/` 复制 Cookie。`check_yt_cookie.py` 只做字段、文件内 expiry、目标域 allowlist 和权限的静态预检，不能证明服务端会话仍有效。
+- 依赖：`ffmpeg`、`yt-dlp`、`node>=22`。旁白还要求 `tools/tts/` 能找到 Qwen/MLX interpreter、固定 Base 模型与本期已选声线的参考母带；缺失只让当前步骤 fail closed，代理必须修复/安装固定环境、重建 receipt 并重跑，不能静默换 Kokoro、不能重抽声线，也不能因此停止整个 goal。多证据检测与终片 ASR 要求 `tools/tts/venv` 内的 `openai-whisper==20250625`，以及已显式预取且完整 SHA-256 为 `9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794` 的 `~/.cache/whisper/small.pt`；只同名或只存在不算通过，缺失时先恢复固定模型/版本再从 ASR 步骤重跑。
+- 开工前运行 `python3 tools/tts/doctor.py`，必须 `TTS DOCTOR: PASS preflight=CV002`；初始化机器或模型变化后运行一次 `--full-model-hash`。默认只验核心模型/runtime 与预检声线 CV002，避免未使用音色或纯中文不需要的 mixed-script 策略误阻断；CV002 在此不决定项目成片声线。resolver 若选出其他编号，再运行 `doctor.py --voice <resolved_id>` 精确验本期母带。
+- 根 `all_cookies.txt` 是仅用户可手工覆盖和安装的 canonical 输入。canonical 不要求不可变锁，代理禁止覆盖由 `AGENTS.md` 与 `CONVENTIONS.md` 的提示词约束。代理禁止对它直接写入，禁止执行 `chmod`、`touch`、`mv`、`cp` 或过滤替换；自动修复、测试和普通 goal 也不例外。所有需要 Cookie 的 yt-dlp 命令必须走 `python3 tools/video/yt_dlp_readonly.py -- <yt-dlp 参数>`，不得裸传 `--cookies all_cookies.txt`。`filter_cookie_jar.py` 只供用户用 `SOURCE --output /absolute/outside/candidate.txt` 生成仓库外 candidate，由用户本人检查并手工安装、设为 `0600`；代理和普通 goal 禁止调用或安装。`check_yt_cookie.py` 只静态读取，不证明服务端会话仍有效，也不修复文件。Cookie 不可用时继续公开下载和双平台备选，不因此暂停 goal。
 - 所有产物写 `sandbox/<项目slug>/`（可丢弃）；raw render 与 mux 后最终 MP4 固定写入 `renders/`，最终交付为 `renders/<slug>.mp4`，发布文案写入并列的 `publishing/xiaohongshu.md`；正式留存才进 `production/`。
 - **多个 goal 必须同时继续**：禁止跨 goal `flock`、全局 semaphore、任务队列、sleep 轮询或等待另一任务完成。Whisper/Torch/BLAS、重 FFmpeg 与 HyperFrames 启动时都由 `resource_budget.py` 根据活跃重进程选择 `4 → 3 → 2`；只有一个用 4，第二个新任务用 3，三个及以上的新任务用 2，运行中的任务不暂停或动态改速。手动环境变量/唯一 `--workers` 只接受 1–4 且仍登记 active；注册表异常立即回退 2。不得直接运行裸 `whisper` / `whisper-cli`；Qwen 必须先过 stdlib-only Metal preflight。全链没有跨 goal 等待。
 
@@ -49,7 +50,7 @@ python3 -m unittest tools.video.tests.test_verify_project -v
 该门禁当前只覆盖上述三类盘点/叙事/自由探索项目，且检查的是**构建前结构和 provenance**，不能证明终片实际可听、可见或已正确 mux。发布文案在 build/post-mux 后按第 9 节单独生成并验证，后续第 10 节 QA 仍必须完整执行；不得把 `publishing/xiaohongshu.md` 提前伪装成 authoring manifest 的一部分。AI 克隆歌手音色 MV 不冒充本 schema，继续走 `templates/ai-voice-mv/` durable builder 与对应 `--check`。
 
 ## 1. 解析 brief
-提取：标题、画幅（默认竖屏 1080×1920）、是否为 TOP/排名、每首真实名次映射、歌手/歌名/URL或搜索倾向/切点、旁白、配音音色、平台硬时长。**配音只解析一次**：把用户原始任务提示词交给 `tools/tts/resolve_voice.py` 并保存项目根 `voice-selection.json`；唯一精确匹配按指定，未写/未知/模糊/冲突一律 `CV002「治愈少女」`。凡 TOP / 排名 / 榜单，保留用户给定名次映射并按最后一名到第一名 **N→1** 播放；非排名叙事片才按脚本顺序，且不得挂 TOP 名义。默认不设总时长上限，质量优先。
+提取：标题、画幅（默认竖屏 1080×1920）、是否为 TOP/排名、每首真实名次映射、歌手/歌名/URL或搜索倾向/切点、旁白、配音音色、平台硬时长。**配音只解析一次**：把用户原始任务提示词交给 `tools/tts/resolve_voice.py` 并保存项目根 `voice-selection.json`；唯一精确匹配按指定，未写/未知/模糊/冲突时从 `CV001 / CV002 / CV003 / CV004 / CV005 / CV008` 女声池随机一次。随机结果与候选池写入 selection 后整期固定，不得逐段重抽。凡 TOP / 排名 / 榜单，保留用户给定名次映射并按最后一名到第一名 **N→1** 播放；该顺序只写在脚本、timeline、build 配置和 QA 中，封面/intro 画面禁止出现 `05→01`、`05->01`、`5→1`、`N→1`、倒数/倒序揭晓提示或逐名次方向轨，只保留主题与 `TOP N` 数量。非排名叙事片才按脚本顺序，且不得挂 TOP 名义。默认不设总时长上限，质量优先。
 
 ```bash
 python3 tools/tts/resolve_voice.py --task-prompt-file <原始brief文件> \
@@ -64,7 +65,7 @@ python3 tools/tts/resolve_voice.py --task-prompt-file <原始brief文件> \
 恢复顺序：TTS/ASR 非零先修固定 runtime/model/receipt 后重跑；YouTube/B站失败先换关键词、候选、备用 client 和另一平台同版本源；展示 `MISS/FAIL/REVIEW` 先补分析、换完整乐句窗或换源，优先得到机器 `OK`，不得首次 REVIEW 就等用户试听；render 失败先修 lint/字体/媒体/worker/HDR 并 `--sdr` 重渲；PUBLISHING 失败先修标题、正文、hashtags、歌曲名剧透或主题锚点；mux/FINAL 失败先修 master、时长、音轨、ASR 或 evidence，再重建所有受影响 hash。单次命令失败不是 goal 终点。
 
 ## 3. 素材（yt-dlp）
-- **顺序执行**，不并行。先 `--skip-download --print` 验证 cookie + 可用性 + 时长 + 清晰度。
+- **顺序执行**，不并行。先通过 `python3 tools/video/yt_dlp_readonly.py -- --skip-download --print ...` 验证 Cookie + 可用性 + 时长 + 清晰度；下载和切片也使用同一 wrapper。不得直接运行带 `--cookies` / `--cookies-from-browser` 的裸 yt-dlp，更不得把 canonical 路径交给它，因为 yt-dlp 退出时会回写 Cookie 文件。裸 yt-dlp 只允许用于明确不读取任何 Cookie 的命令。
 - **翻唱版本身份先于画质**：若盘点的是某歌手/组合的翻唱，YouTube 与 B站都先找该翻唱者对应 MV/现场/正式演出，禁止直接拿原唱歌手画面。两边都没有可用对应版本时才退回原版视频，并在 `SOURCES.md` 记录搜索证据和替代理由。
 - **身份正确后官方 MV 优先**：目标歌手/版本有可用官方 MV 时，即使年代久、4:3 或清晰度稍差也优先使用；第三方 4K 修复、综艺 Live 或二剪不能仅凭分辨率胜出。只有官方 MV 不存在、无法取得或目标段结构性不可用时才换源，并在 `SOURCES.md` 写明证据。
 - 切片：`--download-sections "*HH:MM:SS-HH:MM:SS"`，`-f "bv*[height<=1080]+ba/b"`（**不要强制 avc**，否则老 MV 只给 480p；HD 才拿得到真 1080p）。
@@ -106,7 +107,7 @@ python3 tools/tts/narrate.py --batch narration-request.json \
   tools/tts/venv/bin/python tools/video/showcase_align.py approval-template \
     --plan probe/showcase_plan.json --vocals probe/vocal_analysis.json
   ```
-- **🔒 盘点类封面（默认）**：用**第一首出场歌**（TOP = 最先揭晓的最后一名，如 #5）的**动态画面**做封面底，并让 intro footage 与该首 footage 取**同一条素材的连续窗**。TOP 封面只写主题与 `TOP N`，禁止列完整歌单、歌曲排序或泄露第 1 名。标题按语义短语自然换行，不机械等字数拆分、不留孤字；歌手名与同层级主要文字同字号或更大，不能偏小。关键信息集中在约 `x=72–1008 / y=220–1420` 的一个安全信息区，不拆到最顶和最底，也不死居中挡主体；首帧必须做排版与发布裁剪预览。详见 `CONVENTIONS.md「首屏封面」`。
+- **🔒 盘点类封面（默认）**：用**第一首出场歌**（TOP = 最先揭晓的最后一名，如 #5）的**动态画面**做封面底，并让 intro footage 与该首 footage 取**同一条素材的连续窗**。TOP 封面只写主题与 `TOP N`；倒数顺序只属于内部 timeline，禁止把 `05→01`、`05->01`、`N→1`、`倒数开始` 或 `从第5名开始` 写进封面、intro 或其他观众可见文案。逐首当前名次数字仍可使用。封面禁止列完整歌单、歌曲排序或泄露第 1 名。标题按语义短语自然换行，不机械等字数拆分、不留孤字；单歌手 / 单组合主题中，歌手 / 组合名必须是第一视觉主体和全封面唯一最大字号，严格大于主题口号、歌名、`TOP N` 与副标，同大也不合格。关键信息集中在约 `x=72–1008 / y=220–1420` 的一个安全信息区，不拆到最顶和最底，也不死居中挡主体；首帧必须做排版与发布裁剪预览。详见 `CONVENTIONS.md「首屏封面」`。
 - 新项目运行 `npx --yes hyperframes@0.6.69 lint` 必须 **0 error**（媒体元素要有 id；相邻 footage 用交替轨道 0/6；同轨不可贴边）；历史项目使用自身 `package.json` / lockfile 的精确 pin。
 
 ## 8. 渲染 + MUX（关键）
@@ -125,11 +126,13 @@ ffmpeg -i renders/full.mp4 -i master.wav -map 0:v -map 1:a -c:v copy -c:a aac -b
 对具有标准 `project-manifest.json` 的盘点、叙事和自由探索项目，在 build、raw render 与 post-mux 已完成后，创建与 `renders/` 并列的 `publishing/`，固定写入 `publishing/xiaohongshu.md`。不得在 `project-manifest.json` 的 build 前阶段用占位文案抢跑本步骤。AI durable 工程没有足够的标准 performer/theme 上下文，继续走自身 `--check`；不得为套用本门禁伪造标准 manifest。
 
 - 标题候选必须有 1–5 个，默认给 3 个；第一条是首选标题。
-- 正文必须是可以直接发布的完整描述，文件最后一行必须是 hashtags。
+- 正文必须是可以直接发布的完整描述；hashtags 前含 420–900 个非空白字符、一个能让本期受众具体作答的互动问题，文件最后一行必须是 hashtags。
+- 标题、正文、互动句和 hashtags 全部禁用 emoji；不能用符号代替真实表达。
+- 最后一行固定放 8–10 个互不重复的 hashtags，按核心人物/IP、垂类题材、本期独特角度和真实圈层/年代组合，不得堆可替换到任意作品的泛词。
 - 标题、正文、互动句和 hashtags 的全部对外文字都不得出现本期任何歌曲名称，避免剧透。
-- 文案必须基于本期真实主题、歌手、选题角度、旁白和最终内容，不能写成可替换到任意作品的泛化模板，也不得杜撰作品事实。
+- 文案必须基于本期真实主题、歌手、选题角度、旁白和最终内容；写作前结合当期公开社区讨论或可靠资料提炼一个中心判断和 2–3 个受众入口，不能写成可替换到任意作品的泛化模板，也不得杜撰作品事实。
 
-文件结构固定如下；三个 Markdown 标题必须逐字一致，标题候选只用 `- ` 列表，正文之后的最后一个非空行只放 3–12 个 hashtags：
+文件结构固定如下；三个 Markdown 标题必须逐字一致，标题候选只用 `- ` 列表，正文之后的最后一个非空行只放 8–10 个 hashtags：
 
 ```markdown
 # 小红书发布文案
@@ -142,9 +145,9 @@ ffmpeg -i renders/full.mp4 -i master.wav -map 0:v -map 1:a -c:v copy -c:a aac -b
 
 ## 正文
 
-这里写与本期真实歌手和选题角度强相关、可以直接发布的完整描述；需要互动句时也写在本节。
+这里写与本期真实歌手和选题角度强相关、可以直接发布的完整描述。正文需要形成完整判断与展开，并在结尾提出一个具体互动问题。
 
-#歌手 #主题角度 #音乐分享
+#歌手 #核心IP #垂类题材 #作品类型 #主题角度 #独特判断 #圈层记忆 #年代坐标
 ```
 
 ```bash

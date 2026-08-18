@@ -30,8 +30,8 @@ class DoctorScopeTests(unittest.TestCase):
         engine = "qwen3-tts-base-mlx"
         self.registry = VoiceRegistry(
             config={
-                "default_voice_id": "CV002",
-                "fallback_voice_id": "CV002",
+                "preflight_voice_id": "CV002",
+                "random_voice_pool": ["CV001", "CV002", "CV004"],
                 "qwen_base": {
                     "engine": engine,
                     "mlx_audio_version": "0.4.5",
@@ -100,6 +100,7 @@ class DoctorScopeTests(unittest.TestCase):
             "slug": slug,
             "engine": engine,
             "enabled": True,
+            "group": "female",
             "aliases": [],
             "reference_audio": reference_audio,
             "reference_sha256": reference_sha256,
@@ -175,14 +176,14 @@ class DoctorScopeTests(unittest.TestCase):
                 code = doctor.main(argv)
         return code, output.getvalue(), pronunciation
 
-    def test_default_checks_only_cv002_and_skips_mixed_script_policy(self) -> None:
+    def test_preflight_checks_only_cv002_and_skips_mixed_script_policy(self) -> None:
         code, output, pronunciation = self.run_doctor([])
 
         self.assertEqual(code, 0, output)
         pronunciation.assert_not_called()
-        self.assertIn("voice-assets: 1/1 references verified scope=selected ids=CV002", output)
+        self.assertIn("voice-assets: 1/1 references verified scope=preflight ids=CV002", output)
         self.assertIn("text-normalization: SKIP", output)
-        self.assertIn("TTS DOCTOR: PASS default=CV002 selected=CV002", output)
+        self.assertIn("TTS DOCTOR: PASS preflight=CV002 selected=CV002", output)
         self.assertNotIn(str(self.root), output)
         self.assertNotIn("/pinned/qwen/python", output)
 
@@ -192,14 +193,14 @@ class DoctorScopeTests(unittest.TestCase):
         self.assertEqual(code, 0, output)
         pronunciation.assert_not_called()
         self.assertIn("voice-assets: 1/1 references verified scope=selected ids=CV004", output)
-        self.assertIn("TTS DOCTOR: PASS default=CV002 selected=CV004", output)
+        self.assertIn("TTS DOCTOR: PASS preflight=CV002 selected=CV004", output)
 
     def test_full_model_hash_does_not_implicitly_expand_voice_scope(self) -> None:
         code, output, pronunciation = self.run_doctor(["--full-model-hash"])
 
         self.assertEqual(code, 0, output)
         pronunciation.assert_not_called()
-        self.assertIn("voice-assets: 1/1 references verified scope=selected ids=CV002", output)
+        self.assertIn("voice-assets: 1/1 references verified scope=preflight ids=CV002", output)
         self.assertNotIn("missing reference: CV001", output)
 
     def test_full_library_detects_unused_missing_reference(self) -> None:

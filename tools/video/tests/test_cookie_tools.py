@@ -44,7 +44,7 @@ class YoutubeCookiePreflightTests(unittest.TestCase):
         )
         self.assertEqual((".youtube.com", "LOGIN_INFO", FUTURE_EXPIRY), row)
 
-    def test_default_path_is_anchored_to_repository_root(self):
+    def test_default_path_is_always_the_repository_canonical(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             legacy = root / "www.youtube.com_cookies.txt"
@@ -54,13 +54,22 @@ class YoutubeCookiePreflightTests(unittest.TestCase):
                 try:
                     os.chdir(unrelated_cwd)
                     with mock.patch("tools.video.check_yt_cookie.REPO_ROOT", root):
-                        self.assertEqual(legacy, check_yt_cookie.default_cookie_path())
-                    preferred = root / "all_cookies.txt"
-                    preferred.touch()
-                    with mock.patch("tools.video.check_yt_cookie.REPO_ROOT", root):
-                        self.assertEqual(preferred, check_yt_cookie.default_cookie_path())
+                        self.assertEqual(
+                            root / "all_cookies.txt",
+                            check_yt_cookie.default_cookie_path(),
+                        )
                 finally:
                     os.chdir(previous_cwd)
+
+    def test_missing_path_is_redacted(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            missing = Path(tmp) / SYNTHETIC_VALUE
+            stdout = io.StringIO()
+            with contextlib.redirect_stdout(stdout):
+                result = check_yt_cookie.main([str(missing)])
+            self.assertEqual(2, result)
+            self.assertIn("Cookie 文件不存在", stdout.getvalue())
+            self.assertNotIn(SYNTHETIC_VALUE, stdout.getvalue())
 
     def test_static_preflight_accepts_synthetic_http_only_jar_without_leaking_values(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -83,9 +92,9 @@ class YoutubeCookiePreflightTests(unittest.TestCase):
             with contextlib.redirect_stdout(stdout):
                 result = check_yt_cookie.main([str(jar)])
             self.assertEqual(1, result)
-            self.assertIn("chmod 600", stdout.getvalue())
+            self.assertIn("仅用户本人可以修正 canonical 权限", stdout.getvalue())
 
-    def test_non_target_domain_fails_allowlist_without_printing_domain(self):
+    def test_non_target_domain_is_advisory_without_printing_domain(self):
         with tempfile.TemporaryDirectory() as tmp:
             jar = Path(tmp) / "cookies.txt"
             write_synthetic_jar(jar)
@@ -95,12 +104,34 @@ class YoutubeCookiePreflightTests(unittest.TestCase):
             with contextlib.redirect_stdout(stdout):
                 result = check_yt_cookie.main([str(jar)])
             output = stdout.getvalue()
-            self.assertEqual(1, result)
+            self.assertEqual(0, result)
             self.assertIn("非目标域", output)
+            self.assertIn("不影响静态有效性", output)
             self.assertNotIn("unrelated.invalid", output)
+
+    def test_default_canonical_does_not_require_immutable_lock(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            canonical = root / "all_cookies.txt"
+            write_synthetic_jar(canonical)
+            stdout = io.StringIO()
+            with mock.patch("tools.video.check_yt_cookie.REPO_ROOT", root):
+                with contextlib.redirect_stdout(stdout):
+                    result = check_yt_cookie.main([])
+            self.assertEqual(0, result)
+            self.assertIn("静态预检结果: ✓", stdout.getvalue())
+            self.assertNotIn("锁", stdout.getvalue())
 
 
 class BilibiliCookieJarTests(unittest.TestCase):
+    def test_download_default_path_is_always_the_repository_canonical(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "www.bilibili.com_cookies.txt").touch()
+            self.assertEqual(
+                root / "all_cookies.txt", bili_dl.default_cookie_path(root)
+            )
+
     def test_curl_argv_uses_jar_path_and_never_cookie_value(self):
         with tempfile.TemporaryDirectory() as tmp:
             jar = Path(tmp) / "filtered cookies.txt"
@@ -130,7 +161,7 @@ class BilibiliCookieJarTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             jar = Path(tmp) / "cookies.txt"
             write_synthetic_jar(jar, mode=0o644)
-            with self.assertRaisesRegex(SystemExit, "chmod 600"):
+            with self.assertRaisesRegex(SystemExit, "只允许用户本人维护"):
                 bili_dl.validate_cookie_jar(jar)
 
     def test_equals_in_jar_path_is_rejected_as_ambiguous_curl_data(self):
@@ -233,7 +264,7 @@ class BilibiliSearchCookieTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             insecure = Path(tmp) / "cookies.txt"
             write_synthetic_jar(insecure, mode=0o644)
-            with self.assertRaisesRegex(ValueError, "chmod 600"):
+            with self.assertRaisesRegex(ValueError, "只允许用户本人维护"):
                 bili_search.load_cookie_jar(insecure)
 
             ambiguous = Path(tmp) / "cookies=inline.txt"
@@ -241,17 +272,15 @@ class BilibiliSearchCookieTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "不能包含 '='"):
                 bili_search.load_cookie_jar(ambiguous)
 
-    def test_search_default_path_is_repository_anchored(self):
+    def test_search_default_path_is_always_the_repository_canonical(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             legacy = root / "www.bilibili.com_cookies.txt"
             legacy.touch()
             with mock.patch("tools.video.bili_search.REPO_ROOT", root):
-                self.assertEqual(legacy, bili_search.default_cookie_path())
-            preferred = root / "all_cookies.txt"
-            preferred.touch()
-            with mock.patch("tools.video.bili_search.REPO_ROOT", root):
-                self.assertEqual(preferred, bili_search.default_cookie_path())
+                self.assertEqual(
+                    root / "all_cookies.txt", bili_search.default_cookie_path()
+                )
 
     def test_load_error_is_sanitized_without_cookie_value(self):
         stdout = io.StringIO()
@@ -279,6 +308,8 @@ class BilibiliSearchCookieTests(unittest.TestCase):
         self.assertEqual(bili_search.EXIT_COOKIE_PRECHECK, result)
         self.assertIn("COOKIE PRECHECK: FAIL", output)
         self.assertIn("路径/存在性/权限检查未通过", output)
+        self.assertIn("只允许用户本人维护", output)
+        self.assertNotIn("chmod", output)
         self.assertNotIn(SYNTHETIC_VALUE, output)
 
     def test_api_business_error_is_nonzero_and_does_not_echo_api_message(self):
@@ -422,10 +453,12 @@ class FilterCookieJarTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             repo, outside = self.make_layout(Path(tmp))
             source = outside / "raw browser export.txt"
+            output = outside / "filtered candidate.txt"
             self.write_raw_source(source)
 
-            result = filter_cookie_jar.filter_cookie_jar(source, repo_root=repo)
-            output = repo / "all_cookies.txt"
+            result = filter_cookie_jar.filter_cookie_jar(
+                source, output=output, repo_root=repo
+            )
             payload = output.read_text(encoding="utf-8")
 
             self.assertEqual(output.resolve(), result.output.resolve())
@@ -439,25 +472,38 @@ class FilterCookieJarTests(unittest.TestCase):
             self.assertIn("#HttpOnly_.youtube.com", payload)
             self.assertIn("#HttpOnly_.bilibili.com", payload)
             self.assertNotIn("unrelated.invalid", payload)
-            self.assertEqual([], list(repo.glob("all_cookies.next.*.txt")))
+            self.assertEqual([], list(outside.glob(".filtered candidate.txt.next.*.tmp")))
+            self.assertFalse((repo / "all_cookies.txt").exists())
 
     def test_source_inside_repository_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp) / "repo"
             repo.mkdir()
+            outside = Path(tmp) / "outside"
+            outside.mkdir()
             source = repo / "raw.txt"
             self.write_raw_source(source)
             with self.assertRaisesRegex(ValueError, "必须位于仓库外"):
-                filter_cookie_jar.filter_cookie_jar(source, repo_root=repo)
+                filter_cookie_jar.filter_cookie_jar(
+                    source, output=outside / "candidate.txt", repo_root=repo
+                )
 
     def test_source_equal_to_destination_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
-            repo = Path(tmp) / "repo"
-            repo.mkdir()
-            source = repo / "all_cookies.txt"
+            repo, outside = self.make_layout(Path(tmp))
+            source = outside / "raw.txt"
             self.write_raw_source(source)
-            with self.assertRaisesRegex(ValueError, "不能与 all_cookies.txt 目标相同"):
-                filter_cookie_jar.filter_cookie_jar(source, repo_root=repo)
+            with self.assertRaisesRegex(ValueError, "不能与原始 cookie 源文件相同"):
+                filter_cookie_jar.filter_cookie_jar(
+                    source, output=source, repo_root=repo
+                )
+
+            hardlink = outside / "raw-hardlink.txt"
+            os.link(source, hardlink)
+            with self.assertRaisesRegex(ValueError, "不能与原始 cookie 源文件相同"):
+                filter_cookie_jar.filter_cookie_jar(
+                    source, output=hardlink, repo_root=repo
+                )
 
     def test_workspace_symlink_to_external_source_is_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -467,12 +513,56 @@ class FilterCookieJarTests(unittest.TestCase):
             workspace_link = repo / "raw-link.txt"
             workspace_link.symlink_to(external)
             with self.assertRaisesRegex(ValueError, "必须位于仓库外"):
-                filter_cookie_jar.filter_cookie_jar(workspace_link, repo_root=repo)
+                filter_cookie_jar.filter_cookie_jar(
+                    workspace_link, output=outside / "candidate.txt", repo_root=repo
+                )
 
-    def test_missing_required_fields_does_not_replace_existing_jar(self):
+    def test_repository_output_and_symlink_boundaries_are_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo, outside = self.make_layout(Path(tmp))
-            destination = repo / "all_cookies.txt"
+            source = outside / "raw.txt"
+            self.write_raw_source(source)
+            canonical = repo / "all_cookies.txt"
+            original = b"user-owned-canonical-placeholder\n"
+            canonical.write_bytes(original)
+            os.chmod(canonical, 0o600)
+
+            with self.assertRaisesRegex(ValueError, "必须位于仓库外"):
+                filter_cookie_jar.filter_cookie_jar(
+                    source, output=canonical, repo_root=repo
+                )
+
+            output_link = outside / "candidate-link.txt"
+            output_link.symlink_to(canonical)
+            with self.assertRaisesRegex(ValueError, "不能是符号链接"):
+                filter_cookie_jar.filter_cookie_jar(
+                    source, output=output_link, repo_root=repo
+                )
+
+            linked_parent = outside / "linked-repo"
+            linked_parent.symlink_to(repo, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, "输出目录不能是符号链接"):
+                filter_cookie_jar.filter_cookie_jar(
+                    source, output=linked_parent / "candidate.txt", repo_root=repo
+                )
+
+            real_external_parent = outside / "real-parent"
+            (real_external_parent / "nested").mkdir(parents=True)
+            linked_external_parent = outside / "linked-parent"
+            linked_external_parent.symlink_to(real_external_parent, target_is_directory=True)
+            with self.assertRaisesRegex(ValueError, "不能经过符号链接"):
+                filter_cookie_jar.filter_cookie_jar(
+                    source,
+                    output=linked_external_parent / "nested" / "candidate.txt",
+                    repo_root=repo,
+                )
+
+            self.assertEqual(original, canonical.read_bytes())
+
+    def test_missing_required_fields_does_not_replace_existing_candidate(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            repo, outside = self.make_layout(Path(tmp))
+            destination = outside / "candidate.txt"
             original = b"existing-known-good-placeholder\n"
             destination.write_bytes(original)
             os.chmod(destination, 0o600)
@@ -483,23 +573,39 @@ class FilterCookieJarTests(unittest.TestCase):
             )
             os.chmod(source, 0o600)
             with self.assertRaisesRegex(ValueError, "关键字段不完整"):
-                filter_cookie_jar.filter_cookie_jar(source, repo_root=repo)
+                filter_cookie_jar.filter_cookie_jar(
+                    source, output=destination, repo_root=repo
+                )
             self.assertEqual(original, destination.read_bytes())
 
-    def test_filter_cli_reports_counts_without_cookie_values(self):
+    def test_filter_cli_requires_output_and_reports_candidate_without_cookie_values(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo, outside = self.make_layout(Path(tmp))
             source = outside / "raw.txt"
+            candidate = outside / "candidate.txt"
             self.write_raw_source(source)
             stdout = io.StringIO()
             with contextlib.redirect_stdout(stdout):
-                result = filter_cookie_jar.main([str(source)], repo_root=repo)
+                result = filter_cookie_jar.main(
+                    [str(source), "--output", str(candidate)], repo_root=repo
+                )
             output = stdout.getvalue()
             self.assertEqual(0, result)
             self.assertIn("COOKIE FILTER: PASS", output)
-            self.assertIn("output=all_cookies.txt", output)
+            self.assertIn("output=candidate.txt", output)
             self.assertNotIn(str(repo), output)
             self.assertNotIn(SYNTHETIC_VALUE, output)
+            self.assertTrue(candidate.is_file())
+            self.assertFalse((repo / "all_cookies.txt").exists())
+
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                missing_output_result = filter_cookie_jar.main(
+                    [str(source)], repo_root=repo
+                )
+            self.assertEqual(2, missing_output_result)
+            self.assertIn("--output", stderr.getvalue())
+            self.assertFalse((repo / "all_cookies.txt").exists())
 
 
 if __name__ == "__main__":

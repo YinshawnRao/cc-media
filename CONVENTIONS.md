@@ -13,35 +13,35 @@
 
 ## 配音 (TTS) 规范
 
-- **适用范围**：以下默认只约束规则生效后**新启动的盘点视频**。已有 WAV 的历史项目原样复用；已有 voice/model/reference 记录的工程按原配置复现，不因新默认自动换声。只有用户明确要求“按当前默认重新配音/迁移”时才切换。
-- **默认声音（硬约定）**：`CV002「治愈少女」`，由 Qwen3-TTS Base + 已选定原创参考母带在 Apple Silicon 本地生成。`tools/tts/config.json` 是默认值唯一真源，`tools/tts/voices/registry.json` 是编号、名称和别名唯一真源。
+- **适用范围**：以下默认只约束规则生效后**新启动的盘点视频**。已有 WAV 的历史项目原样复用；已有 voice/model/reference 记录的工程按原配置复现，不因新默认自动换声。本次随机池迁移前的已知 config/registry 哈希对由中央配置显式兼容，不能泛化接受任意 stale selection。只有用户明确要求“按当前默认重新配音/迁移”时才切换。
+- **默认选择策略（硬约定）**：未唯一指定音色时，从 `CV001 / CV002 / CV003 / CV004 / CV005 / CV008` 女声池随机一次；均由 Qwen3-TTS Base + 已选定原创参考母带在 Apple Silicon 本地生成。`tools/tts/config.json` 是随机池与选择策略唯一真源，`tools/tts/voices/registry.json` 是编号、名称、分组和别名唯一真源。
 - **任务提示词解析优先级**：
   1. `配音：` / `音色：` / `voice=` 结构化字段中唯一精确匹配的角色编号、正式名称或注册别名。
   2. 若无结构化字段，任务提示词中带配音语境的唯一、肯定式精确匹配。
-  3. **未指定、未知、模糊描述、多个冲突候选、无法唯一匹配：一律回退 CV002。**禁止相似度猜测；“男声/女声/可爱一点/二次元声音”等不能唯一定位的描述也按默认处理。
-- **启动解析闸门（每个项目只解析一次）**：把用户原始任务提示词交给 resolver，落盘项目级 `voice-selection.json`；intro、全部排名转场、作品 outro、固定 CTA 都复用这一个文件，不得逐段重新判断。
+  3. **未指定、未知、模糊描述、多个冲突候选、无法唯一匹配：从配置中的女声池随机一次。**禁止相似度猜测；“男声/女声/可爱一点/二次元声音”等不能唯一定位的描述也进入同一随机池。
+- **启动解析闸门（每个项目只解析一次）**：把用户原始任务提示词交给 resolver，落盘项目级 `voice-selection.json`；随机结果与完整候选池必须同时记录。intro、全部排名转场、作品 outro、固定 CTA 都复用这一个文件，不得逐段重新判断或重新抽取。
   ```bash
   python3 tools/tts/resolve_voice.py --task-prompt-file brief.txt \
     -o sandbox/<slug>/voice-selection.json
-  # 仅当 resolved_id 不是 CV002 时，精确检查本期实际母带
+  # 仅当 resolved_id 不是预检声线 CV002 时，精确检查本期实际母带
   python3 tools/tts/doctor.py --voice <resolved_id>
   python3 tools/tts/narrate.py script.txt \
     --selection-file sandbox/<slug>/voice-selection.json -o out.wav
   ```
-  默认 doctor 只验核心模型/runtime 与 CV002；`--full-library --check-mixed-script` 只用于声音库维护和混合文本能力回归。未使用角色或纯中文不依赖的策略不得阻断本期任务。
+  默认 doctor 只验核心模型/runtime 与预检声线 CV002；CV002 在此不代表新项目默认成片声线。`--full-library --check-mixed-script` 只用于声音库维护和混合文本能力回归。未使用角色或纯中文不依赖的策略不得阻断本期任务。
 - **唯一正式生成入口**：新项目只能调用 `tools/tts/narrate.py`（单条或 batch）；禁止直接 `from kokoro import KPipeline`、禁止在项目脚本里硬编码 `VOICE = ...`。每个 WAV 必须生成 `.wav.tts.json` sidecar，记录 resolved ID、模型 revision、参考母带 SHA、文本与输出 SHA。
-- **当前步骤硬失败，而不是换声或停止整个 goal**：CV002/Qwen 的运行环境、固定模型或参考母带缺失/校验失败时，只让当前 TTS 步骤 fail closed；代理必须按 doctor 输出修复固定环境、模型、母带或 receipt，再重跑旁白及受影响下游门禁。**不得静默降级 Kokoro**，也不得把可修复问题转成用户确认点，否则无法保证默认音色。
+- **当前步骤硬失败，而不是换声或停止整个 goal**：本期已解析 Qwen 声线的运行环境、固定模型或参考母带缺失/校验失败时，只让当前 TTS 步骤 fail closed；代理必须按 doctor 输出修复固定环境、模型、母带或 receipt，再重跑旁白及受影响下游门禁。**不得静默降级 Kokoro，也不得重抽另一声线绕过失败**，也不得把可修复问题转成用户确认点，否则无法保证项目级音色一致性。
 - **构建门禁**：新项目旁白完成后运行 `tools/tts/verify_voice_usage.py`；所有旁白 sidecar 必须与项目级 selection 同一 ID，项目脚本不得绕过中央入口。
-- **显式其他声音**：`CV001–CV008` 的编号、名称、别名与实际样音见 `tools/tts/voices/listen.html`。无效显式选择仍按 CV002，并在 selection 中记录 fallback 原因。
+- **显式声音**：`CV001–CV008` 的编号、名称、别名与实际样音见 `tools/tts/voices/listen.html`。无效显式选择进入女声随机池，并在 selection 中记录 fallback 原因、候选池与最终结果。
 - **口播文本**：新盘点 intro 第一段**禁止出现“接下来”**。默认 Qwen `Auto` 允许中英日等混合文本，不再沿用 Kokoro 的“非中文一律跳过”经验；外文专名必须先听样音/做内容 QA。只有实际发音不自然、歧义大或不可懂时，才改用通行中文译名、音译/发音友好的谐音字，或从口播省略并只在画面保留原文。
 - **混合文本发音（Qwen 硬约束）**：明显英文单词优先按词发音；视觉上为连续全大写时，送入 TTS 前先归一为正常词形，例如 `BEYOND → Beyond`。只有明确的首字母缩写或不可自然词读的字母串才逐字母读，例如 `BTS → B T S`、`S.H.E. → S H E`。判断不确定时先生成短样音，或通过项目级 `pronunciation_overrides` 明确读法，不得直接改成生硬中文谐音。归一化只影响 TTS 口播输入，画面仍保留艺人/作品的官方写法。
 - **纯中文稳定性（硬约束）**：自动发音归一化只检查 ASCII 拉丁 token；未显式提供发音覆盖时，纯中文文本、中文标点、数字和原有中文措辞必须逐字原样透传，不做分词、加空格、拼音化或其他改写。纯中文请求不得依赖外文发音策略文件，其生成 seed、请求结构和既有缓存指纹必须保持不变。
 - **Legacy Kokoro**：8 个旧 ID 仅用于历史复现或用户精确指定（如 `--voice zm_yunxi`）。`--female` 保留旧兼容语义 `zf_xiaoyi`，但**新盘点禁止用 `--female` 表达默认**。
 - **不要用 HyperFrames 内置 `npx --yes hyperframes@0.6.69 tts` 做中文**：它把语言代码 `zh` 传给 espeak，而 espeak 只认 `cmn`，中文直接报错；且 espeak 普通话质量弱。英文旁白才考虑内置 tts。
 - 输出 24kHz wav，作为独立 `<audio>` 轨接入 composition（见下「全链路」）。用户明确要求字幕时，自动字幕可对 wav 跑 `npx --yes hyperframes@0.6.69 transcribe`；历史项目则使用其 lockfile/package scripts 已固定的版本。
-- **Legacy Kokoro 专属：⚠ 长句（~15s+）独立 `pipeline()` 调用会吞掉开头第一小句（2026-07 实战，`xietingfeng-underrated-top5` 排查）**。本条及下面的“垫话”修法**只用于明确复现 Kokoro 的旧项目，不得复制到 Qwen/CV002 新流程**；Qwen 会把“接下来”等垫话正常念出来。TOP 盘点每首的整段旧旁白（"第X名，《歌名》。它收录在……" 一大段，单次 `pipeline(text, voice=..., speed=1.0)` 调用生成，时长 15-19s）有概率把开头第一句吞掉或吞掉一部分。
+- **Legacy Kokoro 专属：⚠ 长句（~15s+）独立 `pipeline()` 调用会吞掉开头第一小句（2026-07 实战，`xietingfeng-underrated-top5` 排查）**。本条及下面的“垫话”修法**只用于明确复现 Kokoro 的旧项目，不得复制到当前编号 Qwen 声线流程**；Qwen 会把“接下来”等垫话正常念出来。TOP 盘点每首的整段旧旁白（"第X名，《歌名》。它收录在……" 一大段，单次 `pipeline(text, voice=..., speed=1.0)` 调用生成，时长 15-19s）有概率把开头第一句吞掉或吞掉一部分。
   - **根因**：与文本内容无关（把无意义的垫话放在最前面，垫话会被吞、真正内容才是"被吞对象"），是 Kokoro 对**长独立发声**开头的一个通病；短句（<10s）或"同一大段里第一句"都不受影响，只在"这段话本身是一次孤立的长 `pipeline()` 调用"时出现。**同一系列此前项目（如 `xuruyun-underrated-top5`）用 Whisper 抽查也复现同一问题**——过去这个 bug 一直存在但没被发现，因为没人用 ASR 逐句核对过旁白。
-  - **旧项目修法（仅 Kokoro）**：给每段旁白文本前面拼接一句垫话（如"接下来，"），再送进旧 `pipeline()`。只在严格复现 legacy Kokoro 时保留；新 Qwen/CV002 文案不得自动添加垫话。
+  - **旧项目修法（仅 Kokoro）**：给每段旁白文本前面拼接一句垫话（如"接下来，"），再送进旧 `pipeline()`。只在严格复现 legacy Kokoro 时保留；当前编号 Qwen 声线文案不得自动添加垫话。
   - **验证方法**：改完必须通过 `tools/video/offline_asr.py` 或调用它的中央 FINAL preparer 转录旁白，抽查开头“第X名”完整出现；不能只看 RMS/时长判断——那看不出“内容被吞”。不得裸跑 `whisper-cli` 绕过固定工具链与自适应预算。
 
 ## 命名约定
@@ -102,27 +102,28 @@
 
 ## yt-dlp 规范
 
-- **Cookie 文件（统一约定）**：新项目唯一入口是仓库根目录 `all_cookies.txt`，格式为 Netscape jar。它不是浏览器所有站点的原始快照，而是从仓库外原始导出中过滤后，仅保留 YouTube / Google / B站目标域的合并文件；YouTube 和 B站下载、搜索、校验全部读它。
-  - **为什么仍需 Google 域**：YT 过 bot 检查依赖登录态 cookie，其中 `LOGIN_INFO/SID/HSID/SSID/SAPISID` 等常落在 **`.google.com`** 域上；过滤时必须保留 YouTube 域及所需 Google 域，B站则保留 Bilibili 域。不得把其他网站 cookie 带进仓库工作区。
-  - **原始导出边界**：浏览器原始“全部 cookie / All cookies”只能临时导出到仓库外、权限 `0600` 的位置；不得先落到根目录、`.session_tmps/` 或 `sandbox/`。运行 `python3 tools/video/filter_cookie_jar.py /仓库外/原始导出.txt`，脚本保留 Netscape `#HttpOnly_` 行、只放行目标域，并用根目录同文件系统的 `0600` 临时文件原子替换 `all_cookies.txt`；原始导出按本机安全流程销毁。`document.cookie` 拿不到 HttpOnly 凭据，不可用。
-  - **权限与位置**：执行 `chmod 600 all_cookies.txt`；group/other 可读即静态预检失败。不得在 `sandbox/` 或会话临时目录创建、复制、覆盖第二份 Cookie。登录态虽已 gitignore，仍必须在提交前检查 staged 内容。
-  - **向后兼容**：`check_yt_cookie.py`、`bili_search.py`、`bili_dl.py` 默认读根目录 `all_cookies.txt`，缺失时才回退旧 `www.youtube.com_cookies.txt` / `www.bilibili.com_cookies.txt`。新项目禁止主动选择旧文件。
+- **Cookie 文件（统一约定）**：仓库根目录 `all_cookies.txt` 是用户维护的 canonical Netscape jar；它不是代理可再生的缓存，也不是普通 goal 的输出。canonical 不要求不可变锁，代理禁止覆盖完全由 `AGENTS.md` 与本节的提示词约束。只有用户本人可以手工覆盖或安装它。代理仅可静态读取，禁止对 canonical 文件或其路径直接写入，禁止执行 `chmod`、`touch`、`mv`、`cp`、过滤替换、删除或重建；不得以自动修复、测试、Cookie 更新或任务恢复为理由改变其内容、inode、mtime 或权限。
+  - **为什么仍需 Google 域**：YT 过 bot 检查依赖登录态 cookie，其中 `LOGIN_INFO/SID/HSID/SSID/SAPISID` 等常落在 **`.google.com`** 域上；用户若选择生成目标域 candidate，过滤时必须保留 YouTube 域及所需 Google 域，B站则保留 Bilibili 域。canonical 使用完整导出还是过滤 candidate 由用户本人决定；代理不得因发现额外域而删除、重写或重新过滤 canonical。
+  - **yt-dlp 必须经只读 wrapper**：`yt-dlp --cookies FILE` 会在退出时重新序列化并回写 FILE，所以搜索、`--skip-download`、格式检查和下载都不能把 canonical 路径传给裸 yt-dlp。统一使用 `python3 tools/video/yt_dlp_readonly.py -- <yt-dlp 参数>`，并且参数中不得再写 `--cookies`、`--cookies-from-browser` 或 canonical 路径。只有 wrapper 可以在仓库外权限隔离的私有临时目录创建工作副本；yt-dlp 仅回写该副本，结束即清理。代理不得用 shell `cp` 自制副本，也不得把 Cookie 放入 `sandbox/`、项目目录或仓库内临时目录。
+  - **用户更新边界**：浏览器原始导出与 candidate 都必须在仓库外并为 `0600`。`filter_cookie_jar.py` 只接受显式 `--output`，且只生成仓库外 candidate，例如 `python3 tools/video/filter_cookie_jar.py SOURCE --output /absolute/outside/candidate.txt`；它不再安装或覆盖 canonical。该命令仅供用户维护流程调用，代理和普通 goal 禁止运行。candidate 由用户本人检查后手工安装为 `all_cookies.txt`，并亲自恢复 `0600`；代理不得代做安装或权限变更。`document.cookie` 拿不到 HttpOnly 凭据，不可用。
+  - **静态检查与兼容边界**：`check_yt_cookie.py` 只读 canonical，检查字段、文件内 expiry 与 `0600`；不检查或要求不可变锁。额外域只报告数量作为 advisory，不输出域名、不让有效的用户快照 FAIL，也不修复文件。`bili_search.py` / `bili_dl.py` 只允许只读使用 canonical。旧 `www.*_cookies.txt` 不再作为新任务入口；登录态虽已 gitignore，仍必须在提交前检查 staged 内容。
+  - **不中断普通任务**：Cookie 缺失、不可用、静态检查异常或服务端失效时，代理先继续公开下载和 YouTube / B站双平台备选，不得因此暂停或阻断普通 goal；确实需要新登录态时只报告用户输入边界，仍不得碰 canonical。
 - **YouTube 登录态**（反爬：不带或缺登录态会报 "Sign in to confirm you're not a bot"）：
   - `all_cookies.txt` 须含 HttpOnly 认证 cookie（`LOGIN_INFO` + `SID/HSID/SSID/SAPISID/APISID` + `__Secure-3PSID`），其中多个在 `.google.com` 域。`python3 tools/video/check_yt_cookie.py` 会正确解析 Netscape `#HttpOnly_` 行，并静态检查字段、文件内 expiry 与 `0600` 权限。
   - **过期与更新**：标称过期约 1 年，但**实际寿命短得多**——YouTube 服务端频繁轮换 `*SIDCC`/`*SIDTS`，实践中常几天～几周失效。`check_yt_cookie.py` 只是**静态预检**，不能验证服务端新鲜度：字段都在却仍 bot 拦，仍可能是服务端已轮换、快照过期。
-    - **bot 拦排查顺序（2026-06 经验，禁止自动升级环境）**：① 记录当前 `yt-dlp --version`，运行 `check_yt_cookie.py`，再用 `--skip-download --print` 复现并区分 bot 登录态提示与签名/播放器错误；② 静态字段正常但仍明确 bot 拦时，按仓库外导出 → `filter_cookie_jar.py` → 原子覆盖流程更新快照；③ 只有证据指向 yt-dlp 兼容性且用户允许变更环境时，才安装/切换到明确版本并记录前后版本。不得把 `brew upgrade yt-dlp` 当作自动第一步，也不得用一次升级成功反推 Cookie 当时有效。换 `--extractor-args player_client` 对登录态失效无效。
-    - 让 cookie 更耐用：用**无痕窗口**登录 → 只在仓库外导出原始快照 → 用 `filter_cookie_jar.py` 过滤并原子覆盖根目录目标域 jar → **直接关窗口、别登出**（避免主会话把快照轮换掉）；原始快照不得进入 workspace。
+    - **bot 拦排查顺序（2026-06 经验，禁止自动升级环境）**：① 记录当前 `yt-dlp --version`，运行只读 `check_yt_cookie.py`，再通过 `yt_dlp_readonly.py` 包装的 `--skip-download --print` 复现并区分 bot 登录态提示与签名/播放器错误；② 静态字段正常但仍明确 bot 拦时，代理继续公开下载、双平台同版本候选和安全 client 备选，不修改 Cookie，也不暂停普通 goal；③ 确实需要新登录态时，只报告用户输入边界，由用户自行在仓库外生成 candidate 并手工安装；④ 只有证据指向 yt-dlp 兼容性且用户允许变更环境时，才安装/切换到明确版本并记录前后版本。不得把 `brew upgrade yt-dlp` 当作自动第一步，也不得用一次升级成功反推 Cookie 当时有效。换 `--extractor-args player_client` 对登录态失效无效。
+    - 用户若希望快照更耐用，可在无痕窗口登录后把原始导出与 candidate 全程留在仓库外，亲自安装 canonical 后直接关闭窗口而不登出；代理不参与过滤、安装或权限变更。
   - **另一种 403（非 bot 拦，2026-07 实战，`sandbox/xietingfeng-underrated-top5` 验证）**：cookie 有效、`check_yt_cookie.py` 通过，但下载 adaptive(dash) 流（itag 137/140/251 等）持续 `HTTP 403 Forbidden`，日志显示走的是 `tv downgraded player API` + `[jsc:deno] Solving JS challenges` 链路——这是该 client 的签名解密偶发失效，与登录态无关（区别于上面 line 99 的 bot 拦场景）。单独 `--extractor-args "youtube:player_client=web"` 能避开 403，但格式表被裁到只剩 itag 18（360p）。**修法**：四个 client 一起传 `--extractor-args "youtube:player_client=web,web_embedded,web_music,mweb"` → 格式表恢复完整（含 1080p），下载不再 403。遇到"cookie 明明有效却仍 403（不是 bot 拦提示语）"时先试这个，而不是急着重新导出 cookie。
 - **B站登录态**（无登录态只能拿到 ≤720P；大会员/番剧/4K 必须）：
-  - 过滤后的 `all_cookies.txt` 须保留 Bilibili 域的 `SESSDATA`、`bili_jct`、`DedeUserID` 等登录态字段。
-  - 过期更新比 YT 更频繁（几周）；触发信号：清晰度被压回 720P 或 4K 选项消失 → 按同一“仓库外导出 → 目标域过滤 → 静态预检 → 原子覆盖”流程更新。
+  - canonical 若用于 Bilibili 登录态，须含 `SESSDATA`、`bili_jct`、`DedeUserID` 等字段；是否还包含其他域不影响本条有效性。
+  - 过期更新比 YT 更频繁（几周）；触发信号是清晰度被压回 720P 或 4K 选项消失。代理先继续公开和双平台备选；只有用户本人可按“仓库外导出 → 仓库外 candidate → 手工安装 canonical”更新。
   - **B站搜索 yt-dlp 不能解析**，要用 API：`https://api.bilibili.com/x/web-interface/wbi/search/type?search_type=video&keyword=<关键词>`，response 里 `data.result[].bvid` 即视频 ID，URL 拼为 `https://www.bilibili.com/video/<bvid>`。
     - **必须 WBI 签名**（2026 验证）：普通 search 端点 + `yt-dlp bilisearchN:` 现在都返回 **HTTP 412 风控**。要先 GET `https://api.bilibili.com/x/web-interface/nav` 取 `wbi_img.img_url/sub_url` 的文件名 → mixin_key（固定 64 位重排表取前 32 位）→ 参数加 `wts` 排序 urlencode 后 `md5(query+mixin_key)` 得 `w_rid`，带 cookie + 桌面 UA 才通。**复用脚本 `tools/video/bili_search.py`**（用法 `python tools/video/bili_search.py "关键词" [n]`）：模块导入不读 Cookie，只有实际搜索时才延迟加载根目录 `all_cookies.txt`，输出 `bvid | 时长 | up主 | 标题`。
   - **B站下载 yt-dlp 报 HTTP 412 风控的救场（2026-06 验证）**：`yt-dlp` 的 BiliBili extractor 走的 webpage/playurl 端点会被 412 风控（即使 cookie 有效、search 与 `--skip-download --print` 偶尔能过），重试也基本恒 412。但**普通浏览器式 `curl --compressed` + 桌面 UA + `referer:https://www.bilibili.com/` + Netscape jar 仍能取到视频页**，页里内嵌 `window.__playinfo__`（DASH `baseUrl` m4s 直链）。**复用脚本 `tools/video/bili_dl.py`**（用法 `python tools/video/bili_dl.py <bvid> <out.mp4> [--max-h 1080]`）：curl 直接读取 jar 路径，cookie value 不进入 argv；随后解析 playinfo → 取 ≤max-h 优先 AVC 的 video + 最佳 audio 直链 → curl 下载 → ffmpeg mux 成 mp4。这是 B站下载被 412 挡住时的首选下载法。
 - **切片**用 `--download-sections "*HH:MM:SS-HH:MM:SS"`，避免下整片（已验证：635s 视频只取 10s）。
-- 已验证可用的切片命令（YouTube 与 B站同用一份 `all_cookies.txt`）：
+- 已验证可用的切片命令（wrapper 自动使用 canonical 的仓库外临时副本）：
   ```bash
-  yt-dlp "<URL>" --cookies "all_cookies.txt" \
+  python3 tools/video/yt_dlp_readonly.py -- "<URL>" \
     --download-sections "*00:00:30-00:00:40" --no-playlist \
     -f "bv*[height<=1080]+ba/b[height<=1080]" \
     -o "downloads/%(id)s_%(section_start)s-%(section_end)s.%(ext)s"
@@ -198,7 +199,7 @@
 - **画幅**：竖屏 **1080×1920**（短视频主流）。
 - **素材来源**：默认**我来搜并选**——用户给歌手+歌名/主题+倾向，我**同时在 YouTube 和 B站搜**（见"素材源平台"硬约束）。先保证目标歌手/版本身份正确，再优先官方 MV；官方 MV 画质稍差也不因此降级。拿不准的版本先给候选并标明各平台候选规格。
 - **解说文案**：默认**混合模式**——用户写重点句/必须准确的点，其余我扩写成口播稿，出片前可审。
-- **配音**：新盘点默认 `CV002「治愈少女」`；只接受编号、正式名称或注册别名的唯一精确指定，未知/模糊/冲突回退 CV002（见配音规范）。
+- **配音**：新盘点若无唯一精确指定，则从 `CV001 / CV002 / CV003 / CV004 / CV005 / CV008` 女声池随机一次；编号、正式名称或注册别名的唯一精确指定仍优先（见配音规范）。
 - **旁白结构**：一般视频默认包含**开头旁白 + 每首歌曲转场旁白 + 作品 outro + 固定 CTA**，四类旁白共用项目级音色。只有完全自由探索类、以音乐/视觉实验本身为主体且没有排名或解说结构的视频，才可在 brief/design 明确记录后按创意精简部分或全部旁白；brief 没写旁白不构成省略理由。
 - **整体节奏 / 时长**：默认**不设总时长上限，整体质量优先**。除非用户明确给出平台硬时长，不得为了变短牺牲叙事、观赏体验或完整乐句；确有硬时长时优先减少条目、收紧重复信息或精简旁白，不得把歌曲高光从句中掐断。
 - **审美**：开期先定一份 `design.md`（配色/字体/动效基调）并全期统一，参考 `/hyperframes` 的 design 流程。默认"干净高级、暗底 + 单一强调色"，除非指定综艺花字等其他风格。
@@ -315,7 +316,16 @@ python3 tools/video/prepare_final_qa.py \
 
 VOICE、PROJECT、PUBLISHING 或 FINAL 的机械红线失败都回到其输入修正，禁止先产出再补写 evidence，或把下游 PASS 当成上游豁免。默认本地终验中的 human-review advisory 不是机械失败，也不是 goal blocker；显式 `--require-human-review` 返回 `REVIEW_REQUIRED` 才表示发布终验仍待真人。AI 克隆整首 MV 不冒充这套标准 project/final schema，按 `tools/video/templates/ai-voice-mv/` durable builder 的 `--check` 与独立 QA 边界执行；其输出仍按并列目录生成发布文案，但当前 AI config 缺少标准 performer/theme 上下文，不能伪造 `project-manifest.json` 冒充通过标准 PUBLISHING CLI。
 
-**小红书发布文案（硬约束）**：每个完成型新 Sandbox 项目必须创建与 `renders/` 并列的 `publishing/`，固定文件为 `publishing/xiaohongshu.md`。文件提供 1–5 个爆款标题候选，默认 3 个，第一条就是首选；正文必须是无需再改写即可发布的完整描述，最后一行必须是 hashtags。标题候选、正文、互动句和 hashtags 的全部对外文字都不得出现本期任何歌曲名称，避免剧透。写作前必须核对本期真实主题、歌手、选题角度、旁白和最终内容，文案要与作品强相关，不得用可替换到任意项目的泛化模板，也不得杜撰事实。具有标准 `project-manifest.json` 的盘点、叙事与自由探索项目，完成后运行 `python3 tools/video/verify_publishing.py --project sandbox/<slug>`，必须得到 `PUBLISHING COPY: PASS`。这一门禁发生在 build/post-mux 之后、FINAL 之前，不改变 `project-manifest.json` 的 build 前职责；专用 durable 流程不得为调用该 CLI 伪造标准 manifest。
+**小红书发布文案（硬约束）**：每个完成型新 Sandbox 项目必须创建与 `renders/` 并列的 `publishing/`，固定文件为 `publishing/xiaohongshu.md`。文案不是终片简介或制作日志，而是一篇无需再改写即可发布、能让对应兴趣圈层愿意读完和回答的完整笔记。
+
+- **先定受众兴趣，再写文案**：写作前核对本期真实主题、歌手、选题角度、旁白和最终内容，并结合当期公开社区讨论或可靠资料，提炼 1 个中心判断和 2–3 个受众真正关心的入口。单歌手项目优先写声音、人格或职业转向；现场项目写台上台下的共同经历；动漫、影视和游戏项目写可验证的时间坐标、作品机制与圈层记忆；怀旧项目不能只说“青春回忆”，必须说明今天为什么仍值得重听。调研只决定切入角度，不能把未经项目证据支持的热搜说法、粉圈传闻或流量判断写成作品事实。
+- **标题要有判断，不做标题党**：提供 1–5 个候选，默认 3 个，第一条就是首选。优先使用本期真实矛盾、反差或新判断建立吸引力，禁止靠与正文无关的热词、情绪勒令、无法证明的绝对化词语或“封神/全网第一/不看后悔”等空洞夸张吸睛。三个默认候选应覆盖不同切口，不能只是替换同义词。
+- **正文必须形成完整推进**：hashtags 前的正文固定为 **420–900 个非空白字符**，建议 6–10 个短段落。结构至少包含“具体入口或大众印象 → 本期中心判断 → 2–3 层有项目依据的展开 → 为什么值得今天重看/重听 → 一个具体互动问题”，不得把 timeline、人物名单或制作说明改写成流水账。互动问题必须能让对应受众回答具体记忆、选择或判断，禁止只写泛化的“你怎么看”。
+- **全部对外文字禁用 emoji**：标题、正文、互动句和 hashtags 都不使用 emoji；不要用耳机、眼睛、火焰、爱心等符号代替语气、段落逻辑或真实表达。
+- **hashtags 固定 8–10 个且各司其职**：文件最后一行必须是 hashtags，只放 8–10 个互不重复的标签。优先组合“核心人物/IP 1–2 个 + 垂类/题材 2–3 个 + 本期独特角度 2–3 个 + 有真实关联的圈层/年代 1–2 个”；不得只堆 `#音乐 #音乐分享 #音乐推荐` 一类可替换到任意作品的泛词，也不得为凑数加入正文没有涉及的人物、作品、年代或热点。
+- **不剧透且不杜撰**：标题候选、正文、互动句和 hashtags 的全部对外文字都不得出现本期任何歌曲名称。全文必须与本期作品强相关，不得使用可替换到任意项目的泛化模板，不得杜撰作品事实。
+
+具有标准 `project-manifest.json` 的盘点、叙事与自由探索项目，完成后运行 `python3 tools/video/verify_publishing.py --project sandbox/<slug>`，必须得到 `PUBLISHING COPY: PASS`。门禁会机械检查结构、正文长度、具体互动问题、emoji、8–10 个唯一 hashtags、歌曲名剧透和项目关联性；它不替代事实核对与编辑审美。这一门禁发生在 build/post-mux 之后、FINAL 之前，不改变 `project-manifest.json` 的 build 前职责；专用 durable 流程不得为调用该 CLI 伪造标准 manifest。
 
 **Sandbox 成片交付收尾（硬约束）**：新项目的 raw render 和 mux 后最终 MP4 只能写在 `renders/`；最终交付固定为 `renders/<slug>.mp4`，禁止使用 `final/`、`output/`、项目根终片或其他目录。普通成片的最终回复同时报告 `renders/<slug>.mp4` 与 `publishing/xiaohongshu.md`、最终 MP4 当前 SHA、VOICE / PROJECT / PUBLISHING / FINAL 四道门禁结果、实际修复和确实影响成片的问题。发布文案是必需内容产物，不属于被禁止的“未来发布建议”；内部 pending、review template 和严格模式入口留在 QA 文件与 Runbook 中。仍不得自动附加用途定位、权利或条款免责声明、额外真人复核建议。只有用户在当期任务中主动询问相应主题时才回答，且不能把这类提示写进 `QA.md`、`SOURCES.md`、README、checklist 或 CLI 默认输出。
 
@@ -334,7 +344,7 @@ VOICE、PROJECT、PUBLISHING 或 FINAL 的机械红线失败都回到其输入�
 画幅：默认竖屏1080x1920 | 总时长：默认不设上限、质量优先；仅显式平台硬时长才限制
 揭晓顺序：凡 TOP / 排名 / 榜单必须倒数 N→1；非排名叙事片才按脚本顺序，且标题不得写 TOP
 悬念：TOP 封面/intro 不列完整歌单、不展示排序、不泄露第一名；每名在对应转场才揭晓
-配音：默认 CV002 治愈少女；可写 CV 编号 / 正式名称 / 注册别名（未知、模糊、冲突均回退 CV002）
+配音：默认从 CV001 / CV002 / CV003 / CV004 / CV005 / CV008 女声池随机一次；可写 CV 编号 / 正式名称 / 注册别名（唯一精确指定优先）
 旁白结构：默认开头 + 每首歌曲转场 + 作品 outro + 固定 CTA；完全自由探索类可显式标注例外
 每首：序号 / 歌手 /《歌名》
   素材：URL+切点 | 或 搜索倾向(官方MV/Live/原唱 + 想要的段落)
@@ -372,7 +382,7 @@ VOICE、PROJECT、PUBLISHING 或 FINAL 的机械红线失败都回到其输入�
 ### 老素材 / 难度盘点的实战补充（窦唯最难5首验证）
 
 - **TOP / 排名必须倒数 5→1**：把最难/最炸的留作压轴（窦唯片压轴《别来纠缠我》），第1名给红色"公认天花板"角标强化。封面和 intro 只讲主题与钩子，不列完整歌单、不展示排序、不泄露第 1 名；直到对应转场才公布该名次与歌曲。
-- **成片内禁出现描述视频自身机制的 meta 文案**（如"倒数开始/从第5名"）——属项目内部框架，用户明确不接受出现在画面。口播里的"第五…第四…"排名播报和数字角标 OK，旁白式 meta 旁注不 OK。
+- **成片内禁出现描述视频自身机制的 meta 文案**（如 `05→01`、`05->01`、`N→1`、"倒数开始"、"从第5名开始"）——这些只属于脚本、timeline 和制作提示词里的内部编排规则，禁止进入封面、intro 或其他观众可见文案。口播里的"第五…第四…"排名播报、逐首单个数字角标和当前 `RANK 05` 等名次标识 OK；把完整揭晓顺序直接写给观众不 OK。
 - **密集摇滚定不了副歌位**：满编曲老摇滚整首 RMS 几乎持平（`volumedetect` 各 5s 切片差 <1dB），靠响度找高潮无效。改用**歌曲结构常识 + 抽帧看画面**定展示段，并把"高光是否最具代表性"明确交回用户耳朵定夺。
 - **老素材普遍标清且带烧死字幕/台标**：4:3 标清用顶部对齐 crop（如 `384:400:128:0`）裁掉底部歌词字幕；做旧/发暗的源（如《靠近我》）vfill 前先 `eq=brightness=0.10:saturation=1.12:contrast=1.06` 提亮（vfill 的 BR 只作用于模糊背景，不提亮前景）。
 - **水印垂直范围常超目测**（李×杨时间线《幸福菓子》验证）：SONY BMG 等老唱片公司水印实际占 y:0-75（看起来只在 y:0-45），底部烧字常占 y:340-480（不止最后两行）。**crop 前先二分抽断面**：`ffmpeg -ss N -i src -vf "crop=W:60:0:y" -frames:v 1 probe.png`，y 取 50/100/150/200/300/350，看哪一行水印/字幕消失，定 crop 安全区。**bg 也会显示残留水印**：vfill 的 bg 用 fg 同样的 crop 区域 scale up 后模糊，fg crop 内有水印 → bg 模糊层也露出（模糊后的文字仍可识别）。所以 crop 必须把水印**完全**裁掉。
@@ -482,7 +492,7 @@ VOICE、PROJECT、PUBLISHING 或 FINAL 的机械红线失败都回到其输入�
 
 ### 格式之一：音乐 TOP 盘点
 
-在通用能力之上加排名呈现：**所有 TOP / 排名 / 榜单一律倒数揭晓 N→1**，每条在自己的转场才出现大号排名 + 歌手 + 歌名。封面和 intro 可以写主题与“TOP N”，但禁止提前列完整歌单、展示排序或泄露第一名；悬念必须保留到逐条揭晓。非排名类视频不套排名件，也不要用 TOP 命名。
+在通用能力之上加排名呈现：**所有 TOP / 排名 / 榜单一律倒数揭晓 N→1**，每条在自己的转场才出现大号排名 + 歌手 + 歌名。`N→1` 只描述内部播放顺序，不是成片文案；封面和 intro 可以写主题与“TOP N”，但禁止出现 `05→01` / `N→1` 等完整顺序标签，禁止提前列完整歌单、展示排序或泄露第一名。悬念必须保留到逐条揭晓。非排名类视频不套排名件，也不要用 TOP 命名。
 
 TOP 默认保留**开头旁白 + 每首转场旁白 + 作品 outro + 固定 CTA**，并且整期不设时长上限、质量优先。历史 60–90s 榜单及每首 12–18s 是旧项目局部方案，不再作为默认；用户确有平台硬时长时优先减少条目/重复信息，保留片段仍必须停在完整乐句边界。带长解说的盘点（旁白每首 15s+）按「展示段硬规则 (B)」给连续 ≥~25s 的副歌，不能为了做短把歌切掉。
 
@@ -547,7 +557,7 @@ voice_rms = np.sqrt(np.mean(S[voice_mask] ** 2, axis=0))
 - 源音频：把用户给的训练 WAV 复制到当期项目 `audio/`，不要重新推理、不要改训练音色文件本身。若音频来自 `cc-voice`，只允许复制用户明确给出的 WAV 路径或目录内 WAV 到本项目；不得对 `cc-voice` 做目录扫描、状态检查、哈希/时长探测、进程检查或任何写操作。时长/静音/哈希等校验一律在复制到 `cc-media` 后对本地副本执行。批量目录导入时，文件名含 `废弃` 的 WAV 直接跳过。
 - 源视频：每首仍按“素材源平台”硬约束同时查 YouTube + B站。版本身份正确后优先官方 MV，官方 MV 画质稍差也继续优先；第三方 4K 升级源不能仅凭分辨率胜出。仍需抽帧确认目标段可用，只有官方 MV 存在结构性缺口时才按总则换源并在 `SOURCES.md` 留证。
 - 构建：按 `tools/video/templates/README.md` 填写项目 `build/config.json`，运行 `tools/video/templates/ai-voice-mv/build.py`；一首输出一个 `renders/YYYY-MM-DD/<配置输出名>.mp4`。视频必须先与训练 WAV 对齐；仅允许用 `tpad` 补视频短于音频不超过约 0.5s 的编码级差异，不能靠它掩盖剧情片头或错误偏移。
-- intro：先从用户原始 prompt 解析一次项目 `voice-selection.json`，再用 `tools/tts/narrate.py <文案> --selection-file ... -o ... --speed 1.12` 生成“如果某歌手唱《歌名》。”类提示；未指定时自然落到默认 CV002，显式有效指定则按指定。构建脚本会校验 sidecar 与项目选择一致，并修剪 TTS 首尾静音。
+- intro：先从用户原始 prompt 解析一次项目 `voice-selection.json`，再用 `tools/tts/narrate.py <文案> --selection-file ... -o ... --speed 1.12` 生成“如果某歌手唱《歌名》。”类提示；未指定时从女声池随机一次，显式有效指定则按指定。构建脚本会校验 sidecar 与项目选择一致，并修剪 TTS 首尾静音。
 - 混音：intro 期间训练音频 duck 到约 25%，intro 结束后 350ms 恢复；最终音频直接由 FFmpeg 预混/编码，不走 HyperFrames 音频归一化。单首训练音频若明显低于本目录响度基线，可在 `Song` 配置轻微 `audio_gain`，但最终 max volume 必须低于 0dB。
 - 角标：全程叠加 `AI训练，仅供娱乐`。用 durable 模板内保留的 `watermark.swift` 离线生成当期项目透明 PNG，再由构建脚本 `overlay`；源码可复用，生成的工具和 PNG 仍留在 `sandbox/<slug>/`。
 - 来源记录：每首都补 `SOURCES.md`，写清 YouTube/B站候选、最终选择、限制和是否做 crop。
@@ -589,12 +599,12 @@ voice_rms = np.sqrt(np.mean(S[voice_mask] ** 2, axis=0))
 
 **封面单帧（无论动态底还是静帧）的通用要求**：
 - **默认优先歌手本人出镜**：封面别默认用空镜、抽象景、剧情演员或纯舞台灯；优先歌手本人正脸/半身/演唱动作清楚的段落。
-- **TOP 封面必须保留悬念**：只允许展示选题主题和 `TOP N` 数量标签；不得列完整歌单、歌曲顺序、具体名次结果或第 1 名。intro 也遵守同一规则，后续名次只能在各自歌曲转场时首次揭晓。
+- **TOP 封面必须保留悬念**：只允许展示选题主题和 `TOP N` 数量标签；不得列完整歌单、歌曲顺序、具体名次结果或第 1 名。`N→1` 是脚本、timeline、build 配置与 QA 的内部排序约定，**禁止在封面与 intro 画面绘制 `05→01`、`05->01`、`5→1`、`N→1`、“倒数开始”“倒序揭晓”“从第5名开始”或 `05 / 04 / 03 / 02 / TOP` 这类逐名次方向轨**。逐首揭晓时的单个当前名次数字与 `第X名` 口播仍可使用。intro 也遵守同一规则，后续名次只能在各自歌曲转场时首次揭晓。
 - **标题先做层级，再做换行**：先确定主题词、歌手名、类型/数量标签的主次，再按完整语义短语断行；禁止按固定字数机械折行、留下单个孤字、把歌手名或强关联词组拆开，也不能出现上行过满、下行只剩一两个字的失衡版式。短标题宁可少换一行，长标题应在自然停顿处拆分，并人工比较至少两个排版候选。
-- **歌手名字号不得偏小**：歌手名属于封面一级信息，字号必须与同层级的主题/歌名主要文字相同或更大；不能为了塞进一行把歌手名缩成副标或角注。仅真正的类型标签、年份、期数等辅助信息可以更小。
+- **单歌手 / 单组合主题封面：歌手名必须是唯一最大字号主体（硬约束）**：当整期围绕一位歌手或一个组合展开时，歌手 / 组合名必须成为封面的第一视觉落点，并使用全封面**唯一最大字号**；其字号必须严格大于主题口号、歌名、`TOP N`、类型标签、年份、期数和副标，不能与主题文字同大，更不能缩成副标、角注或说明文字。主题句只负责补充本期角度，不得与名字争夺主体。只有多歌手并列主题，或 brief 明确把非歌手对象设为封面主体时才可例外，并须在项目 `design.md` 写明主体层级与理由。
 - **关键信息只使用一个安全信息区**：标题、`TOP N` 数量标签、主题、副标等不要拆成“最顶一组 + 最底一组”，避免发布页裁剪后只剩半套信息。1080×1920 默认把关键文字控制在约 `x=72–1008 / y=220–1420` 的安全带内，再按主体位置放在中上、左上或右上；非关键信息也不要贴边。
 - **不死居中遮主体**：信息块不能整块压在画面正中央的脸、麦克风或主要动作上。先确定人物/主体的负空间，再把同一信息组偏到不遮主体的一侧或中上区域。
-- **封面 QA**：首帧同时检查完整画面、常见顶部/底部裁剪预览和文字 bounding box；除裁剪安全外，还要人工检查语义换行、行长平衡、歌手名字号层级、留白与主体避让，不能以“没有溢出”代替排版美感。关键信息必须在裁剪后完整可读，主体仍清楚可辨。
+- **封面 QA**：首帧同时检查完整画面、常见顶部/底部裁剪预览和文字 bounding box；除裁剪安全外，还要人工检查语义换行、行长平衡、留白与主体避让，不能以“没有溢出”代替排版美感。单歌手 / 单组合主题必须比较实际 computed font-size：名字不是唯一最大字号，或第一眼先读到主题句，均判定封面 QA 失败。关键信息必须在裁剪后完整可读，主体仍清楚可辨。
 
 正确做法：
 ```js
@@ -661,7 +671,7 @@ video A fade-out 结束时刻 = video B fade-in 起始时刻 → 中间会有 0.
 - contact sheet 拼图也要用 output-side seek 或先转 H.264 密集关键帧再抽。
 - 实测：黑豹 MV `-ss 145 -i ...` 抽出来是 BOY 帽剧情演员（t=155 附近）；换 output-side seek 才能精确到 t=145 的窦唯长发侧脸 closeup。
 
-**Legacy Kokoro 中英混读问题（不适用于默认 Qwen/CV002）**：
+**Legacy Kokoro 中英混读问题（不适用于当前编号 Qwen 声线）**：
 - Kokoro misaki[zh] **不擅长中英混读**。旁白文本里有英文（如"Don't Break My Heart"）会念得断断续续/不自然。
 - 修法：TTS 文本里把英文歌名改写成"这首歌/这段旋律/这段歌"；**屏幕字幕仍可保留英文**（视觉与听觉分流）。
 - 适用于：英文歌名、品牌名、人物英文译名等夹杂场景。

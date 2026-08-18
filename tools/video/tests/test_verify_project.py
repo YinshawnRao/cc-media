@@ -466,6 +466,17 @@ class VerifyProjectTests(unittest.TestCase):
             self.save_manifest(root, manifest)
             self.assertEqual([], self.errors(root), "one-character titles are ambiguous")
 
+    def test_top_cover_rejects_internal_countdown_order_hints(self) -> None:
+        for hint in ("05→01", "05->01", "N→1", "倒数揭晓", "倒序揭晓", "从第5名开始"):
+            with self.subTest(hint=hint), self.project() as root:
+                manifest = load_json(root / "project-manifest.json")
+                manifest["cover"]["text"] = f"示例歌手 TOP 2 {hint}"
+                self.save_manifest(root, manifest)
+                self.assert_error(
+                    self.errors(root),
+                    "cover.text must not expose internal countdown order hints",
+                )
+
     def test_non_free_narration_order_intro_word_and_canonical_cta(self) -> None:
         mutations = (
             (

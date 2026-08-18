@@ -33,7 +33,24 @@ class PublishingFixture:
                 {"title": "不得不爱", "performer": "郑中基"},
             ],
         }
-        self.copy = """# 小红书发布文案
+        self.prose = """很多人提到郑中基，第一反应可能还是高音、喜剧形象，以及那些传唱度最高的情歌。
+
+但如果只停在这些印象里，就会错过他声音里更复杂的一面。他的音色并不只是高和亮，真正耐听的是强弱转换、语气收放，以及唱到克制处仍然保留的情绪重量。
+
+这期没有把知名度当成唯一标准，也不是为了冷门而冷门。我们沿着不同阶段往作品深处听，看一位已经被大众熟悉的歌手，怎样在更少被讨论的表达里处理失去、迟疑和成年人不愿说破的体面。
+
+有些段落不急着把情绪推到最高点，而是先让一句话在气息里停住；有些旋律听起来平静，真正难的却是不能多给一分力。越往后听，越能明白技巧不是为了证明能唱，而是为了让人物和情绪自然成立。
+
+所以所谓被低估，并不只是还有几首作品没有进入大众歌单。更值得重听的，是他早已拥有一套完整的声音表达，只是最热闹的标签常常把这些细节盖住了。
+
+重听一个熟悉歌手最有意思的地方，是旧印象会被一点点改写。你以为自己已经知道他是什么样子，作品却会从另一个角度把人重新打开。
+
+你最想让更多人重新认识郑中基声音里的哪一种层次？"""
+        self.hashtag_line = (
+            "#郑中基 #粤语歌 #华语音乐 #港乐 #音乐分享 "
+            "#实力派歌手 #唱片时代 #音乐故事"
+        )
+        self.copy = f"""# 小红书发布文案
 
 ## 标题候选（第一条为首选）
 
@@ -43,13 +60,9 @@ class PublishingFixture:
 
 ## 正文
 
-很多人提到郑中基，第一反应可能还是高音和那些传唱度最高的情歌。🎧
+{self.prose}
 
-但真正往他的专辑里翻，会发现有些作品不追求第一耳抓人，却越听越有味道。
-
-你还听过哪些容易被忽略的作品？
-
-#郑中基 #粤语歌 #华语音乐 #港乐 #音乐分享
+{self.hashtag_line}
 """
         self.write_manifest()
         self.write_copy()
@@ -81,7 +94,7 @@ class VerifyPublishingTests(unittest.TestCase):
         summary = gate.verify_publishing(self.fixture.project)
         self.assertEqual(gate.PUBLISHING_PATH, summary.path)
         self.assertEqual(3, summary.title_count)
-        self.assertEqual(5, summary.hashtag_count)
+        self.assertEqual(8, summary.hashtag_count)
         self.assertEqual(("performer", "郑中基"), (
             summary.relevance_kind,
             summary.relevance_value,
@@ -100,9 +113,9 @@ class VerifyPublishingTests(unittest.TestCase):
 
 ## 正文
 
-郑中基的完整面貌，比大众印象更丰富。
+{self.fixture.prose}
 
-#郑中基 #粤语歌 #音乐分享
+{self.fixture.hashtag_line}
 """
                 )
                 self.assertEqual(count, gate.verify_publishing(self.fixture.project).title_count)
@@ -145,22 +158,51 @@ class VerifyPublishingTests(unittest.TestCase):
 
 ## 正文
 
-#郑中基 #粤语歌 #音乐分享
+#郑中基 #粤语歌 #华语音乐 #港乐 #音乐分享 #实力派歌手 #唱片时代 #音乐故事
 """)
         with self.assertRaisesRegex(gate.PublishingError, "publishable prose"):
             gate.verify_publishing(self.fixture.project)
 
-    def test_final_line_requires_three_to_twelve_hashtags(self) -> None:
-        for count in (2, 13):
+    def test_final_line_requires_eight_to_ten_hashtags(self) -> None:
+        for count in (7, 11):
             with self.subTest(count=count):
                 tags = " ".join(f"#标签{index}" for index in range(count))
                 self.fixture.write_copy(self.fixture.copy.rsplit("\n#", 1)[0] + "\n" + tags + "\n")
-                with self.assertRaisesRegex(gate.PublishingError, "3-12 hashtags"):
+                with self.assertRaisesRegex(gate.PublishingError, "8-10 hashtags"):
                     gate.verify_publishing(self.fixture.project)
 
     def test_final_nonempty_line_must_be_hashtags_only(self) -> None:
         self.fixture.write_copy(self.fixture.copy + "这不是 hashtag。\n")
-        with self.assertRaisesRegex(gate.PublishingError, "3-12 hashtags|hashtags only"):
+        with self.assertRaisesRegex(gate.PublishingError, "8-10 hashtags|hashtags only"):
+            gate.verify_publishing(self.fixture.project)
+
+    def test_body_prose_length_accepts_boundaries_and_rejects_outside(self) -> None:
+        for count in (420, 900):
+            with self.subTest(valid=count):
+                prose = "郑中基" + "声" * (count - 4) + "？"
+                self.fixture.write_copy(self.fixture.copy.replace(self.fixture.prose, prose))
+                gate.verify_publishing(self.fixture.project)
+
+        for count in (419, 901):
+            with self.subTest(invalid=count):
+                prose = "郑中基" + "声" * (count - 4) + "？"
+                self.fixture.write_copy(self.fixture.copy.replace(self.fixture.prose, prose))
+                with self.assertRaisesRegex(gate.PublishingError, "420-900 non-whitespace"):
+                    gate.verify_publishing(self.fixture.project)
+
+    def test_publishing_copy_rejects_emoji(self) -> None:
+        self.fixture.write_copy(self.fixture.copy.replace("复杂的一面", "复杂的一面🎧"))
+        with self.assertRaisesRegex(gate.PublishingError, "must not contain emoji"):
+            gate.verify_publishing(self.fixture.project)
+
+    def test_body_requires_a_specific_interaction_question(self) -> None:
+        self.fixture.write_copy(self.fixture.copy.replace("？", "。"))
+        with self.assertRaisesRegex(gate.PublishingError, "interaction question"):
+            gate.verify_publishing(self.fixture.project)
+
+    def test_hashtags_must_be_unique_after_normalization(self) -> None:
+        self.fixture.write_copy(self.fixture.copy.replace("#音乐故事", "#港乐"))
+        with self.assertRaisesRegex(gate.PublishingError, "hashtags must be unique"):
             gate.verify_publishing(self.fixture.project)
 
     def test_song_titles_are_rejected_in_every_outward_area_and_normalized(self) -> None:
@@ -171,8 +213,8 @@ class VerifyPublishingTests(unittest.TestCase):
                 1,
             ),
             "body": self.fixture.copy.replace(
-                "但真正往他的专辑里翻",
-                "但真正听到 GOOD—BYE MY LONELINESS，再往他的专辑里翻",
+                "但如果只停在这些印象里",
+                "但真正听到 GOOD—BYE MY LONELINESS，如果只停在这些印象里",
             ),
             "hashtag": self.fixture.copy.replace(
                 "#郑中基 #粤语歌",
@@ -317,7 +359,7 @@ class VerifyPublishingTests(unittest.TestCase):
             timeout=10,
         )
         self.assertEqual(0, passed.returncode, passed.stderr)
-        self.assertIn("PUBLISHING COPY: PASS titles=3 hashtags=5", passed.stdout)
+        self.assertIn("PUBLISHING COPY: PASS titles=3 hashtags=8", passed.stdout)
 
         (self.fixture.project / gate.PUBLISHING_PATH).unlink()
         failed = subprocess.run(

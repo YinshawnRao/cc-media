@@ -2,9 +2,10 @@
 """Validate the project-local Xiaohongshu publishing-copy contract.
 
 The fixed input is ``publishing/xiaohongshu.md`` under one project.  This gate
-checks deterministic structure, explicit song-title leakage and a minimum
-project-relevance signal.  It does not judge whether a title will become viral
-or whether the prose is aesthetically strong.
+checks deterministic structure, body length, emoji absence, hashtag quality
+boundaries, explicit song-title leakage and a minimum project-relevance signal.
+It does not judge whether a title will become viral or whether the prose is
+aesthetically strong.
 """
 
 from __future__ import annotations
@@ -54,6 +55,14 @@ GENERIC_COVER_TERMS = frozenset(
         "最被低估",
     }
 )
+MIN_PROSE_NONSPACE_CHARACTERS = 420
+MAX_PROSE_NONSPACE_CHARACTERS = 900
+MIN_HASHTAGS = 8
+MAX_HASHTAGS = 10
+EMOJI_RANGES = (
+    (0x2600, 0x27BF),
+    (0x1F000, 0x1FAFF),
+)
 
 
 class PublishingError(ValueError):
@@ -93,6 +102,16 @@ def compact_text(value: str) -> str:
 
 def normalized_surface(value: str) -> str:
     return unicodedata.normalize("NFKC", value).casefold()
+
+
+def contains_emoji(value: str) -> bool:
+    for character in value:
+        codepoint = ord(character)
+        if codepoint in (0x20E3, 0xFE0F) or any(
+            start <= codepoint <= end for start, end in EMOJI_RANGES
+        ):
+            return True
+    return False
 
 
 def reject_duplicate_json_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -219,13 +238,30 @@ def parse_markdown(text: str) -> PublishingDocument:
     hashtag_index = body_nonempty[-1]
     hashtag_line = body_lines[hashtag_index].strip()
     hashtag_parts = hashtag_line.split()
-    if not 3 <= len(hashtag_parts) <= 12:
-        fail(f"final hashtag line must contain 3-12 hashtags, got {len(hashtag_parts)}")
+    if not MIN_HASHTAGS <= len(hashtag_parts) <= MAX_HASHTAGS:
+        fail(
+            "final hashtag line must contain "
+            f"{MIN_HASHTAGS}-{MAX_HASHTAGS} hashtags, got {len(hashtag_parts)}"
+        )
     if any(HASHTAG_RE.fullmatch(part) is None for part in hashtag_parts):
         fail("final non-empty line must contain hashtags only")
+    normalized_hashtags = [compact_text(part) for part in hashtag_parts]
+    if any(not hashtag for hashtag in normalized_hashtags):
+        fail("each hashtag must contain at least one letter or number")
+    if len(set(normalized_hashtags)) != len(normalized_hashtags):
+        fail("hashtags must be unique after Unicode/punctuation normalization")
     prose = "\n".join(body_lines[:hashtag_index]).strip()
     if not prose:
         fail("body must contain publishable prose before the hashtag line")
+    prose_length = sum(not character.isspace() for character in prose)
+    if not MIN_PROSE_NONSPACE_CHARACTERS <= prose_length <= MAX_PROSE_NONSPACE_CHARACTERS:
+        fail(
+            "body prose must contain "
+            f"{MIN_PROSE_NONSPACE_CHARACTERS}-{MAX_PROSE_NONSPACE_CHARACTERS} "
+            f"non-whitespace characters, got {prose_length}"
+        )
+    if re.search(r"[?？]", prose) is None:
+        fail("body prose must include a specific interaction question")
     body = "\n".join(body_lines[: hashtag_index + 1]).strip()
     return PublishingDocument(tuple(titles), body, tuple(hashtag_parts))
 
@@ -344,6 +380,8 @@ def verify_publishing(project: Path) -> PublishingSummary:
         copy_text = copy_path.read_text(encoding="utf-8")
     except (OSError, UnicodeError) as exc:
         fail(f"{PUBLISHING_PATH} is not valid UTF-8 text: {exc}")
+    if contains_emoji(copy_text):
+        fail("publishing copy must not contain emoji")
     document = parse_markdown(copy_text)
     validate_no_song_titles(document.outward_text, song_titles)
     relevance_kind, relevance_value = find_relevance(

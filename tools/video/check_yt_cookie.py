@@ -4,10 +4,11 @@
 用法：
     python3 tools/video/check_yt_cookie.py [cookie文件]
 
-未显式传文件时，始终从仓库根目录选择 ``all_cookies.txt``；仅当它不存在时，
-才回退旧的 ``www.youtube.com_cookies.txt``。本工具不会联网，因此通过只表示：
-所需字段存在、按文件内时间戳尚未过期、文件未向 group/other 开放。它不能证明
-YouTube 服务端仍接受这份会话；解析时不会保留或输出 cookie value。
+未显式传文件时，只检查仓库根目录、由用户维护的 canonical
+``all_cookies.txt``，不回退旧文件。本工具不会联网、不会修复或改写文件，因此
+通过只表示：所需字段存在、按文件内时间戳尚未过期、文件未向 group/other 开放。
+canonical 不要求不可变锁。额外域只作 advisory，不影响有效用户快照；
+它不能证明 YouTube 服务端仍接受这份会话。解析时不会保留或输出 cookie value。
 """
 
 from __future__ import annotations
@@ -41,13 +42,10 @@ ALLOWED_DOMAIN_SUFFIXES = ("youtube.com", "google.com", "bilibili.com")
 
 
 def default_cookie_path(repo_root: Path | None = None) -> Path:
-    """Return the repository-anchored preferred jar, with legacy fallback."""
+    """Return the repository-anchored user-maintained canonical jar."""
 
     root = REPO_ROOT if repo_root is None else Path(repo_root)
-    preferred = root / "all_cookies.txt"
-    if preferred.is_file():
-        return preferred
-    return root / "www.youtube.com_cookies.txt"
+    return root / "all_cookies.txt"
 
 
 def _parse_netscape_line(line: str) -> tuple[str, str, str] | None:
@@ -111,7 +109,7 @@ def main(argv: list[str] | None = None) -> int:
 
     path = Path(args[0]).expanduser() if args else default_cookie_path()
     if not path.is_file():
-        print(f"✗ 文件不存在: {path}")
+        print("✗ Cookie 文件不存在")
         return 2
 
     rows = load(path)
@@ -122,11 +120,15 @@ def main(argv: list[str] | None = None) -> int:
         by_name.setdefault(name, []).append((domain, expiry))
 
     permission_ok, mode_text = _permission_check(path)
-    print(f"文件: {path}")
+    print(f"文件: {path.name}")
     print(f"cookie 元数据条目: {len(rows)}（不保留、不输出 value）")
     print(
         f"文件权限: {mode_text} "
-        + ("✓ 仅当前用户可访问" if permission_ok else "✗ group/other 可访问；请 chmod 600")
+        + (
+            "✓ 仅当前用户可访问"
+            if permission_ok
+            else "✗ group/other 可访问；仅用户本人可以修正 canonical 权限"
+        )
     )
     has_google = any(
         domain.lstrip(".").lower() == "google.com"
@@ -140,17 +142,16 @@ def main(argv: list[str] | None = None) -> int:
     print("-" * 52)
 
     unexpected_domains = {domain for domain in domains if not _allowed_domain(domain)}
-    allowlist_ok = not unexpected_domains
     print(
-        "目标域 allowlist: "
+        "额外域 advisory: "
         + (
-            "✓ 仅含 YouTube / Google / B站"
-            if allowlist_ok
-            else f"✗ 含 {len(unexpected_domains)} 个非目标域"
+            "无"
+            if not unexpected_domains
+            else f"含 {len(unexpected_domains)} 个非目标域（不影响静态有效性）"
         )
     )
 
-    ok = permission_ok and allowlist_ok
+    ok = permission_ok
 
     def check(name: str, required: bool) -> bool:
         entries = by_name.get(name)
@@ -192,13 +193,10 @@ def main(argv: list[str] | None = None) -> int:
     if ok:
         print("静态预检结果: ✓ 结构、文件内过期时间与权限检查通过")
     else:
-        print("静态预检结果: ✗ 结构、目标域 allowlist、文件内过期时间或权限不合格")
+        print("静态预检结果: ✗ 结构、文件内过期时间或权限不合格")
     print("注意: 静态预检不验证服务端会话新鲜度；实际 yt-dlp 请求仍可能被拒绝。")
     if not ok:
-        print(
-            "修复: 在仓库外准备 0600 原始导出，再运行 tools/video/filter_cookie_jar.py "
-            "过滤目标域并原子覆盖 all_cookies.txt。"
-        )
+        print("处理边界: 代理不得修复或覆盖 canonical；只有用户本人可以维护该文件。")
     return 0 if ok else 1
 
 

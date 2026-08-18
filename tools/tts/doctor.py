@@ -78,13 +78,13 @@ def voices_for_scope(
 ) -> tuple[list[dict], dict, str]:
     """Return the voice assets that this doctor invocation must validate."""
 
-    default_voice = registry.by_id(registry.default_id)
-    if default_voice is None:
-        raise ValueError(f"default voice is not enabled: {registry.default_id}")
+    preflight_voice = registry.by_id(registry.preflight_id)
+    if preflight_voice is None:
+        raise ValueError(f"preflight voice is not enabled: {registry.preflight_id}")
     if full_library:
-        return registry.voices, default_voice, "full-library"
+        return registry.voices, preflight_voice, "full-library"
     if selector is None:
-        return [default_voice], default_voice, "selected"
+        return [preflight_voice], preflight_voice, "preflight"
 
     voice, _ = registry.exact_selector(selector)
     if voice is None:
@@ -137,7 +137,7 @@ def main(argv: list[str] | None = None) -> int:
     voice_scope.add_argument(
         "--voice",
         metavar="ID_OR_NAME",
-        help="exact enabled Qwen voice ID/name/alias to audit instead of the default",
+        help="exact enabled Qwen voice ID/name/alias to audit instead of the preflight voice",
     )
     voice_scope.add_argument(
         "--full-library",
@@ -269,7 +269,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"- {error}")
         return 1
     print(
-        f"TTS DOCTOR: PASS default={registry.config['default_voice_id']} "
+        f"TTS DOCTOR: PASS preflight={registry.preflight_id} "
         f"selected={selected_voice['id']} scope={scope}"
     )
     return 0

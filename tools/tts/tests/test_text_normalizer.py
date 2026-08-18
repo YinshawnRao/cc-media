@@ -133,14 +133,16 @@ class LatinPronunciationTests(unittest.TestCase):
         qwen = config["qwen_base"]
         text = "第一名，《无泪的遗憾》。这段旋律值得压轴。"
         selection = {
-            "schema_version": "1.0.0",
+            "schema_version": "1.1.0",
             "requested_voice": None,
             "resolved_voice_id": "CV002",
             "resolved_voice_name": "治愈少女",
             "engine": qwen["engine"],
             "resolution_reason": "default_no_request",
-            "matched_by": "default",
+            "matched_by": "random_pool",
             "fallback": False,
+            "selection_mode": "random_pool",
+            "candidate_voice_ids": ["CV001", "CV002", "CV003", "CV004", "CV005", "CV008"],
             "registry_sha256": "r" * 64,
             "config_sha256": "c" * 64,
             "task_prompt_sha256": None,
@@ -194,7 +196,7 @@ class LatinPronunciationTests(unittest.TestCase):
         )
         self.assertEqual(
             fingerprint(inputs),
-            "d801a32b891cd505517af122e00c90192220b803435b852e7aeba0a2a4e1ba96",
+            "0ddfb8be8c55c56308b5d1c6b7297f4eeda6f20bcadd7c46b581202c8c813941",
         )
         self.assertEqual(
             derived_seed(qwen["generation"]["seed"], "CV002", text, "Auto"),

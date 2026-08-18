@@ -4,9 +4,10 @@
 用法：
     python3 tools/video/bili_search.py "关键词" [n] [--cookies FILE]
 
-默认在调用阶段选择仓库根目录 ``all_cookies.txt``，缺失时才回退旧
-``www.bilibili.com_cookies.txt``。jar 必须为 0600，路径不得包含 ``=``。
-导入本模块不会查找、打开或解析任何真实 Cookie 文件。
+默认在调用阶段只选择仓库根目录 ``all_cookies.txt``，不回退旧
+``www.bilibili.com_cookies.txt``。jar 必须为 0600，路径不得包含 ``=``；其
+安装、覆盖与权限只由用户本人维护。导入本模块不会查找、打开或解析
+任何真实 Cookie 文件。
 """
 
 from __future__ import annotations
@@ -69,10 +70,7 @@ class SearchRequestError(BiliSearchError):
 
 def default_cookie_path(repo_root: Path | None = None) -> Path:
     root = REPO_ROOT if repo_root is None else Path(repo_root)
-    preferred = root / "all_cookies.txt"
-    if preferred.is_file():
-        return preferred
-    return root / "www.bilibili.com_cookies.txt"
+    return root / "all_cookies.txt"
 
 
 def validate_cookie_jar(path: Path | str) -> Path:
@@ -85,7 +83,10 @@ def validate_cookie_jar(path: Path | str) -> Path:
         raise ValueError(f"cookie jar 不存在: {jar}")
     mode = stat.S_IMODE(jar.stat().st_mode)
     if mode & 0o077:
-        raise ValueError(f"cookie jar 权限为 {mode:04o}，请先 chmod 600")
+        raise ValueError(
+            "cookie jar 权限不符合要求；canonical 只允许用户本人维护，"
+            "请由用户检查文件权限"
+        )
     return jar
 
 
@@ -281,7 +282,8 @@ def main(argv: list[str] | None = None) -> int:
         # token. Never echo it or a user-local path back to logs.
         print(
             "COOKIE PRECHECK: FAIL — 路径/存在性/权限检查未通过；"
-            "请使用现有 Netscape jar、路径不含 '='，并设置 chmod 600"
+            "请使用现有 Netscape jar 且路径不含 '='；"
+            "canonical 只允许用户本人维护，请由用户检查文件与权限"
         )
         return EXIT_COOKIE_PRECHECK
     except http.cookiejar.LoadError:

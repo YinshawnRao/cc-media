@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unified cc-media TTS dispatcher; new tasks default to CV002 治愈少女."""
+"""Unified cc-media TTS dispatcher with one project-scoped voice selection."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from text_normalizer import (
 )
 from voice_registry import (
     VoiceRegistry,
-    default_selection,
+    random_pool_selection,
     resolve_selector,
     resolve_task_prompt,
 )
@@ -137,10 +137,8 @@ def run_worker(
 
 def load_selection_file(path: Path, registry: VoiceRegistry) -> dict:
     value = json.loads(path.read_text(encoding="utf-8"))
-    if value.get("registry_sha256") != registry.registry_sha256:
-        raise SystemExit("selection file registry hash is stale; resolve the task brief again")
-    if value.get("config_sha256") != registry.config_sha256:
-        raise SystemExit("selection file config hash is stale; resolve the task brief again")
+    if not registry.accepts_selection_hashes(value):
+        raise SystemExit("selection file config/registry hashes are stale; resolve the task brief again")
     voice_id = value.get("resolved_voice_id", "")
     if voice_id.startswith("kokoro:"):
         if registry.legacy_voice(voice_id) is None:
@@ -175,7 +173,7 @@ def selection_for(args: argparse.Namespace, registry: VoiceRegistry, batch: dict
         prompt = batch.get("task_prompt")
     if prompt is not None:
         return resolve_task_prompt(registry, prompt)
-    return default_selection(registry, requested=None, reason="default_no_request")
+    return random_pool_selection(registry, requested=None, reason="default_no_request")
 
 
 def batch_items(
@@ -302,7 +300,12 @@ def main() -> int:
     registry = VoiceRegistry.load()
     if args.list_voices:
         for voice in registry.voices:
-            marker = " [DEFAULT]" if voice["id"] == registry.default_id else ""
+            markers = []
+            if voice["id"] in registry.random_pool_ids:
+                markers.append("RANDOM POOL")
+            if voice["id"] == registry.preflight_id:
+                markers.append("PREFLIGHT")
+            marker = f" [{' / '.join(markers)}]" if markers else ""
             print(f"{voice['id']}  {voice['name']}  {voice['slug']}{marker}")
         print("legacy Kokoro (explicit only): " + " ".join(registry.config["legacy_kokoro"]["voices"]))
         return 0

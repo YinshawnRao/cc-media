@@ -1,32 +1,32 @@
 # tools/tts — cc-media 编号化本地配音
 
-这里是工作区唯一正式的中文旁白入口和声音库。新启动的盘点视频默认使用 **`CV002「治愈少女」`**；Kokoro 保留为显式 legacy 兼容，不再是新盘点默认。
+这里是工作区唯一正式的中文旁白入口和声音库。新启动的盘点视频若未唯一指定音色，会从 **`CV001 / CV002 / CV003 / CV004 / CV005 / CV008`** 女声池随机一次；Kokoro 只保留为显式 legacy 兼容。
 
 实际声音、参考母带和同文案样例都在 [`voices/`](voices/)；直接打开 [`voices/listen.html`](voices/listen.html) 可试听 CV001–CV008 与 Kokoro 基线。完整首轮调研与 QA 证据在 [`research/qwen-character-voice-lab/`](research/qwen-character-voice-lab/)。
 
 ## 默认与解析硬规则
 
-`config.json` 是默认配置唯一真源，`voices/registry.json` 是角色编号、正式名称和别名唯一真源。
+`config.json` 是随机池与选择策略唯一真源，`voices/registry.json` 是角色编号、正式名称、分组和别名唯一真源。
 
 1. 任务提示词的结构化 `配音：` / `音色：` / `voice=` 字段中，唯一精确匹配的编号、名称或别名优先。
 2. 没有结构化字段时，只识别带配音语境的唯一、肯定式精确匹配。
-3. 没指定、指定不存在、描述模糊、同时命中多个角色：全部回退 `CV002「治愈少女」`。
-4. 不做相似度猜测。“男声”“女声”“可爱一点”“二次元声音”等无法唯一定位的描述仍按 CV002。
-5. 否定式不是选择：`不要/不使用/不想用/拒绝使用/不考虑/请勿使用/不能用/不可用/不是/避免/除了` 等前置否定，以及 `CV004 除外/不用/不考虑/不要了/不能用/不行` 等后置否定，都按未指定处理并使用 CV002；裸 `CVxxx` 也不能绕过同一句否定。若后面另有唯一肯定式替换（如“我不想用 CV004，请改用 CV003”），则只采用肯定指定。
-6. 每个项目只解析一次；intro、排名转场、作品 outro、固定 CTA 共用同一份 `voice-selection.json`。
+3. 没指定、指定不存在、描述模糊、同时命中多个角色：从配置女声池随机一次。
+4. 不做相似度猜测。“男声”“女声”“可爱一点”“二次元声音”等无法唯一定位的描述仍进入同一随机池。
+5. 否定式不是选择：`不要/不使用/不想用/拒绝使用/不考虑/请勿使用/不能用/不可用/不是/避免/除了` 等前置否定，以及 `CV004 除外/不用/不考虑/不要了/不能用/不行` 等后置否定，都按未指定处理并进入随机池；裸 `CVxxx` 也不能绕过同一句否定。若后面另有唯一肯定式替换（如“我不想用 CV004，请改用 CV003”），则只采用肯定指定。
+6. 每个项目只解析一次；随机结果和候选池写入 `voice-selection.json`，intro、排名转场、作品 outro、固定 CTA 共用该文件，禁止逐段重抽。
 7. Qwen runtime、固定模型或参考母带缺失时只让当前 TTS 步骤硬失败；代理修复固定环境、模型、母带或 receipt 后重跑当前步骤及受影响下游门禁，禁止静默换 Kokoro，也不得因此暂停整个 goal。
 8. Qwen dispatcher 与 direct worker 在 import MLX 前都必须先运行 stdlib-only Metal preflight。当前执行上下文拿不到 Metal 时固定快速返回，不启动 native worker、不产生 Python crash 弹窗；goal 应自动切换到具备 Metal 权限的执行上下文重跑。多个 goal 可同时合成，禁止用共享锁、队列、sleep 或等待另一个配音完成来串行化。
 
 ## 新盘点标准流程
 
-首次初始化、模型/runtime 版本变化或 receipt 失效时，先做一次完整模型哈希（约 2 GB 顺序读取）；它只会在固定且被忽略的 `tools/tts/runtime/model-verifications/` 闭包中原子写入 `0600` receipt。manifest 只允许来自 `tools/tts/model-manifests/`。两者及其项目内父目录均拒绝 symlink；关键文件必须属于当前 UID，且不能 group/world writable。日常自检核对 receipt、manifest、实际 MLX-Audio 版本、模型 realpath、完整文件集合及含 `ctime_ns` 的每文件 stat 签名，不会重复读取 2 GB。默认 doctor 只校验核心 runtime/model 和默认 CV002 母带，不会因未使用角色或纯中文不需要的混合脚本策略阻断；worker 仍会在真正生成前重新校验本期已选母带，并在加载模型后复验模型：
+首次初始化、模型/runtime 版本变化或 receipt 失效时，先做一次完整模型哈希（约 2 GB 顺序读取）；它只会在固定且被忽略的 `tools/tts/runtime/model-verifications/` 闭包中原子写入 `0600` receipt。manifest 只允许来自 `tools/tts/model-manifests/`。两者及其项目内父目录均拒绝 symlink；关键文件必须属于当前 UID，且不能 group/world writable。日常自检核对 receipt、manifest、实际 MLX-Audio 版本、模型 realpath、完整文件集合及含 `ctime_ns` 的每文件 stat 签名，不会重复读取 2 GB。默认 doctor 只校验核心 runtime/model 和预检声线 CV002 母带；CV002 在这里不决定项目随机结果。worker 仍会在真正生成前重新校验本期已选母带，并在加载模型后复验模型：
 
 ```bash
 python3 tools/tts/doctor.py --full-model-hash
 python3 tools/tts/doctor.py
 ```
 
-若任务明确选了其他编号，resolver 完成后用解析出的准确 ID 检查本期实际音色；doctor 的 `--voice` 只接受唯一精确的编号、名称或注册别名，不做默认回退：
+resolver 完成后，若项目选中的不是预检声线 CV002，用解析出的准确 ID 检查本期实际音色；doctor 的 `--voice` 只接受唯一精确的编号、名称或注册别名，不做随机回退：
 
 ```bash
 python3 tools/tts/doctor.py --voice CV004
@@ -99,7 +99,7 @@ python3 tools/tts/narrate.py --list-voices
 python3 tools/tts/narrate.py script.txt --voice CV004 -o out.wav
 python3 tools/tts/narrate.py script.txt --voice 清冷学姐 -o out.wav
 
-# 无效指定会警告并回退 CV002
+# 无效指定会警告并从女声池随机一次
 python3 tools/tts/narrate.py script.txt --voice CV999 -o out.wav
 ```
 

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Deterministic character-voice registry and task-prompt resolver."""
+"""Project-scoped character-voice registry and task-prompt resolver."""
 
 from __future__ import annotations
 
 import hashlib
 import json
 import re
+import secrets
 import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
@@ -53,8 +54,17 @@ class VoiceRegistry:
         return [voice for voice in self.registry["voices"] if voice.get("enabled", True)]
 
     @property
-    def default_id(self) -> str:
-        return self.config["default_voice_id"]
+    def preflight_id(self) -> str:
+        return self.config["preflight_voice_id"]
+
+    @property
+    def random_pool_ids(self) -> list[str]:
+        return list(self.config["random_voice_pool"])
+
+    @property
+    def random_pool(self) -> list[dict]:
+        voices = {voice["id"]: voice for voice in self.voices}
+        return [voices[voice_id] for voice_id in self.random_pool_ids]
 
     @property
     def registry_sha256(self) -> str:
@@ -63,6 +73,23 @@ class VoiceRegistry:
     @property
     def config_sha256(self) -> str:
         return file_sha256(CONFIG_PATH)
+
+    def accepts_selection_hashes(self, selection: dict) -> bool:
+        """Accept current hashes or an explicitly paired pre-migration selection."""
+
+        pair = {
+            "config_sha256": selection.get("config_sha256"),
+            "registry_sha256": selection.get("registry_sha256"),
+        }
+        current = {
+            "config_sha256": self.config_sha256,
+            "registry_sha256": self.registry_sha256,
+        }
+        if pair == current:
+            return True
+        if selection.get("schema_version") != "1.0.0":
+            return False
+        return pair in self.config.get("compatible_selection_hashes", [])
 
     def by_id(self, voice_id: str) -> dict | None:
         wanted = voice_id.upper()
@@ -147,9 +174,36 @@ class VoiceRegistry:
                 if owner and owner != voice_id:
                     raise ValueError(f"selector collision: {token!r} -> {owner}, {voice_id}")
                 exact_tokens[token] = voice_id
-        for key in ("default_voice_id", "fallback_voice_id"):
-            if self.config.get(key) not in ids:
-                raise ValueError(f"{key} is not present in registry")
+        enabled_ids = {voice["id"] for voice in self.voices}
+        preflight_id = self.config.get("preflight_voice_id")
+        if preflight_id not in enabled_ids:
+            raise ValueError("preflight_voice_id is not an enabled registry voice")
+        random_pool = self.config.get("random_voice_pool")
+        if not isinstance(random_pool, list) or not random_pool:
+            raise ValueError("random_voice_pool must be a non-empty list")
+        if len(random_pool) != len(set(random_pool)):
+            raise ValueError("random_voice_pool contains duplicate IDs")
+        for voice_id in random_pool:
+            if voice_id not in enabled_ids:
+                raise ValueError(f"random_voice_pool contains unavailable voice: {voice_id}")
+            voice = next(voice for voice in self.voices if voice["id"] == voice_id)
+            if voice.get("group") != "female":
+                raise ValueError(f"random_voice_pool contains non-female voice: {voice_id}")
+        compatible_pairs = self.config.get("compatible_selection_hashes", [])
+        if not isinstance(compatible_pairs, list):
+            raise ValueError("compatible_selection_hashes must be a list")
+        for pair in compatible_pairs:
+            if not isinstance(pair, dict) or set(pair) != {
+                "config_sha256",
+                "registry_sha256",
+            }:
+                raise ValueError("compatible_selection_hashes contains an invalid pair")
+            if any(
+                not isinstance(value, str)
+                or re.fullmatch(r"[0-9a-f]{64}", value) is None
+                for value in pair.values()
+            ):
+                raise ValueError("compatible_selection_hashes contains an invalid digest")
 
 
 STRUCTURED_FIELD = re.compile(
@@ -220,9 +274,11 @@ def _selection(
     matched_by: str,
     fallback: bool,
     task_prompt: str | None,
+    selection_mode: str,
+    candidate_voice_ids: list[str],
 ) -> dict:
     return {
-        "schema_version": "1.0.0",
+        "schema_version": "1.1.0",
         "requested_voice": requested,
         "resolved_voice_id": voice["id"],
         "resolved_voice_name": voice["name"],
@@ -230,36 +286,40 @@ def _selection(
         "resolution_reason": reason,
         "matched_by": matched_by,
         "fallback": fallback,
+        "selection_mode": selection_mode,
+        "candidate_voice_ids": candidate_voice_ids,
         "registry_sha256": registry.registry_sha256,
         "config_sha256": registry.config_sha256,
         "task_prompt_sha256": text_sha256(task_prompt) if task_prompt is not None else None,
     }
 
 
-def default_selection(
+def random_pool_selection(
     registry: VoiceRegistry,
     *,
     requested: str | None,
     reason: str,
     task_prompt: str | None = None,
 ) -> dict:
-    voice = registry.by_id(registry.default_id)
-    assert voice is not None
+    candidates = registry.random_pool
+    voice = secrets.choice(candidates)
     return _selection(
         registry,
         voice=voice,
         requested=requested,
         reason=reason,
-        matched_by="default",
+        matched_by="random_pool",
         fallback=reason != "default_no_request",
         task_prompt=task_prompt,
+        selection_mode="random_pool",
+        candidate_voice_ids=[candidate["id"] for candidate in candidates],
     )
 
 
 def resolve_selector(registry: VoiceRegistry, selector: str) -> dict:
     voice, matched_by = registry.exact_selector(selector)
     if voice is None:
-        return default_selection(
+        return random_pool_selection(
             registry, requested=selector, reason="fallback_unmatched_selector"
         )
     return _selection(
@@ -270,6 +330,8 @@ def resolve_selector(registry: VoiceRegistry, selector: str) -> dict:
         matched_by=matched_by or "selector",
         fallback=False,
         task_prompt=None,
+        selection_mode="explicit",
+        candidate_voice_ids=[voice["id"]],
     )
 
 
@@ -298,7 +360,7 @@ def resolve_task_prompt(registry: VoiceRegistry, prompt: str) -> dict:
         fragments = direct_ids
 
     if not fragments:
-        return default_selection(
+        return random_pool_selection(
             registry,
             requested=None,
             reason="default_no_request",
@@ -316,14 +378,14 @@ def resolve_task_prompt(registry: VoiceRegistry, prompt: str) -> dict:
 
     requested = " | ".join(fragments)
     if not matches:
-        return default_selection(
+        return random_pool_selection(
             registry,
             requested=requested,
             reason="fallback_unmatched_prompt",
             task_prompt=prompt,
         )
     if len(matches) != 1:
-        return default_selection(
+        return random_pool_selection(
             registry,
             requested=requested,
             reason="fallback_ambiguous_prompt",
@@ -340,4 +402,6 @@ def resolve_task_prompt(registry: VoiceRegistry, prompt: str) -> dict:
         matched_by=match_kind,
         fallback=False,
         task_prompt=prompt,
+        selection_mode="explicit",
+        candidate_voice_ids=[voice["id"]],
     )

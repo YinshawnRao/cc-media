@@ -1,10 +1,17 @@
 {
-  "schema_version": "1.0.0",
-  "default_voice_id": "CV002",
-  "fallback_voice_id": "CV002",
+  "schema_version": "1.1.0",
+  "preflight_voice_id": "CV002",
+  "random_voice_pool": ["CV001", "CV002", "CV003", "CV004", "CV005", "CV008"],
+  "compatible_selection_hashes": [
+    {
+      "config_sha256": "dc36fdd8696b3f629ebd889891fdcc26dae534d7c5b70c57682d2270a1cddd42",
+      "registry_sha256": "40869930590f37bcf0e6ab2852557a569f0c817ce9a2f06ad6303302b0356454"
+    }
+  ],
   "selection_policy": {
-    "unknown": "fallback_default",
-    "ambiguous": "fallback_default",
+    "default": "random_voice_pool",
+    "unknown": "random_voice_pool",
+    "ambiguous": "random_voice_pool",
     "fuzzy_matching": false,
     "parse_once_per_project": true
   },

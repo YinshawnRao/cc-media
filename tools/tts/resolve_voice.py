@@ -24,7 +24,8 @@ def main() -> int:
     registry = VoiceRegistry.load()
     if args.list:
         value = {
-            "default_voice_id": registry.default_id,
+            "preflight_voice_id": registry.preflight_id,
+            "random_voice_pool": registry.random_pool_ids,
             "voices": [
                 {
                     "id": voice["id"],

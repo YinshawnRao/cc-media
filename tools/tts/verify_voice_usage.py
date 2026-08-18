@@ -327,10 +327,8 @@ def verify_project_voice(
     except (OSError, VoiceGateError) as exc:
         return VerificationResult((str(exc),), (), (), None)
 
-    if selection.get("registry_sha256") != registry.registry_sha256:
-        errors.append("voice-selection.json registry hash is stale")
-    if selection.get("config_sha256") != registry.config_sha256:
-        errors.append("voice-selection.json config hash is stale")
+    if not registry.accepts_selection_hashes(selection):
+        errors.append("voice-selection.json config/registry hashes are stale")
     expected_value = selection.get("resolved_voice_id")
     if not isinstance(expected_value, str) or not expected_value.strip():
         errors.append("voice-selection.json resolved_voice_id must be non-empty")

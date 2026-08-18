@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""Filter an external browser Netscape jar into the repository-safe target jar.
+"""Filter an external browser Netscape jar into an external candidate jar.
 
 The source must be outside this repository and mode 0600. Only YouTube, Google,
-and Bilibili domains are retained. The fixed output is repository-root
-``all_cookies.txt``; it is replaced atomically with mode 0600. Cookie values are
-never printed.
+and Bilibili domains are retained. The output must be explicitly selected outside
+the repository; this tool never writes or replaces repository-root
+``all_cookies.txt``. The candidate is replaced atomically with mode 0600. Cookie
+values are never printed.
 
 Usage:
-    python3 tools/video/filter_cookie_jar.py /absolute/path/outside/repo/raw.txt
+    python3 tools/video/filter_cookie_jar.py /outside/repo/raw.txt \
+        --output /outside/repo/candidate.txt
 """
 
 from __future__ import annotations
@@ -22,7 +24,6 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DESTINATION_NAME = "all_cookies.txt"
 HTTPONLY_PREFIX = b"#HttpOnly_"
 ALLOWED_DOMAIN_SUFFIXES = (b"youtube.com", b"google.com", b"bilibili.com")
 REQUIRED_YOUTUBE_NAMES = {
@@ -92,20 +93,14 @@ def _is_live(expiry: int, now: int) -> bool:
     return expiry == 0 or expiry > now
 
 
-def _validate_source(source: Path, repo_root: Path, destination: Path) -> Path:
+def _validate_source(source: Path, repo_root: Path) -> Path:
     lexical_source = Path(os.path.abspath(source.expanduser()))
     lexical_root = Path(os.path.abspath(repo_root))
-    lexical_destination = lexical_root / DESTINATION_NAME
-    if lexical_source == lexical_destination:
-        raise ValueError("源文件不能与 all_cookies.txt 目标相同")
     if _is_within(lexical_source, lexical_root):
         raise ValueError("原始 cookie 源文件必须位于仓库外")
 
     resolved_source = source.expanduser().resolve(strict=True)
     resolved_root = repo_root.resolve(strict=True)
-    resolved_destination = destination.resolve(strict=False)
-    if resolved_source == resolved_destination:
-        raise ValueError("源文件不能与 all_cookies.txt 目标相同")
     if _is_within(resolved_source, resolved_root):
         raise ValueError("原始 cookie 源文件必须位于仓库外")
     if not resolved_source.is_file():
@@ -116,13 +111,60 @@ def _validate_source(source: Path, repo_root: Path, destination: Path) -> Path:
     return resolved_source
 
 
+def _validate_output(output: Path, repo_root: Path, source: Path) -> Path:
+    lexical_output = Path(os.path.abspath(output.expanduser()))
+    lexical_root = Path(os.path.abspath(repo_root))
+    resolved_root = repo_root.resolve(strict=True)
+
+    if _is_within(lexical_output, lexical_root):
+        raise ValueError("候选输出必须位于仓库外，禁止写入 all_cookies.txt")
+    if lexical_output == source:
+        raise ValueError("候选输出不能与原始 cookie 源文件相同")
+    if lexical_output.is_symlink():
+        raise ValueError("候选输出不能是符号链接")
+
+    parent = lexical_output.parent
+    if parent.is_symlink():
+        raise ValueError("候选输出目录不能是符号链接")
+    if not parent.is_dir():
+        raise ValueError("候选输出目录不存在或不是目录")
+
+    common = Path(os.path.commonpath((lexical_root, lexical_output)))
+    cursor = common
+    for component in parent.relative_to(common).parts:
+        cursor /= component
+        if cursor.is_symlink():
+            raise ValueError("候选输出路径不能经过符号链接")
+
+    resolved_parent = parent.resolve(strict=True)
+    resolved_output = resolved_parent / lexical_output.name
+    if _is_within(resolved_output, resolved_root):
+        raise ValueError("候选输出的解析路径必须位于仓库外")
+    if resolved_output == source:
+        raise ValueError("候选输出不能与原始 cookie 源文件相同")
+
+    try:
+        output_stat = lexical_output.lstat()
+    except FileNotFoundError:
+        pass
+    else:
+        if not stat.S_ISREG(output_stat.st_mode):
+            raise ValueError("候选输出已存在且不是普通文件")
+        if os.path.samefile(lexical_output, source):
+            raise ValueError("候选输出不能与原始 cookie 源文件相同")
+
+    return lexical_output
+
+
 def filter_cookie_jar(
-    source: Path | str, *, repo_root: Path | str = REPO_ROOT
+    source: Path | str,
+    *,
+    output: Path | str,
+    repo_root: Path | str = REPO_ROOT,
 ) -> FilterResult:
     repo_path = Path(repo_root).expanduser()
-    root = repo_path.resolve(strict=True)
-    destination = root / DESTINATION_NAME
-    source_path = _validate_source(Path(source), repo_path, destination)
+    source_path = _validate_source(Path(source), repo_path)
+    destination = _validate_output(Path(output), repo_path, source_path)
 
     retained_lines: list[bytes] = []
     discarded = 0
@@ -142,7 +184,7 @@ def filter_cookie_jar(
             else:
                 discarded += 1
     if not retained_lines:
-        raise ValueError("过滤后没有 YouTube / Google / B站 cookie，拒绝覆盖目标文件")
+        raise ValueError("过滤后没有 YouTube / Google / B站 cookie，拒绝生成候选文件")
 
     missing_youtube = REQUIRED_YOUTUBE_NAMES - live_names["youtube"]
     missing_bilibili = REQUIRED_BILIBILI_NAMES - live_names["bilibili"]
@@ -158,10 +200,10 @@ def filter_cookie_jar(
                 "Bilibili 缺 "
                 + ",".join(sorted(name.decode("ascii") for name in missing_bilibili))
             )
-        raise ValueError("过滤结果关键字段不完整，拒绝覆盖: " + "；".join(parts))
+        raise ValueError("过滤结果关键字段不完整，拒绝生成候选文件: " + "；".join(parts))
 
     fd, temporary_name = tempfile.mkstemp(
-        prefix="all_cookies.next.", suffix=".txt", dir=root
+        prefix=f".{destination.name}.next.", suffix=".tmp", dir=destination.parent
     )
     temporary = Path(temporary_name)
     try:
@@ -192,15 +234,15 @@ def filter_cookie_jar(
 
 def main(argv: list[str] | None = None, *, repo_root: Path | str = REPO_ROOT) -> int:
     args = sys.argv[1:] if argv is None else argv
-    if len(args) != 1:
+    if len(args) != 3 or args[1] != "--output":
         print(
             "用法: python3 tools/video/filter_cookie_jar.py "
-            "/absolute/path/outside/repo/raw.txt",
+            "/outside/repo/raw.txt --output /outside/repo/candidate.txt",
             file=sys.stderr,
         )
         return 2
     try:
-        result = filter_cookie_jar(args[0], repo_root=repo_root)
+        result = filter_cookie_jar(args[0], output=args[2], repo_root=repo_root)
     except ValueError as error:
         print(f"COOKIE FILTER: FAIL — {error}", file=sys.stderr)
         return 1

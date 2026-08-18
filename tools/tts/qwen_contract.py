@@ -77,7 +77,7 @@ QWEN_NORMALIZATION_MODES = frozenset(
         "word_candidate",
     }
 )
-VOICE_SELECTION_FIELDS = frozenset(
+VOICE_SELECTION_V1_FIELDS = frozenset(
     {
         "schema_version",
         "requested_voice",
@@ -91,6 +91,9 @@ VOICE_SELECTION_FIELDS = frozenset(
         "config_sha256",
         "task_prompt_sha256",
     }
+)
+VOICE_SELECTION_V1_1_FIELDS = VOICE_SELECTION_V1_FIELDS | frozenset(
+    {"selection_mode", "candidate_voice_ids"}
 )
 VOICE_SELECTION_REASONS = frozenset(
     {
@@ -225,11 +228,18 @@ def _selection_contract_errors(
     voice_id: str,
     voice_name: str,
 ) -> list[str]:
-    errors = _field_set_errors(selection, VOICE_SELECTION_FIELDS, "selection")
     if not isinstance(selection, dict):
-        return errors
-    if selection.get("schema_version") != "1.0.0":
-        errors.append("Qwen sidecar contract selection schema_version must be 1.0.0")
+        return _field_set_errors(selection, VOICE_SELECTION_V1_1_FIELDS, "selection")
+    schema = selection.get("schema_version")
+    if schema == "1.0.0":
+        errors = _field_set_errors(selection, VOICE_SELECTION_V1_FIELDS, "selection")
+    elif schema == "1.1.0":
+        errors = _field_set_errors(selection, VOICE_SELECTION_V1_1_FIELDS, "selection")
+    else:
+        errors = _field_set_errors(selection, VOICE_SELECTION_V1_1_FIELDS, "selection")
+        errors.append(
+            "Qwen sidecar contract selection schema_version must be 1.0.0 or 1.1.0"
+        )
     requested = selection.get("requested_voice")
     if requested is not None and (not isinstance(requested, str) or not requested.strip()):
         errors.append(
@@ -252,6 +262,30 @@ def _selection_contract_errors(
     matched_by = selection.get("matched_by")
     if not isinstance(matched_by, str) or not matched_by.strip():
         errors.append("Qwen sidecar contract selection matched_by must be non-empty")
+    if schema == "1.1.0":
+        mode = selection.get("selection_mode")
+        candidates = selection.get("candidate_voice_ids")
+        if mode not in {"explicit", "random_pool"}:
+            errors.append("Qwen sidecar contract selection selection_mode is invalid")
+        if (
+            not isinstance(candidates, list)
+            or not candidates
+            or any(not isinstance(item, str) or not item for item in candidates)
+            or len(candidates) != len(set(candidates))
+        ):
+            errors.append("Qwen sidecar contract selection candidate_voice_ids is invalid")
+        elif voice_id not in candidates:
+            errors.append(
+                "Qwen sidecar contract selection resolved voice is outside candidate_voice_ids"
+            )
+        if mode == "explicit" and candidates != [voice_id]:
+            errors.append(
+                "Qwen sidecar contract explicit selection must contain only the resolved voice"
+            )
+        if mode == "random_pool" and matched_by != "random_pool":
+            errors.append(
+                "Qwen sidecar contract random selection matched_by must be random_pool"
+            )
     for key in ("registry_sha256", "config_sha256"):
         if not _digest(selection.get(key)):
             errors.append(f"Qwen sidecar contract selection {key} is invalid")
