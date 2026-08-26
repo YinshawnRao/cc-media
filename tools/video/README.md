@@ -6,7 +6,7 @@
 - `countdown_build.py` — **TOP 盘点模板**。解说盘点默认从每首 25s 起步，并用 `SHOWS` 逐曲落到完整乐句；固定时长不是硬切上限。
 - `vocal_segments.py` — **多证据主唱候选检测**。旧 HPSS + 频带能量只保留为候选；默认再用本机 Whisper small 的有效歌词密度/word timestamps、字幕幻觉过滤和 stereo mid/side 区分“中心主唱”与“观众/合唱/宽混音待复核”。输出兼容旧 `vocal_segments`，并新增 `lead_segments`、`safe_cut_intervals`、`segment_scores`、`evidence_level`。**盘点类和多版本接力都必须先产出 `probe/vocal_analysis.json`。**
 - `showcase_align.py` — **展示段对齐闸门（机械化强制）**。校验：① 主唱身份证据与副歌入点；② 展示覆盖；③ 结尾不落在 word/唱声中；④ 候选出点后 3s 内若有下一咬字就继续向后吞完整句。状态为 `OK / OBSERVED / APPROVED / REVIEW / FAIL / MISS`。普通 goal 必须先按 **multi → 换窗 → 换源** 争取 `OK`；穷尽且硬 `FAIL=0` 后，本地可用 hash-bound `reviewer_kind=agent` 工具辅助观察得到 `OBSERVED` / local-only。`APPROVED` 只代表 human；`--require-human-review` 拒绝 agent observation。旧能量结果、观众/合唱风险和缺模型仍不会假绿，硬 `FAIL` 不可覆盖。
-- `verify_project.py` — **项目结构与素材证据门禁**。读取项目 `project-manifest.json`，机械检查 TOP N→1/不剧透、完整旁白顺序与固定 CTA、同一期配音 sidecar、逐曲 vocal/instrumental 实证、YouTube+B站搜索和翻唱/官方源取舍。Schema 见 `project-manifest.schema.json`；`examples/project-contract/` 是不含媒体/模型输出的字段模板，不冒充可执行 PASS 工程。
+- `verify_project.py` — **项目结构与素材证据门禁**。读取项目 `project-manifest.json`，机械检查 TOP N→1/不剧透、完整旁白顺序与固定 CTA、schema v2 逐首转场实际 WAV 时长、同一期配音 sidecar、逐曲 vocal/instrumental 实证、YouTube+B站搜索和翻唱/官方源取舍。Schema 见 `project-manifest.schema.json`；`examples/project-contract/` 是不含媒体/模型输出的字段模板，不冒充可执行 PASS 工程。
 - `verify_publishing.py` — **发布文案门禁**。只在 build/render/post-mux 完成后、FINAL 前运行，默认读取固定的 `publishing/xiaohongshu.md`；它不属于 build 前 `project-manifest.json` 门禁。
 - `prepare_final_qa.py` — **标准结构化盘点/叙事项目的 mux 后中央 QA 入口**。要求 intro / song / outro / CTA timeline 与完整旁白，从当前 authoring manifest、final、render 与 master 生成 `qa/final-video-qa.json`、实时 ASR、逐章 PNG、诊断及当前 SHA 人审模板，并在同一进程运行中央机械 FINAL；默认诚实保留 pending，只有显式 human input 才合并真人批准。`project_kind: free_exploration` 不强套此 preparer，AI 音色 MV 继续走 durable builder。
 - `verify_final_video.py` — **独立终片机械复核入口**。standalone 运行时对当前 manifest/evidence 全量 live 重算，不信任项目内自报 diagnostics；用于显式独立复核或故障诊断。默认 preparer 已在同一进程完成这道 gate，不要紧跟着重复运行。
@@ -47,10 +47,10 @@ python3 -m unittest tools.video.tests.test_verify_project -v
 
 共享 `countdown_build.py` 会在读取旁白、运行展示 gate、写 `master.wav/index.html` 之前自动执行本门禁；其他 build 入口也必须先得到 `PROJECT CONTRACT: PASS`，不能先生成产物再补 evidence。
 
-该门禁当前只覆盖上述三类盘点/叙事/自由探索项目，且检查的是**构建前结构和 provenance**，不能证明终片实际可听、可见或已正确 mux。发布文案在 build/post-mux 后按第 9 节单独生成并验证，后续第 10 节 QA 仍必须完整执行；不得把 `publishing/xiaohongshu.md` 提前伪装成 authoring manifest 的一部分。AI 克隆歌手音色 MV 不冒充本 schema，继续走 `templates/ai-voice-mv/` durable builder 与对应 `--check`。
+该门禁当前只覆盖上述三类盘点/叙事/自由探索项目，且检查的是**构建前结构和 provenance**，不能证明终片实际可听、可见或已正确 mux。新项目固定使用 authoring manifest schema v2 并执行转场时长门禁；schema v1 只保留给历史工程复现，不得作为新项目绕过入口。发布文案在 build/post-mux 后按第 9 节单独生成并验证，后续第 10 节 QA 仍必须完整执行；不得把 `publishing/xiaohongshu.md` 提前伪装成 authoring manifest 的一部分。AI 克隆歌手音色 MV 不冒充本 schema，继续走 `templates/ai-voice-mv/` durable builder 与对应 `--check`。
 
 ## 1. 解析 brief
-提取：标题、画幅（默认竖屏 1080×1920）、是否为 TOP/排名、每首真实名次映射、歌手/歌名/URL或搜索倾向/切点、旁白、配音音色、平台硬时长。**配音只解析一次**：把用户原始任务提示词交给 `tools/tts/resolve_voice.py` 并保存项目根 `voice-selection.json`；唯一精确匹配按指定，未写/未知/模糊/冲突时从 `CV001 / CV002 / CV003 / CV004 / CV005 / CV008` 女声池随机一次。随机结果与候选池写入 selection 后整期固定，不得逐段重抽。凡 TOP / 排名 / 榜单，保留用户给定名次映射并按最后一名到第一名 **N→1** 播放；该顺序只写在脚本、timeline、build 配置和 QA 中，封面/intro 画面禁止出现 `05→01`、`05->01`、`5→1`、`N→1`、倒数/倒序揭晓提示或逐名次方向轨，只保留主题与 `TOP N` 数量。非排名叙事片才按脚本顺序，且不得挂 TOP 名义。默认不设总时长上限，质量优先。
+提取：标题、画幅（默认竖屏 1080×1920）、是否为 TOP/排名、每首真实名次映射、歌手/歌名/URL或搜索倾向/切点、旁白、配音音色、平台硬时长。先把旁白信息按“两头重”分配：intro 放主题/评判标准/钩子且不泄榜，作品 outro 放整体结论，逐首只留首次揭晓与一个判断。**配音只解析一次**：把用户原始任务提示词交给 `tools/tts/resolve_voice.py` 并保存项目根 `voice-selection.json`；唯一精确匹配按指定，未写/未知/模糊/冲突时从 `CV001 / CV002 / CV003 / CV004 / CV005 / CV008` 女声池随机一次。随机结果与候选池写入 selection 后整期固定，不得逐段重抽。凡 TOP / 排名 / 榜单，保留用户给定名次映射并按最后一名到第一名 **N→1** 播放；该顺序只写在脚本、timeline、build 配置和 QA 中，封面/intro 画面禁止出现 `05→01`、`05->01`、`5→1`、`N→1`、倒数/倒序揭晓提示或逐名次方向轨，只保留主题与 `TOP N` 数量。非排名叙事片才按脚本顺序，且不得挂 TOP 名义。默认不设总时长上限，质量优先。
 
 ```bash
 python3 tools/tts/resolve_voice.py --task-prompt-file <原始brief文件> \
@@ -84,7 +84,7 @@ python3 tools/tts/resolve_voice.py --task-prompt-file <原始brief文件> \
   - `classification=no_lexical_singing_detected` 表示器乐/观众窗没有有效歌词证据；`singing_or_group_review` 表示可能是观众、合唱、对唱或宽混音。普通 goal 严格按 **multi → 换窗 → 换源** 恢复，不能第一次 REVIEW 就停下来等人工；穷尽且硬 `FAIL=0` 后本地可用 agent observation 得到 `OBSERVED`，发布终验仍只消费 human approval。
 
 ## 5. 旁白
-只改 `narrate_segments.py` 的 `BLOCKS`，不得新增 `VOICE` 常量、不得 `from kokoro import KPipeline`。一般视频必须具备完整骨架：`intro` 负责主题钩子但不泄榜；每首歌曲都有独立转场旁白，并在此首次公布该名次与歌名；`outro` 只做主题收束；固定 CTA 是最后一句。只有 brief/design 从启动阶段就明确标注的**完全自由探索类**音乐/视觉实验，才可按已记录的创意方案精简部分或全部旁白，不能由执行者临时猜测。通过中央入口一次加载模型并复用项目级选择：
+只改 `narrate_segments.py` 的 `BLOCKS`，不得新增 `VOICE` 常量、不得 `from kokoro import KPipeline`。一般视频必须具备完整骨架，但篇幅两头重：`intro` 集中主题、评判标准与钩子且不泄榜；每首歌曲都有独立的**短转场**，并在此首次公布该名次与歌名；`outro` 只做整体收束；固定 CTA 是最后一句。TOP 转场限一句“名次 + 歌名 + 一个判断”，目标 4–6 秒、实际 WAV 硬上限 8 秒；非排名叙事转场只保留“时间/作品节点 + 一个意义”，目标 6–8 秒、硬上限 10 秒。不得在同一转场堆履历、多个数据点、社区评价和重复形容；超限先删减，不能靠延长歌曲展示免责。只有 brief/design 从启动阶段就明确标注的**完全自由探索类**音乐/视觉实验，才可按已记录的创意方案精简部分或全部旁白，不能由执行者临时猜测。通过中央入口一次加载模型并复用项目级选择：
 
 ```bash
 python3 tools/tts/narrate.py --batch narration-request.json \
@@ -95,7 +95,7 @@ python3 tools/tts/narrate.py --batch narration-request.json \
 
 ## 6. 音频 + 7. 合成
 改 `countdown_build.py` 顶部 `songs`（key/clip/序号/歌名/标签）、各时长常量、`MGAIN`（暗调安静歌补偿），运行：建 master.wav（逐段 床→swell→展示，逐首 `loudnorm=I=-14` 统一响度）+ 生成 `index.html`。
-- **展示段时长（硬规则 (B)）**：每首给**一段连续副歌**含前后余量，**不碎镜快闪、不因旁白长或总片时长就把歌切短**。解说盘点类单首 **≥~25s**，不设上限；某首完整演唱高光需要 35s、45s 或更长就保留，不得强切唱句/尾音。footage 窗 == 音乐窗（同源同窗）→ 口型同步。clip 切到 `SHOW+余量`，`data-duration=SHOW`。
+- **展示段时长（硬规则 (B)）**：每首给**一段连续副歌**含前后余量，**不碎镜快闪、不因总片时长就把歌切短，也不靠机械拉长歌曲替超限旁白免责**。转场旁白先通过 schema v2 实际 WAV 上限，再独立确定展示窗。解说盘点类单首 **≥~25s**，不设上限；某首完整演唱高光需要 35s、45s 或更长就保留，不得强切唱句/尾音。footage 窗 == 音乐窗（同源同窗）→ 口型同步。clip 切到 `SHOW+余量`，`data-duration=SHOW`。
 - **整片时长（硬规则）**：没有用户明确的平台硬时长，就不设置总时长上限；整体质量、叙事完整和音乐观赏性优先。确有硬时长时优先减少条目、删除重复信息或精简旁白，不能用压缩歌曲高光补预算。
 - **🔒 展示段对齐闸门（硬规则 (C)，build 内置，违规不出 master）**：build 算完时间轴会自动跑 `showcase_align.gate()`。`FAIL` 必须修 `ch_off/show`，不能被观察或批准跳过；普通 goal 的 `REVIEW` 必须严格按 **multi → 换窗 → 换源** 优先得到机器 `OK`。只有该路径穷尽且硬 `FAIL=0` 后，代理才可留下绑定 clip、分析 hash 和三个时间码的 `status=observed, reviewer_kind=agent` 记录，它只能产生 `OBSERVED` / local-only；不得改造人工 pending 模板或代签 human。全局 `SHOWCASE_OVERRIDE` 已废弃。
   ```bash

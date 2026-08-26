@@ -389,6 +389,7 @@ class VoiceGateTests(unittest.TestCase):
             self.assertTrue(result.ok, result.errors)
             self.assertEqual(result.provenance_modes, ("qwen_portable_current",))
             self.assertEqual(result.sidecars[0].input_text, "今天盘点五首作品。")
+            self.assertAlmostEqual(result.sidecars[0].duration_seconds, 0.1)
 
     def test_gate_accepts_worker_normalized_1_1_contract(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

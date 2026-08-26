@@ -49,6 +49,7 @@ class SidecarEvidence:
     input_text: str
     output_relative_path: str
     provenance_mode: str
+    duration_seconds: float
 
 
 @dataclass(frozen=True)
@@ -504,13 +505,14 @@ def verify_project_voice(
                 actual_wav=actual_wav,
             ):
                 errors.append(f"{relative_sidecar} {contract_error}")
-        if len(errors) == sidecar_errors_before:
+        if len(errors) == sidecar_errors_before and actual_wav is not None:
             evidence.append(
                 SidecarEvidence(
                     relative_path=relative_sidecar,
                     input_text=original_text,
                     output_relative_path=output.relative_to(project).as_posix(),
                     provenance_mode=provenance_mode,
+                    duration_seconds=float(actual_wav["duration_seconds"]),
                 )
             )
 

@@ -24,6 +24,7 @@ from typing import Any, NoReturn
 
 
 MANIFEST_PATH = "project-manifest.json"
+SUPPORTED_PROJECT_SCHEMA_VERSIONS = frozenset({1, 2})
 PUBLISHING_PATH = "publishing/xiaohongshu.md"
 DOCUMENT_TITLE = "# 小红书发布文案"
 TITLES_HEADING = "## 标题候选（第一条为首选）"
@@ -267,8 +268,12 @@ def parse_markdown(text: str) -> PublishingDocument:
 
 
 def manifest_contract(manifest: dict[str, Any]) -> tuple[str, list[str], list[str]]:
-    if type(manifest.get("schema_version")) is not int or manifest["schema_version"] != 1:
-        fail("project-manifest.json schema_version must be 1")
+    schema_version = manifest.get("schema_version")
+    if (
+        type(schema_version) is not int
+        or schema_version not in SUPPORTED_PROJECT_SCHEMA_VERSIONS
+    ):
+        fail("project-manifest.json schema_version must be 1 or 2")
     cover = manifest.get("cover")
     if not isinstance(cover, dict):
         fail("project-manifest.json cover must be an object")

@@ -13,6 +13,7 @@ import hashlib
 import importlib.metadata
 import json
 import math
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, Callable
@@ -31,6 +32,111 @@ MODEL = "small"
 CHECKPOINT_SHA256 = "9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794"
 WHISPER_DISTRIBUTION = "openai-whisper"
 WHISPER_VERSION = "20250625"
+LONG_AUDIO_THRESHOLD_SECONDS = 90.0
+WINDOW_SECONDS = 20.0
+WINDOW_STEP_SECONDS = 10.0
+
+
+def _transcribe_options(language: str) -> dict[str, Any]:
+    return {
+        "language": language,
+        "task": "transcribe",
+        "fp16": False,
+        "temperature": 0,
+        "condition_on_previous_text": False,
+        "word_timestamps": True,
+        "verbose": None,
+    }
+
+
+def _media_duration(path: Path) -> float | None:
+    """Return current media duration, retaining the legacy path on probe failure."""
+
+    try:
+        completed = subprocess.run(
+            [
+                "ffprobe",
+                "-v",
+                "error",
+                "-show_entries",
+                "format=duration",
+                "-of",
+                "default=nk=1:nw=1",
+                str(path),
+            ],
+            text=True,
+            capture_output=True,
+            timeout=30,
+        )
+        if completed.returncode != 0:
+            return None
+        duration = float(completed.stdout.strip())
+    except (OSError, subprocess.TimeoutExpired, ValueError):
+        return None
+    return duration if math.isfinite(duration) and duration > 0 else None
+
+
+def _transcribe_long_source(model: Any, path: Path, language: str) -> dict[str, Any]:
+    """Transcribe long musical programs in overlapping fixed windows.
+
+    Whisper's free-running timestamp seek can jump across speech after long sung
+    passages. Fixed overlapping windows retain the pinned model and options
+    while ensuring each part of the source is decoded. Equivalent overlapping
+    results are de-duplicated before absolute source timestamps are emitted.
+    """
+
+    from whisper.audio import SAMPLE_RATE, load_audio
+
+    audio = load_audio(str(path))
+    total_seconds = len(audio) / SAMPLE_RATE
+    step_samples = int(WINDOW_STEP_SECONDS * SAMPLE_RATE)
+    window_samples = int(WINDOW_SECONDS * SAMPLE_RATE)
+    raw_segments: list[dict[str, Any]] = []
+    for start_sample in range(0, len(audio), step_samples):
+        end_sample = min(len(audio), start_sample + window_samples)
+        start_sec = start_sample / SAMPLE_RATE
+        transcript = model.transcribe(
+            audio[start_sample:end_sample],
+            **_transcribe_options(language),
+        )
+        rows = transcript.get("segments", [])
+        if not isinstance(rows, list):
+            raise ValueError("Whisper window segments are invalid")
+        for raw in rows:
+            if not isinstance(raw, dict):
+                raise ValueError("Whisper window segment is invalid")
+            local_start = _finite_number(raw.get("start"), "segment.start")
+            local_end = _finite_number(raw.get("end"), "segment.end")
+            text = raw.get("text")
+            raw_segments.append(
+                {
+                    **raw,
+                    "start": start_sec + local_start,
+                    "end": min(total_seconds, start_sec + local_end),
+                }
+            )
+    raw_segments.sort(key=lambda row: (float(row["start"]), float(row["end"]), str(row.get("text", ""))))
+    deduplicated: list[dict[str, Any]] = []
+    for candidate in raw_segments:
+        candidate_start = float(candidate["start"])
+        candidate_end = float(candidate["end"])
+        candidate_text = str(candidate.get("text", "")).strip()
+        duplicate = False
+        for existing in reversed(deduplicated):
+            existing_end = float(existing["end"])
+            if existing_end < candidate_start - WINDOW_SECONDS:
+                break
+            if str(existing.get("text", "")).strip() != candidate_text:
+                continue
+            overlap = min(existing_end, candidate_end) - max(float(existing["start"]), candidate_start)
+            shorter = min(existing_end - float(existing["start"]), candidate_end - candidate_start)
+            if shorter > 0 and overlap / shorter >= 0.6:
+                duplicate = True
+                break
+        if not duplicate:
+            deduplicated.append(candidate)
+    transcript_parts = [str(row.get("text", "")).strip() for row in deduplicated if str(row.get("text", "")).strip()]
+    return {"text": " ".join(transcript_parts), "segments": deduplicated}
 
 
 def _sha256_file(path: Path) -> str:
@@ -159,16 +265,11 @@ def run(
         if not path.is_file():
             raise ValueError(f"jobs[{job_index}].path is not a file")
         seen_ids.add(job_id)
-        transcript = model.transcribe(
-            str(path),
-            language=language,
-            task="transcribe",
-            fp16=False,
-            temperature=0,
-            condition_on_previous_text=False,
-            word_timestamps=True,
-            verbose=None,
-        )
+        source_duration = _media_duration(path)
+        if source_duration is not None and source_duration > LONG_AUDIO_THRESHOLD_SECONDS:
+            transcript = _transcribe_long_source(model, path, language)
+        else:
+            transcript = model.transcribe(str(path), **_transcribe_options(language))
         raw_segments = transcript.get("segments", [])
         if not isinstance(raw_segments, list):
             raise ValueError(f"Whisper segments for {job_id} are invalid")

@@ -184,8 +184,16 @@ class MachineSourceContractTests(unittest.TestCase):
             (VIDEO_ROOT / "project-manifest.schema.json").read_text(encoding="utf-8")
         )
         self.assertEqual(
+            set(project_gate.SUPPORTED_SCHEMA_VERSIONS),
+            set(schema["properties"]["schema_version"]["enum"]),
+        )
+        self.assertEqual(
             project_gate.SCHEMA_VERSION,
-            schema["properties"]["schema_version"]["const"],
+            json.loads(
+                (
+                    VIDEO_ROOT / "examples" / "project-contract" / "project-manifest.json"
+                ).read_text(encoding="utf-8")
+            )["schema_version"],
         )
         self.assertEqual(
             project_gate.PROJECT_KINDS,
@@ -207,6 +215,18 @@ class MachineSourceContractTests(unittest.TestCase):
                 definition = schema["$defs"][name]
                 self.assertIs(definition.get("additionalProperties"), False)
                 self.assertEqual(set(expected), set(definition["required"]))
+
+    def test_endpoint_weighted_narration_limits_are_machine_bound_and_documented(self) -> None:
+        self.assertEqual(
+            {"top_ranking": 8.0, "narrative": 10.0},
+            project_gate.TRANSITION_NARRATION_MAX_SECONDS,
+        )
+        for relative in ("AGENTS.md", "CONVENTIONS.md", "tools/video/README.md"):
+            document = (REPO_ROOT / relative).read_text(encoding="utf-8")
+            with self.subTest(document=relative):
+                self.assertIn("schema v2", document)
+                self.assertIn("硬上限 8 秒", document)
+                self.assertIn("硬上限 10 秒", document)
 
     def test_required_clis_are_regular_files_with_main_and_help(self) -> None:
         for path in REQUIRED_CLIS:

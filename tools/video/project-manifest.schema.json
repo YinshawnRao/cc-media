@@ -13,7 +13,8 @@
   ],
   "properties": {
     "schema_version": {
-      "const": 1
+      "enum": [1, 2],
+      "description": "Version 1 is retained for historical project reproduction; new projects use version 2 with transition narration duration limits."
     },
     "project_kind": {
       "enum": ["top_ranking", "narrative", "free_exploration"]
@@ -576,6 +577,9 @@
         },
         "window": {
           "$ref": "#/$defs/showcaseWindow"
+        },
+        "mode": {
+          "enum": ["intro_hard_restart"]
         },
         "approval": {
           "$ref": "#/$defs/fileRef"

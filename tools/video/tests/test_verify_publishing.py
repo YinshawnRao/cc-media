@@ -320,6 +320,13 @@ class VerifyPublishingTests(unittest.TestCase):
                 with self.assertRaisesRegex(gate.PublishingError, "not strict JSON"):
                     gate.verify_publishing(self.fixture.project)
 
+    def test_project_manifest_schema_v2_is_accepted(self) -> None:
+        self.assertEqual({1, 2}, set(gate.SUPPORTED_PROJECT_SCHEMA_VERSIONS))
+        self.fixture.manifest["schema_version"] = 2
+        self.fixture.write_manifest()
+        summary = gate.verify_publishing(self.fixture.project)
+        self.assertEqual(3, summary.title_count)
+
     @unittest.skipUnless(hasattr(os, "symlink"), "symlink support is required")
     def test_manifest_and_publishing_copy_symlinks_are_rejected(self) -> None:
         for relative_path, label in (

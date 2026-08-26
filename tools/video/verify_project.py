@@ -34,9 +34,15 @@ except ImportError:  # Direct ``python tools/video/verify_project.py`` execution
     from outro_cta import FIXED_OUTRO_CTA  # type: ignore[no-redef]
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
+SUPPORTED_SCHEMA_VERSIONS = frozenset({1, 2})
+PACING_SCHEMA_VERSION = 2
 PROJECT_KINDS = {"top_ranking", "narrative", "free_exploration"}
 NARRATION_ROLES = {"intro", "transition", "work_outro", "outro_cta", "free"}
+TRANSITION_NARRATION_MAX_SECONDS = {
+    "top_ranking": 8.0,
+    "narrative": 10.0,
+}
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 RANK_ONE_RE = re.compile(
     r"(?:第\s*一\s*名|冠\s*军|no\.?\s*0?1\b|#\s*0?1\b|0?1\s*[-—:：])",
@@ -423,6 +429,7 @@ class ProjectVerifier:
         manifest: dict[str, Any],
         kind: str,
         item_ids: list[str],
+        schema_version: int | None,
     ) -> tuple[str, str]:
         sequence = manifest.get("narration_sequence")
         if not isinstance(sequence, list):
@@ -498,6 +505,21 @@ class ProjectVerifier:
                             self.error(
                                 f"{label}.sidecar output does not point to the manifest WAV"
                             )
+                    pacing_limit = (
+                        TRANSITION_NARRATION_MAX_SECONDS.get(kind)
+                        if schema_version is not None
+                        and schema_version >= PACING_SCHEMA_VERSION
+                        and role == "transition"
+                        else None
+                    )
+                    if (
+                        pacing_limit is not None
+                        and evidence.duration_seconds > pacing_limit
+                    ):
+                        self.error(
+                            f"{label}.wav duration {evidence.duration_seconds:.3f}s exceeds "
+                            f"{kind} transition narration hard limit {pacing_limit:.3f}s"
+                        )
 
         listed_relative = {
             path.relative_to(self.project).as_posix() for path in listed_sidecars
@@ -941,7 +963,7 @@ class ProjectVerifier:
         if evidence.get("schema_version") != 1 or evidence.get("kind") != "vocal_showcase":
             self.error(f"{label}.evidence schema/kind mismatch")
             return
-        allowed_evidence_keys = set(VOCAL_EVIDENCE_REQUIRED) | {"approval"}
+        allowed_evidence_keys = set(VOCAL_EVIDENCE_REQUIRED) | {"approval", "mode"}
         if not VOCAL_EVIDENCE_REQUIRED.issubset(evidence) or not set(evidence).issubset(
             allowed_evidence_keys
         ):
@@ -950,6 +972,9 @@ class ProjectVerifier:
             )
         if evidence.get("item_id") != item.get("id"):
             self.error(f"{label}.evidence item_id mismatch")
+        mode = evidence.get("mode")
+        if mode not in {None, "intro_hard_restart"}:
+            self.error(f"{label}.evidence.mode is invalid")
         if evidence.get("clip") != item.get("clip") or evidence.get("clip_sha256") != item.get(
             "clip_sha256"
         ):
@@ -1006,7 +1031,7 @@ class ProjectVerifier:
                 analysis,
                 key=item.get("id"),
                 clip=item.get("clip"),
-                mode=evidence.get("mode"),
+                mode=mode,
                 **window,
             )
         except (KeyError, TypeError, ValueError) as exc:
@@ -1167,8 +1192,12 @@ class ProjectVerifier:
         if manifest is None:
             return self.errors
         self.manifest = manifest
-        if manifest.get("schema_version") != SCHEMA_VERSION:
-            self.error(f"schema_version must be {SCHEMA_VERSION}")
+        schema_version = manifest.get("schema_version")
+        if type(schema_version) is not int or schema_version not in SUPPORTED_SCHEMA_VERSIONS:
+            self.error(
+                f"schema_version must be one of {sorted(SUPPORTED_SCHEMA_VERSIONS)}"
+            )
+            schema_version = None
         kind = manifest.get("project_kind")
         if kind not in PROJECT_KINDS:
             self.error(f"project_kind must be one of {sorted(PROJECT_KINDS)}")
@@ -1227,7 +1256,12 @@ class ProjectVerifier:
                     f"TOP ranks must be strict N->1 order: expected {expected_ranks}, got {ranks}"
                 )
 
-        intro_text, _ = self.validate_narration(manifest, kind, item_ids)
+        intro_text, _ = self.validate_narration(
+            manifest,
+            kind,
+            item_ids,
+            schema_version,
+        )
         self.validate_top_disclosure(kind, manifest.get("cover"), intro_text, items)
 
         for index, item in enumerate(items):

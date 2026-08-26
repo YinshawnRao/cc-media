@@ -56,7 +56,7 @@ python3 tools/video/templates/ai-voice-mv/build.py \
 
 ## 2. `longform-timeline/`：长篇叙事时间线媒体骨架
 
-适用于多章节、长解说、每首保留长连续高光的叙事视频。历史 `sandbox/lirh-yangcl-timeline/` 曾验证此结构，但其人物、文案、旧 Kokoro 脚本、静态双头像封面和强制 ambient 底床都不是通用模板，已刻意剔除。
+适用于多章节、整体叙事信息较多、每首保留长连续高光的视频；“长解说”只能集中在 intro 与作品 outro，不代表逐首转场可以展开。新项目仍使用 authoring manifest schema v2，非排名叙事转场实际 WAV ≤10s。历史 `sandbox/lirh-yangcl-timeline/` 曾验证此结构，但其人物、文案、旧 Kokoro 脚本、静态双头像封面和强制 ambient 底床都不是通用模板，已刻意剔除。
 
 模板只冻结稳定、可验证的媒体主轴：
 

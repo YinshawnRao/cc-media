@@ -323,10 +323,41 @@ class VerifyProjectTests(unittest.TestCase):
         evidence = root / manifest["items"][index]["evidence"]["path"]
         manifest["items"][index]["evidence"]["sha256"] = gate.sha256_file(evidence)
 
+    def rewrite_narration_duration(
+        self,
+        root: Path,
+        manifest: dict,
+        narration_index: int,
+        duration_seconds: float,
+    ) -> None:
+        row = manifest["narration_sequence"][narration_index]
+        wav_path = root / row["wav"]
+        frame_count = round(24000 * duration_seconds)
+        with wave.open(str(wav_path), "wb") as stream:
+            stream.setnchannels(1)
+            stream.setsampwidth(2)
+            stream.setframerate(24000)
+            stream.writeframes(b"\0\0" * frame_count)
+        self.write_qwen_sidecar(
+            wav_path=wav_path,
+            sidecar_path=root / row["sidecar"],
+            item_id=row["id"],
+            text=row["text"],
+            selection=load_json(root / manifest["voice_selection"]),
+            model_validation=self.current_model_validation,
+        )
+
     def test_schema_and_hydrated_contract_pass_while_static_example_is_template(self) -> None:
         schema = load_json(SCHEMA)
         self.assertEqual("https://json-schema.org/draft/2020-12/schema", schema["$schema"])
-        self.assertEqual(1, schema["properties"]["schema_version"]["const"])
+        self.assertEqual(
+            set(gate.SUPPORTED_SCHEMA_VERSIONS),
+            set(schema["properties"]["schema_version"]["enum"]),
+        )
+        self.assertEqual(
+            gate.SCHEMA_VERSION,
+            load_json(EXAMPLE / "project-manifest.json")["schema_version"],
+        )
         self.assertEqual([], self.errors(self.hydrated_example))
         self.assertTrue(self.errors(EXAMPLE), "the checked-in no-media template must not fake PASS")
 
@@ -501,6 +532,43 @@ class VerifyProjectTests(unittest.TestCase):
                 mutate(manifest["narration_sequence"])
                 self.save_manifest(root, manifest)
                 self.assert_error(self.errors(root), expected)
+
+    def test_schema_v2_top_transition_narration_has_eight_second_hard_limit(self) -> None:
+        with self.project() as root:
+            manifest = load_json(root / "project-manifest.json")
+            self.rewrite_narration_duration(root, manifest, 1, 8.0)
+            self.assertEqual([], self.errors(root))
+
+            self.rewrite_narration_duration(root, manifest, 1, 8.01)
+            self.assert_error(
+                self.errors(root),
+                "exceeds top_ranking transition narration hard limit 8.000s",
+            )
+
+    def test_schema_v2_narrative_transition_narration_has_ten_second_hard_limit(self) -> None:
+        with self.project() as root:
+            manifest = load_json(root / "project-manifest.json")
+            manifest["project_kind"] = "narrative"
+            for item in manifest["items"]:
+                item.pop("rank")
+            self.save_manifest(root, manifest)
+
+            self.rewrite_narration_duration(root, manifest, 1, 10.0)
+            self.assertEqual([], self.errors(root))
+
+            self.rewrite_narration_duration(root, manifest, 1, 10.01)
+            self.assert_error(
+                self.errors(root),
+                "exceeds narrative transition narration hard limit 10.000s",
+            )
+
+    def test_schema_v1_historical_project_does_not_gain_transition_duration_failures(self) -> None:
+        with self.project() as root:
+            manifest = load_json(root / "project-manifest.json")
+            manifest["schema_version"] = 1
+            self.save_manifest(root, manifest)
+            self.rewrite_narration_duration(root, manifest, 1, 20.0)
+            self.assertEqual([], self.errors(root))
 
     def test_all_sidecars_must_use_the_same_selection(self) -> None:
         with self.project() as root:
@@ -878,6 +946,48 @@ class VerifyProjectTests(unittest.TestCase):
             self.save_manifest(root, manifest)
             self.assert_error(self.errors(root), "window exceeds the current clip duration")
 
+    def test_vocal_evidence_supports_intro_hard_restart_mode(self) -> None:
+        with self.project() as root:
+            manifest = load_json(root / "project-manifest.json")
+            item = manifest["items"][0]
+            evidence_path = root / item["evidence"]["path"]
+            evidence = load_json(evidence_path)
+            analysis_path = root / evidence["analysis"]["path"]
+            analysis = load_json(analysis_path)
+            analysis.update(
+                {
+                    "evidence_level": "multi_evidence",
+                    "lead_segments": [[30.0, 39.7]],
+                    "vocal_segments": [[30.0, 39.7]],
+                    "boundary_segments": [[30.0, 39.7]],
+                    "boundary_evidence": "whisper_word_timestamps",
+                    "safe_cut_intervals": [[39.95, 40.2]],
+                }
+            )
+            write_json(analysis_path, analysis)
+            evidence.update(
+                {
+                    "mode": "intro_hard_restart",
+                    "window": {
+                        "narr_end_src": 0.0,
+                        "show_start_src": 0.0,
+                        "show_end_src": 40.0,
+                    },
+                    "status": "OK",
+                }
+            )
+            evidence["analysis"]["sha256"] = gate.sha256_file(analysis_path)
+            write_json(evidence_path, evidence)
+            self.update_item_evidence_hash(root, manifest, 0)
+            self.save_manifest(root, manifest)
+            self.assertEqual([], self.errors(root))
+
+            evidence["mode"] = "chorus_restart"
+            write_json(evidence_path, evidence)
+            self.update_item_evidence_hash(root, manifest, 0)
+            self.save_manifest(root, manifest)
+            self.assert_error(self.errors(root), "evidence.mode is invalid")
+
     def test_vocal_approval_is_bound_to_current_analysis_hash(self) -> None:
         with self.project() as root:
             manifest = load_json(root / "project-manifest.json")
@@ -1078,7 +1188,7 @@ class VerifyProjectTests(unittest.TestCase):
         with self.project() as root:
             manifest_path = root / "project-manifest.json"
             payload = manifest_path.read_text(encoding="utf-8").replace(
-                '"schema_version": 1,', '"schema_version": 1,\n  "schema_version": 1,', 1
+                '"schema_version": 2,', '"schema_version": 2,\n  "schema_version": 2,', 1
             )
             manifest_path.write_text(payload, encoding="utf-8")
             self.assert_error(self.errors(root), "duplicate JSON key 'schema_version'")

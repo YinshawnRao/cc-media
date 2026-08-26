@@ -801,6 +801,46 @@ class FinalVideoGateUnitTests(unittest.TestCase):
                 [row["id"] for row in result["results"][0]["segments"]],
             )
 
+    def test_offline_asr_uses_fixed_windows_for_long_media(self) -> None:
+        class SyntheticModel:
+            def transcribe(self, *_args, **_kwargs):
+                raise AssertionError("long media must use the fixed-window path")
+
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "long.mp4"
+            checkpoint = Path(temporary) / "small.pt"
+            source.write_bytes(b"synthetic long media")
+            checkpoint.write_bytes(b"synthetic checkpoint")
+            model = SyntheticModel()
+            with (
+                mock.patch.object(offline_asr, "_media_duration", return_value=120.0),
+                mock.patch.object(
+                    offline_asr,
+                    "_transcribe_long_source",
+                    return_value={
+                        "text": "长片旁白",
+                        "segments": [
+                            {"start": 25.1, "end": 26.0, "text": "长片旁白"}
+                        ],
+                    },
+                ) as transcribe_long,
+            ):
+                result = offline_asr.run(
+                    {
+                        "model": "small",
+                        "language": "zh",
+                        "jobs": [{"id": "long", "path": str(source)}],
+                    },
+                    checkpoint=checkpoint,
+                    identity_loader=lambda _: {
+                        "checkpoint_sha256": offline_asr.CHECKPOINT_SHA256,
+                        "openai_whisper_version": offline_asr.WHISPER_VERSION,
+                    },
+                    model_loader=lambda _: model,
+                )
+            transcribe_long.assert_called_once_with(model, source, "zh")
+            self.assertEqual("long:000000", result["results"][0]["segments"][0]["id"])
+
     def test_live_asr_receipt_rejects_replaced_checkpoint_or_distribution(self) -> None:
         receipt = fake_live_receipt([], {"language": "zh"}, "isolated_narration_asr")
         for field, replacement in (
