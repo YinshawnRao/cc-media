@@ -167,13 +167,30 @@ def selection_for(args: argparse.Namespace, registry: VoiceRegistry, batch: dict
         return resolve_selector(registry, "zf_xiaoyi")
     if args.task_prompt_file:
         prompt = args.task_prompt_file.read_text(encoding="utf-8")
-        return resolve_task_prompt(registry, prompt)
+        return resolve_task_prompt(
+            registry,
+            prompt,
+            model_choice=args.model_choice,
+            model_reason=args.model_reason,
+            model_confidence=args.model_confidence,
+        )
     prompt = args.task_prompt
     if prompt is None and batch is not None:
         prompt = batch.get("task_prompt")
     if prompt is not None:
-        return resolve_task_prompt(registry, prompt)
-    return random_pool_selection(registry, requested=None, reason="default_no_request")
+        return resolve_task_prompt(
+            registry,
+            prompt,
+            model_choice=args.model_choice or (batch or {}).get("model_choice"),
+            model_reason=args.model_reason or (batch or {}).get("model_reason"),
+            model_confidence=args.model_confidence
+            or (batch or {}).get("model_confidence"),
+        )
+    return random_pool_selection(
+        registry,
+        requested=None,
+        reason="fallback_model_unavailable",
+    )
 
 
 def batch_items(
@@ -275,6 +292,11 @@ def main() -> int:
     )
     parser.add_argument("--task-prompt", help="original task brief used for voice resolution")
     parser.add_argument("--task-prompt-file", type=Path, help="UTF-8 original task brief")
+    parser.add_argument("--model-choice", help="model-selected standard-pool voice")
+    parser.add_argument("--model-reason", help="project emotion/narrative selection reason")
+    parser.add_argument(
+        "--model-confidence", choices=("high", "medium", "low")
+    )
     parser.add_argument("--selection-file", type=Path, help="reuse project voice-selection.json")
     parser.add_argument("--selection-output", type=Path, help="write resolved selection JSON")
     parser.add_argument("--resolve-only", action="store_true", help="resolve and stop")
@@ -301,8 +323,8 @@ def main() -> int:
     if args.list_voices:
         for voice in registry.voices:
             markers = []
-            if voice["id"] in registry.random_pool_ids:
-                markers.append("RANDOM POOL")
+            if voice["id"] in registry.decision_pool_ids:
+                markers.append("STANDARD DECISION POOL")
             if voice["id"] == registry.preflight_id:
                 markers.append("PREFLIGHT")
             marker = f" [{' / '.join(markers)}]" if markers else ""
@@ -315,14 +337,35 @@ def main() -> int:
     if args.batch:
         batch_path = args.batch.resolve()
         batch = json.loads(batch_path.read_text(encoding="utf-8"))
+    model_choice = args.model_choice or (batch or {}).get("model_choice")
+    model_reason = args.model_reason or (batch or {}).get("model_reason")
+    model_confidence = args.model_confidence or (batch or {}).get("model_confidence")
+    if any(value is not None for value in (model_choice, model_reason, model_confidence)):
+        has_prompt = bool(
+            args.task_prompt is not None
+            or args.task_prompt_file
+            or (batch or {}).get("task_prompt") is not None
+        )
+        if not has_prompt:
+            parser.error("model decision fields require an original task prompt")
+        if model_reason is None or model_confidence is None:
+            parser.error("model decisions require a reason and confidence")
+        if model_confidence in {"high", "medium"} and model_choice is None:
+            parser.error("high/medium model confidence requires a model choice")
     if args.selection_file and any(
         [
             args.voice,
             args.female,
             args.task_prompt is not None,
             args.task_prompt_file,
+            args.model_choice,
+            args.model_reason,
+            args.model_confidence,
             (batch or {}).get("voice"),
             (batch or {}).get("task_prompt"),
+            (batch or {}).get("model_choice"),
+            (batch or {}).get("model_reason"),
+            (batch or {}).get("model_confidence"),
         ]
     ):
         parser.error(

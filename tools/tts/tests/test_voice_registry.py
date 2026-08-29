@@ -16,7 +16,12 @@ sys.path.insert(0, str(TTS_ROOT))
 
 from model_provenance import canonical_sha256
 from narrate import load_selection_file
-from qwen_contract import derived_seed, fingerprint, fingerprint_inputs
+from qwen_contract import (
+    _selection_contract_errors,
+    derived_seed,
+    fingerprint,
+    fingerprint_inputs,
+)
 from text_normalizer import PronunciationPolicy, normalize_tts_text
 from verify_voice_usage import VerificationResult, sidecar_input_text, verify_project_voice
 from voice_registry import (
@@ -39,7 +44,10 @@ class VoiceResolverTests(unittest.TestCase):
         self.assertEqual(value["resolution_reason"], reason)
 
     def assert_random_voice(
-        self, prompt: str, reason: str, selected_voice_id: str = "CV005"
+        self,
+        prompt: str,
+        reason: str = "fallback_model_unavailable",
+        selected_voice_id: str = "CV009",
     ) -> None:
         with patch(
             "voice_registry.secrets.choice",
@@ -51,9 +59,77 @@ class VoiceResolverTests(unittest.TestCase):
         self.assertEqual(value["selection_mode"], "random_pool")
         self.assertEqual(value["matched_by"], "random_pool")
         self.assertEqual(value["candidate_voice_ids"], self.registry.random_pool_ids)
+        self.assertEqual(value["model_decision_confidence"], "low")
+        self.assertTrue(value["model_decision_reason"])
 
-    def test_default_uses_random_female_pool(self) -> None:
-        self.assert_random_voice("做一期新的华语歌曲盘点视频", "default_no_request")
+    def test_default_uses_random_standard_pool_only_when_model_is_unavailable(self) -> None:
+        self.assert_random_voice("做一期新的华语歌曲盘点视频")
+
+    def test_model_decides_by_project_emotion(self) -> None:
+        value = resolve_task_prompt(
+            self.registry,
+            "做一期沉重的时代人物纪实。",
+            model_choice="深沉纪实男声",
+            model_reason="主题强调时代重量与人物命运，深沉纪实表达最匹配。",
+            model_confidence="high",
+        )
+        self.assertEqual(value["resolved_voice_id"], "CV012")
+        self.assertEqual(value["resolution_reason"], "model_emotion_match")
+        self.assertEqual(value["selection_mode"], "model_decision")
+        self.assertEqual(value["matched_by"], "model_decision")
+        self.assertEqual(value["candidate_voice_ids"], self.registry.decision_pool_ids)
+        self.assertEqual(value["model_decision_confidence"], "high")
+        self.assertIn("时代重量", value["model_decision_reason"])
+        self.assertFalse(value["fallback"])
+        self.assertEqual(
+            [],
+            _selection_contract_errors(
+                value,
+                qwen=self.registry.config["qwen_base"],
+                voice_id="CV012",
+                voice_name="深沉纪实男声",
+            ),
+        )
+
+    def test_low_confidence_model_decision_randomly_falls_back(self) -> None:
+        with patch(
+            "voice_registry.secrets.choice",
+            return_value=self.registry.by_id("CV013"),
+        ):
+            value = resolve_task_prompt(
+                self.registry,
+                "做一期还没确定主题的内容。",
+                model_choice="柔和青年男声",
+                model_reason="主题和情绪信息不足，无法可靠判断。",
+                model_confidence="low",
+            )
+        self.assertEqual(value["resolved_voice_id"], "CV013")
+        self.assertEqual(value["resolution_reason"], "fallback_model_unavailable")
+        self.assertEqual(value["selection_mode"], "random_pool")
+        self.assertEqual(value["model_decision_confidence"], "low")
+        self.assertTrue(value["fallback"])
+        self.assertEqual(
+            [],
+            _selection_contract_errors(
+                value,
+                qwen=self.registry.config["qwen_base"],
+                voice_id="CV013",
+                voice_name="柔和青年男声",
+            ),
+        )
+
+    def test_explicit_voice_overrides_model_decision(self) -> None:
+        value = resolve_task_prompt(
+            self.registry,
+            "配音：清冷学姐",
+            model_choice="清亮校园女声",
+            model_reason="作品有青春气息。",
+            model_confidence="high",
+        )
+        self.assertEqual(value["resolved_voice_id"], "CV004")
+        self.assertEqual(value["selection_mode"], "explicit")
+        self.assertIsNone(value["model_decision_reason"])
+        self.assertIsNone(value["model_decision_confidence"])
 
     def test_structured_name(self) -> None:
         self.assert_voice("主题：经典前奏\n配音：治愈少女", "CV002", "explicit_prompt_match")
@@ -65,18 +141,17 @@ class VoiceResolverTests(unittest.TestCase):
         self.assert_voice("这期用元气萌妹来讲。", "CV001", "explicit_prompt_match")
 
     def test_unknown_falls_back(self) -> None:
-        self.assert_random_voice("配音：CV999", "fallback_unmatched_prompt")
-        self.assert_random_voice("请用可爱女声配音", "fallback_unmatched_prompt")
-        self.assert_random_voice("配音：默认配音", "fallback_unmatched_prompt")
+        self.assert_random_voice("配音：CV999")
+        self.assert_random_voice("请用可爱女声配音")
+        self.assert_random_voice("配音：默认配音")
 
     def test_ambiguous_falls_back(self) -> None:
         self.assert_random_voice(
             "配音：元气萌妹或清冷学姐都可以",
-            "fallback_ambiguous_prompt",
         )
 
     def test_topic_words_do_not_select_voice(self) -> None:
-        self.assert_random_voice("盘点热血少年动漫名场面", "default_no_request")
+        self.assert_random_voice("盘点热血少年动漫名场面")
 
     def test_negative_voice_is_ignored(self) -> None:
         self.assert_voice(
@@ -86,10 +161,10 @@ class VoiceResolverTests(unittest.TestCase):
         )
 
     def test_structured_negative_id_uses_default(self) -> None:
-        self.assert_random_voice("配音：不要用 CV004", "default_no_request")
+        self.assert_random_voice("配音：不要用 CV004")
 
     def test_body_negative_id_uses_default_without_bare_id_bypass(self) -> None:
-        self.assert_random_voice("这期不要使用 CV004", "default_no_request")
+        self.assert_random_voice("这期不要使用 CV004")
 
     def test_positive_replacement_after_negative_id_still_wins(self) -> None:
         self.assert_voice(
@@ -130,7 +205,7 @@ class VoiceResolverTests(unittest.TestCase):
             "配音：不要用 CV004，CV003 也不要",
         ):
             with self.subTest(prompt=prompt):
-                self.assert_random_voice(prompt, "default_no_request")
+                self.assert_random_voice(prompt)
 
     def test_negative_alias_does_not_override_positive_replacement(self) -> None:
         self.assert_voice(
@@ -151,7 +226,7 @@ class VoiceResolverTests(unittest.TestCase):
         ):
             with self.subTest(prompt=prompt):
                 self.assert_voice(prompt, "CV003", "explicit_prompt_match")
-        self.assert_random_voice("不用 CV004，CV003 也不要", "default_no_request")
+        self.assert_random_voice("不用 CV004，CV003 也不要")
 
     def test_multiple_tokens_for_same_voice_are_not_ambiguous(self) -> None:
         self.assert_voice("配音：CV002（治愈少女）", "CV002", "explicit_prompt_match")
@@ -191,10 +266,12 @@ class VoiceResolverTests(unittest.TestCase):
         self.assertTrue(value["fallback"])
 
     def test_pre_random_pool_selection_hash_pair_remains_reusable(self) -> None:
+        compatible = self.registry.config["compatible_selection_hashes"][0]
         value = {
             "schema_version": "1.0.0",
             "resolved_voice_id": "CV002",
-            **self.registry.config["compatible_selection_hashes"][0],
+            "config_sha256": compatible["config_sha256"],
+            "registry_sha256": compatible["registry_sha256"],
         }
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "voice-selection.json"
@@ -211,13 +288,31 @@ class VoiceAssetTests(unittest.TestCase):
         cls.registry = VoiceRegistry.load()
 
     def test_ids_are_stable_and_random_pool_exists(self) -> None:
-        self.assertEqual([voice["id"] for voice in self.registry.voices], [f"CV{i:03d}" for i in range(1, 9)])
-        self.assertEqual(self.registry.preflight_id, "CV002")
         self.assertEqual(
-            self.registry.random_pool_ids,
-            ["CV001", "CV002", "CV003", "CV004", "CV005", "CV008"],
+            [voice["id"] for voice in self.registry.voices],
+            [f"CV{i:03d}" for i in range(1, 14)],
         )
-        self.assertTrue(all(voice["group"] == "female" for voice in self.registry.random_pool))
+        self.assertEqual(self.registry.preflight_id, "CV002")
+        expected_pool = [
+            "CV001",
+            "CV002",
+            "CV003",
+            "CV004",
+            "CV008",
+            "CV009",
+            "CV010",
+            "CV011",
+            "CV012",
+            "CV013",
+        ]
+        self.assertEqual(self.registry.decision_pool_ids, expected_pool)
+        self.assertEqual(self.registry.random_pool_ids, expected_pool)
+        groups = [voice["group"] for voice in self.registry.decision_pool]
+        self.assertEqual(groups.count("female"), 8)
+        self.assertEqual(groups.count("male"), 2)
+        self.assertTrue(
+            all(voice.get("decision_profile") for voice in self.registry.decision_pool)
+        )
 
     def test_reference_assets(self) -> None:
         root = TTS_ROOT / "voices"
@@ -572,16 +667,29 @@ class VoiceGateTests(unittest.TestCase):
 
 
 class WorkspacePolicyTests(unittest.TestCase):
-    def test_random_pool_comes_from_registry_and_claude_delegates_to_agents(self) -> None:
+    def test_decision_pool_comes_from_registry_and_claude_delegates_to_agents(self) -> None:
         repo = TTS_ROOT.parents[1]
         registry = VoiceRegistry.load()
         agents = (repo / "AGENTS.md").read_text(encoding="utf-8")
         claude = (repo / "CLAUDE.md").read_text(encoding="utf-8")
 
         self.assertEqual("CV002", registry.config["preflight_voice_id"])
+        expected_pool = [
+            "CV001",
+            "CV002",
+            "CV003",
+            "CV004",
+            "CV008",
+            "CV009",
+            "CV010",
+            "CV011",
+            "CV012",
+            "CV013",
+        ]
+        self.assertEqual(expected_pool, registry.config["decision_voice_pool"])
+        self.assertEqual(expected_pool, registry.config["random_voice_pool"])
         self.assertEqual(
-            ["CV001", "CV002", "CV003", "CV004", "CV005", "CV008"],
-            registry.config["random_voice_pool"],
+            "model_emotion_decision", registry.config["selection_policy"]["default"]
         )
         self.assertIn(
             resolve_task_prompt(registry, "配音：CV999")["resolved_voice_id"],
@@ -589,7 +697,7 @@ class WorkspacePolicyTests(unittest.TestCase):
         )
         self.assertIn("single top-level source of agent instructions", agents)
         self.assertIn("CV002", agents)
-        self.assertIn("CV008", agents)
+        self.assertIn("CV013", agents)
 
         for reference in (
             "[`AGENTS.md`](AGENTS.md)",
@@ -617,7 +725,7 @@ class WorkspacePolicyTests(unittest.TestCase):
         page = TTS_ROOT / "voices" / "listen.html"
         text = page.read_text(encoding="utf-8")
         references = re.findall(r'<audio[^>]+src="([^"]+)"', text)
-        self.assertEqual(len(references), 32)
+        self.assertEqual(len(references), 47)
         self.assertFalse([value for value in references if not (page.parent / value).is_file()])
 
     def test_research_was_removed_from_sandbox(self) -> None:

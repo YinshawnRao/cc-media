@@ -21,10 +21,13 @@ sandbox/<slug>/
 └── publishing/xiaohongshu.md  # 与 renders 并列的最终小红书文案
 ```
 
-先生成项目级声线选择和 intro；没有显式指定时 resolver 会得到默认 CV002，显式有效指定则沿用指定角色：
+先生成项目级声线选择和 intro；唯一有效指定沿用指定角色，否则代理根据作品主题、整体情绪、叙事角度与节奏从十声线标准池决策，只有模型无法可靠判断时才从同一池随机兜底：
 
 ```bash
 python3 tools/tts/resolve_voice.py --task-prompt-file sandbox/<slug>/brief.txt \
+  --model-choice <十声线池内的CV编号或正式名称> \
+  --model-reason '<作品整体情绪与叙事表达的匹配理由>' \
+  --model-confidence high \
   -o sandbox/<slug>/voice-selection.json
 
 python3 tools/tts/narrate.py '如果某位歌手唱《示例歌名》。' \

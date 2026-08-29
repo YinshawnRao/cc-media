@@ -50,12 +50,17 @@ python3 -m unittest tools.video.tests.test_verify_project -v
 该门禁当前只覆盖上述三类盘点/叙事/自由探索项目，且检查的是**构建前结构和 provenance**，不能证明终片实际可听、可见或已正确 mux。新项目固定使用 authoring manifest schema v2 并执行转场时长门禁；schema v1 只保留给历史工程复现，不得作为新项目绕过入口。发布文案在 build/post-mux 后按第 9 节单独生成并验证，后续第 10 节 QA 仍必须完整执行；不得把 `publishing/xiaohongshu.md` 提前伪装成 authoring manifest 的一部分。AI 克隆歌手音色 MV 不冒充本 schema，继续走 `templates/ai-voice-mv/` durable builder 与对应 `--check`。
 
 ## 1. 解析 brief
-提取：标题、画幅（默认竖屏 1080×1920）、是否为 TOP/排名、每首真实名次映射、歌手/歌名/URL或搜索倾向/切点、旁白、配音音色、平台硬时长。先把旁白信息按“两头重”分配：intro 放主题/评判标准/钩子且不泄榜，作品 outro 放整体结论，逐首只留首次揭晓与一个判断。**配音只解析一次**：把用户原始任务提示词交给 `tools/tts/resolve_voice.py` 并保存项目根 `voice-selection.json`；唯一精确匹配按指定，未写/未知/模糊/冲突时从 `CV001 / CV002 / CV003 / CV004 / CV005 / CV008` 女声池随机一次。随机结果与候选池写入 selection 后整期固定，不得逐段重抽。凡 TOP / 排名 / 榜单，保留用户给定名次映射并按最后一名到第一名 **N→1** 播放；该顺序只写在脚本、timeline、build 配置和 QA 中，封面/intro 画面禁止出现 `05→01`、`05->01`、`5→1`、`N→1`、倒数/倒序揭晓提示或逐名次方向轨，只保留主题与 `TOP N` 数量。非排名叙事片才按脚本顺序，且不得挂 TOP 名义。默认不设总时长上限，质量优先。
+提取：标题、画幅（默认竖屏 1080×1920）、是否为 TOP/排名、每首真实名次映射、歌手/歌名/URL或搜索倾向/切点、旁白、配音音色、平台硬时长。先把旁白信息按“两头重”分配：intro 放主题/评判标准/钩子且不泄榜，作品 outro 放整体结论，逐首只留首次揭晓与一个判断。**配音只解析一次**：把用户原始任务提示词交给 `tools/tts/resolve_voice.py` 并保存项目根 `voice-selection.json`；唯一精确匹配按指定，否则代理根据作品主题、整体情绪、叙事角度与节奏，从 `CV001 / CV002 / CV003 / CV004 / CV008 / CV009 / CV010 / CV011 / CV012 / CV013` 十声线标准池做一次模型决策并记录理由与置信度，只有模型无法可靠判断时才从同一池随机一次。结果与候选池写入 selection 后整期固定，不得逐段重选。凡 TOP / 排名 / 榜单，保留用户给定名次映射并按最后一名到第一名 **N→1** 播放；该顺序只写在脚本、timeline、build 配置和 QA 中，封面/intro 画面禁止出现 `05→01`、`05->01`、`5→1`、`N→1`、倒数/倒序揭晓提示或逐名次方向轨，只保留主题与 `TOP N` 数量。非排名叙事片才按脚本顺序，且不得挂 TOP 名义。默认不设总时长上限，质量优先。
 
 ```bash
 python3 tools/tts/resolve_voice.py --task-prompt-file <原始brief文件> \
+  --model-choice <十声线池内的CV编号或正式名称> \
+  --model-reason '<作品整体情绪与叙事表达的匹配理由>' \
+  --model-confidence high \
   -o sandbox/<slug>/voice-selection.json
 ```
+
+用户已有唯一精确指定时仍以用户指定为准；模型确实无法可靠判断时，省略 `--model-choice`，传入具体原因和 `--model-confidence low`，由 resolver 从同一十声线池随机兜底。
 
 ## 2. 默认一次完成整片（goal / 视频制作任务）
 接到 goal 或直接要求制作视频的 brief 后，持续执行后续素材、旁白、build、render、post-mux、发布文案和 QA 流程；具有标准 manifest 的项目，第一份默认交付就是通过 VOICE / PROJECT / PUBLISHING / 本地机械 FINAL 四道门禁的 `renders/<slug>.mp4` 与 `publishing/xiaohongshu.md`，专用 durable 项目完成自身独立检查。不得因为首次使用某种风格就只渲染 **开场钩子 + 首个揭晓段** 并暂停等待确认；lint、抽帧或短区间试渲只作为内部自检，不改变一次完成目标。默认本地终验中的 pending human review 只作为 advisory，不得中断任务或把 goal 标记为 `blocked`。只有用户明确要求“小样 / 预览 / 先看风格”时，才把局部样片作为阶段性交付；只有用户明确要求公开发布、发布验收或可发布交付时，才启用 `--require-human-review`。

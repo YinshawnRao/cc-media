@@ -27,7 +27,7 @@
 - **版本正确、官方优先**：先确认目标歌手/翻唱版本，再优先可用官方 MV；官方 MV 画质稍差也不因此换成第三方高清修复或二剪。确需换源时在 `SOURCES.md` 留证。
 - **TOP 倒数揭晓**：凡 TOP / 排名 / 榜单都按 N→1 播放；封面和 intro 不提前列完整歌单、排序或第一名，每一名到对应转场才揭晓。
 - **结构完整、质量优先**：一般视频保留开头、歌曲转场和结尾配音；完全自由探索类才可例外。默认不设总时长上限，不为变短牺牲完整乐句或观赏体验。
-- **配音项目内稳定**：新盘点若未唯一指定音色，则从 `CV001 / CV002 / CV003 / CV004 / CV005 / CV008` 女声池随机一次，并把结果落盘供整期复用；Qwen 缺模型或母带时只让当前 TTS 步骤硬失败，代理修复固定环境后重跑，不静默换 Kokoro、不重抽声线，也不停止整个 goal。外文只做窄范围 ASCII token 发音处理，纯中文文本、标点、seed、请求结构和既有缓存 fingerprint 保持不变。
+- **配音项目内稳定**：新启动且包含旁白的自媒体视频若未唯一指定音色，代理先根据作品主题、整体情绪、叙事角度与节奏，从 `CV001 / CV002 / CV003 / CV004 / CV008 / CV009 / CV010 / CV011 / CV012 / CV013` 十声线标准池（8 女 2 男）选择最匹配的一款；只有模型无法可靠判断时才从同一池随机一次。结果、理由和置信度落盘后整期复用。Qwen 缺模型或母带时只让当前 TTS 步骤硬失败，代理修复固定环境后重跑，不静默换 Kokoro、不重选声线，也不停止整个 goal。外文只做窄范围 ASCII token 发音处理，纯中文文本、标点、seed、请求结构和既有缓存 fingerprint 保持不变。
 - **封面排版也是 QA**：标题按语义自然换行，歌手名与同层级主要文字同字号或更大；首帧同时检查排版美感、安全区、主体避让和平台裁剪。
 - **源码进仓库，素材留本地**：提交脚本、清单、配置、设计稿、时间码和 QA 记录，不提交下载视频、渲染结果、缓存、cookie 和大体积中间产物。根 `all_cookies.txt` 是仅用户可手工覆盖的 canonical 输入，代理不得改变其内容、元数据或路径绑定。
 - **可复现优先**：`production/<项目名>/` 里保留能重建成片的输入，而不是只放一个最终 MP4。
@@ -48,7 +48,7 @@
 ├── CLAUDE.md               # Claude 薄入口；业务规则仍以 AGENTS.md 为准
 ├── tools/
 │   ├── video/              # 视频任务 runbook 和复用脚本
-│   └── tts/                # 编号化本地中文配音库；新项目从女声池随机一次
+│   └── tts/                # 编号化本地中文配音库；十声线情绪决策优先
 ├── sandbox/                # 实验区，可丢弃，不承诺长期保留
 └── production/             # 正式项目区，保留可复现输入和工程文件
 ```
@@ -96,7 +96,7 @@ brew install ffmpeg yt-dlp
 1. 阅读 `AGENTS.md`、`CONVENTIONS.md` 和 `tools/video/README.md`。
 2. 按 brief 创建 `sandbox/<slug>/`，其中 raw render 和 mux 后最终 MP4 统一放 `renders/`，发布文案放并列的 `publishing/`；跨项目研究与复用代码归 `tools/<domain>/research/` 或相应工具目录。goal / 视频制作任务默认持续到 `renders/<slug>.mp4`、`publishing/xiaohongshu.md`；标准 manifest 项目还要完成 VOICE / PROJECT / PUBLISHING / 本地机械 FINAL 四道门禁和当期 QA，专用 durable 项目完成自身独立检查，一次完成整片；除非用户明确要求小样或预览，不在开场或首个揭晓段暂停等待确认，也不得因 pending human review 暂停或标记 `blocked`。
 3. 运行 `python3 tools/tts/doctor.py`；首次初始化或模型/runtime 变化后运行一次 `--full-model-hash`。
-4. 把原始任务提示词交给 `tools/tts/resolve_voice.py`，保存项目级 `voice-selection.json`。唯一精确指定优先；未指定、未知、模糊或冲突时从 `CV001 / CV002 / CV003 / CV004 / CV005 / CV008` 女声池随机一次。若解析结果不是预检声线 CV002，再以 `python3 tools/tts/doctor.py --voice <resolved_id>` 精确检查本期音色；全声音库与 mixed-script 能力只在维护时显式完整审计，不阻塞无关的纯中文任务。
+4. 把原始任务提示词交给 `tools/tts/resolve_voice.py`，保存项目级 `voice-selection.json`。唯一精确指定优先；未指定、未知、模糊或冲突时，代理按作品主题、整体情绪、叙事角度与节奏从十声线标准池决策，向 resolver 传入选择、简短理由及 `high`/`medium` 置信度。只有模型无法可靠判断时才以 `low` 从同一池随机兜底。若解析结果不是预检声线 CV002，再以 `python3 tools/tts/doctor.py --voice <resolved_id>` 精确检查本期音色；全声音库与 mixed-script 能力只在维护时显式完整审计，不阻塞无关的纯中文任务。
 5. 根 `all_cookies.txt` 只由用户手工维护；canonical 不要求不可变锁，代理禁止覆盖由 `AGENTS.md` 与 `CONVENTIONS.md` 的提示词约束。代理禁止对它直接写入，或执行 `chmod`、`touch`、`mv`、`cp` 和过滤替换。所有需要 Cookie 的 yt-dlp 命令走 `python3 tools/video/yt_dlp_readonly.py -- <yt-dlp 参数>`，不得裸传 `--cookies all_cookies.txt`；wrapper 只操作仓库外私有临时副本。用户需要更新时，可自行运行 `python3 tools/video/filter_cookie_jar.py SOURCE --output /absolute/outside/candidate.txt` 生成仓库外 candidate，检查后亲自安装并设为 `0600`。代理和普通 goal 不运行过滤或安装流程；Cookie 不可用时继续公开下载和双平台备选，不因此停止 goal。
 6. YouTube 和 B站都查源，先确认歌手/表演版本，再优先官方 MV；把候选、取舍理由、URL 和时间码写进 `SOURCES.md`。
 7. 用中央 TTS 入口生成旁白，运行 `python3 tools/tts/verify_voice_usage.py --selection sandbox/<slug>/voice-selection.json --project-root sandbox/<slug>`，必须得到 `VOICE GATE: PASS`。
@@ -123,9 +123,9 @@ brew install ffmpeg yt-dlp
 - `tools/video/prepare_final_qa.py`：标准结构化盘点/叙事项目的 mux 后中央 QA manifest/evidence 生成器；默认生成带诚实 pending review 的 `qa/final-video-qa.json`，发布模式只合并显式 `--human-review-input`，绝不自动批准。`project_kind: free_exploration` 与 AI 音色 MV 不强套此工具。
 - `tools/video/verify_final_video.py`：标准 HyperFrames post-mux 项目的终片机械门禁；AI 音色 MV 走 durable builder 的独立检查。
 - `tools/tts/doctor.py`：用 CV002 作为稳定预检声线，检查固定模型/runtime 与参考母带；不决定项目成片声线。
-- `tools/tts/resolve_voice.py`：从原始任务提示词确定一次项目级配音；无唯一精确选择时从配置女声池随机一次。
+- `tools/tts/resolve_voice.py`：从原始任务提示词确定一次项目级配音；无唯一精确选择时接收作品情绪模型决策，只有模型无法可靠判断时才从十声线标准池随机兜底。
 - `tools/tts/narrate.py`：统一中文旁白入口，读取 `voice-selection.json`；Qwen 缺失时当前步骤 fail closed，修复固定环境后自动重跑，不换声、不暂停整个 goal。
 - `tools/tts/verify_voice_usage.py`：项目配音 sidecar、模型声明与当前 WAV 一致性门禁；本地 receipt 不等于音色来源或抗篡改证明。
-- `tools/tts/voices/listen.html`：CV001–CV008 编号声音、参考母带和实际样音。
+- `tools/tts/voices/listen.html`：CV001–CV013 编号声音、参考母带和实际样音；十声线自动决策候选有明确标识。
 
 更多细节以 `CONVENTIONS.md` 和 `tools/video/README.md` 为准。

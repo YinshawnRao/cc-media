@@ -1,25 +1,26 @@
 # tools/tts — cc-media 编号化本地配音
 
-这里是工作区唯一正式的中文旁白入口和声音库。新启动的盘点视频若未唯一指定音色，会从 **`CV001 / CV002 / CV003 / CV004 / CV005 / CV008`** 女声池随机一次；Kokoro 只保留为显式 legacy 兼容。
+这里是工作区唯一正式的中文旁白入口和声音库。新启动且包含旁白的自媒体视频若未唯一指定音色，先由代理根据作品主题、整体情绪、叙事角度与节奏，从 **`CV001 / CV002 / CV003 / CV004 / CV008 / CV009 / CV010 / CV011 / CV012 / CV013`** 十声线标准池（8 女 2 男）决策；只有模型无法可靠判断时才从同一池随机一次。Kokoro 只保留为显式 legacy 兼容。
 
-实际声音、参考母带和同文案样例都在 [`voices/`](voices/)；直接打开 [`voices/listen.html`](voices/listen.html) 可试听 CV001–CV008 与 Kokoro 基线。完整首轮调研与 QA 证据在 [`research/qwen-character-voice-lab/`](research/qwen-character-voice-lab/)。
+实际声音、参考母带和同文案样例都在 [`voices/`](voices/)；直接打开 [`voices/listen.html`](voices/listen.html) 可试听 CV001–CV013 与 Kokoro 基线，其中十声线标准候选有明确标识。完整首轮调研与 QA 证据在 [`research/qwen-character-voice-lab/`](research/qwen-character-voice-lab/)，扩展音色实验与筛选依据在 [`research/qwen-voice-expansion-lab/`](research/qwen-voice-expansion-lab/)。
 
 ## 默认与解析硬规则
 
-`config.json` 是随机池与选择策略唯一真源，`voices/registry.json` 是角色编号、正式名称、分组和别名唯一真源。
+`config.json` 是决策池、随机兜底池与选择策略唯一真源，`voices/registry.json` 是角色编号、正式名称、分组、别名和情绪决策画像唯一真源。
 
 1. 任务提示词的结构化 `配音：` / `音色：` / `voice=` 字段中，唯一精确匹配的编号、名称或别名优先。
 2. 没有结构化字段时，只识别带配音语境的唯一、肯定式精确匹配。
-3. 没指定、指定不存在、描述模糊、同时命中多个角色：从配置女声池随机一次。
-4. 不做相似度猜测。“男声”“女声”“可爱一点”“二次元声音”等无法唯一定位的描述仍进入同一随机池。
-5. 否定式不是选择：`不要/不使用/不想用/拒绝使用/不考虑/请勿使用/不能用/不可用/不是/避免/除了` 等前置否定，以及 `CV004 除外/不用/不考虑/不要了/不能用/不行` 等后置否定，都按未指定处理并进入随机池；裸 `CVxxx` 也不能绕过同一句否定。若后面另有唯一肯定式替换（如“我不想用 CV004，请改用 CV003”），则只采用肯定指定。
-6. 每个项目只解析一次；随机结果和候选池写入 `voice-selection.json`，intro、排名转场、作品 outro、固定 CTA 共用该文件，禁止逐段重抽。
-7. Qwen runtime、固定模型或参考母带缺失时只让当前 TTS 步骤硬失败；代理修复固定环境、模型、母带或 receipt 后重跑当前步骤及受影响下游门禁，禁止静默换 Kokoro，也不得因此暂停整个 goal。
-8. Qwen dispatcher 与 direct worker 在 import MLX 前都必须先运行 stdlib-only Metal preflight。当前执行上下文拿不到 Metal 时固定快速返回，不启动 native worker、不产生 Python crash 弹窗；goal 应自动切换到具备 Metal 权限的执行上下文重跑。多个 goal 可同时合成，禁止用共享锁、队列、sleep 或等待另一个配音完成来串行化。
+3. 没指定、指定不存在、描述模糊、同时命中多个角色：进入作品情绪模型决策。代理对照十声线 `decision_profile`，选择一个精确角色，并提供简短理由和 `high`/`medium` 置信度。
+4. 不做名称相似度猜测，也不按作品主体性别机械决定配音性别。“男声”“女声”“可爱一点”“二次元声音”等无法唯一定位的描述不能直接当作唯一指定。
+5. 只有作品信息不足、模型不可用或置信度为 `low` 时，才从同一十声线标准池随机一次。
+6. 否定式不是选择：`不要/不使用/不想用/拒绝使用/不考虑/请勿使用/不能用/不可用/不是/避免/除了` 等前置否定，以及 `CV004 除外/不用/不考虑/不要了/不能用/不行` 等后置否定，都按未指定处理并进入模型决策；裸 `CVxxx` 也不能绕过同一句否定。若后面另有唯一肯定式替换（如“我不想用 CV004，请改用 CV003”），则只采用肯定指定。
+7. 每个项目只解析一次；结果、完整候选池、模型理由和置信度写入 `voice-selection.json`，intro、排名或叙事转场、作品 outro、固定 CTA 共用该文件，禁止逐段重选。
+8. Qwen runtime、固定模型或参考母带缺失时只让当前 TTS 步骤硬失败；代理修复固定环境、模型、母带或 receipt 后重跑当前步骤及受影响下游门禁，禁止静默换 Kokoro，也不得因此暂停整个 goal。
+9. Qwen dispatcher 与 direct worker 在 import MLX 前都必须先运行 stdlib-only Metal preflight。当前执行上下文拿不到 Metal 时固定快速返回，不启动 native worker、不产生 Python crash 弹窗；goal 应自动切换到具备 Metal 权限的执行上下文重跑。多个 goal 可同时合成，禁止用共享锁、队列、sleep 或等待另一个配音完成来串行化。
 
 ## 新盘点标准流程
 
-首次初始化、模型/runtime 版本变化或 receipt 失效时，先做一次完整模型哈希（约 2 GB 顺序读取）；它只会在固定且被忽略的 `tools/tts/runtime/model-verifications/` 闭包中原子写入 `0600` receipt。manifest 只允许来自 `tools/tts/model-manifests/`。两者及其项目内父目录均拒绝 symlink；关键文件必须属于当前 UID，且不能 group/world writable。日常自检核对 receipt、manifest、实际 MLX-Audio 版本、模型 realpath、完整文件集合及含 `ctime_ns` 的每文件 stat 签名，不会重复读取 2 GB。默认 doctor 只校验核心 runtime/model 和预检声线 CV002 母带；CV002 在这里不决定项目随机结果。worker 仍会在真正生成前重新校验本期已选母带，并在加载模型后复验模型：
+首次初始化、模型/runtime 版本变化或 receipt 失效时，先做一次完整模型哈希（约 2 GB 顺序读取）；它只会在固定且被忽略的 `tools/tts/runtime/model-verifications/` 闭包中原子写入 `0600` receipt。manifest 只允许来自 `tools/tts/model-manifests/`。两者及其项目内父目录均拒绝 symlink；关键文件必须属于当前 UID，且不能 group/world writable。日常自检核对 receipt、manifest、实际 MLX-Audio 版本、模型 realpath、完整文件集合及含 `ctime_ns` 的每文件 stat 签名，不会重复读取 2 GB。默认 doctor 只校验核心 runtime/model 和预检声线 CV002 母带；CV002 在这里不决定项目最终选择。worker 仍会在真正生成前重新校验本期已选母带，并在加载模型后复验模型：
 
 ```bash
 python3 tools/tts/doctor.py --full-model-hash
@@ -41,12 +42,26 @@ python3 tools/tts/doctor.py --full-model-hash --full-library --check-mixed-scrip
 
 纯中文生成本来就不读取 `pronunciation.json`，因此日常 doctor 跳过 mixed-script policy 与实际生成语义一致；含 ASCII 大写 token 或显式发音覆盖的任务仍会在 `narrate.py` 中按需加载该策略并 fail closed，也可提前用 `--check-mixed-script` 单独验明。
 
-先把用户原始任务提示词保存为 UTF-8 文件或直接传给 resolver：
+先把用户原始任务提示词保存为 UTF-8 文件。若用户未唯一指定音色，代理完成作品情绪判断后，把池内精确选择、理由与置信度一并传给 resolver：
 
 ```bash
 python3 tools/tts/resolve_voice.py --task-prompt-file brief.txt \
+  --model-choice CV012 \
+  --model-reason '主题强调时代重量与人物命运，适合深沉纪实表达。' \
+  --model-confidence high \
   -o sandbox/<slug>/voice-selection.json
 ```
+
+若作品信息不足、确实无法可靠判断，则明确记录原因并用 `low` 触发同池随机兜底；不能省略判断步骤来模拟旧版纯随机：
+
+```bash
+python3 tools/tts/resolve_voice.py --task-prompt-file brief.txt \
+  --model-reason '主题与叙事角度尚不足以可靠判断。' \
+  --model-confidence low \
+  -o sandbox/<slug>/voice-selection.json
+```
+
+用户已有唯一精确指定时直接按指定解析，模型参数即使存在也不会覆盖用户选择。
 
 单条生成：
 
@@ -99,9 +114,11 @@ python3 tools/tts/narrate.py --list-voices
 python3 tools/tts/narrate.py script.txt --voice CV004 -o out.wav
 python3 tools/tts/narrate.py script.txt --voice 清冷学姐 -o out.wav
 
-# 无效指定会警告并从女声池随机一次
+# 直接 --voice 仅用于人工精确覆盖；无效 selector 走十声线随机兼容兜底
 python3 tools/tts/narrate.py script.txt --voice CV999 -o out.wav
 ```
+
+新项目的自动选择必须走“原始任务提示词 + 模型决策”流程，不能把无效 `--voice` 当作常规随机入口。
 
 `--speed 0.5–2.0` 仍受支持。Qwen/MLX 当前不直接支持 speed，中央入口会用 FFmpeg `atempo` 做真实后处理，不会静默忽略。
 

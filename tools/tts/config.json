@@ -1,17 +1,30 @@
 {
-  "schema_version": "1.1.0",
+  "schema_version": "1.2.0",
   "preflight_voice_id": "CV002",
-  "random_voice_pool": ["CV001", "CV002", "CV003", "CV004", "CV005", "CV008"],
+  "decision_voice_pool": ["CV001", "CV002", "CV003", "CV004", "CV008", "CV009", "CV010", "CV011", "CV012", "CV013"],
+  "random_voice_pool": ["CV001", "CV002", "CV003", "CV004", "CV008", "CV009", "CV010", "CV011", "CV012", "CV013"],
+  "decision_pool_expected_groups": {"female": 8, "male": 2},
   "compatible_selection_hashes": [
     {
       "config_sha256": "dc36fdd8696b3f629ebd889891fdcc26dae534d7c5b70c57682d2270a1cddd42",
-      "registry_sha256": "40869930590f37bcf0e6ab2852557a569f0c817ce9a2f06ad6303302b0356454"
+      "registry_sha256": "40869930590f37bcf0e6ab2852557a569f0c817ce9a2f06ad6303302b0356454",
+      "schema_versions": ["1.0.0"]
+    },
+    {
+      "config_sha256": "ddb84734fff7f86bc1516567a131fd636de077616e24a5c68bf06a0ae2793889",
+      "registry_sha256": "f4526f901ee432643185f869ffc5a1f0863eb1a9b9483e55a611f93f2ed1d366",
+      "schema_versions": ["1.1.0"]
     }
   ],
   "selection_policy": {
-    "default": "random_voice_pool",
-    "unknown": "random_voice_pool",
-    "ambiguous": "random_voice_pool",
+    "default": "model_emotion_decision",
+    "unknown": "model_emotion_decision",
+    "ambiguous": "model_emotion_decision",
+    "model_unavailable": "random_voice_pool",
+    "model_decision_confidence": ["high", "medium"],
+    "model_decision_requires_reason": true,
+    "decision_basis": ["project_theme", "emotional_expression", "narrative_angle", "pacing"],
+    "ignore_artist_gender_for_voice_gender": true,
     "fuzzy_matching": false,
     "parse_once_per_project": true
   },

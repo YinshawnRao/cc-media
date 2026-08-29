@@ -14,6 +14,11 @@
       "enabled": true,
       "aliases": ["元气少女", "萌妹", "萌妹子", "甜系萌妹", "moe_spark", "moe-spark"],
       "description": "明亮甜美、节奏活泼、有弹性的原创成年二次元女声。",
+      "decision_profile": {
+        "emotion_tags": ["明亮", "元气", "热烈", "甜感", "轻快"],
+        "best_for": ["高能流行", "偶像感", "动漫感", "轻松热榜", "活力回忆"],
+        "avoid_for": ["沉重纪实", "冷峻悬疑", "克制悼念"]
+      },
       "reference_audio": "CV001-moe-spark/reference.wav",
       "reference_sha256": "3cc9ef2dda1967812cff30fb190cd436dc28b250f1d491e14f095dadc69152fb",
       "examples": {
@@ -31,6 +36,11 @@
       "enabled": true,
       "aliases": ["治愈系少女", "治愈女声", "温柔少女", "温柔女声", "soft_healer", "soft-healer"],
       "description": "柔软温暖、气息细腻、语速舒缓，带陪伴感的原创成年二次元女声。",
+      "decision_profile": {
+        "emotion_tags": ["温柔", "治愈", "怀旧", "陪伴", "感性"],
+        "best_for": ["温情回忆", "疗愈叙事", "抒情作品", "成长故事", "细腻人物"],
+        "avoid_for": ["强攻击性", "硬核纪实", "高速吐槽"]
+      },
       "reference_audio": "CV002-soft-healer/reference.wav",
       "reference_sha256": "1610cf180e0bd245d7a50381a403c529e43b8fd65e7bbc20433edbc5062c0c13",
       "examples": {
@@ -48,6 +58,11 @@
       "enabled": true,
       "aliases": ["傲娇少女", "傲娇", "吐槽姬", "tsundere_comic", "tsundere-comic"],
       "description": "清脆机灵、节奏偏快、重音鲜明，略带傲娇吐槽感的原创成年女声。",
+      "decision_profile": {
+        "emotion_tags": ["机灵", "锐利", "反差", "吐槽", "俏皮"],
+        "best_for": ["反差盘点", "轻吐槽", "怪趣作品", "争议话题", "节奏型榜单"],
+        "avoid_for": ["庄重纪实", "沉痛叙事", "纯治愈氛围"]
+      },
       "reference_audio": "CV003-tsundere-comic/reference.wav",
       "reference_sha256": "69eb40e4e2e2603647510508180b33e3da288a12718577cbd39d4e896c995966",
       "examples": {
@@ -65,6 +80,11 @@
       "enabled": true,
       "aliases": ["冷淡御姐", "清冷女声", "学姐音", "cool_senpai", "cool-senpai"],
       "description": "中低音区、清冷克制、节奏稳定，句尾利落的原创成年女声。",
+      "decision_profile": {
+        "emotion_tags": ["清冷", "克制", "高级", "理性", "疏离"],
+        "best_for": ["高级感作品", "冷色叙事", "都市夜景", "审美评论", "克制回忆"],
+        "avoid_for": ["纯粹卖萌", "高热体育", "夸张喜剧"]
+      },
       "reference_audio": "CV004-cool-senpai/reference.wav",
       "reference_sha256": "dadee84bd7feaffb19abc44c29f3b8fbee93e84941699a176996c0e10746acf8",
       "examples": {
@@ -133,11 +153,126 @@
       "enabled": true,
       "aliases": ["精灵声", "空灵中性声", "中性精灵", "airy_spirit", "airy-spirit"],
       "description": "轻盈空灵、音色透明、年龄感模糊的原创中性动漫声线。",
+      "decision_profile": {
+        "emotion_tags": ["空灵", "梦幻", "透明", "神秘", "轻盈"],
+        "best_for": ["幻想作品", "氛围音乐", "记忆片段", "动漫世界观", "梦境叙事"],
+        "avoid_for": ["硬核社会纪实", "强势评论", "密集新闻信息"]
+      },
       "reference_audio": "CV008-airy-spirit/reference.wav",
       "reference_sha256": "c53225892d5ed8095c7842ca720d220aa2666e2f217228af9698d06a1ba4023e",
       "examples": {
         "ranking": "CV008-airy-spirit/examples/ranking.wav",
         "mixed_language": "CV008-airy-spirit/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV009",
+      "slug": "bright-campus",
+      "legacy_persona_id": "female_bright_campus",
+      "name": "清亮校园女声",
+      "group": "female",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["清亮校园", "校园女声", "青春女声", "清朗少女", "female_bright_campus", "bright-campus"],
+      "description": "清亮通透、轻快自然，带年轻成年人的青春与好奇感。",
+      "decision_profile": {
+        "emotion_tags": ["青春", "清亮", "轻快", "初恋", "成长"],
+        "best_for": ["校园记忆", "青春流行", "初恋主题", "成长年表", "明朗作品"],
+        "avoid_for": ["沉重纪实", "阴郁悬疑", "成熟沧桑"]
+      },
+      "reference_audio": "CV009-bright-campus/reference.wav",
+      "reference_sha256": "0255f6aff8e017f1e7371b31b51e8030d7f4213db640898fcd60809f6f57b92c",
+      "examples": {
+        "ranking": "CV009-bright-campus/examples/ranking.wav",
+        "mixed_language": "CV009-bright-campus/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV010",
+      "slug": "playful-quickwit",
+      "legacy_persona_id": "female_playful_quickwit",
+      "name": "俏皮机灵女声",
+      "group": "female",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["俏皮机灵", "机灵女声", "俏皮女声", "轻快吐槽女声", "female_playful_quickwit", "playful-quickwit"],
+      "description": "清脆灵动、反应快、语尾轻扬，适合轻吐槽与反差表达。",
+      "decision_profile": {
+        "emotion_tags": ["俏皮", "机灵", "网感", "轻松", "反差"],
+        "best_for": ["轻松盘点", "趣味冷知识", "反差作品", "网络热梗", "明快短评"],
+        "avoid_for": ["庄重历史", "沉痛人物", "纯粹空灵"]
+      },
+      "reference_audio": "CV010-playful-quickwit/reference.wav",
+      "reference_sha256": "317c081672e87ebdf736489000b7043e7942d9815bec7c10de24015b7e1873f2",
+      "examples": {
+        "ranking": "CV010-playful-quickwit/examples/ranking.wav",
+        "mixed_language": "CV010-playful-quickwit/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV011",
+      "slug": "glassy-clear",
+      "legacy_persona_id": "female_glassy_clear",
+      "name": "玻璃感清透女声",
+      "group": "female",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["玻璃感女声", "清透女声", "透明感女声", "现代清透女声", "female_glassy_clear", "glassy-clear"],
+      "description": "明净清透、轻盈现代，音高偏上但不尖锐的年轻成年女声。",
+      "decision_profile": {
+        "emotion_tags": ["清透", "现代", "细腻", "轻盈", "纯净"],
+        "best_for": ["清新流行", "梦幻电子", "细腻情绪", "现代都市", "透明感作品"],
+        "avoid_for": ["粗粝摇滚", "厚重历史", "强硬社会纪实"]
+      },
+      "reference_audio": "CV011-glassy-clear/reference.wav",
+      "reference_sha256": "f97332b5faf1cd4ddb324eff52bba5b6e8834d0bced8795f2231f2b00d2d157c",
+      "examples": {
+        "ranking": "CV011-glassy-clear/examples/ranking.wav",
+        "mixed_language": "CV011-glassy-clear/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV012",
+      "slug": "deep-documentary",
+      "legacy_persona_id": "male_deep_documentary",
+      "name": "深沉纪实男声",
+      "group": "male",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["深沉纪实", "纪实男声", "深沉男声", "纪录片男声", "male_deep_documentary", "deep-documentary"],
+      "description": "低音深沉清晰、克制可信，带现实重量的成熟男性纪实声线。",
+      "decision_profile": {
+        "emotion_tags": ["深沉", "纪实", "厚重", "严肃", "现实"],
+        "best_for": ["历史与时代", "人物命运", "社会纪实", "沉重作品", "沧桑回望"],
+        "avoid_for": ["甜美偶像", "轻萌动漫", "快节奏喜剧"]
+      },
+      "reference_audio": "CV012-deep-documentary/reference.wav",
+      "reference_sha256": "90358192bf71dfe3aec29b1a600a05a785a3a594db6195e2dfb9a9a2f5d6f793",
+      "examples": {
+        "ranking": "CV012-deep-documentary/examples/ranking.wav",
+        "mixed_language": "CV012-deep-documentary/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV013",
+      "slug": "soft-youth",
+      "legacy_persona_id": "male_soft_youth",
+      "name": "柔和青年男声",
+      "group": "male",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["柔和青年", "青年男声", "温柔男声", "清柔男声", "male_soft_youth", "soft-youth"],
+      "description": "干净柔和、自然温暖，带年轻成年质感的青年男性声线。",
+      "decision_profile": {
+        "emotion_tags": ["温暖", "青春", "柔和", "友情", "真诚"],
+        "best_for": ["青春成长", "乐队与友情", "温情男声作品", "校园回忆", "真诚自述"],
+        "avoid_for": ["强烈反派", "厚重历史", "尖锐吐槽"]
+      },
+      "reference_audio": "CV013-soft-youth/reference.wav",
+      "reference_sha256": "2a37d67c4e9546871e95c20366c30964a23244211193cf507d6f14d47ca0db3f",
+      "examples": {
+        "ranking": "CV013-soft-youth/examples/ranking.wav",
+        "mixed_language": "CV013-soft-youth/examples/mixed-language.wav"
       }
     }
   ]

@@ -131,36 +131,64 @@ class MachineSourceContractTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.registry = VoiceRegistry.load()
 
-    def test_default_unknown_and_conflicting_voice_requests_use_random_pool(self) -> None:
+    def test_voice_selection_prefers_model_emotion_decision_then_random_fallback(self) -> None:
         config = self.registry.config
-        pool = ["CV001", "CV002", "CV003", "CV004", "CV005", "CV008"]
+        pool = [
+            "CV001",
+            "CV002",
+            "CV003",
+            "CV004",
+            "CV008",
+            "CV009",
+            "CV010",
+            "CV011",
+            "CV012",
+            "CV013",
+        ]
         self.assertEqual("CV002", config["preflight_voice_id"])
+        self.assertEqual(pool, config["decision_voice_pool"])
         self.assertEqual(pool, config["random_voice_pool"])
-        self.assertEqual("random_voice_pool", config["selection_policy"]["default"])
-        self.assertEqual("random_voice_pool", config["selection_policy"]["unknown"])
-        self.assertEqual("random_voice_pool", config["selection_policy"]["ambiguous"])
+        self.assertEqual("model_emotion_decision", config["selection_policy"]["default"])
+        self.assertEqual("model_emotion_decision", config["selection_policy"]["unknown"])
+        self.assertEqual("model_emotion_decision", config["selection_policy"]["ambiguous"])
+        self.assertEqual("random_voice_pool", config["selection_policy"]["model_unavailable"])
+        self.assertEqual({"female": 8, "male": 2}, config["decision_pool_expected_groups"])
         self.assertIs(config["selection_policy"]["fuzzy_matching"], False)
 
+        model_args = {
+            "model_choice": "CV012",
+            "model_reason": "主题强调时代重量与人物命运，适合深沉纪实表达。",
+            "model_confidence": "high",
+        }
+        default = resolve_task_prompt(
+            self.registry, "做一期沉重的时代人物纪实。", **model_args
+        )
+        unknown = resolve_task_prompt(self.registry, "配音：CV999", **model_args)
+        conflict = resolve_task_prompt(
+            self.registry, "配音：CV003 或 CV004", **model_args
+        )
         with patch(
-            "voice_registry.secrets.choice", return_value=self.registry.by_id("CV005")
+            "voice_registry.secrets.choice", return_value=self.registry.by_id("CV013")
         ):
-            default = resolve_task_prompt(self.registry, "做一期新的华语音乐盘点。")
-            unknown = resolve_selector(self.registry, "CV999")
-            conflict = resolve_task_prompt(self.registry, "配音：CV003 或 CV004")
+            fallback = resolve_task_prompt(
+                self.registry,
+                "做一期主题暂未明确的内容。",
+                model_reason="项目信息不足，无法可靠判断。",
+                model_confidence="low",
+            )
         explicit = resolve_selector(self.registry, "CV004")
 
-        self.assertEqual(("CV005", "default_no_request"), (
-            default["resolved_voice_id"], default["resolution_reason"]
-        ))
-        self.assertEqual(("CV005", "fallback_unmatched_selector"), (
-            unknown["resolved_voice_id"], unknown["resolution_reason"]
-        ))
-        self.assertEqual(("CV005", "fallback_ambiguous_prompt"), (
-            conflict["resolved_voice_id"], conflict["resolution_reason"]
-        ))
         for selection in (default, unknown, conflict):
-            self.assertEqual("random_pool", selection["selection_mode"])
+            self.assertEqual("CV012", selection["resolved_voice_id"])
+            self.assertEqual("model_emotion_match", selection["resolution_reason"])
+            self.assertEqual("model_decision", selection["selection_mode"])
             self.assertEqual(pool, selection["candidate_voice_ids"])
+            self.assertEqual("high", selection["model_decision_confidence"])
+        self.assertEqual("CV013", fallback["resolved_voice_id"])
+        self.assertEqual("fallback_model_unavailable", fallback["resolution_reason"])
+        self.assertEqual("random_pool", fallback["selection_mode"])
+        self.assertEqual(pool, fallback["candidate_voice_ids"])
+        self.assertEqual("low", fallback["model_decision_confidence"])
         self.assertEqual("CV004", explicit["resolved_voice_id"])
         self.assertEqual("explicit", explicit["selection_mode"])
         self.assertFalse(explicit["fallback"])
@@ -816,7 +844,8 @@ class SharedTemplateAstTests(unittest.TestCase):
         self.assertNotRegex(generator, stale)
         self.assertIn("Legacy Kokoro", generator)
         self.assertNotRegex(formal_page, stale)
-        self.assertIn("当前默认：项目启动时从女声池随机一次", formal_page)
+        self.assertIn("当前标准：模型先按作品情绪与叙事表达选择", formal_page)
+        self.assertIn("标准池共 10 个声音（8 女 2 男）", formal_page)
         self.assertIn("Legacy Kokoro", formal_page)
 
 

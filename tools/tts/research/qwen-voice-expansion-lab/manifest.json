@@ -1,0 +1,603 @@
+{
+  "schema_version": "1.0.0",
+  "experiment_id": "qwen-voice-expansion-lab",
+  "isolation": {
+    "formal_tts_read_only": true,
+    "output_root": "outputs",
+    "promote_automatically": false
+  },
+  "runtime": {
+    "provider": "mlx-audio",
+    "version": "0.4.5",
+    "offline_required": true
+  },
+  "models": {
+    "voice_design": {
+      "id": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit",
+      "revision": "f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
+      "default_path": "../local-anime-avatar-workflow/models/qwen3-tts/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit@f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
+      "path_env": "QWEN_VOICE_DESIGN_MODEL"
+    },
+    "base_clone": {
+      "id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+      "revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+      "default_path": "../local-anime-avatar-workflow/models/qwen3-tts/Qwen3-TTS-12Hz-0.6B-Base-8bit@50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+      "path_env": "QWEN_BASE_MODEL"
+    }
+  },
+  "generation": {
+    "seed": 20260829,
+    "temperature": 0.8,
+    "top_k": 50,
+    "top_p": 0.95,
+    "repetition_penalty": 1.1,
+    "max_tokens": 2048,
+    "trim_threshold_dbfs": -50.0,
+    "trim_padding_ms": 120
+  },
+  "texts": {
+    "voice_master": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
+    "showcase": "注意看，这个人在雨夜收到一封没有署名的信。镜头越过沉默的城市，真相正一点点浮出水面。在漫长的岁月里，每一次选择，都悄悄改变了故事的方向。",
+    "mixed_language": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。"
+  },
+  "categories": [
+    {"id": "short_video_classic", "label": "短视频电影 / 纪录片经典型"},
+    {"id": "female_extended", "label": "扩展女声"},
+    {"id": "male_extended", "label": "扩展男声"},
+    {"id": "neutral_extended", "label": "中性声"}
+  ],
+  "personas": [
+    {
+      "id": "film_fast_direct",
+      "label": "影视快讲直述",
+      "group": "male",
+      "category": "short_video_classic",
+      "tags": ["电影解说", "快节奏", "直述", "强钩子"],
+      "description": "原创成年男性短视频影视解说声线，音色明亮结实，中音区，语速偏快，开头直接有抓力，断句短促，关键词重音清楚，像在迅速推进电影剧情；保持自然可懂，不喊叫，不模仿任何平台音色或可识别人物。"
+    },
+    {
+      "id": "film_sunny_narrator",
+      "label": "阳光影视解说",
+      "group": "male",
+      "category": "short_video_classic",
+      "tags": ["电影解说", "阳光", "年轻", "通用"],
+      "description": "原创成年男性影视解说声线，年轻阳光，音色明亮但不轻浮，节奏流畅略快，吐字清晰，带一点亲和笑意，适合通俗电影剧情梳理；不要卡通化，不模仿任何平台音色或可识别人物。"
+    },
+    {
+      "id": "film_magnetic_uncle",
+      "label": "磁性大叔解说",
+      "group": "male",
+      "category": "short_video_classic",
+      "tags": ["电影解说", "磁性", "成熟", "男中低音"],
+      "description": "原创成熟男性影视解说声线，中低音厚实有磁性，气息稳定，语速中等偏快，带阅历感但不过分苍老，叙事有压迫推进力；保持普通话清楚，不模仿任何平台音色或可识别人物。"
+    },
+    {
+      "id": "film_suspense_low",
+      "label": "悬疑低沉解说",
+      "group": "male",
+      "category": "short_video_classic",
+      "tags": ["悬疑", "犯罪", "低沉", "留白"],
+      "description": "原创成年男性悬疑影视解说声线，低沉冷静，音色偏暗，语速略慢，停顿克制，句尾下收，能制造不安和未知感；不能压成气泡音或耳语，不模仿任何平台音色或可识别人物。"
+    },
+    {
+      "id": "film_cold_scifi",
+      "label": "冷峻科幻解说",
+      "group": "male",
+      "category": "short_video_classic",
+      "tags": ["科幻", "冷峻", "克制", "未来感"],
+      "description": "原创成年男性科幻影视解说声线，中低音，干净冷峻，节奏精确，情绪克制，辅音利落，带轻微疏离与未来感；不要添加电子效果，不模仿任何平台音色或可识别人物。"
+    },
+    {
+      "id": "film_emotional_female",
+      "label": "温情电影女声",
+      "group": "female",
+      "category": "short_video_classic",
+      "tags": ["电影解说", "温情", "女性", "故事感"],
+      "description": "原创成年女性温情电影解说声线，柔和温暖，中音区，叙事自然有真情但不煽情，语速中等，转折处有细微情绪变化；吐字清楚，不模仿任何平台音色或可识别人物。"
+    },
+    {
+      "id": "film_drama_female",
+      "label": "短剧反转女声",
+      "group": "female",
+      "category": "short_video_classic",
+      "tags": ["短剧", "反转", "快节奏", "女性"],
+      "description": "原创成年女性短剧解说声线，音色清亮有力度，语速偏快，重音明确，悬念和反转处有轻微上扬，能快速推进关系冲突；避免夸张尖叫和幼儿化，不模仿任何平台音色或可识别人物。"
+    },
+    {
+      "id": "film_comic_roast",
+      "label": "吐槽电影解说",
+      "group": "male",
+      "category": "short_video_classic",
+      "tags": ["电影解说", "吐槽", "喜剧", "机灵"],
+      "description": "原创成年男性吐槽型影视解说声线，中高音，反应快，节奏灵活，带一点无奈和机灵笑意，包袱前后停顿自然；不要方言化或表演过火，不模仿任何平台音色或可识别人物。"
+    },
+    {
+      "id": "documentary_weathered",
+      "label": "浑厚沧桑纪录片",
+      "group": "male",
+      "category": "short_video_classic",
+      "tags": ["纪录片", "浑厚", "沧桑", "故事感"],
+      "description": "原创成熟男性纪录片声线，低音浑厚，略带自然粗粝和岁月感，语速从容，气息深稳，叙述有历史纵深但不故作威严；吐字必须清楚，不模仿任何平台音色或可识别人物。"
+    },
+    {
+      "id": "documentary_nature_grand",
+      "label": "宏阔自然纪录片",
+      "group": "male",
+      "category": "short_video_classic",
+      "tags": ["自然纪录片", "宏阔", "沉稳", "生命"],
+      "description": "原创成熟男性自然纪录片声线，中低音开阔温暖，共鸣自然，语速稳定偏慢，句子有长线呼吸和宏观观察感；不端腔，不模仿任何知名纪录片旁白或可识别人物。"
+    },
+    {
+      "id": "documentary_humanities",
+      "label": "克制人文纪录片",
+      "group": "female",
+      "category": "short_video_classic",
+      "tags": ["人文纪录片", "克制", "温暖", "细腻"],
+      "description": "原创成熟女性人文纪录片声线，中音偏低，温暖克制，语速舒缓，观察细腻，情绪藏在字句内部而不直接煽动；自然清晰，不模仿任何知名旁白或可识别人物。"
+    },
+    {
+      "id": "documentary_history_weight",
+      "label": "厚重历史纪录片",
+      "group": "male",
+      "category": "short_video_classic",
+      "tags": ["历史纪录片", "厚重", "庄重", "时间感"],
+      "description": "原创成熟男性历史纪录片声线，低音坚实，语气庄重但不过度播音腔，节奏缓而有秩序，年份与事件转折读得明确；不模仿任何知名纪录片旁白或可识别人物。"
+    },
+    {
+      "id": "documentary_science_clear",
+      "label": "清晰科普纪录片",
+      "group": "female",
+      "category": "short_video_classic",
+      "tags": ["科普", "纪录片", "清晰", "理性"],
+      "description": "原创成年女性科普纪录片声线，音色清晰干净，语速中等，逻辑重音准确，理性可信又不冷漠，适合解释复杂概念；避免新闻播报腔，不模仿任何平台音色或可识别人物。"
+    },
+    {
+      "id": "documentary_mystery_nature",
+      "label": "神秘自然观察",
+      "group": "female",
+      "category": "short_video_classic",
+      "tags": ["自然纪录片", "神秘", "空灵", "探索"],
+      "description": "原创成年女性自然探索纪录片声线，中音清透，带轻微神秘与好奇，语速舒缓，停顿能留下空间，但保持正常说话而非耳语；不模仿任何知名旁白或可识别人物。"
+    },
+    {
+      "id": "documentary_newsreel",
+      "label": "纪实新闻片声线",
+      "group": "male",
+      "category": "short_video_classic",
+      "tags": ["纪实", "新闻片", "可信", "利落"],
+      "description": "原创成年男性纪实新闻片声线，中音结实，吐字精确，节奏紧凑但不赶，语气可信直接，适合事件还原与调查叙事；保持现代自然感，不模仿任何播音员或可识别人物。"
+    },
+    {
+      "id": "documentary_soft_reflection",
+      "label": "温柔纪实旁白",
+      "group": "female",
+      "category": "short_video_classic",
+      "tags": ["纪实", "温柔", "回忆", "女性"],
+      "description": "原创成熟女性纪实旁白声线，柔和而不虚弱，中低音，语速缓慢自然，带回忆与理解感，适合人物命运和生活观察；不耳语，不模仿任何知名旁白或可识别人物。"
+    },
+    {
+      "id": "female_sunshine_host",
+      "label": "阳光主持女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["阳光", "主持", "明亮", "通用"],
+      "description": "原创成年女性主持声线，明亮自然，语速轻快，笑意适中，重音有弹性，适合轻松盘点和日常讲解；甜而不幼，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_velvet_story",
+      "label": "丝绒叙事女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["丝绒", "成熟", "叙事", "耐听"],
+      "description": "原创成熟女性叙事声线，中低音柔滑，质感像丝绒但不含混，语速从容，句尾收束温和，适合长时间故事旁白；不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_crisp_editor",
+      "label": "清晰编辑部女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["清晰", "编辑感", "理性", "利落"],
+      "description": "原创成年女性编辑型声线，音色干净，吐字精确，节奏利落，语气理性但有人情味，适合观点盘点和信息密集解说；不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_gentle_sister",
+      "label": "温柔姐姐",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["温柔", "亲近", "姐姐感", "陪伴"],
+      "description": "原创成年女性亲近声线，温暖柔和，音高适中，带自然微笑与可靠的姐姐感，语速舒缓但不拖沓；不幼态，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_elegant_contralto",
+      "label": "优雅女中音",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["优雅", "女中音", "成熟", "高级感"],
+      "description": "原创成熟女性女中音声线，音色饱满克制，语速稳定，发声位置沉着，句尾利落，适合文化与审美主题；不端腔，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_bright_campus",
+      "label": "清亮校园女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["清亮", "年轻成年", "轻快", "校园"],
+      "description": "原创年轻成年女性声线，清亮通透，节奏轻快，带自然好奇与活力，吐字完整，适合青春题材；保持成年人感觉，不幼儿化，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_calm_observer",
+      "label": "冷静观察女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["冷静", "观察", "克制", "纪实"],
+      "description": "原创成年女性观察型声线，中音偏低，冷静克制，停顿自然，像在认真拆解事实，不制造夸张情绪；保持亲和与清晰，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_playful_quickwit",
+      "label": "俏皮机灵女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["俏皮", "机灵", "快节奏", "吐槽"],
+      "description": "原创成年女性俏皮声线，音色清脆，节奏偏快，反应灵活，语尾偶尔轻扬，适合轻吐槽和反差内容；不尖锐、不做作、不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_soft_breeze",
+      "label": "轻柔微风女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["轻柔", "自然", "舒缓", "干净"],
+      "description": "原创成年女性轻柔声线，音色清洁柔软，气息自然，语速舒缓，听感像微风但不是耳语，辅音必须清楚；不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_confident_anchor",
+      "label": "自信主播女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["自信", "主播", "稳定", "信息"],
+      "description": "原创成年女性主播声线，中音有支撑，语气自信直接，节奏稳定，关键词落点明确，适合知识与资讯；避免传统播音腔，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_husky_warm",
+      "label": "微沙暖女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["微沙", "温暖", "成熟", "故事"],
+      "description": "原创成熟女性微沙声线，沙感轻微自然，中低音温暖，叙事有生活质地，语速中等；不能失真、嘶哑或故意压嗓，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_low_serene",
+      "label": "低柔安定女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["低柔", "安定", "沉静", "耐听"],
+      "description": "原创成年女性低柔声线，音区偏低，气息平稳，语速慢而不拖，情绪安定可靠，适合长篇陪伴式叙事；不耳语，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_brisk_reviewer",
+      "label": "利落评论女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["利落", "评论", "观点", "节奏"],
+      "description": "原创成年女性评论型声线，节奏明快，音色有棱角但不尖，观点重音清楚，句尾干净，适合榜单判断与影评短评；不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_cozy_night",
+      "label": "深夜陪伴女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["深夜", "陪伴", "松弛", "温暖"],
+      "description": "原创成年女性深夜陪伴声线，中低音松弛温暖，音量感克制，语速舒缓，像安静聊天但保持完整吐字；不耳语，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_mature_narrator",
+      "label": "成熟故事女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["成熟", "故事", "沉稳", "情绪"],
+      "description": "原创成熟女性故事声线，中音饱满，情绪层次自然，转折处有分寸，语速从容，适合人物命运与年代故事；不戏剧过度，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_glassy_clear",
+      "label": "玻璃感清透女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["清透", "轻盈", "现代", "年轻成年"],
+      "description": "原创年轻成年女性清透声线，音色像玻璃般明净，音高偏上但不尖锐，节奏自然，适合现代审美和音乐内容；不幼儿化，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_energetic_field",
+      "label": "动感现场女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["动感", "现场", "活力", "推进"],
+      "description": "原创成年女性动感声线，发声有能量，节奏紧凑，重音向前，像在现场带动气氛但不喊叫，适合赛事和快节奏内容；不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_cool_tech",
+      "label": "清冷科技女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["清冷", "科技", "理性", "现代"],
+      "description": "原创成年女性科技声线，中音清冷，节奏精确，吐字干净，情绪克制却不机械，适合数码与未来主题；不加电子效果，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_theatrical_lead",
+      "label": "舞台叙事女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["舞台", "戏剧", "张力", "成熟"],
+      "description": "原创成熟女性舞台叙事声线，音色有共鸣，情绪张力明显，停顿富有戏剧性，但仍保持自然旁白尺度；不朗诵过度，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_retro_radio",
+      "label": "复古电台女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["复古", "电台", "圆润", "怀旧"],
+      "description": "原创成熟女性复古电台声线，音色圆润亲切，节奏从容，带轻微旧时广播的端正感但没有滤镜或噪声；不模仿任何播音员或可识别人物。"
+    },
+    {
+      "id": "female_sweet_adult",
+      "label": "甜感成年女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["甜感", "成年", "明亮", "亲和"],
+      "description": "原创成年女性甜感声线，明亮亲和，语尾轻巧，节奏有弹性，甜美但明显是成年人，不使用幼态咬字；不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_meditative_calm",
+      "label": "宁静冥想女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["宁静", "冥想", "舒缓", "呼吸"],
+      "description": "原创成年女性宁静声线，气息平稳，音色柔和，语速缓慢，停顿均匀，适合舒缓内容但必须保持清晰完整的正常说话；不耳语，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_smoky_lounge",
+      "label": "轻烟爵士女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["轻烟", "爵士感", "松弛", "夜色"],
+      "description": "原创成熟女性轻烟声线，中低音松弛，带少量颗粒感和夜色气质，节奏慵懒但吐字清楚；不唱腔、不嘶哑，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_precise_news",
+      "label": "精准资讯女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["精准", "资讯", "快速", "可信"],
+      "description": "原创成年女性资讯声线，吐字精准，语速中快，数字和专名落点清楚，语气可信而现代，适合信息密集内容；不使用传统播音腔，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_warm_teacher",
+      "label": "温暖讲师女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["讲师", "温暖", "清楚", "耐心"],
+      "description": "原创成熟女性讲师声线，温暖耐心，逻辑重音清楚，语速适中，像在把复杂事情讲明白，不居高临下；不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_spirited_comic",
+      "label": "爽朗喜剧女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["爽朗", "喜剧", "活力", "自然"],
+      "description": "原创成年女性爽朗声线，音色有光泽，节奏活泼，笑意自然，反应快速，适合轻喜剧和生活观察；不夸张尖笑，不模仿任何可识别人物。"
+    },
+    {
+      "id": "female_restrained_drama",
+      "label": "克制戏剧女声",
+      "group": "female",
+      "category": "female_extended",
+      "tags": ["克制", "戏剧", "暗涌", "故事"],
+      "description": "原创成熟女性克制戏剧声线，中低音，表面平静但情绪有暗涌，停顿细腻，适合复杂人物故事；不哭腔、不表演过度，不模仿任何可识别人物。"
+    },
+    {
+      "id": "male_warm_brother",
+      "label": "温暖兄长男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["温暖", "兄长感", "亲近", "可靠"],
+      "description": "原创成年男性亲近声线，中音温暖，语气可靠松弛，像耐心的兄长在讲故事，节奏自然；不油腻、不端腔，不模仿任何可识别人物。"
+    },
+    {
+      "id": "male_clear_youth",
+      "label": "清朗青年男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["清朗", "年轻成年", "明亮", "自然"],
+      "description": "原创年轻成年男性清朗声线，音色明亮，节奏轻快，吐字清楚，带自然少年气但不稚嫩，适合青春与娱乐主题；不模仿任何可识别人物。"
+    },
+    {
+      "id": "male_deep_documentary",
+      "label": "深沉纪实男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["深沉", "纪实", "低音", "可信"],
+      "description": "原创成熟男性纪实声线，低音深沉但清晰，语速稳定，情绪克制，叙述可信，有现实重量；不故作沧桑，不模仿任何可识别人物。"
+    },
+    {
+      "id": "male_confident_anchor",
+      "label": "自信主播男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["自信", "主播", "信息", "稳定"],
+      "description": "原创成年男性主播声线，中音结实，节奏稳定偏快，关键词明确，语气自信直接，适合知识、科技和资讯；不使用传统播音腔，不模仿任何可识别人物。"
+    },
+    {
+      "id": "male_gentle_scholar",
+      "label": "温和学者男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["温和", "学者", "理性", "文化"],
+      "description": "原创成熟男性学者声线，中音温和，措辞感清楚，语速从容，理性有耐心，适合历史、文化和知识叙述；不古板、不模仿任何可识别人物。"
+    },
+    {
+      "id": "male_energetic_sports",
+      "label": "热力赛事男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["赛事", "热力", "推进", "兴奋"],
+      "description": "原创成年男性赛事解说声线，发声明亮有冲劲，节奏紧凑，重音推动感强，兴奋但不吼叫，适合高能片段；不模仿任何解说员或可识别人物。"
+    },
+    {
+      "id": "male_husky_story",
+      "label": "微哑故事男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["微哑", "故事", "成熟", "生活感"],
+      "description": "原创成熟男性微哑声线，中低音略带颗粒，叙事有生活感和阅历，语速中等；沙感必须轻微自然，不嘶吼，不模仿任何可识别人物。"
+    },
+    {
+      "id": "male_elegant_gentleman",
+      "label": "优雅绅士男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["优雅", "绅士", "从容", "质感"],
+      "description": "原创成熟男性优雅声线，中低音圆润，语速从容，发音干净，礼貌而有距离感，适合品牌与文化叙事；不拿腔，不模仿任何可识别人物。"
+    },
+    {
+      "id": "male_relaxed_friend",
+      "label": "松弛朋友男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["松弛", "朋友感", "聊天", "自然"],
+      "description": "原创成年男性聊天声线，中音自然，松弛随和，节奏像朋友交流，偶有轻微笑意但不散漫，适合生活类内容；不模仿任何可识别人物。"
+    },
+    {
+      "id": "male_crisp_reviewer",
+      "label": "锋利评论男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["评论", "锋利", "利落", "观点"],
+      "description": "原创成年男性评论型声线，中音有棱角，节奏明快，观点重音精准，句尾利落，带判断力但不攻击；不模仿任何可识别人物。"
+    },
+    {
+      "id": "male_mysterious_low",
+      "label": "神秘暗线男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["神秘", "低沉", "暗线", "戏剧"],
+      "description": "原创成年男性神秘声线，低音偏暗，语速缓慢，停顿有戏剧张力，像在逐步揭开暗线；保持清晰，不耳语、不压气泡音，不模仿任何可识别人物。"
+    },
+    {
+      "id": "male_bright_comic",
+      "label": "明快喜剧男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["明快", "喜剧", "机灵", "轻松"],
+      "description": "原创成年男性喜剧声线，音色明亮，节奏灵活，包袱落点清楚，带自然笑意和一点反差感；不夸张变声，不模仿任何可识别人物。"
+    },
+    {
+      "id": "male_calm_tech",
+      "label": "沉着科技男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["科技", "沉着", "理性", "清晰"],
+      "description": "原创成年男性科技声线，中低音干净，节奏精确，逻辑重音清楚，沉着可信而不机械，适合数码与工程内容；不模仿任何可识别人物。"
+    },
+    {
+      "id": "male_resonant_stage",
+      "label": "共鸣舞台男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["共鸣", "舞台", "张力", "宏大"],
+      "description": "原创成熟男性舞台叙事声线，共鸣充足，音色宽厚，停顿有张力，能承托宏大主题但保持正常旁白尺度；不朗诵过度，不模仿任何可识别人物。"
+    },
+    {
+      "id": "male_retro_radio",
+      "label": "复古电台男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["复古", "电台", "圆润", "怀旧"],
+      "description": "原创成熟男性复古电台声线，中音圆润，语速从容，带一点旧时广播的端正节奏但不添加滤镜；不模仿任何播音员或可识别人物。"
+    },
+    {
+      "id": "male_soft_youth",
+      "label": "柔和青年男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["柔和", "青年", "干净", "温情"],
+      "description": "原创年轻成年男性柔和声线，音色干净，语气温和，语速自然，适合青春、友情和温情题材；保持成年人质感，不幼态，不模仿任何可识别人物。"
+    },
+    {
+      "id": "male_rugged_outdoor",
+      "label": "粗粝户外男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["粗粝", "户外", "冒险", "力量"],
+      "description": "原创成熟男性户外声线，中低音有自然粗粝感，气息结实，语速中等，带冒险与行动力；不能沙哑失真或喊叫，不模仿任何可识别人物。"
+    },
+    {
+      "id": "male_patient_teacher",
+      "label": "耐心讲师男声",
+      "group": "male",
+      "category": "male_extended",
+      "tags": ["讲师", "耐心", "清楚", "知识"],
+      "description": "原创成熟男性讲师声线，中音温和稳定，逻辑重音准确，语速适中，像耐心解释复杂概念；不说教、不端腔，不模仿任何可识别人物。"
+    },
+    {
+      "id": "neutral_airy",
+      "label": "轻盈中性声",
+      "group": "neutral",
+      "category": "neutral_extended",
+      "tags": ["中性", "轻盈", "空灵", "清透"],
+      "description": "原创成年中性声线，轻盈清透，年龄感模糊，音高适中偏上，带自然好奇与空间感，但保持正常清晰说话；不耳语，不模仿任何可识别人物。"
+    },
+    {
+      "id": "neutral_clear",
+      "label": "清晰中性声",
+      "group": "neutral",
+      "category": "neutral_extended",
+      "tags": ["中性", "清晰", "现代", "通用"],
+      "description": "原创成年中性声线，音色干净平衡，性别特征弱，吐字精确，节奏自然，适合现代科技和通用解说；不机械，不模仿任何可识别人物。"
+    },
+    {
+      "id": "neutral_low",
+      "label": "低柔中性声",
+      "group": "neutral",
+      "category": "neutral_extended",
+      "tags": ["中性", "低柔", "沉静", "耐听"],
+      "description": "原创成年中性声线，音区偏低，质感柔和沉静，语速舒缓，性别特征克制，适合长篇叙事；不压嗓、不耳语，不模仿任何可识别人物。"
+    },
+    {
+      "id": "neutral_playful",
+      "label": "俏皮中性声",
+      "group": "neutral",
+      "category": "neutral_extended",
+      "tags": ["中性", "俏皮", "灵动", "轻快"],
+      "description": "原创成年中性声线，音色灵动，节奏轻快，语尾偶尔上扬，带一点机灵和反差感；不幼儿化、不尖锐，不模仿任何可识别人物。"
+    },
+    {
+      "id": "neutral_calm",
+      "label": "冷静中性声",
+      "group": "neutral",
+      "category": "neutral_extended",
+      "tags": ["中性", "冷静", "克制", "理性"],
+      "description": "原创成年中性声线，中音稳定，冷静克制，停顿有秩序，逻辑重音清楚，适合理性分析和纪录内容；不机械，不模仿任何可识别人物。"
+    },
+    {
+      "id": "neutral_futuristic",
+      "label": "未来感中性声",
+      "group": "neutral",
+      "category": "neutral_extended",
+      "tags": ["中性", "未来感", "精确", "科技"],
+      "description": "原创成年中性科技声线，音色清洁偏冷，节奏精确，性别与年龄感弱，带未来气质但仍是自然人声；不添加电子效果，不模仿任何可识别人物。"
+    },
+    {
+      "id": "neutral_ethereal",
+      "label": "梦幻中性声",
+      "group": "neutral",
+      "category": "neutral_extended",
+      "tags": ["中性", "梦幻", "透明", "故事"],
+      "description": "原创成年中性梦幻声线，音色透明柔和，旋律感轻微自然，语速舒缓，适合幻想与记忆主题；保持清楚正常说话，不耳语，不模仿任何可识别人物。"
+    },
+    {
+      "id": "neutral_documentary",
+      "label": "纪实中性声",
+      "group": "neutral",
+      "category": "neutral_extended",
+      "tags": ["中性", "纪实", "可信", "克制"],
+      "description": "原创成年中性纪实声线，中音平衡，语气克制可信，节奏稳定，情绪不抢内容，适合人物观察和社会纪录；不端腔，不模仿任何可识别人物。"
+    }
+  ]
+}

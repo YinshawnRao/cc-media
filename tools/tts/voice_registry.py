@@ -8,6 +8,7 @@ import json
 import re
 import secrets
 import unicodedata
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -67,6 +68,15 @@ class VoiceRegistry:
         return [voices[voice_id] for voice_id in self.random_pool_ids]
 
     @property
+    def decision_pool_ids(self) -> list[str]:
+        return list(self.config.get("decision_voice_pool", self.random_pool_ids))
+
+    @property
+    def decision_pool(self) -> list[dict]:
+        voices = {voice["id"]: voice for voice in self.voices}
+        return [voices[voice_id] for voice_id in self.decision_pool_ids]
+
+    @property
     def registry_sha256(self) -> str:
         return file_sha256(REGISTRY_PATH)
 
@@ -87,9 +97,17 @@ class VoiceRegistry:
         }
         if pair == current:
             return True
-        if selection.get("schema_version") != "1.0.0":
-            return False
-        return pair in self.config.get("compatible_selection_hashes", [])
+        schema = selection.get("schema_version")
+        for compatible in self.config.get("compatible_selection_hashes", []):
+            compatible_pair = {
+                "config_sha256": compatible.get("config_sha256"),
+                "registry_sha256": compatible.get("registry_sha256"),
+            }
+            if pair != compatible_pair:
+                continue
+            versions = compatible.get("schema_versions", ["1.0.0"])
+            return schema in versions
+        return False
 
     def by_id(self, voice_id: str) -> dict | None:
         wanted = voice_id.upper()
@@ -186,9 +204,40 @@ class VoiceRegistry:
         for voice_id in random_pool:
             if voice_id not in enabled_ids:
                 raise ValueError(f"random_voice_pool contains unavailable voice: {voice_id}")
-            voice = next(voice for voice in self.voices if voice["id"] == voice_id)
-            if voice.get("group") != "female":
-                raise ValueError(f"random_voice_pool contains non-female voice: {voice_id}")
+        decision_pool = self.config.get("decision_voice_pool", random_pool)
+        if not isinstance(decision_pool, list) or not decision_pool:
+            raise ValueError("decision_voice_pool must be a non-empty list")
+        if len(decision_pool) != len(set(decision_pool)):
+            raise ValueError("decision_voice_pool contains duplicate IDs")
+        for voice_id in decision_pool:
+            if voice_id not in enabled_ids:
+                raise ValueError(f"decision_voice_pool contains unavailable voice: {voice_id}")
+        if "decision_voice_pool" in self.config:
+            if decision_pool != random_pool:
+                raise ValueError("random_voice_pool must equal decision_voice_pool")
+            for voice_id in decision_pool:
+                voice = next(voice for voice in self.voices if voice["id"] == voice_id)
+                profile = voice.get("decision_profile")
+                if not isinstance(profile, dict):
+                    raise ValueError(f"decision pool voice has no profile: {voice_id}")
+                for key in ("emotion_tags", "best_for", "avoid_for"):
+                    values = profile.get(key)
+                    if (
+                        not isinstance(values, list)
+                        or not values
+                        or any(not isinstance(value, str) or not value.strip() for value in values)
+                    ):
+                        raise ValueError(f"decision pool voice has invalid {key}: {voice_id}")
+            expected_groups = self.config.get("decision_pool_expected_groups")
+            if expected_groups is not None:
+                actual_groups = Counter(
+                    next(voice for voice in self.voices if voice["id"] == voice_id)["group"]
+                    for voice_id in decision_pool
+                )
+                if dict(actual_groups) != expected_groups:
+                    raise ValueError(
+                        "decision_voice_pool group counts do not match decision_pool_expected_groups"
+                    )
         compatible_pairs = self.config.get("compatible_selection_hashes", [])
         if not isinstance(compatible_pairs, list):
             raise ValueError("compatible_selection_hashes must be a list")
@@ -196,14 +245,23 @@ class VoiceRegistry:
             if not isinstance(pair, dict) or set(pair) != {
                 "config_sha256",
                 "registry_sha256",
+                "schema_versions",
             }:
                 raise ValueError("compatible_selection_hashes contains an invalid pair")
             if any(
                 not isinstance(value, str)
                 or re.fullmatch(r"[0-9a-f]{64}", value) is None
-                for value in pair.values()
+                for key, value in pair.items()
+                if key != "schema_versions"
             ):
                 raise ValueError("compatible_selection_hashes contains an invalid digest")
+            versions = pair["schema_versions"]
+            if (
+                not isinstance(versions, list)
+                or not versions
+                or any(version not in {"1.0.0", "1.1.0"} for version in versions)
+            ):
+                raise ValueError("compatible_selection_hashes contains invalid schema versions")
 
 
 STRUCTURED_FIELD = re.compile(
@@ -276,9 +334,11 @@ def _selection(
     task_prompt: str | None,
     selection_mode: str,
     candidate_voice_ids: list[str],
+    model_decision_reason: str | None,
+    model_decision_confidence: str | None,
 ) -> dict:
     return {
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "requested_voice": requested,
         "resolved_voice_id": voice["id"],
         "resolved_voice_name": voice["name"],
@@ -288,6 +348,8 @@ def _selection(
         "fallback": fallback,
         "selection_mode": selection_mode,
         "candidate_voice_ids": candidate_voice_ids,
+        "model_decision_reason": model_decision_reason,
+        "model_decision_confidence": model_decision_confidence,
         "registry_sha256": registry.registry_sha256,
         "config_sha256": registry.config_sha256,
         "task_prompt_sha256": text_sha256(task_prompt) if task_prompt is not None else None,
@@ -300,6 +362,7 @@ def random_pool_selection(
     requested: str | None,
     reason: str,
     task_prompt: str | None = None,
+    model_decision_reason: str | None = None,
 ) -> dict:
     candidates = registry.random_pool
     voice = secrets.choice(candidates)
@@ -313,6 +376,56 @@ def random_pool_selection(
         task_prompt=task_prompt,
         selection_mode="random_pool",
         candidate_voice_ids=[candidate["id"] for candidate in candidates],
+        model_decision_reason=model_decision_reason
+        or "模型未提供可用的作品情绪判断，按标准十声线池随机兜底。",
+        model_decision_confidence="low",
+    )
+
+
+def model_decision_or_random(
+    registry: VoiceRegistry,
+    *,
+    requested: str | None,
+    task_prompt: str | None,
+    model_choice: str | None,
+    model_reason: str | None,
+    model_confidence: str | None,
+) -> dict:
+    reason = model_reason.strip() if isinstance(model_reason, str) else ""
+    confidence = (
+        model_confidence.strip().lower()
+        if isinstance(model_confidence, str)
+        else None
+    )
+    voice = None
+    if isinstance(model_choice, str) and model_choice.strip():
+        voice, _ = registry.exact_selector(model_choice)
+    if (
+        voice is not None
+        and voice["id"] in registry.decision_pool_ids
+        and reason
+        and confidence in {"high", "medium"}
+    ):
+        return _selection(
+            registry,
+            voice=voice,
+            requested=requested,
+            reason="model_emotion_match",
+            matched_by="model_decision",
+            fallback=False,
+            task_prompt=task_prompt,
+            selection_mode="model_decision",
+            candidate_voice_ids=registry.decision_pool_ids,
+            model_decision_reason=reason,
+            model_decision_confidence=confidence,
+        )
+    fallback_reason = reason or "作品信息不足，模型无法可靠判断整体情绪与叙事表达。"
+    return random_pool_selection(
+        registry,
+        requested=requested,
+        reason="fallback_model_unavailable",
+        task_prompt=task_prompt,
+        model_decision_reason=fallback_reason,
     )
 
 
@@ -332,10 +445,19 @@ def resolve_selector(registry: VoiceRegistry, selector: str) -> dict:
         task_prompt=None,
         selection_mode="explicit",
         candidate_voice_ids=[voice["id"]],
+        model_decision_reason=None,
+        model_decision_confidence=None,
     )
 
 
-def resolve_task_prompt(registry: VoiceRegistry, prompt: str) -> dict:
+def resolve_task_prompt(
+    registry: VoiceRegistry,
+    prompt: str,
+    *,
+    model_choice: str | None = None,
+    model_reason: str | None = None,
+    model_confidence: str | None = None,
+) -> dict:
     fields = [
         _without_negative_clauses(value).strip()
         for value in STRUCTURED_FIELD.findall(prompt)
@@ -360,11 +482,13 @@ def resolve_task_prompt(registry: VoiceRegistry, prompt: str) -> dict:
         fragments = direct_ids
 
     if not fragments:
-        return random_pool_selection(
+        return model_decision_or_random(
             registry,
             requested=None,
-            reason="default_no_request",
             task_prompt=prompt,
+            model_choice=model_choice,
+            model_reason=model_reason,
+            model_confidence=model_confidence,
         )
 
     matches: dict[str, dict] = {}
@@ -378,18 +502,22 @@ def resolve_task_prompt(registry: VoiceRegistry, prompt: str) -> dict:
 
     requested = " | ".join(fragments)
     if not matches:
-        return random_pool_selection(
+        return model_decision_or_random(
             registry,
             requested=requested,
-            reason="fallback_unmatched_prompt",
             task_prompt=prompt,
+            model_choice=model_choice,
+            model_reason=model_reason,
+            model_confidence=model_confidence,
         )
     if len(matches) != 1:
-        return random_pool_selection(
+        return model_decision_or_random(
             registry,
             requested=requested,
-            reason="fallback_ambiguous_prompt",
             task_prompt=prompt,
+            model_choice=model_choice,
+            model_reason=model_reason,
+            model_confidence=model_confidence,
         )
     voice = next(iter(matches.values()))
     priority = ["id", "name", "slug", "legacy_persona_id", "legacy_id", "alias"]
@@ -404,4 +532,6 @@ def resolve_task_prompt(registry: VoiceRegistry, prompt: str) -> dict:
         task_prompt=prompt,
         selection_mode="explicit",
         candidate_voice_ids=[voice["id"]],
+        model_decision_reason=None,
+        model_decision_confidence=None,
     )

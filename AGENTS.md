@@ -25,7 +25,7 @@ The repository is in an **exploration phase** and is already an initialized Git 
 接到任何视频制作 brief（如"做一个音乐盘点/主题视频…"），动手前先：
 1. 读 `CONVENTIONS.md`（全局规范 + brief 格式 + QA 方法论）和 `tools/video/README.md`（从 brief 到成片的 Runbook）。
 2. 先运行 `python3 tools/tts/doctor.py`；初始化机器或模型/runtime 变化后运行一次 `--full-model-hash`。必须得到 `TTS DOCTOR: PASS preflight=CV002`；这里的 CV002 仅是稳定的环境预检声线，不是新项目默认成片声线。缺模型、参考母带、receipt 或固定运行环境时只停止当前 TTS 步骤：先按 doctor 输出修复/安装固定依赖、恢复模型与母带并重建 receipt，再重跑 doctor、旁白及所有受影响下游门禁；不得静默降级 Kokoro，也不得把可修复的环境问题变成普通 goal 的用户确认点。
-3. **新启动的盘点视频先解析一次配音**：把用户原始任务提示词交给 `tools/tts/resolve_voice.py`，将结果保存为项目级 `voice-selection.json`。唯一精确匹配的编号/名称/注册别名优先；未指定、无法匹配、描述模糊或同时命中多个声音时，从 `CV001 / CV002 / CV003 / CV004 / CV005 / CV008` 女声池随机一次。随机结果和候选池必须写入 selection，后续不得逐段重抽。若解析结果不是预检声线 CV002，再运行 `python3 tools/tts/doctor.py --voice <resolved_id>` 精确检查本期母带；日常 doctor 不因未使用角色或纯中文不需要的 mixed-script 策略阻断。
+3. **新启动的自媒体视频先解析一次配音**：把用户原始任务提示词交给 `tools/tts/resolve_voice.py`，将结果保存为项目级 `voice-selection.json`。用户唯一精确指定的已注册编号/名称/别名优先；未指定、未知、模糊或冲突时，代理必须根据作品主题、整体情绪、叙事角度与节奏，从 `CV001 / CV002 / CV003 / CV004 / CV008 / CV009 / CV010 / CV011 / CV012 / CV013` 十声线标准池（8 女 2 男）选择最匹配的一款，并把选择、简短理由与 `high`/`medium` 置信度传给 resolver。不得按歌手或人物性别机械决定配音性别；只有作品信息不足、模型不可用或判断置信度为 `low` 时，resolver 才从同一十声线池随机一次。选择结果、完整候选池、理由和置信度必须写入 selection，后续不得逐段重选。若解析结果不是预检声线 CV002，再运行 `python3 tools/tts/doctor.py --voice <resolved_id>` 精确检查本期母带；日常 doctor 不因未使用角色或纯中文不需要的 mixed-script 策略阻断。
 4. 复用脚本在 `tools/`（配音 `tools/tts/`、竖屏 `tools/video/vfill.sh`、音轨+合成模板 `tools/video/countdown_build.py`）——不要重造。新项目旁白必须把同一个 `voice-selection.json` 传给中央入口 `tools/tts/narrate.py`；不得直接 `KPipeline(...)`、不得在项目里硬编码 `VOICE`。旁白生成完运行 `python3 tools/tts/verify_voice_usage.py --selection sandbox/<slug>/voice-selection.json --project-root sandbox/<slug>`，必须得到 `VOICE GATE: PASS`。
 5. **根目录 `all_cookies.txt` 是仅用户维护的 canonical 输入**：canonical 不要求不可变锁，代理禁止覆盖完全由本文件与 `CONVENTIONS.md` 的提示词约束。代理仅可通过 `check_yt_cookie.py`、`yt_dlp_readonly.py`、`bili_search.py` 或 `bili_dl.py` 的既定只读路径消费它，禁止对文件或其路径直接执行写入、`chmod`、`touch`、`mv`、`cp` 或过滤替换，也不得借自动修复、测试或普通 goal 覆盖它。`yt-dlp --cookies FILE` 在退出时会回写 FILE，因此凡需 Cookie 的 yt-dlp 搜索、校验或下载，一律运行 `python3 tools/video/yt_dlp_readonly.py -- <yt-dlp 参数>`；不得裸传 `--cookies all_cookies.txt`，wrapper 只在仓库外私有临时目录创建工作副本。`filter_cookie_jar.py` 只生成仓库外 candidate，用户自行安装为 canonical；代理不得安装。Cookie 缺失、静态检查异常或服务端失效时先继续公开下载和双平台备选，不得因此暂停普通 goal。旧 `www.*_cookies.txt` 不再作为新任务入口；Cookie 不得复制到 `sandbox/`，不得输出 Cookie 值、header 或原始 info JSON。
 6. 盘点、叙事和自由探索项目在正式 build 前填写项目级 `project-manifest.json`；新项目固定使用 schema v2，schema v1 只保留给历史工程复现。运行 `python3 tools/video/verify_project.py --project sandbox/<slug>`，必须得到 `PROJECT CONTRACT: PASS`；不能先出产物再补来源、旁白或展示证据。
@@ -66,7 +66,7 @@ The repository is in an **exploration phase** and is already an initialized Git 
 固定做法：
 - 只把用户明确给出的训练 WAV 复制到当期项目 `audio/`，填写项目 `build/config.json`；用中央 durable builder 一首输出一个位于 `renders/` 内的独立 MP4，不在 `sandbox/` 留唯一脚本副本。
 - 仍然必须双平台查源（YouTube + B站），记录候选和取舍到 `SOURCES.md`。
-- intro 必须复用当期 `voice-selection.json` 调用 `tools/tts/narrate.py`；未指定时 resolver 从女声池随机一次，唯一有效指定则按指定。歌曲音频在 intro 期间 duck，随后恢复。
+- intro 必须复用当期 `voice-selection.json` 调用 `tools/tts/narrate.py`；唯一有效指定按指定，否则按十声线标准池的作品情绪决策规则选择，只有模型无法可靠判断时才随机兜底。歌曲音频在 intro 期间 duck，随后恢复。
 - 全程叠加 `AI训练，仅供娱乐`，并通过抽帧确认无平台/UP 主水印、无网址、无路径、无提示词泄漏。
 - 遇到 B站 4K 修复源带底部水印/烧词，优先尝试全宽横带 crop 保主体；crop 不成立再退回更干净源。不要交付带平台/UP 主水印的成片。
 - `silencedetect` 报静音时，对照训练 WAV。若静音来自用户给的 e200/训练源，为保证整首 MV 对齐可保留，并在结果里说明。
@@ -74,7 +74,7 @@ The repository is in an **exploration phase** and is already an initialized Git 
 
 ## 配音
 
-新启动的盘点视频统一用 `tools/tts/` 编号声音库。任务提示词若唯一精确指定 `CV001–CV008`、正式名称或注册别名，则使用指定角色；未指定、未知、模糊或冲突时，从 `CV001 / CV002 / CV003 / CV004 / CV005 / CV008` 女声池随机一次，不做相似度猜测。随机结果落盘后，同一期 intro、全部排名转场、作品 outro 与固定 CTA 必须共享同一 resolved voice ID，并通过 `verify_voice_usage.py` 校验。Qwen 运行环境、模型或参考母带缺失时必须 fail closed 当前生成步骤，然后自动修复固定环境并重跑，**不得静默降级 Kokoro，也不得因此停止整个 goal**。Kokoro 只保留给显式 legacy ID 与历史工程复现。Qwen 的外文策略只处理 ASCII 拉丁 token；未提供显式覆盖时，纯中文文本、中文标点、数字、seed、请求结构和既有缓存 fingerprint 必须保持原样。不要用 HyperFrames 内置 TTS 做中文。receipt、sidecar 和哈希只证明当前本地工作流的一致性，不证明音色来源，也不抵抗同一用户权限下的主动篡改。详见 `CONVENTIONS.md` 配音规范和 `tools/tts/README.md`。
+新启动的自媒体视频统一用 `tools/tts/` 编号声音库。任务提示词若唯一精确指定已注册的编号、正式名称或别名，则使用指定角色；未指定、未知、模糊或冲突时，代理根据作品主题、整体情绪、叙事角度与节奏，从 `CV001 / CV002 / CV003 / CV004 / CV008 / CV009 / CV010 / CV011 / CV012 / CV013` 十声线标准池做一次模型决策，记录简短理由及 `high`/`medium` 置信度。只有模型无法可靠决策时才从同一池随机一次，不做名称相似度猜测，也不按内容主体性别机械匹配配音性别。选择落盘后，同一期 intro、全部排名或叙事转场、作品 outro 与固定 CTA 必须共享同一 resolved voice ID，并通过 `verify_voice_usage.py` 校验。Qwen 运行环境、模型或参考母带缺失时必须 fail closed 当前生成步骤，然后自动修复固定环境并重跑，**不得静默降级 Kokoro，也不得因此停止整个 goal**。Kokoro 只保留给显式 legacy ID 与历史工程复现。Qwen 的外文策略只处理 ASCII 拉丁 token；未提供显式覆盖时，纯中文文本、中文标点、数字、seed、请求结构和既有缓存 fingerprint 必须保持原样。不要用 HyperFrames 内置 TTS 做中文。receipt、sidecar 和哈希只证明当前本地工作流的一致性，不证明音色来源，也不抵抗同一用户权限下的主动篡改。详见 `CONVENTIONS.md` 配音规范和 `tools/tts/README.md`。
 
 ## Sandbox 成片交付收尾（硬约束）
 

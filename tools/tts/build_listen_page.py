@@ -32,13 +32,13 @@ def card(title: str, subtitle: str, path: Path, badge: str = "") -> str:
 def main() -> int:
     registry = json.loads((VOICE_ROOT / "registry.json").read_text(encoding="utf-8"))
     config = json.loads((TTS_ROOT / "config.json").read_text(encoding="utf-8"))
-    random_pool = set(config["random_voice_pool"])
+    decision_pool = set(config["decision_voice_pool"])
     references = []
     ranking = []
     mixed = []
     rows = []
     for voice in registry["voices"]:
-        badge = "随机池" if voice["id"] in random_pool else ""
+        badge = "标准候选" if voice["id"] in decision_pool else ""
         label = f"{voice['id']} · {voice['name']}"
         references.append(
             card(label, "VoiceDesign 原创参考母带", VOICE_ROOT / voice["reference_audio"], badge)
@@ -70,8 +70,8 @@ main{{width:min(1160px,92vw);margin:0 auto;padding:56px 0 80px}}h1{{font-size:cl
 </style></head><body><main>
 <h1>cc-media 编号配音库</h1>
 <p class="lead">这里保存可实际试听、可复用生成的角色声音。角色编号永久稳定，不因排序或新增声音而改变。</p>
-<div class="notice"><strong>当前默认：项目启动时从女声池随机一次</strong><br>随机池为 CV001、CV002、CV003、CV004、CV005、CV008；结果写入 voice-selection.json 后整期固定。</div>
-<h2>编号与可用名称</h2><table><thead><tr><th>编号</th><th>名称</th><th>常用别名</th><th>随机池</th></tr></thead><tbody>{''.join(rows)}</tbody></table>
+<div class="notice"><strong>当前标准：模型先按作品情绪与叙事表达选择</strong><br>标准池共 10 个声音（8 女 2 男）；只有模型无法可靠决策时才从同一池随机一次。结果写入 voice-selection.json 后整期固定。</div>
+<h2>编号与可用名称</h2><table><thead><tr><th>编号</th><th>名称</th><th>常用别名</th><th>标准候选</th></tr></thead><tbody>{''.join(rows)}</tbody></table>
 <h2>统一盘点文案</h2><div class="grid">{''.join(ranking)}</div>
 <h2>原创参考母带</h2><div class="grid">{''.join(references)}</div>
 <h2>中英日混读</h2><div class="grid">{''.join(mixed)}</div>

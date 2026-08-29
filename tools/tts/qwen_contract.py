@@ -95,6 +95,9 @@ VOICE_SELECTION_V1_FIELDS = frozenset(
 VOICE_SELECTION_V1_1_FIELDS = VOICE_SELECTION_V1_FIELDS | frozenset(
     {"selection_mode", "candidate_voice_ids"}
 )
+VOICE_SELECTION_V1_2_FIELDS = VOICE_SELECTION_V1_1_FIELDS | frozenset(
+    {"model_decision_reason", "model_decision_confidence"}
+)
 VOICE_SELECTION_REASONS = frozenset(
     {
         "default_no_request",
@@ -103,6 +106,8 @@ VOICE_SELECTION_REASONS = frozenset(
         "fallback_unmatched_prompt",
         "fallback_ambiguous_prompt",
         "explicit_prompt_match",
+        "model_emotion_match",
+        "fallback_model_unavailable",
     }
 )
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
@@ -229,16 +234,18 @@ def _selection_contract_errors(
     voice_name: str,
 ) -> list[str]:
     if not isinstance(selection, dict):
-        return _field_set_errors(selection, VOICE_SELECTION_V1_1_FIELDS, "selection")
+        return _field_set_errors(selection, VOICE_SELECTION_V1_2_FIELDS, "selection")
     schema = selection.get("schema_version")
     if schema == "1.0.0":
         errors = _field_set_errors(selection, VOICE_SELECTION_V1_FIELDS, "selection")
     elif schema == "1.1.0":
         errors = _field_set_errors(selection, VOICE_SELECTION_V1_1_FIELDS, "selection")
+    elif schema == "1.2.0":
+        errors = _field_set_errors(selection, VOICE_SELECTION_V1_2_FIELDS, "selection")
     else:
-        errors = _field_set_errors(selection, VOICE_SELECTION_V1_1_FIELDS, "selection")
+        errors = _field_set_errors(selection, VOICE_SELECTION_V1_2_FIELDS, "selection")
         errors.append(
-            "Qwen sidecar contract selection schema_version must be 1.0.0 or 1.1.0"
+            "Qwen sidecar contract selection schema_version must be 1.0.0, 1.1.0 or 1.2.0"
         )
     requested = selection.get("requested_voice")
     if requested is not None and (not isinstance(requested, str) or not requested.strip()):
@@ -262,10 +269,15 @@ def _selection_contract_errors(
     matched_by = selection.get("matched_by")
     if not isinstance(matched_by, str) or not matched_by.strip():
         errors.append("Qwen sidecar contract selection matched_by must be non-empty")
-    if schema == "1.1.0":
+    if schema in {"1.1.0", "1.2.0"}:
         mode = selection.get("selection_mode")
         candidates = selection.get("candidate_voice_ids")
-        if mode not in {"explicit", "random_pool"}:
+        allowed_modes = (
+            {"explicit", "random_pool", "model_decision"}
+            if schema == "1.2.0"
+            else {"explicit", "random_pool"}
+        )
+        if mode not in allowed_modes:
             errors.append("Qwen sidecar contract selection selection_mode is invalid")
         if (
             not isinstance(candidates, list)
@@ -286,6 +298,41 @@ def _selection_contract_errors(
             errors.append(
                 "Qwen sidecar contract random selection matched_by must be random_pool"
             )
+        if mode == "model_decision" and matched_by != "model_decision":
+            errors.append(
+                "Qwen sidecar contract model selection matched_by must be model_decision"
+            )
+    if schema == "1.2.0":
+        mode = selection.get("selection_mode")
+        decision_reason = selection.get("model_decision_reason")
+        decision_confidence = selection.get("model_decision_confidence")
+        if mode == "explicit":
+            if decision_reason is not None or decision_confidence is not None:
+                errors.append(
+                    "Qwen sidecar contract explicit selection must not contain a model decision"
+                )
+        elif mode == "model_decision":
+            if reason != "model_emotion_match":
+                errors.append(
+                    "Qwen sidecar contract model selection has the wrong resolution reason"
+                )
+            if not isinstance(decision_reason, str) or not decision_reason.strip():
+                errors.append(
+                    "Qwen sidecar contract model selection requires a decision reason"
+                )
+            if decision_confidence not in {"high", "medium"}:
+                errors.append(
+                    "Qwen sidecar contract model selection confidence must be high or medium"
+                )
+        elif mode == "random_pool":
+            if not isinstance(decision_reason, str) or not decision_reason.strip():
+                errors.append(
+                    "Qwen sidecar contract random fallback requires an unavailable reason"
+                )
+            if decision_confidence != "low":
+                errors.append(
+                    "Qwen sidecar contract random fallback confidence must be low"
+                )
     for key in ("registry_sha256", "config_sha256"):
         if not _digest(selection.get(key)):
             errors.append(f"Qwen sidecar contract selection {key} is invalid")
