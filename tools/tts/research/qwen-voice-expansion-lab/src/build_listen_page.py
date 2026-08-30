@@ -249,6 +249,10 @@ def card(persona: dict, category_label: str) -> str:
     root = LISTEN_ROOT / persona["id"]
     showcase = root / "showcase.wav"
     master = root / "voice-master.wav"
+    mixed = root / "mixed-language.wav"
+    mixed_player = (
+        audio_player("中英日混读", mixed) if mixed.is_file() else ""
+    )
     tags = "".join(f"<i>{html.escape(tag)}</i>" for tag in persona["tags"])
     search = " ".join(
         [
@@ -266,7 +270,7 @@ def card(persona: dict, category_label: str) -> str:
       <div class="tags">{tags}</div>
       <p>{html.escape(persona['description'])}</p>
       {audio_player('统一解说文案', showcase)}
-      <details><summary>试听 VoiceDesign 原创母带</summary>{audio_player('原创母带', master)}</details>
+      <details><summary>展开原创母带与混合语言</summary>{audio_player('原创母带', master)}{mixed_player}</details>
       <code>{html.escape(persona['id'])}</code>
     </article>"""
 
@@ -278,15 +282,32 @@ def build_page(manifest: dict, available: list[dict], qa_summary: dict) -> None:
         f'<button data-filter="category:{html.escape(item["id"])}">{html.escape(item["label"])}</button>'
         for item in manifest["categories"]
     )
+    page_config = manifest.get("listen_page", {})
+    voice_count = len(manifest["personas"])
+    document_title = page_config.get(
+        "document_title", f"Qwen 声线扩展实验室 · {voice_count} 声线试听"
+    )
+    heading = page_config.get("heading", "Qwen 声线扩展实验室")
+    lead = page_config.get(
+        "lead",
+        f"{voice_count} 种原创成年声线的独立横向试听。所有候选与正式 cc-media TTS 注册表完全隔离。",
+    )
+    comparison_href = page_config.get("comparison_href")
+    comparison_label = page_config.get("comparison_label", "打开当前正式声线试听页")
+    comparison_html = (
+        f'<p><a class="compare" href="{html.escape(comparison_href)}">{html.escape(comparison_label)}</a></p>'
+        if comparison_href
+        else ""
+    )
     page = f"""<!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Qwen 声线扩展实验室 · 69 声线试听</title>
+<title>{html.escape(document_title)}</title>
 <style>
 :root{{--bg:#090b12;--panel:#141824;--line:#2a3144;--text:#f5f7ff;--muted:#98a3bd;--accent:#82f7cb;--hot:#ff8ec7;--blue:#86b8ff}}
 *{{box-sizing:border-box}}body{{margin:0;background:radial-gradient(circle at 12% 0,#273154 0,transparent 32rem),radial-gradient(circle at 90% 10%,#3a1832 0,transparent 28rem),var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,sans-serif}}
-main{{width:min(1420px,94vw);margin:auto;padding:48px 0 90px}}header{{max-width:940px}}h1{{font-size:clamp(34px,5vw,65px);line-height:1.05;margin:0 0 14px}}.lead{{font-size:17px;color:var(--muted)}}.notice{{margin:22px 0;padding:14px 17px;border:1px solid #3a4968;background:#111827cc;border-radius:14px}}.controls{{position:sticky;top:0;z-index:4;background:#090b12e8;backdrop-filter:blur(16px);padding:14px 0;margin:26px 0 20px;border-bottom:1px solid var(--line)}}input{{width:100%;padding:13px 15px;background:#121725;border:1px solid var(--line);border-radius:12px;color:var(--text);font:inherit;margin-bottom:10px}}.buttons{{display:flex;flex-wrap:wrap;gap:8px}}button{{border:1px solid var(--line);background:#171d2c;color:var(--text);padding:8px 11px;border-radius:999px;cursor:pointer}}button.active{{background:var(--accent);color:#082218;border-color:var(--accent)}}.count{{color:var(--accent);margin:10px 0 0}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:15px}}.card{{background:linear-gradient(145deg,#181e2d,#10141f);border:1px solid var(--line);border-radius:18px;padding:17px;box-shadow:0 18px 40px #0005}}.card[hidden]{{display:none}}.head{{display:flex;justify-content:space-between;gap:12px}}small{{color:var(--accent)}}h3{{font-size:21px;margin:2px 0 0}}b{{color:var(--blue);font-size:12px}}.tags{{display:flex;flex-wrap:wrap;gap:6px;margin:11px 0}}i{{font-style:normal;font-size:11px;padding:3px 8px;background:#29314a;border-radius:999px;color:#cbd5ef}}.card>p{{color:var(--muted);min-height:88px;margin:10px 0 13px}}.player span{{display:block;font-size:11px;color:var(--hot);margin:7px 0 4px}}audio{{width:100%;height:38px}}details{{margin-top:9px}}summary{{color:var(--muted);cursor:pointer;font-size:12px}}code{{display:block;color:#687792;margin-top:10px;font-size:11px}}@media(max-width:640px){{main{{padding-top:28px}}.grid{{grid-template-columns:1fr}}.card>p{{min-height:0}}}}
+main{{width:min(1420px,94vw);margin:auto;padding:48px 0 90px}}header{{max-width:940px}}h1{{font-size:clamp(34px,5vw,65px);line-height:1.05;margin:0 0 14px}}.lead{{font-size:17px;color:var(--muted)}}.compare{{color:var(--accent);font-weight:700}}.notice{{margin:22px 0;padding:14px 17px;border:1px solid #3a4968;background:#111827cc;border-radius:14px}}.controls{{position:sticky;top:0;z-index:4;background:#090b12e8;backdrop-filter:blur(16px);padding:14px 0;margin:26px 0 20px;border-bottom:1px solid var(--line)}}input{{width:100%;padding:13px 15px;background:#121725;border:1px solid var(--line);border-radius:12px;color:var(--text);font:inherit;margin-bottom:10px}}.buttons{{display:flex;flex-wrap:wrap;gap:8px}}button{{border:1px solid var(--line);background:#171d2c;color:var(--text);padding:8px 11px;border-radius:999px;cursor:pointer}}button.active{{background:var(--accent);color:#082218;border-color:var(--accent)}}.count{{color:var(--accent);margin:10px 0 0}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:15px}}.card{{background:linear-gradient(145deg,#181e2d,#10141f);border:1px solid var(--line);border-radius:18px;padding:17px;box-shadow:0 18px 40px #0005}}.card[hidden]{{display:none}}.head{{display:flex;justify-content:space-between;gap:12px}}small{{color:var(--accent)}}h3{{font-size:21px;margin:2px 0 0}}b{{color:var(--blue);font-size:12px}}.tags{{display:flex;flex-wrap:wrap;gap:6px;margin:11px 0}}i{{font-style:normal;font-size:11px;padding:3px 8px;background:#29314a;border-radius:999px;color:#cbd5ef}}.card>p{{color:var(--muted);min-height:88px;margin:10px 0 13px}}.player span{{display:block;font-size:11px;color:var(--hot);margin:7px 0 4px}}audio{{width:100%;height:38px}}details{{margin-top:9px}}summary{{color:var(--muted);cursor:pointer;font-size:12px}}code{{display:block;color:#687792;margin-top:10px;font-size:11px}}@media(max-width:640px){{main{{padding-top:28px}}.grid{{grid-template-columns:1fr}}.card>p{{min-height:0}}}}
 </style></head><body><main>
-<header><h1>Qwen 声线扩展实验室</h1><p class="lead">69 种原创成年声线的独立横向试听。重点包含短视频电影解说、悬疑、科幻、自然 / 人文 / 历史纪录片经典型，以及更广的女声、男声和中性声。所有候选与正式 cc-media TTS 注册表完全隔离。</p>
+<header><h1>{html.escape(heading)}</h1><p class="lead">{html.escape(lead)}</p>{comparison_html}
 <div class="notice"><strong>同文案公平比较</strong><br>先听每张卡片的“统一解说文案”；感兴趣再展开原创母带。试听副本统一为 24kHz 单声道并做响度匹配。机械 QA：{qa_summary['passed']}/{qa_summary['total']} PASS，{qa_summary['failed']} FAIL。</div></header>
 <section class="controls"><input id="search" type="search" placeholder="搜索：电影解说、纪录片、悬疑、低沉、温柔……"><div class="buttons"><button class="active" data-filter="all">全部</button>{category_buttons}<button data-filter="group:female">女声</button><button data-filter="group:male">男声</button><button data-filter="group:neutral">中性声</button></div><p class="count" id="count"></p></section>
 <section class="grid" id="grid">{cards}</section>
@@ -294,6 +315,7 @@ main{{width:min(1420px,94vw);margin:auto;padding:48px 0 90px}}header{{max-width:
 const cards=[...document.querySelectorAll('.card')],buttons=[...document.querySelectorAll('button')],search=document.querySelector('#search'),count=document.querySelector('#count');let filter='all';
 function render(){{const q=search.value.trim().toLowerCase();let shown=0;for(const card of cards){{let ok=filter==='all';if(filter.startsWith('category:'))ok=card.dataset.category===filter.slice(9);if(filter.startsWith('group:'))ok=card.dataset.group===filter.slice(6);ok=ok&&(!q||card.dataset.search.includes(q));card.hidden=!ok;if(ok)shown++;}}count.textContent=`当前显示 ${{shown}} / ${{cards.length}} 种声线`;}}
 buttons.forEach(button=>button.addEventListener('click',()=>{{buttons.forEach(item=>item.classList.remove('active'));button.classList.add('active');filter=button.dataset.filter;render();}}));search.addEventListener('input',render);render();
+document.querySelectorAll('audio').forEach(player=>player.addEventListener('play',()=>document.querySelectorAll('audio').forEach(other=>{{if(other!==player)other.pause();}})));
 </script></body></html>"""
     (OUTPUT_ROOT / "listen.html").write_text(page, encoding="utf-8")
 

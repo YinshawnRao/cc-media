@@ -23,6 +23,7 @@ from qwen_contract import (
     fingerprint_inputs,
 )
 from text_normalizer import PronunciationPolicy, normalize_tts_text
+from verify_standard_pool import normalized_text
 from verify_voice_usage import VerificationResult, sidecar_input_text, verify_project_voice
 from voice_registry import (
     VoiceRegistry,
@@ -62,6 +63,12 @@ class VoiceResolverTests(unittest.TestCase):
         self.assertEqual(value["model_decision_confidence"], "low")
         self.assertTrue(value["model_decision_reason"])
 
+    def test_standard_pool_asr_comparison_folds_traditional_chinese(self) -> None:
+        self.assertEqual(
+            normalized_text("這是標準配音生產煉路穩定性檢查。"),
+            normalized_text("这是标准配音生产链路稳定性检查。"),
+        )
+
     def test_default_uses_random_standard_pool_only_when_model_is_unavailable(self) -> None:
         self.assert_random_voice("做一期新的华语歌曲盘点视频")
 
@@ -89,6 +96,30 @@ class VoiceResolverTests(unittest.TestCase):
                 voice_id="CV012",
                 voice_name="深沉纪实男声",
             ),
+        )
+
+    def test_new_expansion_voices_use_their_matching_reference_transcript(self) -> None:
+        legacy_text = self.registry.registry["reference_text"]
+        expansion_text = "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。"
+        for voice_id in (
+            "CV009",
+            "CV010",
+            "CV011",
+            "CV012",
+            "CV013",
+            "CV014",
+            "CV015",
+            "CV016",
+            "CV017",
+        ):
+            with self.subTest(voice_id=voice_id):
+                voice = self.registry.by_id(voice_id)
+                self.assertIsNotNone(voice)
+                self.assertEqual(expansion_text, self.registry.reference_text_for(voice))
+                self.assertNotEqual(legacy_text, self.registry.reference_text_for(voice))
+        self.assertEqual(
+            legacy_text,
+            self.registry.reference_text_for(self.registry.by_id("CV002")),
         )
 
     def test_low_confidence_model_decision_randomly_falls_back(self) -> None:
@@ -281,6 +312,19 @@ class VoiceResolverTests(unittest.TestCase):
         stale = {**value, "config_sha256": "0" * 64}
         self.assertFalse(self.registry.accepts_selection_hashes(stale))
 
+    def test_pre_refresh_standard_pool_selection_remains_reusable(self) -> None:
+        compatible = self.registry.config["compatible_selection_hashes"][-1]
+        value = {
+            "schema_version": "1.2.0",
+            "resolved_voice_id": "CV013",
+            "config_sha256": compatible["config_sha256"],
+            "registry_sha256": compatible["registry_sha256"],
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "voice-selection.json"
+            path.write_text(json.dumps(value), encoding="utf-8")
+            self.assertEqual(load_selection_file(path, self.registry), value)
+
 
 class VoiceAssetTests(unittest.TestCase):
     @classmethod
@@ -290,26 +334,26 @@ class VoiceAssetTests(unittest.TestCase):
     def test_ids_are_stable_and_random_pool_exists(self) -> None:
         self.assertEqual(
             [voice["id"] for voice in self.registry.voices],
-            [f"CV{i:03d}" for i in range(1, 14)],
+            [f"CV{i:03d}" for i in range(1, 18)],
         )
         self.assertEqual(self.registry.preflight_id, "CV002")
         expected_pool = [
-            "CV001",
-            "CV002",
-            "CV003",
-            "CV004",
-            "CV008",
-            "CV009",
-            "CV010",
-            "CV011",
             "CV012",
             "CV013",
+            "CV014",
+            "CV015",
+            "CV016",
+            "CV002",
+            "CV003",
+            "CV008",
+            "CV009",
+            "CV017",
         ]
         self.assertEqual(self.registry.decision_pool_ids, expected_pool)
         self.assertEqual(self.registry.random_pool_ids, expected_pool)
         groups = [voice["group"] for voice in self.registry.decision_pool]
-        self.assertEqual(groups.count("female"), 8)
-        self.assertEqual(groups.count("male"), 2)
+        self.assertEqual(groups.count("female"), 5)
+        self.assertEqual(groups.count("male"), 5)
         self.assertTrue(
             all(voice.get("decision_profile") for voice in self.registry.decision_pool)
         )
@@ -563,6 +607,22 @@ class VoiceGateTests(unittest.TestCase):
             self.assertFalse(result.ok)
             self.assertTrue(any("wrong reference-audio hash" in item for item in result.errors))
 
+    def test_gate_rejects_generation_that_hits_max_tokens(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary).resolve()
+            selection_path, sidecar_path = self.create_project(project)
+            sidecar = json.loads(sidecar_path.read_text(encoding="utf-8"))
+            sidecar["model_metrics"][0]["token_count"] = self.registry.config[
+                "qwen_base"
+            ]["generation"]["max_tokens"]
+            sidecar_path.write_text(json.dumps(sidecar), encoding="utf-8")
+            result = self.run_gate(project, selection_path)
+            self.assertFalse(result.ok)
+            self.assertTrue(
+                any("reached max_tokens" in item for item in result.errors),
+                result.errors,
+            )
+
     def test_gate_rejects_new_relative_sidecar_without_model_validation(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             project = Path(temporary).resolve()
@@ -675,16 +735,16 @@ class WorkspacePolicyTests(unittest.TestCase):
 
         self.assertEqual("CV002", registry.config["preflight_voice_id"])
         expected_pool = [
-            "CV001",
-            "CV002",
-            "CV003",
-            "CV004",
-            "CV008",
-            "CV009",
-            "CV010",
-            "CV011",
             "CV012",
             "CV013",
+            "CV014",
+            "CV015",
+            "CV016",
+            "CV002",
+            "CV003",
+            "CV008",
+            "CV009",
+            "CV017",
         ]
         self.assertEqual(expected_pool, registry.config["decision_voice_pool"])
         self.assertEqual(expected_pool, registry.config["random_voice_pool"])
@@ -697,7 +757,7 @@ class WorkspacePolicyTests(unittest.TestCase):
         )
         self.assertIn("single top-level source of agent instructions", agents)
         self.assertIn("CV002", agents)
-        self.assertIn("CV013", agents)
+        self.assertIn("CV017", agents)
 
         for reference in (
             "[`AGENTS.md`](AGENTS.md)",
@@ -720,13 +780,24 @@ class WorkspacePolicyTests(unittest.TestCase):
         self.assertIn("voice-selection.json", text)
 
     def test_formal_listen_page_has_all_audio(self) -> None:
+        from collections import Counter
         import re
 
         page = TTS_ROOT / "voices" / "listen.html"
         text = page.read_text(encoding="utf-8")
         references = re.findall(r'<audio[^>]+src="([^"]+)"', text)
-        self.assertEqual(len(references), 47)
+        registry = json.loads((TTS_ROOT / "voices" / "registry.json").read_text())
+        config = json.loads((TTS_ROOT / "config.json").read_text())
+        kokoro_count = len(list((TTS_ROOT / "voices" / "baselines" / "kokoro").glob("*.wav")))
+        self.assertEqual(len(references), len(registry["voices"]) * 3 + kokoro_count)
         self.assertFalse([value for value in references if not (page.parent / value).is_file()])
+
+        current_section = text.split('<details class="archive">', 1)[0]
+        current_ids = re.findall(r"<h3>(CV\d{3}) ·", current_section)
+        self.assertEqual(
+            Counter(current_ids),
+            Counter({voice_id: 3 for voice_id in config["decision_voice_pool"]}),
+        )
 
     def test_research_was_removed_from_sandbox(self) -> None:
         repo = TTS_ROOT.parents[1]

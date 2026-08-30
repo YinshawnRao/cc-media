@@ -1,0 +1,217 @@
+{
+  "schema_version": "1.0.0",
+  "experiment_id": "qwen-standard-refresh-20-lab",
+  "isolation": {
+    "formal_tts_read_only": true,
+    "output_root": "outputs",
+    "promote_automatically": false,
+    "expected_groups": {"female": 10, "male": 10}
+  },
+  "runtime": {
+    "provider": "mlx-audio",
+    "version": "0.4.5",
+    "offline_required": true
+  },
+  "models": {
+    "voice_design": {
+      "id": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit",
+      "revision": "f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
+      "default_path": "../local-anime-avatar-workflow/models/qwen3-tts/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit@f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
+      "path_env": "QWEN_VOICE_DESIGN_MODEL"
+    },
+    "base_clone": {
+      "id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
+      "revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+      "default_path": "../local-anime-avatar-workflow/models/qwen3-tts/Qwen3-TTS-12Hz-0.6B-Base-8bit@50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+      "path_env": "QWEN_BASE_MODEL"
+    }
+  },
+  "generation": {
+    "seed": 20260830,
+    "temperature": 0.82,
+    "top_k": 50,
+    "top_p": 0.95,
+    "repetition_penalty": 1.1,
+    "max_tokens": 2048,
+    "trim_threshold_dbfs": -50.0,
+    "trim_padding_ms": 120
+  },
+  "texts": {
+    "voice_master": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
+    "showcase": "第五名。真正让人记住的，不只是旋律，而是那一瞬间突然拉满的情绪。准备好了吗？好戏才刚刚开始。",
+    "mixed_language": "这次用 AI 重看《One Piece》和《進撃の巨人》，看看熟悉的名场面，还能不能让你起鸡皮疙瘩。"
+  },
+  "listen_page": {
+    "document_title": "标准声线候选刷新 · 20 声线试听",
+    "heading": "标准声线候选刷新实验",
+    "lead": "全新生成的 10 个女声与 10 个男声，刻意拉开音高、质感、节奏、情绪和叙事场景。所有输出均留在隔离实验区，不会自动进入正式声音库。",
+    "comparison_href": "../../../voices/listen.html",
+    "comparison_label": "另开当前正式十声线试听页进行对比"
+  },
+  "categories": [
+    {"id": "female_contrast", "label": "女声高跨度候选"},
+    {"id": "male_contrast", "label": "男声高跨度候选"}
+  ],
+  "personas": [
+    {
+      "id": "refresh_f01_rock_grit",
+      "label": "RF01 · 粗粝摇滚女声",
+      "group": "female",
+      "category": "female_contrast",
+      "tags": ["微沙", "摇滚", "高能", "直接"],
+      "description": "原创成年女性粗粝摇滚感说话声线，中低音结实，带自然轻微沙粒感和舞台生命力，关键词直接有冲击，节奏中快；保持普通话清楚，只说话不演唱、不喊叫、不故意压嗓，不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_f02_storybook_lilt",
+      "label": "RF02 · 童话绘本女声",
+      "group": "female",
+      "category": "female_contrast",
+      "tags": ["童话", "韵律", "温暖", "想象力"],
+      "description": "原创成年女性童话讲述声线，中高音温暖明净，句子有柔和韵律和鲜明画面感，转折轻盈，适合奇幻与寓言；保持成年感与自然口语，不幼儿化、不装可爱、不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_f03_noir_contralto",
+      "label": "RF03 · 黑胶暗夜女中音",
+      "group": "female",
+      "category": "female_contrast",
+      "tags": ["女中音", "暗夜", "烟熏", "黑色电影"],
+      "description": "原创成熟女性暗夜女中音声线，音区偏低，质感像旧黑胶般温厚并带极轻烟熏感，语速从容，句尾下收，适合黑色电影和都市夜行；不耳语、不含混、不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_f04_sports_punch",
+      "label": "RF04 · 爆发赛事女声",
+      "group": "female",
+      "category": "female_contrast",
+      "tags": ["赛事", "爆发", "快速", "推动力"],
+      "description": "原创成年女性赛事解说声线，中高音明亮有支撑，节奏快速，辅音利落，关键动作处有短促爆发和强推动力；保持可长期收听，不持续喊叫、不尖锐、不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_f05_deadpan_dry",
+      "label": "RF05 · 冷面干幽默女声",
+      "group": "female",
+      "category": "female_contrast",
+      "tags": ["冷面", "干幽默", "克制", "反差"],
+      "description": "原创成年女性冷面幽默声线，中音干净，情绪表面平直克制，笑点依靠细小停顿、轻微重音和反差落下，语尾不卖萌；吐字清楚自然，不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_f06_stage_drama",
+      "label": "RF06 · 戏剧舞台女声",
+      "group": "female",
+      "category": "female_contrast",
+      "tags": ["舞台", "共鸣", "戏剧", "张力"],
+      "description": "原创成熟女性舞台叙事声线，中音饱满、共鸣开阔，情绪层次清楚，长句有受控呼吸和戏剧推进，收束坚定；只做自然旁白，不唱腔化、不夸张表演、不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_f07_earthy_life",
+      "label": "RF07 · 质朴生活女声",
+      "group": "female",
+      "category": "female_contrast",
+      "tags": ["质朴", "生活", "真实", "松弛"],
+      "description": "原创成熟女性生活叙事声线，中音自然朴实，气息松弛，像面对面讲一件真实经历，带生活质地与可靠感；使用清楚普通话，不方言化、不播音腔、不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_f08_future_minimal",
+      "label": "RF08 · 极简未来女声",
+      "group": "female",
+      "category": "female_contrast",
+      "tags": ["未来", "极简", "精准", "疏离"],
+      "description": "原创成年女性极简未来声线，中高音薄而稳定，情绪低饱和，节奏精确，停顿短而整齐，带自然疏离感；不添加电子效果、不机械卡顿、不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_f09_vintage_cabaret",
+      "label": "RF09 · 复古歌舞厅女声",
+      "group": "female",
+      "category": "female_contrast",
+      "tags": ["复古", "明艳", "俏雅", "歌舞厅"],
+      "description": "原创成熟女性复古歌舞厅感说话声线，中音明艳温暖，咬字俏雅，节奏有轻巧摆动感，笑意自信但不过火；只说话不演唱，不复制特定年代人物，不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_f10_urgent_investigator",
+      "label": "RF10 · 紧迫调查女声",
+      "group": "female",
+      "category": "female_contrast",
+      "tags": ["调查", "紧迫", "果断", "纪实"],
+      "description": "原创成年女性调查叙事声线，中低音有支撑，语气果断，节奏紧凑，紧迫感来自清晰推进和受控呼吸而非喊叫，适合线索与事件还原；不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_m01_rock_frontman",
+      "label": "RM01 · 粗声摇滚男声",
+      "group": "male",
+      "category": "male_contrast",
+      "tags": ["粗粝", "摇滚", "爆发", "直接"],
+      "description": "原创成年男性粗声摇滚感说话声线，中低音有自然颗粒和胸声力量，表达直接，重音爆发但受控，节奏中快；只说话不演唱、不持续吼叫、不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_m02_elder_fable",
+      "label": "RM02 · 长者寓言男声",
+      "group": "male",
+      "category": "male_contrast",
+      "tags": ["长者", "寓言", "温厚", "岁月"],
+      "description": "原创年长男性寓言讲述声线，低音温厚，带自然岁月纹理和耐心，语速舒缓，停顿像在斟酌故事里的道理；普通话必须清楚，不故作苍老、不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_m03_esports_hyper",
+      "label": "RM03 · 高速电竞男声",
+      "group": "male",
+      "category": "male_contrast",
+      "tags": ["电竞", "高速", "明亮", "兴奋"],
+      "description": "原创年轻成年男性电竞解说声线，中高音明亮，反应极快，短句连贯，关键瞬间兴奋上扬并有明显冲刺感；保持字词完整和长期可听，不尖叫、不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_m04_deadpan_comedy",
+      "label": "RM04 · 冷幽默男声",
+      "group": "male",
+      "category": "male_contrast",
+      "tags": ["冷幽默", "松弛", "干笑点", "反差"],
+      "description": "原创成年男性冷幽默声线，中音松弛，表面漫不经心，笑点靠精准停顿、轻微拖拍和突然干净收尾形成，语气自然不油滑；不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_m05_epic_bass",
+      "label": "RM05 · 史诗低男声",
+      "group": "male",
+      "category": "male_contrast",
+      "tags": ["极低音", "史诗", "宏阔", "神话"],
+      "description": "原创成熟男性史诗低声线，音区很低但吐字清楚，胸腔共鸣宽阔，语速缓慢有秩序，像讲述神话与文明兴衰；不压成气泡音、不端腔、不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_m06_earthy_craftsman",
+      "label": "RM06 · 匠人质朴男声",
+      "group": "male",
+      "category": "male_contrast",
+      "tags": ["匠人", "质朴", "可靠", "手作"],
+      "description": "原创成年男性匠人叙事声线，中低音朴实可靠，语速稳，咬字不刻意修饰，带长期手作与生活经验形成的沉着；使用清楚普通话，不方言化、不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_m07_future_tenor",
+      "label": "RM07 · 锐利未来男高音",
+      "group": "male",
+      "category": "male_contrast",
+      "tags": ["男高音", "未来", "锋利", "精确"],
+      "description": "原创年轻成年男性未来感高音声线，音区偏高但不尖，辅音锋利，语速精确，情绪克制而带前沿锐度，适合硬科技与实验主题；不机械化、不添加效果、不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_m08_late_night_velvet",
+      "label": "RM08 · 深夜丝绒男声",
+      "group": "male",
+      "category": "male_contrast",
+      "tags": ["深夜", "丝绒", "贴近", "成熟"],
+      "description": "原创成熟男性深夜丝绒声线，中低音柔滑贴近，音量感克制，气息稳定，语速从容，适合城市夜谈与私人记忆；保持正常清晰说话，不耳语、不暧昧表演、不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_m09_theatrical_villain",
+      "label": "RM09 · 戏剧反派男声",
+      "group": "male",
+      "category": "male_contrast",
+      "tags": ["戏剧", "狡黠", "反派", "张力"],
+      "description": "原创成年男性戏剧反派声线，中低音清晰，语气从容狡黠，关键词有受控威胁感和细微笑意，停顿制造心理张力；避免怪笑、耳语和夸张配音腔，不模仿任何真人、平台音色或已注册声线。"
+    },
+    {
+      "id": "refresh_m10_field_reporter",
+      "label": "RM10 · 现场纪实男声",
+      "group": "male",
+      "category": "male_contrast",
+      "tags": ["现场", "纪实", "临场", "推进"],
+      "description": "原创成年男性现场纪实声线，中音结实，带轻微真实呼吸和移动中的临场感，节奏紧凑，事件节点交代果断，可信但不播新闻腔；不模仿任何记者、真人、平台音色或已注册声线。"
+    }
+  ]
+}

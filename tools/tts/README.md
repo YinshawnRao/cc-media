@@ -1,8 +1,10 @@
 # tools/tts — cc-media 编号化本地配音
 
-这里是工作区唯一正式的中文旁白入口和声音库。新启动且包含旁白的自媒体视频若未唯一指定音色，先由代理根据作品主题、整体情绪、叙事角度与节奏，从 **`CV001 / CV002 / CV003 / CV004 / CV008 / CV009 / CV010 / CV011 / CV012 / CV013`** 十声线标准池（8 女 2 男）决策；只有模型无法可靠判断时才从同一池随机一次。Kokoro 只保留为显式 legacy 兼容。
+这里是工作区唯一正式的中文旁白入口和声音库。新启动且包含旁白的自媒体视频若未唯一指定音色，先由代理根据作品主题、整体情绪、叙事角度与节奏，从 **`CV012 / CV013 / CV014 / CV015 / CV016 / CV002 / CV003 / CV008 / CV009 / CV017`** 十声线标准池（5 男 5 女）决策；只有模型无法可靠判断时才从同一池随机一次。Kokoro 只保留为显式 legacy 兼容。
 
-实际声音、参考母带和同文案样例都在 [`voices/`](voices/)；直接打开 [`voices/listen.html`](voices/listen.html) 可试听 CV001–CV013 与 Kokoro 基线，其中十声线标准候选有明确标识。完整首轮调研与 QA 证据在 [`research/qwen-character-voice-lab/`](research/qwen-character-voice-lab/)，扩展音色实验与筛选依据在 [`research/qwen-voice-expansion-lab/`](research/qwen-voice-expansion-lab/)。
+实际声音、参考母带和同文案样例都在 [`voices/`](voices/)；直接打开 [`voices/listen.html`](voices/listen.html) 会优先展示当前十声线池的统一盘点文案、参考母带与中英日混读样例，未进入当前池的正式编号和 Kokoro 基线收在页面底部的折叠历史区。完整首轮调研与 QA 证据在 [`research/qwen-character-voice-lab/`](research/qwen-character-voice-lab/)，扩展音色实验与筛选依据在 [`research/qwen-voice-expansion-lab/`](research/qwen-voice-expansion-lab/)；2026-08-30 的 20 声线隔离复选在 [`research/qwen-standard-refresh-20-lab/`](research/qwen-standard-refresh-20-lab/)。
+
+标准池新增或替换母带后，必须运行 `python3 tools/tts/verify_standard_pool.py`。它会让当前十声线逐一通过正式 `narrate.py`、项目 selection、`verify_voice_usage.py`、WAV/响度/长静音/削波检查和固定离线 ASR；只有输出 `STANDARD POOL SMOKE: PASS` 才能把变更视为可供后续视频任务使用。`--skip-asr` 只用于故障诊断，不构成正式晋级证据。
 
 ## 默认与解析硬规则
 

@@ -1,33 +1,178 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>cc-media 编号配音库</title>
+<title>cc-media 当前十声线试听</title>
 <style>
 :root{--bg:#0d1020;--panel:#171b31;--line:#2a3153;--text:#f5f7ff;--muted:#aab3d1;--accent:#8ee7cf;--pink:#ff9fca}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 10% 0,#22284b 0,transparent 38%),var(--bg);color:var(--text);font:15px/1.6 system-ui,-apple-system,sans-serif}
-main{width:min(1160px,92vw);margin:0 auto;padding:56px 0 80px}h1{font-size:clamp(30px,5vw,58px);margin:0 0 8px}h2{margin:48px 0 16px;font-size:25px}.lead{color:var(--muted);max-width:850px}.notice{padding:16px 18px;border:1px solid var(--accent);border-radius:14px;background:#102821;margin:24px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}.card{background:linear-gradient(145deg,#1b203a,#14182c);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 12px 30px #05071466}.head{display:flex;justify-content:space-between;gap:16px}h3{margin:0;font-size:18px}p{margin:5px 0 13px;color:var(--muted)}audio{width:100%;height:38px}code{display:block;color:#8390b8;font-size:11px;margin-top:8px;overflow-wrap:anywhere}.badge{font-size:11px;background:var(--pink);color:#25091a;border-radius:999px;padding:3px 8px;vertical-align:2px}table{width:100%;border-collapse:collapse;background:#12162a;border:1px solid var(--line)}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--accent)}@media(max-width:600px){main{padding-top:30px}.grid{grid-template-columns:1fr}table{font-size:12px}}
+main{width:min(1160px,92vw);margin:0 auto;padding:56px 0 80px}h1{font-size:clamp(30px,5vw,58px);margin:0 0 8px}h2{margin:48px 0 6px;font-size:25px}.lead,.section-note{color:var(--muted);max-width:850px}.section-note{margin:0 0 16px}.notice{padding:16px 18px;border:1px solid var(--accent);border-radius:14px;background:#102821;margin:24px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}.card{background:linear-gradient(145deg,#1b203a,#14182c);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 12px 30px #05071466}.head{display:flex;justify-content:space-between;gap:16px}h3{margin:0;font-size:18px}p{margin:5px 0 13px;color:var(--muted)}audio{width:100%;height:38px}code{display:block;color:#8390b8;font-size:11px;margin-top:8px;overflow-wrap:anywhere}.badge{font-size:11px;background:var(--pink);color:#25091a;border-radius:999px;padding:3px 8px;vertical-align:2px}table{width:100%;border-collapse:collapse;background:#12162a;border:1px solid var(--line)}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--accent)}details.archive{margin-top:52px;border:1px solid var(--line);border-radius:16px;background:#101426;padding:4px 18px 22px}details.archive summary{cursor:pointer;padding:16px 0;font-size:18px;color:var(--accent)}details.archive h2{margin-top:32px}@media(max-width:600px){main{padding-top:30px}.grid{grid-template-columns:1fr}table{font-size:12px}th:nth-child(4),td:nth-child(4){display:none}}
 </style></head><body><main>
-<h1>cc-media 编号配音库</h1>
-<p class="lead">这里保存可实际试听、可复用生成的角色声音。角色编号永久稳定，不因排序或新增声音而改变。</p>
-<div class="notice"><strong>当前标准：模型先按作品情绪与叙事表达选择</strong><br>标准池共 10 个声音（8 女 2 男）；只有模型无法可靠决策时才从同一池随机一次。结果写入 voice-selection.json 后整期固定。</div>
-<h2>编号与可用名称</h2><table><thead><tr><th>编号</th><th>名称</th><th>常用别名</th><th>标准候选</th></tr></thead><tbody><tr><td>CV001</td><td>元气萌妹</td><td>元气少女 / 萌妹 / 萌妹子 / 甜系萌妹</td><td>是</td></tr><tr><td>CV002</td><td>治愈少女</td><td>治愈系少女 / 治愈女声 / 温柔少女 / 温柔女声</td><td>是</td></tr><tr><td>CV003</td><td>傲娇吐槽姬</td><td>傲娇少女 / 傲娇 / 吐槽姬 / tsundere_comic</td><td>是</td></tr><tr><td>CV004</td><td>清冷学姐</td><td>冷淡御姐 / 清冷女声 / 学姐音 / cool_senpai</td><td>是</td></tr><tr><td>CV005</td><td>慵懒猫系</td><td>猫系少女 / 慵懒女声 / 猫系 / sleepy_cat</td><td>否</td></tr><tr><td>CV006</td><td>热血少年</td><td>少年男声 / 热血男声 / 热血少年声 / hotblood_youth</td><td>否</td></tr><tr><td>CV007</td><td>神秘宿敌</td><td>神秘男声 / 反派男声 / 宿敌 / mystic_rival</td><td>否</td></tr><tr><td>CV008</td><td>空灵精灵</td><td>精灵声 / 空灵中性声 / 中性精灵 / airy_spirit</td><td>是</td></tr><tr><td>CV009</td><td>清亮校园女声</td><td>清亮校园 / 校园女声 / 青春女声 / 清朗少女</td><td>是</td></tr><tr><td>CV010</td><td>俏皮机灵女声</td><td>俏皮机灵 / 机灵女声 / 俏皮女声 / 轻快吐槽女声</td><td>是</td></tr><tr><td>CV011</td><td>玻璃感清透女声</td><td>玻璃感女声 / 清透女声 / 透明感女声 / 现代清透女声</td><td>是</td></tr><tr><td>CV012</td><td>深沉纪实男声</td><td>深沉纪实 / 纪实男声 / 深沉男声 / 纪录片男声</td><td>是</td></tr><tr><td>CV013</td><td>柔和青年男声</td><td>柔和青年 / 青年男声 / 温柔男声 / 清柔男声</td><td>是</td></tr></tbody></table>
-<h2>统一盘点文案</h2><div class="grid">
+<h1>当前十声线试听</h1>
+<p class="lead">本页优先展示当前自动决策池，便于用同一段文案横向试听并决定下一步调整。角色编号永久稳定，不因排序或新增声音而改变。</p>
+<div class="notice"><strong>当前标准：模型先按作品情绪与叙事表达选择</strong><br>标准池共 10 个声音（5 男 5 女）：CV012、CV013、CV014、CV015、CV016、CV002、CV003、CV008、CV009、CV017。建议先听“统一盘点文案”；只有模型无法可靠决策时才从同一池随机一次，结果写入 voice-selection.json 后整期固定。</div>
+<h2>当前池编号</h2><table><thead><tr><th>编号</th><th>名称</th><th>类型</th><th>常用别名</th></tr></thead><tbody><tr><td>CV012</td><td>深沉纪实男声</td><td>男声</td><td>深沉纪实 / 纪实男声 / 深沉男声 / 纪录片男声</td></tr><tr><td>CV013</td><td>柔和青年男声</td><td>男声</td><td>柔和青年 / 青年男声 / 温柔男声 / 清柔男声</td></tr><tr><td>CV014</td><td>明快喜剧男声</td><td>男声</td><td>明快喜剧 / 喜剧男声 / 明快男声 / 机灵男声</td></tr><tr><td>CV015</td><td>冷幽默男声</td><td>男声</td><td>冷幽默 / 冷面男声 / 干幽默男声 / 反差男声</td></tr><tr><td>CV016</td><td>锐利未来男高音</td><td>男声</td><td>未来男高音 / 锐利男声 / 未来男声 / 科技男高音</td></tr><tr><td>CV002</td><td>治愈少女</td><td>女声</td><td>治愈系少女 / 治愈女声 / 温柔少女 / 温柔女声</td></tr><tr><td>CV003</td><td>傲娇吐槽姬</td><td>女声</td><td>傲娇少女 / 傲娇 / 吐槽姬 / tsundere_comic</td></tr><tr><td>CV008</td><td>空灵精灵</td><td>女声</td><td>精灵声 / 空灵中性声 / 中性精灵 / airy_spirit</td></tr><tr><td>CV009</td><td>清亮校园女声</td><td>女声</td><td>清亮校园 / 校园女声 / 青春女声 / 清朗少女</td></tr><tr><td>CV017</td><td>童话绘本女声</td><td>女声</td><td>童话女声 / 绘本女声 / 童话讲述 / 奇幻女声</td></tr></tbody></table>
+<h2>统一盘点文案</h2><p class="section-note">最适合先横向比较中文自然度、角色辨识度、节奏与长期耐听度。</p><div class="grid">
     <article class="card">
-      <div class="head"><div><h3>CV001 · 元气萌妹 <span class="badge">标准候选</span></h3><p>明亮甜美、节奏活泼、有弹性的原创成年二次元女声。</p></div><b>9.4s</b></div>
-      <audio controls preload="metadata" src="CV001-moe-spark/examples/ranking.wav"></audio>
-      <code>CV001-moe-spark/examples/ranking.wav</code>
+      <div class="head"><div><h3>CV012 · 深沉纪实男声 <span class="badge">当前池</span></h3><p>低音深沉清晰、克制可信，带现实重量的成熟男性纪实声线。</p></div><b>11.6s</b></div>
+      <audio controls preload="metadata" src="CV012-deep-documentary/examples/ranking.wav"></audio>
+      <code>CV012-deep-documentary/examples/ranking.wav</code>
     </article>
     <article class="card">
-      <div class="head"><div><h3>CV002 · 治愈少女 <span class="badge">标准候选</span></h3><p>柔软温暖、气息细腻、语速舒缓，带陪伴感的原创成年二次元女声。</p></div><b>9.4s</b></div>
+      <div class="head"><div><h3>CV013 · 柔和青年男声 <span class="badge">当前池</span></h3><p>干净柔和、自然温暖，带年轻成年质感的青年男性声线。</p></div><b>11.9s</b></div>
+      <audio controls preload="metadata" src="CV013-soft-youth/examples/ranking.wav"></audio>
+      <code>CV013-soft-youth/examples/ranking.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV014 · 明快喜剧男声 <span class="badge">当前池</span></h3><p>音色明亮、节奏灵活、包袱落点清楚，带自然笑意与反差感的成年男声。</p></div><b>11.6s</b></div>
+      <audio controls preload="metadata" src="CV014-bright-comic/examples/ranking.wav"></audio>
+      <code>CV014-bright-comic/examples/ranking.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV015 · 冷幽默男声 <span class="badge">当前池</span></h3><p>中音松弛、表面漫不经心，靠精准停顿与干净收尾形成冷幽默反差的成年男声。</p></div><b>8.8s</b></div>
+      <audio controls preload="metadata" src="CV015-deadpan-comedy/examples/ranking.wav"></audio>
+      <code>CV015-deadpan-comedy/examples/ranking.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV016 · 锐利未来男高音 <span class="badge">当前池</span></h3><p>音区偏高而不尖，辅音锋利、节奏精确，带前沿未来感的年轻成年男声。</p></div><b>7.9s</b></div>
+      <audio controls preload="metadata" src="CV016-future-tenor/examples/ranking.wav"></audio>
+      <code>CV016-future-tenor/examples/ranking.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV002 · 治愈少女 <span class="badge">当前池</span></h3><p>柔软温暖、气息细腻、语速舒缓，带陪伴感的原创成年二次元女声。</p></div><b>9.4s</b></div>
       <audio controls preload="metadata" src="CV002-soft-healer/examples/ranking.wav"></audio>
       <code>CV002-soft-healer/examples/ranking.wav</code>
     </article>
     <article class="card">
-      <div class="head"><div><h3>CV003 · 傲娇吐槽姬 <span class="badge">标准候选</span></h3><p>清脆机灵、节奏偏快、重音鲜明，略带傲娇吐槽感的原创成年女声。</p></div><b>8.2s</b></div>
+      <div class="head"><div><h3>CV003 · 傲娇吐槽姬 <span class="badge">当前池</span></h3><p>清脆机灵、节奏偏快、重音鲜明，略带傲娇吐槽感的原创成年女声。</p></div><b>8.2s</b></div>
       <audio controls preload="metadata" src="CV003-tsundere-comic/examples/ranking.wav"></audio>
       <code>CV003-tsundere-comic/examples/ranking.wav</code>
     </article>
     <article class="card">
-      <div class="head"><div><h3>CV004 · 清冷学姐 <span class="badge">标准候选</span></h3><p>中低音区、清冷克制、节奏稳定，句尾利落的原创成年女声。</p></div><b>9.9s</b></div>
+      <div class="head"><div><h3>CV008 · 空灵精灵 <span class="badge">当前池</span></h3><p>轻盈空灵、音色透明、年龄感模糊的原创中性动漫声线。</p></div><b>9.9s</b></div>
+      <audio controls preload="metadata" src="CV008-airy-spirit/examples/ranking.wav"></audio>
+      <code>CV008-airy-spirit/examples/ranking.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV009 · 清亮校园女声 <span class="badge">当前池</span></h3><p>清亮通透、轻快自然，带年轻成年人的青春与好奇感。</p></div><b>12.5s</b></div>
+      <audio controls preload="metadata" src="CV009-bright-campus/examples/ranking.wav"></audio>
+      <code>CV009-bright-campus/examples/ranking.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV017 · 童话绘本女声 <span class="badge">当前池</span></h3><p>中高音温暖明净、语句富有柔和韵律与画面感的成年女性童话讲述声线。</p></div><b>8.7s</b></div>
+      <audio controls preload="metadata" src="CV017-storybook-lilt/examples/ranking.wav"></audio>
+      <code>CV017-storybook-lilt/examples/ranking.wav</code>
+    </article></div>
+<h2>原创参考母带</h2><p class="section-note">用于确认克隆目标本身的音色、气息与表达基线。</p><div class="grid">
+    <article class="card">
+      <div class="head"><div><h3>CV012 · 深沉纪实男声 <span class="badge">当前池</span></h3><p>VoiceDesign 原创参考母带</p></div><b>7.8s</b></div>
+      <audio controls preload="metadata" src="CV012-deep-documentary/reference.wav"></audio>
+      <code>CV012-deep-documentary/reference.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV013 · 柔和青年男声 <span class="badge">当前池</span></h3><p>VoiceDesign 原创参考母带</p></div><b>7.9s</b></div>
+      <audio controls preload="metadata" src="CV013-soft-youth/reference.wav"></audio>
+      <code>CV013-soft-youth/reference.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV014 · 明快喜剧男声 <span class="badge">当前池</span></h3><p>VoiceDesign 原创参考母带</p></div><b>7.3s</b></div>
+      <audio controls preload="metadata" src="CV014-bright-comic/reference.wav"></audio>
+      <code>CV014-bright-comic/reference.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV015 · 冷幽默男声 <span class="badge">当前池</span></h3><p>VoiceDesign 原创参考母带</p></div><b>7.8s</b></div>
+      <audio controls preload="metadata" src="CV015-deadpan-comedy/reference.wav"></audio>
+      <code>CV015-deadpan-comedy/reference.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV016 · 锐利未来男高音 <span class="badge">当前池</span></h3><p>VoiceDesign 原创参考母带</p></div><b>7.8s</b></div>
+      <audio controls preload="metadata" src="CV016-future-tenor/reference.wav"></audio>
+      <code>CV016-future-tenor/reference.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV002 · 治愈少女 <span class="badge">当前池</span></h3><p>VoiceDesign 原创参考母带</p></div><b>9.8s</b></div>
+      <audio controls preload="metadata" src="CV002-soft-healer/reference.wav"></audio>
+      <code>CV002-soft-healer/reference.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV003 · 傲娇吐槽姬 <span class="badge">当前池</span></h3><p>VoiceDesign 原创参考母带</p></div><b>7.6s</b></div>
+      <audio controls preload="metadata" src="CV003-tsundere-comic/reference.wav"></audio>
+      <code>CV003-tsundere-comic/reference.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV008 · 空灵精灵 <span class="badge">当前池</span></h3><p>VoiceDesign 原创参考母带</p></div><b>10.8s</b></div>
+      <audio controls preload="metadata" src="CV008-airy-spirit/reference.wav"></audio>
+      <code>CV008-airy-spirit/reference.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV009 · 清亮校园女声 <span class="badge">当前池</span></h3><p>VoiceDesign 原创参考母带</p></div><b>7.4s</b></div>
+      <audio controls preload="metadata" src="CV009-bright-campus/reference.wav"></audio>
+      <code>CV009-bright-campus/reference.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV017 · 童话绘本女声 <span class="badge">当前池</span></h3><p>VoiceDesign 原创参考母带</p></div><b>7.8s</b></div>
+      <audio controls preload="metadata" src="CV017-storybook-lilt/reference.wav"></audio>
+      <code>CV017-storybook-lilt/reference.wav</code>
+    </article></div>
+<h2>中英日混读</h2><p class="section-note">用于复核外文作品名和混合语言的可懂度；纯中文项目不以这一组作为首要取舍依据。</p><div class="grid">
+    <article class="card">
+      <div class="head"><div><h3>CV012 · 深沉纪实男声 <span class="badge">当前池</span></h3><p>中英日混读测试</p></div><b>7.0s</b></div>
+      <audio controls preload="metadata" src="CV012-deep-documentary/examples/mixed-language.wav"></audio>
+      <code>CV012-deep-documentary/examples/mixed-language.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV013 · 柔和青年男声 <span class="badge">当前池</span></h3><p>中英日混读测试</p></div><b>6.7s</b></div>
+      <audio controls preload="metadata" src="CV013-soft-youth/examples/mixed-language.wav"></audio>
+      <code>CV013-soft-youth/examples/mixed-language.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV014 · 明快喜剧男声 <span class="badge">当前池</span></h3><p>中英日混读测试</p></div><b>6.3s</b></div>
+      <audio controls preload="metadata" src="CV014-bright-comic/examples/mixed-language.wav"></audio>
+      <code>CV014-bright-comic/examples/mixed-language.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV015 · 冷幽默男声 <span class="badge">当前池</span></h3><p>中英日混读测试</p></div><b>7.5s</b></div>
+      <audio controls preload="metadata" src="CV015-deadpan-comedy/examples/mixed-language.wav"></audio>
+      <code>CV015-deadpan-comedy/examples/mixed-language.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV016 · 锐利未来男高音 <span class="badge">当前池</span></h3><p>中英日混读测试</p></div><b>6.2s</b></div>
+      <audio controls preload="metadata" src="CV016-future-tenor/examples/mixed-language.wav"></audio>
+      <code>CV016-future-tenor/examples/mixed-language.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV002 · 治愈少女 <span class="badge">当前池</span></h3><p>中英日混读测试</p></div><b>7.7s</b></div>
+      <audio controls preload="metadata" src="CV002-soft-healer/examples/mixed-language.wav"></audio>
+      <code>CV002-soft-healer/examples/mixed-language.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV003 · 傲娇吐槽姬 <span class="badge">当前池</span></h3><p>中英日混读测试</p></div><b>6.7s</b></div>
+      <audio controls preload="metadata" src="CV003-tsundere-comic/examples/mixed-language.wav"></audio>
+      <code>CV003-tsundere-comic/examples/mixed-language.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV008 · 空灵精灵 <span class="badge">当前池</span></h3><p>中英日混读测试</p></div><b>7.4s</b></div>
+      <audio controls preload="metadata" src="CV008-airy-spirit/examples/mixed-language.wav"></audio>
+      <code>CV008-airy-spirit/examples/mixed-language.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV009 · 清亮校园女声 <span class="badge">当前池</span></h3><p>中英日混读测试</p></div><b>6.8s</b></div>
+      <audio controls preload="metadata" src="CV009-bright-campus/examples/mixed-language.wav"></audio>
+      <code>CV009-bright-campus/examples/mixed-language.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV017 · 童话绘本女声 <span class="badge">当前池</span></h3><p>中英日混读测试</p></div><b>6.7s</b></div>
+      <audio controls preload="metadata" src="CV017-storybook-lilt/examples/mixed-language.wav"></audio>
+      <code>CV017-storybook-lilt/examples/mixed-language.wav</code>
+    </article></div>
+<details class="archive"><summary>历史声音与 Legacy 基线（折叠，不参与当前自动决策）</summary>
+<p class="section-note">未进入当前池的正式编号（CV001、CV004、CV005、CV006、CV007、CV010、CV011）仍保留显式指定和历史复现能力；Legacy Kokoro 只用于旧工程兼容。</p>
+<h2>历史编号 · 统一盘点文案</h2><div class="grid">
+    <article class="card">
+      <div class="head"><div><h3>CV001 · 元气萌妹 </h3><p>明亮甜美、节奏活泼、有弹性的原创成年二次元女声。</p></div><b>9.4s</b></div>
+      <audio controls preload="metadata" src="CV001-moe-spark/examples/ranking.wav"></audio>
+      <code>CV001-moe-spark/examples/ranking.wav</code>
+    </article>
+    <article class="card">
+      <div class="head"><div><h3>CV004 · 清冷学姐 </h3><p>中低音区、清冷克制、节奏稳定，句尾利落的原创成年女声。</p></div><b>9.9s</b></div>
       <audio controls preload="metadata" src="CV004-cool-senpai/examples/ranking.wav"></audio>
       <code>CV004-cool-senpai/examples/ranking.wav</code>
     </article>
@@ -47,53 +192,23 @@ main{width:min(1160px,92vw);margin:0 auto;padding:56px 0 80px}h1{font-size:clamp
       <code>CV007-mystic-rival/examples/ranking.wav</code>
     </article>
     <article class="card">
-      <div class="head"><div><h3>CV008 · 空灵精灵 <span class="badge">标准候选</span></h3><p>轻盈空灵、音色透明、年龄感模糊的原创中性动漫声线。</p></div><b>9.9s</b></div>
-      <audio controls preload="metadata" src="CV008-airy-spirit/examples/ranking.wav"></audio>
-      <code>CV008-airy-spirit/examples/ranking.wav</code>
-    </article>
-    <article class="card">
-      <div class="head"><div><h3>CV009 · 清亮校园女声 <span class="badge">标准候选</span></h3><p>清亮通透、轻快自然，带年轻成年人的青春与好奇感。</p></div><b>12.5s</b></div>
-      <audio controls preload="metadata" src="CV009-bright-campus/examples/ranking.wav"></audio>
-      <code>CV009-bright-campus/examples/ranking.wav</code>
-    </article>
-    <article class="card">
-      <div class="head"><div><h3>CV010 · 俏皮机灵女声 <span class="badge">标准候选</span></h3><p>清脆灵动、反应快、语尾轻扬，适合轻吐槽与反差表达。</p></div><b>12.8s</b></div>
+      <div class="head"><div><h3>CV010 · 俏皮机灵女声 </h3><p>清脆灵动、反应快、语尾轻扬，适合轻吐槽与反差表达。</p></div><b>12.8s</b></div>
       <audio controls preload="metadata" src="CV010-playful-quickwit/examples/ranking.wav"></audio>
       <code>CV010-playful-quickwit/examples/ranking.wav</code>
     </article>
     <article class="card">
-      <div class="head"><div><h3>CV011 · 玻璃感清透女声 <span class="badge">标准候选</span></h3><p>明净清透、轻盈现代，音高偏上但不尖锐的年轻成年女声。</p></div><b>12.5s</b></div>
+      <div class="head"><div><h3>CV011 · 玻璃感清透女声 </h3><p>明净清透、轻盈现代，音高偏上但不尖锐的年轻成年女声。</p></div><b>12.5s</b></div>
       <audio controls preload="metadata" src="CV011-glassy-clear/examples/ranking.wav"></audio>
       <code>CV011-glassy-clear/examples/ranking.wav</code>
-    </article>
-    <article class="card">
-      <div class="head"><div><h3>CV012 · 深沉纪实男声 <span class="badge">标准候选</span></h3><p>低音深沉清晰、克制可信，带现实重量的成熟男性纪实声线。</p></div><b>11.6s</b></div>
-      <audio controls preload="metadata" src="CV012-deep-documentary/examples/ranking.wav"></audio>
-      <code>CV012-deep-documentary/examples/ranking.wav</code>
-    </article>
-    <article class="card">
-      <div class="head"><div><h3>CV013 · 柔和青年男声 <span class="badge">标准候选</span></h3><p>干净柔和、自然温暖，带年轻成年质感的青年男性声线。</p></div><b>11.9s</b></div>
-      <audio controls preload="metadata" src="CV013-soft-youth/examples/ranking.wav"></audio>
-      <code>CV013-soft-youth/examples/ranking.wav</code>
     </article></div>
-<h2>原创参考母带</h2><div class="grid">
+<h2>历史编号 · 原创参考母带</h2><div class="grid">
     <article class="card">
-      <div class="head"><div><h3>CV001 · 元气萌妹 <span class="badge">标准候选</span></h3><p>VoiceDesign 原创参考母带</p></div><b>8.7s</b></div>
+      <div class="head"><div><h3>CV001 · 元气萌妹 </h3><p>VoiceDesign 原创参考母带</p></div><b>8.7s</b></div>
       <audio controls preload="metadata" src="CV001-moe-spark/reference.wav"></audio>
       <code>CV001-moe-spark/reference.wav</code>
     </article>
     <article class="card">
-      <div class="head"><div><h3>CV002 · 治愈少女 <span class="badge">标准候选</span></h3><p>VoiceDesign 原创参考母带</p></div><b>9.8s</b></div>
-      <audio controls preload="metadata" src="CV002-soft-healer/reference.wav"></audio>
-      <code>CV002-soft-healer/reference.wav</code>
-    </article>
-    <article class="card">
-      <div class="head"><div><h3>CV003 · 傲娇吐槽姬 <span class="badge">标准候选</span></h3><p>VoiceDesign 原创参考母带</p></div><b>7.6s</b></div>
-      <audio controls preload="metadata" src="CV003-tsundere-comic/reference.wav"></audio>
-      <code>CV003-tsundere-comic/reference.wav</code>
-    </article>
-    <article class="card">
-      <div class="head"><div><h3>CV004 · 清冷学姐 <span class="badge">标准候选</span></h3><p>VoiceDesign 原创参考母带</p></div><b>7.9s</b></div>
+      <div class="head"><div><h3>CV004 · 清冷学姐 </h3><p>VoiceDesign 原创参考母带</p></div><b>7.9s</b></div>
       <audio controls preload="metadata" src="CV004-cool-senpai/reference.wav"></audio>
       <code>CV004-cool-senpai/reference.wav</code>
     </article>
@@ -113,53 +228,23 @@ main{width:min(1160px,92vw);margin:0 auto;padding:56px 0 80px}h1{font-size:clamp
       <code>CV007-mystic-rival/reference.wav</code>
     </article>
     <article class="card">
-      <div class="head"><div><h3>CV008 · 空灵精灵 <span class="badge">标准候选</span></h3><p>VoiceDesign 原创参考母带</p></div><b>10.8s</b></div>
-      <audio controls preload="metadata" src="CV008-airy-spirit/reference.wav"></audio>
-      <code>CV008-airy-spirit/reference.wav</code>
-    </article>
-    <article class="card">
-      <div class="head"><div><h3>CV009 · 清亮校园女声 <span class="badge">标准候选</span></h3><p>VoiceDesign 原创参考母带</p></div><b>7.4s</b></div>
-      <audio controls preload="metadata" src="CV009-bright-campus/reference.wav"></audio>
-      <code>CV009-bright-campus/reference.wav</code>
-    </article>
-    <article class="card">
-      <div class="head"><div><h3>CV010 · 俏皮机灵女声 <span class="badge">标准候选</span></h3><p>VoiceDesign 原创参考母带</p></div><b>8.2s</b></div>
+      <div class="head"><div><h3>CV010 · 俏皮机灵女声 </h3><p>VoiceDesign 原创参考母带</p></div><b>8.2s</b></div>
       <audio controls preload="metadata" src="CV010-playful-quickwit/reference.wav"></audio>
       <code>CV010-playful-quickwit/reference.wav</code>
     </article>
     <article class="card">
-      <div class="head"><div><h3>CV011 · 玻璃感清透女声 <span class="badge">标准候选</span></h3><p>VoiceDesign 原创参考母带</p></div><b>7.5s</b></div>
+      <div class="head"><div><h3>CV011 · 玻璃感清透女声 </h3><p>VoiceDesign 原创参考母带</p></div><b>7.5s</b></div>
       <audio controls preload="metadata" src="CV011-glassy-clear/reference.wav"></audio>
       <code>CV011-glassy-clear/reference.wav</code>
-    </article>
-    <article class="card">
-      <div class="head"><div><h3>CV012 · 深沉纪实男声 <span class="badge">标准候选</span></h3><p>VoiceDesign 原创参考母带</p></div><b>7.8s</b></div>
-      <audio controls preload="metadata" src="CV012-deep-documentary/reference.wav"></audio>
-      <code>CV012-deep-documentary/reference.wav</code>
-    </article>
-    <article class="card">
-      <div class="head"><div><h3>CV013 · 柔和青年男声 <span class="badge">标准候选</span></h3><p>VoiceDesign 原创参考母带</p></div><b>7.9s</b></div>
-      <audio controls preload="metadata" src="CV013-soft-youth/reference.wav"></audio>
-      <code>CV013-soft-youth/reference.wav</code>
     </article></div>
-<h2>中英日混读</h2><div class="grid">
+<h2>历史编号 · 中英日混读</h2><div class="grid">
     <article class="card">
-      <div class="head"><div><h3>CV001 · 元气萌妹 <span class="badge">标准候选</span></h3><p>中英日混读测试</p></div><b>7.7s</b></div>
+      <div class="head"><div><h3>CV001 · 元气萌妹 </h3><p>中英日混读测试</p></div><b>7.7s</b></div>
       <audio controls preload="metadata" src="CV001-moe-spark/examples/mixed-language.wav"></audio>
       <code>CV001-moe-spark/examples/mixed-language.wav</code>
     </article>
     <article class="card">
-      <div class="head"><div><h3>CV002 · 治愈少女 <span class="badge">标准候选</span></h3><p>中英日混读测试</p></div><b>7.7s</b></div>
-      <audio controls preload="metadata" src="CV002-soft-healer/examples/mixed-language.wav"></audio>
-      <code>CV002-soft-healer/examples/mixed-language.wav</code>
-    </article>
-    <article class="card">
-      <div class="head"><div><h3>CV003 · 傲娇吐槽姬 <span class="badge">标准候选</span></h3><p>中英日混读测试</p></div><b>6.7s</b></div>
-      <audio controls preload="metadata" src="CV003-tsundere-comic/examples/mixed-language.wav"></audio>
-      <code>CV003-tsundere-comic/examples/mixed-language.wav</code>
-    </article>
-    <article class="card">
-      <div class="head"><div><h3>CV004 · 清冷学姐 <span class="badge">标准候选</span></h3><p>中英日混读测试</p></div><b>7.7s</b></div>
+      <div class="head"><div><h3>CV004 · 清冷学姐 </h3><p>中英日混读测试</p></div><b>7.7s</b></div>
       <audio controls preload="metadata" src="CV004-cool-senpai/examples/mixed-language.wav"></audio>
       <code>CV004-cool-senpai/examples/mixed-language.wav</code>
     </article>
@@ -179,34 +264,14 @@ main{width:min(1160px,92vw);margin:0 auto;padding:56px 0 80px}h1{font-size:clamp
       <code>CV007-mystic-rival/examples/mixed-language.wav</code>
     </article>
     <article class="card">
-      <div class="head"><div><h3>CV008 · 空灵精灵 <span class="badge">标准候选</span></h3><p>中英日混读测试</p></div><b>7.4s</b></div>
-      <audio controls preload="metadata" src="CV008-airy-spirit/examples/mixed-language.wav"></audio>
-      <code>CV008-airy-spirit/examples/mixed-language.wav</code>
-    </article>
-    <article class="card">
-      <div class="head"><div><h3>CV009 · 清亮校园女声 <span class="badge">标准候选</span></h3><p>中英日混读测试</p></div><b>6.8s</b></div>
-      <audio controls preload="metadata" src="CV009-bright-campus/examples/mixed-language.wav"></audio>
-      <code>CV009-bright-campus/examples/mixed-language.wav</code>
-    </article>
-    <article class="card">
-      <div class="head"><div><h3>CV010 · 俏皮机灵女声 <span class="badge">标准候选</span></h3><p>中英日混读测试</p></div><b>7.3s</b></div>
+      <div class="head"><div><h3>CV010 · 俏皮机灵女声 </h3><p>中英日混读测试</p></div><b>7.3s</b></div>
       <audio controls preload="metadata" src="CV010-playful-quickwit/examples/mixed-language.wav"></audio>
       <code>CV010-playful-quickwit/examples/mixed-language.wav</code>
     </article>
     <article class="card">
-      <div class="head"><div><h3>CV011 · 玻璃感清透女声 <span class="badge">标准候选</span></h3><p>中英日混读测试</p></div><b>7.1s</b></div>
+      <div class="head"><div><h3>CV011 · 玻璃感清透女声 </h3><p>中英日混读测试</p></div><b>7.1s</b></div>
       <audio controls preload="metadata" src="CV011-glassy-clear/examples/mixed-language.wav"></audio>
       <code>CV011-glassy-clear/examples/mixed-language.wav</code>
-    </article>
-    <article class="card">
-      <div class="head"><div><h3>CV012 · 深沉纪实男声 <span class="badge">标准候选</span></h3><p>中英日混读测试</p></div><b>7.0s</b></div>
-      <audio controls preload="metadata" src="CV012-deep-documentary/examples/mixed-language.wav"></audio>
-      <code>CV012-deep-documentary/examples/mixed-language.wav</code>
-    </article>
-    <article class="card">
-      <div class="head"><div><h3>CV013 · 柔和青年男声 <span class="badge">标准候选</span></h3><p>中英日混读测试</p></div><b>6.7s</b></div>
-      <audio controls preload="metadata" src="CV013-soft-youth/examples/mixed-language.wav"></audio>
-      <code>CV013-soft-youth/examples/mixed-language.wav</code>
     </article></div>
 <h2>Legacy Kokoro 基线</h2><div class="grid">
     <article class="card">
@@ -249,4 +314,5 @@ main{width:min(1160px,92vw);margin:0 auto;padding:56px 0 80px}h1{font-size:clamp
       <audio controls preload="metadata" src="baselines/kokoro/zm_yunyang.wav"></audio>
       <code>baselines/kokoro/zm_yunyang.wav</code>
     </article></div>
-</main></body></html>
+</details>
+</main><script>document.querySelectorAll('audio').forEach((player)=>player.addEventListener('play',()=>document.querySelectorAll('audio').forEach((other)=>{if(other!==player)other.pause()})))</script></body></html>

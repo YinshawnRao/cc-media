@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.2.0",
   "id_namespace": "CV",
   "numbering_policy": "IDs are permanent and must never be reordered or reused",
   "reference_text": "你好，我是本期的声音候选。今天我们一起听听，这种角色声线放进视频解说，会是什么感觉。",
@@ -182,6 +182,7 @@
       },
       "reference_audio": "CV009-bright-campus/reference.wav",
       "reference_sha256": "0255f6aff8e017f1e7371b31b51e8030d7f4213db640898fcd60809f6f57b92c",
+      "reference_text": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
       "examples": {
         "ranking": "CV009-bright-campus/examples/ranking.wav",
         "mixed_language": "CV009-bright-campus/examples/mixed-language.wav"
@@ -204,6 +205,7 @@
       },
       "reference_audio": "CV010-playful-quickwit/reference.wav",
       "reference_sha256": "317c081672e87ebdf736489000b7043e7942d9815bec7c10de24015b7e1873f2",
+      "reference_text": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
       "examples": {
         "ranking": "CV010-playful-quickwit/examples/ranking.wav",
         "mixed_language": "CV010-playful-quickwit/examples/mixed-language.wav"
@@ -226,6 +228,7 @@
       },
       "reference_audio": "CV011-glassy-clear/reference.wav",
       "reference_sha256": "f97332b5faf1cd4ddb324eff52bba5b6e8834d0bced8795f2231f2b00d2d157c",
+      "reference_text": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
       "examples": {
         "ranking": "CV011-glassy-clear/examples/ranking.wav",
         "mixed_language": "CV011-glassy-clear/examples/mixed-language.wav"
@@ -248,6 +251,7 @@
       },
       "reference_audio": "CV012-deep-documentary/reference.wav",
       "reference_sha256": "90358192bf71dfe3aec29b1a600a05a785a3a594db6195e2dfb9a9a2f5d6f793",
+      "reference_text": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
       "examples": {
         "ranking": "CV012-deep-documentary/examples/ranking.wav",
         "mixed_language": "CV012-deep-documentary/examples/mixed-language.wav"
@@ -270,9 +274,102 @@
       },
       "reference_audio": "CV013-soft-youth/reference.wav",
       "reference_sha256": "2a37d67c4e9546871e95c20366c30964a23244211193cf507d6f14d47ca0db3f",
+      "reference_text": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
       "examples": {
         "ranking": "CV013-soft-youth/examples/ranking.wav",
         "mixed_language": "CV013-soft-youth/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV014",
+      "slug": "bright-comic",
+      "legacy_persona_id": "male_bright_comic",
+      "name": "明快喜剧男声",
+      "group": "male",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["明快喜剧", "喜剧男声", "明快男声", "机灵男声", "male_bright_comic", "bright-comic"],
+      "description": "音色明亮、节奏灵活、包袱落点清楚，带自然笑意与反差感的成年男声。",
+      "decision_profile": {
+        "emotion_tags": ["明快", "喜剧", "机灵", "轻松", "反差"],
+        "best_for": ["轻松盘点", "喜剧作品", "趣味冷知识", "欢乐回忆", "明快短评"],
+        "avoid_for": ["沉重纪实", "肃穆历史", "纯粹空灵"]
+      },
+      "reference_audio": "CV014-bright-comic/reference.wav",
+      "reference_sha256": "5c64bba9ed2c6abdfcfe7da0d13f07bb1c9f62c2423f0756854160d66c78e0f7",
+      "reference_text": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
+      "examples": {
+        "ranking": "CV014-bright-comic/examples/ranking.wav",
+        "mixed_language": "CV014-bright-comic/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV015",
+      "slug": "deadpan-comedy",
+      "legacy_persona_id": "refresh_m04_deadpan_comedy",
+      "name": "冷幽默男声",
+      "group": "male",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["冷幽默", "冷面男声", "干幽默男声", "反差男声", "refresh_m04_deadpan_comedy", "deadpan-comedy"],
+      "description": "中音松弛、表面漫不经心，靠精准停顿与干净收尾形成冷幽默反差的成年男声。",
+      "decision_profile": {
+        "emotion_tags": ["冷幽默", "松弛", "克制", "反差", "干脆"],
+        "best_for": ["冷面吐槽", "反差盘点", "黑色幽默", "怪趣作品", "轻讽短评"],
+        "avoid_for": ["庄重纪实", "热血赛事", "纯治愈"]
+      },
+      "reference_audio": "CV015-deadpan-comedy/reference.wav",
+      "reference_sha256": "02719ad1b3015bd716fba08ddfa5dacef285b58a7e11100a8db23880eb0c6666",
+      "reference_text": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
+      "examples": {
+        "ranking": "CV015-deadpan-comedy/examples/ranking.wav",
+        "mixed_language": "CV015-deadpan-comedy/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV016",
+      "slug": "future-tenor",
+      "legacy_persona_id": "refresh_m07_future_tenor",
+      "name": "锐利未来男高音",
+      "group": "male",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["未来男高音", "锐利男声", "未来男声", "科技男高音", "refresh_m07_future_tenor", "future-tenor"],
+      "description": "音区偏高而不尖，辅音锋利、节奏精确，带前沿未来感的年轻成年男声。",
+      "decision_profile": {
+        "emotion_tags": ["未来", "锐利", "精确", "科技", "克制"],
+        "best_for": ["硬科技", "未来世界", "实验电子", "科幻作品", "先锋审美"],
+        "avoid_for": ["温情陪伴", "沧桑历史", "柔软童话"]
+      },
+      "reference_audio": "CV016-future-tenor/reference.wav",
+      "reference_sha256": "5eca6a85652e646b980e0f7efe895c513e4eecb38f2d315ef69c55f898e35150",
+      "reference_text": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
+      "examples": {
+        "ranking": "CV016-future-tenor/examples/ranking.wav",
+        "mixed_language": "CV016-future-tenor/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV017",
+      "slug": "storybook-lilt",
+      "legacy_persona_id": "refresh_f02_storybook_lilt",
+      "name": "童话绘本女声",
+      "group": "female",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["童话女声", "绘本女声", "童话讲述", "奇幻女声", "refresh_f02_storybook_lilt", "storybook-lilt"],
+      "description": "中高音温暖明净、语句富有柔和韵律与画面感的成年女性童话讲述声线。",
+      "decision_profile": {
+        "emotion_tags": ["童话", "温暖", "想象力", "韵律", "奇幻"],
+        "best_for": ["童话与绘本", "奇幻作品", "动漫世界观", "温暖寓言", "亲子回忆"],
+        "avoid_for": ["硬核纪实", "尖锐吐槽", "粗粝摇滚"]
+      },
+      "reference_audio": "CV017-storybook-lilt/reference.wav",
+      "reference_sha256": "1544ea1b7188ea2998759cf424f58a787c4c2b53eb9bb59de8049a66170ab1d8",
+      "reference_text": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
+      "examples": {
+        "ranking": "CV017-storybook-lilt/examples/ranking.wav",
+        "mixed_language": "CV017-storybook-lilt/examples/mixed-language.wav"
       }
     }
   ]

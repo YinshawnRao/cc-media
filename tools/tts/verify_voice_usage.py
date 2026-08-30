@@ -499,7 +499,7 @@ def verify_project_voice(
                 qwen=registry.config["qwen_base"],
                 selection=selection,
                 voice=expected_voice,
-                reference_text=registry.registry["reference_text"],
+                reference_text=registry.reference_text_for(expected_voice),
                 expected_output_name=expected_output_name,
                 actual_output_sha256=output_sha256,
                 actual_wav=actual_wav,

@@ -113,6 +113,11 @@ class VoiceRegistry:
         wanted = voice_id.upper()
         return next((voice for voice in self.voices if voice["id"] == wanted), None)
 
+    def reference_text_for(self, voice: dict) -> str:
+        """Return the transcript that exactly matches this voice's reference WAV."""
+
+        return voice.get("reference_text", self.registry["reference_text"])
+
     def tokens_for(self, voice: dict) -> list[tuple[str, str]]:
         values = [
             (voice["id"], "id"),
@@ -178,6 +183,12 @@ class VoiceRegistry:
         return voice, next(kind for kind in priority if kind in kinds)
 
     def validate(self) -> None:
+        default_reference_text = self.registry.get("reference_text")
+        if self.registry.get("schema_version") is not None and (
+            not isinstance(default_reference_text, str)
+            or not default_reference_text.strip()
+        ):
+            raise ValueError("registry reference_text must be a non-empty string")
         ids: set[str] = set()
         exact_tokens: dict[str, str] = {}
         for voice in self.registry.get("voices", []):
@@ -187,6 +198,11 @@ class VoiceRegistry:
             if voice_id in ids:
                 raise ValueError(f"duplicate voice id: {voice_id}")
             ids.add(voice_id)
+            reference_text = voice.get("reference_text")
+            if reference_text is not None and (
+                not isinstance(reference_text, str) or not reference_text.strip()
+            ):
+                raise ValueError(f"voice reference_text must be non-empty: {voice_id}")
             for token, _ in self.tokens_for(voice):
                 owner = exact_tokens.get(token)
                 if owner and owner != voice_id:
@@ -259,7 +275,7 @@ class VoiceRegistry:
             if (
                 not isinstance(versions, list)
                 or not versions
-                or any(version not in {"1.0.0", "1.1.0"} for version in versions)
+                or any(version not in {"1.0.0", "1.1.0", "1.2.0"} for version in versions)
             ):
                 raise ValueError("compatible_selection_hashes contains invalid schema versions")
 

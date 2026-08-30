@@ -134,16 +134,16 @@ class MachineSourceContractTests(unittest.TestCase):
     def test_voice_selection_prefers_model_emotion_decision_then_random_fallback(self) -> None:
         config = self.registry.config
         pool = [
-            "CV001",
-            "CV002",
-            "CV003",
-            "CV004",
-            "CV008",
-            "CV009",
-            "CV010",
-            "CV011",
             "CV012",
             "CV013",
+            "CV014",
+            "CV015",
+            "CV016",
+            "CV002",
+            "CV003",
+            "CV008",
+            "CV009",
+            "CV017",
         ]
         self.assertEqual("CV002", config["preflight_voice_id"])
         self.assertEqual(pool, config["decision_voice_pool"])
@@ -152,7 +152,7 @@ class MachineSourceContractTests(unittest.TestCase):
         self.assertEqual("model_emotion_decision", config["selection_policy"]["unknown"])
         self.assertEqual("model_emotion_decision", config["selection_policy"]["ambiguous"])
         self.assertEqual("random_voice_pool", config["selection_policy"]["model_unavailable"])
-        self.assertEqual({"female": 8, "male": 2}, config["decision_pool_expected_groups"])
+        self.assertEqual({"male": 5, "female": 5}, config["decision_pool_expected_groups"])
         self.assertIs(config["selection_policy"]["fuzzy_matching"], False)
 
         model_args = {
@@ -845,7 +845,7 @@ class SharedTemplateAstTests(unittest.TestCase):
         self.assertIn("Legacy Kokoro", generator)
         self.assertNotRegex(formal_page, stale)
         self.assertIn("当前标准：模型先按作品情绪与叙事表达选择", formal_page)
-        self.assertIn("标准池共 10 个声音（8 女 2 男）", formal_page)
+        self.assertIn("标准池共 10 个声音（5 男 5 女）", formal_page)
         self.assertIn("Legacy Kokoro", formal_page)
 
 

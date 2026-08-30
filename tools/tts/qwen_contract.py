@@ -499,6 +499,16 @@ def qwen_sidecar_contract_errors(
                 not _is_int(token_count) or token_count < 0
             ):
                 errors.append(f"Qwen sidecar contract {label}.token_count is invalid")
+            max_tokens = qwen.get("generation", {}).get("max_tokens")
+            if (
+                _is_int(token_count)
+                and _is_int(max_tokens)
+                and token_count >= max_tokens
+            ):
+                errors.append(
+                    f"Qwen sidecar contract {label}.token_count reached max_tokens; "
+                    "audio did not stop cleanly"
+                )
 
     validation = sidecar.get("model_validation")
     errors.extend(

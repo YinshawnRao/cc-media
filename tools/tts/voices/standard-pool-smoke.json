@@ -1,0 +1,319 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at_utc": "2026-08-30T07:55:51.984409+00:00",
+  "config_sha256": "8f413ee49a90ccb133832ab79ab828f9908e86537484b574816011e874031962",
+  "registry_sha256": "d560ad3ef3ab3f27b216894e16f4c305994ed7db879c132c5b861e28bee2eecd",
+  "standard_voice_ids": [
+    "CV012",
+    "CV013",
+    "CV014",
+    "CV015",
+    "CV016",
+    "CV002",
+    "CV003",
+    "CV008",
+    "CV009",
+    "CV017"
+  ],
+  "smoke_text": "这是标准配音生产链路稳定性检查。声音应该自然清楚，没有杂音，也不会异常拖长。",
+  "asr_required": true,
+  "status": "PASS",
+  "summary": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "failed_voice_ids": []
+  },
+  "voices": [
+    {
+      "voice_id": "CV012",
+      "voice_name": "深沉纪实男声",
+      "reference_sha256": "90358192bf71dfe3aec29b1a600a05a785a3a594db6195e2dfb9a9a2f5d6f793",
+      "reference_text_sha256": "87864a577d4f5c7d983ac5e46dcdb9e26b31c4d390790933e80cd05b0d761ed6",
+      "generation_returncode": 0,
+      "generation_stdout": "",
+      "generation_stderr": "",
+      "voice_gate": "VOICE GATE: PASS  voice=CV012 sidecars=1 provenance=qwen_portable_current",
+      "audio": {
+        "sha256": "5c8862e68b2648f80704c61a8f77d08f29446b8142e044ef6614408ad0dea426",
+        "bytes": 307244,
+        "duration_seconds": 6.4,
+        "codec": "pcm_s16le",
+        "sample_rate_hz": 24000,
+        "channels": 1,
+        "bits_per_sample": 16,
+        "mean_volume_db": -21.8,
+        "max_volume_db": -4.9,
+        "silence_durations_over_1_5s": [],
+        "errors": []
+      },
+      "errors": [],
+      "asr": {
+        "transcript": "這是標準配音生產煉路穩定性檢查,聲音應該自然清楚,沒有雜音,也不會一場拖長。",
+        "similarity": 0.941176,
+        "errors": []
+      }
+    },
+    {
+      "voice_id": "CV013",
+      "voice_name": "柔和青年男声",
+      "reference_sha256": "2a37d67c4e9546871e95c20366c30964a23244211193cf507d6f14d47ca0db3f",
+      "reference_text_sha256": "87864a577d4f5c7d983ac5e46dcdb9e26b31c4d390790933e80cd05b0d761ed6",
+      "generation_returncode": 0,
+      "generation_stdout": "",
+      "generation_stderr": "",
+      "voice_gate": "VOICE GATE: PASS  voice=CV013 sidecars=1 provenance=qwen_portable_current",
+      "audio": {
+        "sha256": "f384a4941cf859498ed14ca68b85f569546e11e6e0644b181e087d504a00c47c",
+        "bytes": 337964,
+        "duration_seconds": 7.04,
+        "codec": "pcm_s16le",
+        "sample_rate_hz": 24000,
+        "channels": 1,
+        "bits_per_sample": 16,
+        "mean_volume_db": -22.4,
+        "max_volume_db": -4.0,
+        "silence_durations_over_1_5s": [],
+        "errors": []
+      },
+      "errors": [],
+      "asr": {
+        "transcript": "这是标准配音生产链路稳定性检查声音应该自然清楚没有杂音也不会异常拖长",
+        "similarity": 1.0,
+        "errors": []
+      }
+    },
+    {
+      "voice_id": "CV014",
+      "voice_name": "明快喜剧男声",
+      "reference_sha256": "5c64bba9ed2c6abdfcfe7da0d13f07bb1c9f62c2423f0756854160d66c78e0f7",
+      "reference_text_sha256": "87864a577d4f5c7d983ac5e46dcdb9e26b31c4d390790933e80cd05b0d761ed6",
+      "generation_returncode": 0,
+      "generation_stdout": "",
+      "generation_stderr": "",
+      "voice_gate": "VOICE GATE: PASS  voice=CV014 sidecars=1 provenance=qwen_portable_current",
+      "audio": {
+        "sha256": "63c0823325cb99e94fbd32bdc1e6c8b780be7a821238948c717322b396cc53df",
+        "bytes": 316844,
+        "duration_seconds": 6.6,
+        "codec": "pcm_s16le",
+        "sample_rate_hz": 24000,
+        "channels": 1,
+        "bits_per_sample": 16,
+        "mean_volume_db": -20.7,
+        "max_volume_db": -4.7,
+        "silence_durations_over_1_5s": [],
+        "errors": []
+      },
+      "errors": [],
+      "asr": {
+        "transcript": "这是标准配音生产链路稳定性检查声音应该自然清楚没有杂音也不会异常脱长",
+        "similarity": 0.970588,
+        "errors": []
+      }
+    },
+    {
+      "voice_id": "CV015",
+      "voice_name": "冷幽默男声",
+      "reference_sha256": "02719ad1b3015bd716fba08ddfa5dacef285b58a7e11100a8db23880eb0c6666",
+      "reference_text_sha256": "87864a577d4f5c7d983ac5e46dcdb9e26b31c4d390790933e80cd05b0d761ed6",
+      "generation_returncode": 0,
+      "generation_stdout": "",
+      "generation_stderr": "",
+      "voice_gate": "VOICE GATE: PASS  voice=CV015 sidecars=1 provenance=qwen_portable_current",
+      "audio": {
+        "sha256": "3fde7e28864da67980c23ebdf4167fce10e5479996546ceb3b120ae1670bbcb8",
+        "bytes": 317804,
+        "duration_seconds": 6.62,
+        "codec": "pcm_s16le",
+        "sample_rate_hz": 24000,
+        "channels": 1,
+        "bits_per_sample": 16,
+        "mean_volume_db": -20.1,
+        "max_volume_db": -4.2,
+        "silence_durations_over_1_5s": [],
+        "errors": []
+      },
+      "errors": [],
+      "asr": {
+        "transcript": "这是标准配音生产链路稳定性检查,声音应该自然清楚。没有杂音,也不会异常脱长。",
+        "similarity": 0.970588,
+        "errors": []
+      }
+    },
+    {
+      "voice_id": "CV016",
+      "voice_name": "锐利未来男高音",
+      "reference_sha256": "5eca6a85652e646b980e0f7efe895c513e4eecb38f2d315ef69c55f898e35150",
+      "reference_text_sha256": "87864a577d4f5c7d983ac5e46dcdb9e26b31c4d390790933e80cd05b0d761ed6",
+      "generation_returncode": 0,
+      "generation_stdout": "",
+      "generation_stderr": "",
+      "voice_gate": "VOICE GATE: PASS  voice=CV016 sidecars=1 provenance=qwen_portable_current",
+      "audio": {
+        "sha256": "ad4738b61ef847b97f8236a0c05dee872e2c49eb5472a0dddf6924afe34ce6ad",
+        "bytes": 323564,
+        "duration_seconds": 6.74,
+        "codec": "pcm_s16le",
+        "sample_rate_hz": 24000,
+        "channels": 1,
+        "bits_per_sample": 16,
+        "mean_volume_db": -25.4,
+        "max_volume_db": -8.0,
+        "silence_durations_over_1_5s": [],
+        "errors": []
+      },
+      "errors": [],
+      "asr": {
+        "transcript": "这是标准配音生产链路稳定性检查声音应该自然清楚没有杂音也不会异常拖长",
+        "similarity": 1.0,
+        "errors": []
+      }
+    },
+    {
+      "voice_id": "CV002",
+      "voice_name": "治愈少女",
+      "reference_sha256": "1610cf180e0bd245d7a50381a403c529e43b8fd65e7bbc20433edbc5062c0c13",
+      "reference_text_sha256": "08e75ec69b33d5e18a11e245b3c127e4b29fcfd5236be47355e2115506f6d22e",
+      "generation_returncode": 0,
+      "generation_stdout": "",
+      "generation_stderr": "",
+      "voice_gate": "VOICE GATE: PASS  voice=CV002 sidecars=1 provenance=qwen_portable_current",
+      "audio": {
+        "sha256": "0551b0b7da257e5d8ac964287dad20e86e65a3df8ff64dee0d44ffc3bd5d42ba",
+        "bytes": 382316,
+        "duration_seconds": 7.964,
+        "codec": "pcm_s16le",
+        "sample_rate_hz": 24000,
+        "channels": 1,
+        "bits_per_sample": 16,
+        "mean_volume_db": -22.1,
+        "max_volume_db": -7.8,
+        "silence_durations_over_1_5s": [],
+        "errors": []
+      },
+      "errors": [],
+      "asr": {
+        "transcript": "这是标准配音生产链路稳定性检查,声音应该自然清楚,没有杂音,也不会异常托长。",
+        "similarity": 0.970588,
+        "errors": []
+      }
+    },
+    {
+      "voice_id": "CV003",
+      "voice_name": "傲娇吐槽姬",
+      "reference_sha256": "69eb40e4e2e2603647510508180b33e3da288a12718577cbd39d4e896c995966",
+      "reference_text_sha256": "08e75ec69b33d5e18a11e245b3c127e4b29fcfd5236be47355e2115506f6d22e",
+      "generation_returncode": 0,
+      "generation_stdout": "",
+      "generation_stderr": "",
+      "voice_gate": "VOICE GATE: PASS  voice=CV003 sidecars=1 provenance=qwen_portable_current",
+      "audio": {
+        "sha256": "a8bc7d84827ccef3f18c4fb63537f39cd91e07ca0c97c88e6f40dc099c14272a",
+        "bytes": 314072,
+        "duration_seconds": 6.54225,
+        "codec": "pcm_s16le",
+        "sample_rate_hz": 24000,
+        "channels": 1,
+        "bits_per_sample": 16,
+        "mean_volume_db": -20.9,
+        "max_volume_db": -5.8,
+        "silence_durations_over_1_5s": [],
+        "errors": []
+      },
+      "errors": [],
+      "asr": {
+        "transcript": "这是标准配音生产链路稳定性检查声音应该自然清楚没有杂音也不会异常拖场",
+        "similarity": 0.970588,
+        "errors": []
+      }
+    },
+    {
+      "voice_id": "CV008",
+      "voice_name": "空灵精灵",
+      "reference_sha256": "c53225892d5ed8095c7842ca720d220aa2666e2f217228af9698d06a1ba4023e",
+      "reference_text_sha256": "08e75ec69b33d5e18a11e245b3c127e4b29fcfd5236be47355e2115506f6d22e",
+      "generation_returncode": 0,
+      "generation_stdout": "",
+      "generation_stderr": "",
+      "voice_gate": "VOICE GATE: PASS  voice=CV008 sidecars=1 provenance=qwen_portable_current",
+      "audio": {
+        "sha256": "ad766f066604f5518089e6f67090967d3652aa566eaeb2d7a49f975c233b0974",
+        "bytes": 412844,
+        "duration_seconds": 8.6,
+        "codec": "pcm_s16le",
+        "sample_rate_hz": 24000,
+        "channels": 1,
+        "bits_per_sample": 16,
+        "mean_volume_db": -22.1,
+        "max_volume_db": -9.0,
+        "silence_durations_over_1_5s": [],
+        "errors": []
+      },
+      "errors": [],
+      "asr": {
+        "transcript": "这是标准配音生产链路稳定性检查。声音应该自然清楚,没有杂音,也不会一场拖长。",
+        "similarity": 0.941176,
+        "errors": []
+      }
+    },
+    {
+      "voice_id": "CV009",
+      "voice_name": "清亮校园女声",
+      "reference_sha256": "0255f6aff8e017f1e7371b31b51e8030d7f4213db640898fcd60809f6f57b92c",
+      "reference_text_sha256": "87864a577d4f5c7d983ac5e46dcdb9e26b31c4d390790933e80cd05b0d761ed6",
+      "generation_returncode": 0,
+      "generation_stdout": "",
+      "generation_stderr": "",
+      "voice_gate": "VOICE GATE: PASS  voice=CV009 sidecars=1 provenance=qwen_portable_current",
+      "audio": {
+        "sha256": "7affc8bd6f50e6d9421d9c36488888195c22edc2f850ccfe8db884f94dd340c4",
+        "bytes": 321644,
+        "duration_seconds": 6.7,
+        "codec": "pcm_s16le",
+        "sample_rate_hz": 24000,
+        "channels": 1,
+        "bits_per_sample": 16,
+        "mean_volume_db": -20.3,
+        "max_volume_db": -7.1,
+        "silence_durations_over_1_5s": [],
+        "errors": []
+      },
+      "errors": [],
+      "asr": {
+        "transcript": "这是标准配音生产链路稳定性检查声音应该自然清楚没有杂音也不会异常脱常",
+        "similarity": 0.941176,
+        "errors": []
+      }
+    },
+    {
+      "voice_id": "CV017",
+      "voice_name": "童话绘本女声",
+      "reference_sha256": "1544ea1b7188ea2998759cf424f58a787c4c2b53eb9bb59de8049a66170ab1d8",
+      "reference_text_sha256": "87864a577d4f5c7d983ac5e46dcdb9e26b31c4d390790933e80cd05b0d761ed6",
+      "generation_returncode": 0,
+      "generation_stdout": "",
+      "generation_stderr": "",
+      "voice_gate": "VOICE GATE: PASS  voice=CV017 sidecars=1 provenance=qwen_portable_current",
+      "audio": {
+        "sha256": "f05279841729dfd51a46b053e2990f56890f9e5ee5dbfaef7bc4494d032aa1b5",
+        "bytes": 325484,
+        "duration_seconds": 6.78,
+        "codec": "pcm_s16le",
+        "sample_rate_hz": 24000,
+        "channels": 1,
+        "bits_per_sample": 16,
+        "mean_volume_db": -19.6,
+        "max_volume_db": -6.8,
+        "silence_durations_over_1_5s": [],
+        "errors": []
+      },
+      "errors": [],
+      "asr": {
+        "transcript": "这是标准配音生产链路稳定性检查声音应该自然清楚没有杂音也不会异程拖长",
+        "similarity": 0.970588,
+        "errors": []
+      }
+    }
+  ]
+}

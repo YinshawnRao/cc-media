@@ -301,6 +301,7 @@ def main(argv: list[str] | None = None) -> int:
             f"reference SHA mismatch for {voice_id}: "
             f"expected {voice['reference_sha256']}, got {actual_reference_sha}"
         )
+    reference_text = voice.get("reference_text", registry["reference_text"])
 
     qwen = config["qwen_base"]
     generation = qwen["generation"]
@@ -319,7 +320,7 @@ def main(argv: list[str] | None = None) -> int:
             selection=selection,
             voice_id=voice_id,
             reference_sha256=actual_reference_sha,
-            reference_text=registry["reference_text"],
+            reference_text=reference_text,
             item=item,
             language=language,
             speed=speed,
@@ -369,7 +370,7 @@ def main(argv: list[str] | None = None) -> int:
             model.generate(
                 text=item["text"],
                 ref_audio=str(reference),
-                ref_text=registry["reference_text"],
+                ref_text=reference_text,
                 lang_code=language,
                 temperature=float(generation["temperature"]),
                 top_k=int(generation["top_k"]),
@@ -382,6 +383,16 @@ def main(argv: list[str] | None = None) -> int:
         )
         elapsed = time.perf_counter() - started
         audio, sample_rate, metrics = flatten_audio(results)
+        max_tokens = int(generation["max_tokens"])
+        if any(
+            isinstance(metric.get("token_count"), int)
+            and metric["token_count"] >= max_tokens
+            for metric in metrics
+        ):
+            raise RuntimeError(
+                f"generation reached max_tokens={max_tokens} without a clean stop; "
+                "refusing to write likely runaway audio"
+            )
         audio = trim_edges(
             audio,
             sample_rate,
