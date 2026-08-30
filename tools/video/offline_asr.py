@@ -34,7 +34,11 @@ WHISPER_DISTRIBUTION = "openai-whisper"
 WHISPER_VERSION = "20250625"
 LONG_AUDIO_THRESHOLD_SECONDS = 90.0
 WINDOW_SECONDS = 20.0
-WINDOW_STEP_SECONDS = 10.0
+# A five-second grid ensures that short narration following a sung passage is
+# also decoded in a window that starts close to the narration boundary.  A
+# ten-second grid can leave the only useful window dominated by the preceding
+# music, causing Whisper to skip otherwise clear speech.
+WINDOW_STEP_SECONDS = 5.0
 
 
 def _transcribe_options(language: str) -> dict[str, Any]:

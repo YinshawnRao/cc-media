@@ -337,6 +337,17 @@ class ActiveDocumentationPolicyTests(unittest.TestCase):
             allow_policy_prohibition=True,
         )
 
+    def test_extreme_chinese_cover_title_does_not_repeat_top_label(self) -> None:
+        agents = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        conventions = (REPO_ROOT / "CONVENTIONS.md").read_text(encoding="utf-8")
+        runbook = (VIDEO_ROOT / "README.md").read_text(encoding="utf-8")
+        self.assertIn("只在封面", agents)
+        self.assertIn("省略独立的 `TOP` / `TOP N` 标签", agents)
+        self.assertIn("封面极值标题不重复写 TOP", conventions)
+        self.assertIn("本规则只约束封面", conventions)
+        self.assertIn("最难 / 最燃 / 最被低估", runbook)
+        self.assertIn("这个去重判断只用于封面", runbook)
+
     def test_active_docs_do_not_run_bare_or_latest_hyperframes(self) -> None:
         self.assert_no_occurrences(
             re.compile(r"\bnpx\s+hyperframes(?=\s|$|[.`])", re.IGNORECASE),

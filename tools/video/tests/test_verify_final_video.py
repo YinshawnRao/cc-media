@@ -7,7 +7,9 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
+import types
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -840,6 +842,25 @@ class FinalVideoGateUnitTests(unittest.TestCase):
                 )
             transcribe_long.assert_called_once_with(model, source, "zh")
             self.assertEqual("long:000000", result["results"][0]["segments"][0]["id"])
+
+    def test_offline_asr_long_windows_use_five_second_grid(self) -> None:
+        class SyntheticModel:
+            def __init__(self) -> None:
+                self.calls = 0
+
+            def transcribe(self, *_args, **_kwargs):
+                self.calls += 1
+                return {"text": "", "segments": []}
+
+        fake_audio = types.ModuleType("whisper.audio")
+        fake_audio.SAMPLE_RATE = 1
+        fake_audio.load_audio = lambda _path: [0] * 41
+        model = SyntheticModel()
+        with mock.patch.dict(sys.modules, {"whisper.audio": fake_audio}):
+            result = offline_asr._transcribe_long_source(model, Path("long.wav"), "zh")
+        self.assertEqual(5.0, offline_asr.WINDOW_STEP_SECONDS)
+        self.assertEqual(9, model.calls)
+        self.assertEqual([], result["segments"])
 
     def test_live_asr_receipt_rejects_replaced_checkpoint_or_distribution(self) -> None:
         receipt = fake_live_receipt([], {"language": "zh"}, "isolated_narration_asr")
