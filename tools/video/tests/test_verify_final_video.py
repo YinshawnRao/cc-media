@@ -1309,6 +1309,28 @@ class FinalVideoGateUnitTests(unittest.TestCase):
             with self.assertRaisesRegex(gate.GateFailure, "authoring narration"):
                 gate.verify_project(fixture.project, tools=FakeMediaTools())
 
+    def test_cta_must_be_last_on_actual_timeline_even_with_custom_structure(self) -> None:
+        authoring = {}
+        expectations = []
+        for role in ("outro", "cta"):
+            text = gate.FIXED_OUTRO_CTA if role == "cta" else "作品收束。"
+            text_hash = gate.sha256_text(text)
+            authoring[role] = {
+                "qa_role": role, "author_role": "outro_cta" if role == "cta" else "work_outro",
+                "text": text, "text_sha256": text_hash,
+                "wav": gate.Asset(role, f"{role}.wav", Path(f"{role}.wav"), "a" * 64),
+            }
+            expectations.append({
+                "id": role, "role": role, "authoring_narration_id": role, "chapter_id": role,
+                "expected_text": text, "expected_text_sha256": text_hash,
+                "authoring_wav_sha256": "a" * 64,
+            })
+        chapters = [gate.Chapter("outro", "outro", 0, 3, True), gate.Chapter("cta", "cta", 3, 7, True)]
+        self.assertEqual(2, len(gate.parse_narration_expectations(expectations, "custom", chapters, authoring)))
+        reversed_timing = [gate.Chapter("outro", "outro", 3, 7, True), gate.Chapter("cta", "cta", 0, 3, True)]
+        with self.assertRaisesRegex(gate.GateFailure, "after all other narration"):
+            gate.parse_narration_expectations(expectations, "custom", reversed_timing, authoring)
+
     def test_aac_bitrate_and_master_format_must_match(self) -> None:
         class BadAudioTools(FakeMediaTools):
             def __init__(self, bitrate: str, channels: int) -> None:

@@ -754,13 +754,22 @@ class PrepareFinalQaPolicyTests(unittest.TestCase):
         return code, project, tools
 
     def test_editorial_variants_keep_live_final_checks(self) -> None:
-        for variant in ("custom_cta", "omit_cta", "intro_only", "no_narration"):
+        for variant in ("custom_cta", "omit_cta", "intro_only", "no_narration", "legacy_cta"):
             with self.subTest(variant=variant), tempfile.TemporaryDirectory() as temporary:
                 def customize(authoring, timeline, texts):
+                    if variant == "legacy_cta":
+                        authoring["editorial"] = {
+                            "cta": "fixed", "cta_text_version": "legacy-v1",
+                            "reason": "保留历史长版旁白",
+                        }
+                        texts["audio/cta.wav"] = gate.fixed_cta_text("legacy-v1")
+                        authoring["narration_sequence"][-1]["text"] = texts["audio/cta.wav"]
+                        return
                     authoring["editorial"] = {
                         "narration": "standard" if variant in {"custom_cta", "omit_cta"} else "custom",
                         "cta": "custom" if variant == "custom_cta" else "omit",
                         "reason": "用户要求当期调整旁白结构",
+                        "cta_user_request": "这期结尾只问想听的下一个主题。" if variant == "custom_cta" else "这期不要引流配音。",
                     }
                     if variant == "custom_cta":
                         texts["audio/cta.wav"] = "留下你想听的下一个主题。"
@@ -780,7 +789,7 @@ class PrepareFinalQaPolicyTests(unittest.TestCase):
                     )
                 self.assertEqual(0, code)
                 manifest = prepare_final_qa.load_json(project / "qa/final-video-qa.json", "QA")
-                self.assertEqual("custom", manifest["narration_mode"])
+                self.assertEqual("structured" if variant == "legacy_cta" else "custom", manifest["narration_mode"])
                 self.assertEqual(2, media.calls["video_decode_receipt"])
                 for name in ("audio_sdr", "loudness", "analyze_final"):
                     self.assertEqual(1, media.calls[name])

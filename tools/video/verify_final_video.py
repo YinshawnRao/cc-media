@@ -28,11 +28,11 @@ from typing import Any, Callable, NoReturn
 try:
     from . import resource_budget
     from . import verify_project as authoring_contract
-    from .outro_cta import FIXED_OUTRO_CTA
+    from .outro_cta import DEFAULT_CTA_TEXT_VERSION, FIXED_OUTRO_CTA, fixed_cta_text
 except ImportError:  # Direct ``python tools/video/verify_final_video.py`` execution.
     import resource_budget  # type: ignore[no-redef]
     import verify_project as authoring_contract  # type: ignore[no-redef]
-    from outro_cta import FIXED_OUTRO_CTA  # type: ignore[no-redef]
+    from outro_cta import DEFAULT_CTA_TEXT_VERSION, FIXED_OUTRO_CTA, fixed_cta_text  # type: ignore[no-redef]
 
 
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
@@ -461,8 +461,13 @@ def parse_authoring_contract(
         text = require_string(row.get("text"), f"{label}.text")
         if not normalized_text(text):
             fail(f"{label}.text becomes empty after ASR normalization")
-        if author_role == "outro_cta" and editorial.get("cta", "fixed") == "fixed" and text != FIXED_OUTRO_CTA:
-            fail(f"{label}.text must equal the canonical fixed outro CTA")
+        if author_role == "outro_cta" and editorial.get("cta", "fixed") == "fixed":
+            try:
+                canonical_cta = fixed_cta_text(editorial.get("cta_text_version", DEFAULT_CTA_TEXT_VERSION))
+            except ValueError as exc:
+                fail(str(exc))
+            if text != canonical_cta:
+                fail(f"{label}.text must equal the canonical fixed outro CTA")
         wav_raw = require_string(row.get("wav"), f"{label}.wav")
         wav_path = resolve_project_file(project, wav_raw, f"{label}.wav")
         narration[narration_id] = {
@@ -580,6 +585,13 @@ def parse_narration_expectations(
         missing_roles = {"intro", "outro", "cta"} - roles
         if missing_roles:
             fail("structured narration is missing roles: " + ", ".join(sorted(missing_roles)))
+    cta_rows = [row for row in expectations.values() if row["role"] == "cta"]
+    if cta_rows:
+        if len(cta_rows) != 1 or any(
+            row["chapter_end_sec"] > cta_rows[0]["chapter_start_sec"]
+            for row in expectations.values() if row["role"] != "cta"
+        ):
+            fail("CTA must occur exactly once after all other narration on the final timeline")
     covered_chapters = {row["chapter_id"] for row in expectations.values()}
     missing_chapters = [
         chapter.key

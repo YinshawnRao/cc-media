@@ -28,10 +28,10 @@ from urllib.parse import urlparse
 
 try:
     from . import showcase_align
-    from .outro_cta import FIXED_OUTRO_CTA
+    from .outro_cta import DEFAULT_CTA_TEXT_VERSION, FIXED_OUTRO_CTA, fixed_cta_text
 except ImportError:  # Direct ``python tools/video/verify_project.py`` execution.
     import showcase_align  # type: ignore[no-redef]
-    from outro_cta import FIXED_OUTRO_CTA  # type: ignore[no-redef]
+    from outro_cta import DEFAULT_CTA_TEXT_VERSION, FIXED_OUTRO_CTA, fixed_cta_text  # type: ignore[no-redef]
 
 
 SCHEMA_VERSION = 2
@@ -463,22 +463,35 @@ class ProjectVerifier:
         if not isinstance(policy, dict):
             self.error("editorial must be an object")
             policy = {}
-        if set(policy) - {"narration", "cta", "reason"}:
+        if set(policy) - {"narration", "cta", "reason", "cta_user_request", "cta_text_version"}:
             self.error("editorial contains unknown fields")
         narration_style = policy.get("narration", "standard")
         cta_style = policy.get("cta", "fixed")
+        cta_version = policy.get("cta_text_version", DEFAULT_CTA_TEXT_VERSION)
+        canonical_cta = FIXED_OUTRO_CTA
+        try:
+            canonical_cta = fixed_cta_text(cta_version)
+        except ValueError as exc:
+            self.error(str(exc))
         if not isinstance(narration_style, str) or narration_style not in {"standard", "custom"}:
             self.error("editorial.narration must be standard or custom")
         if not isinstance(cta_style, str) or cta_style not in {"fixed", "custom", "omit"}:
             self.error("editorial.cta must be fixed, custom or omit")
-        if (narration_style != "standard" or cta_style != "fixed") and not (
+        if (narration_style != "standard" or cta_style != "fixed" or cta_version != DEFAULT_CTA_TEXT_VERSION) and not (
             isinstance(policy.get("reason"), str) and policy["reason"].strip()
         ):
             self.error("editorial overrides require a non-empty reason from the brief/design")
+        if cta_style in ("custom", "omit") and not (
+            isinstance(policy.get("cta_user_request"), str)
+            and policy["cta_user_request"].strip()
+        ):
+            self.error("editorial CTA overrides require cta_user_request quoting the user's explicit request; design reasons alone cannot replace or omit the fixed CTA")
+        if "cta_text_version" in policy and cta_style != "fixed":
+            self.error("editorial.cta_text_version only applies to cta=fixed")
         cta_rows = [row for row in sequence if isinstance(row, dict) and row.get("role") == "outro_cta"]
         if cta_style == "omit" and cta_rows:
             self.error("editorial.cta=omit forbids an outro_cta row")
-        if kind != "free_exploration" and cta_style != "omit":
+        if (kind != "free_exploration" or cta_rows) and cta_style != "omit":
             if len(cta_rows) != 1 or not sequence or sequence[-1] != cta_rows[0]:
                 self.error("the selected CTA must occur exactly once as the last narration")
         if kind != "free_exploration" and narration_style == "standard":
@@ -526,7 +539,7 @@ class ProjectVerifier:
                 intro_text = text
             elif role == "outro_cta":
                 cta_text = text
-                if cta_style == "fixed" and text != FIXED_OUTRO_CTA:
+                if cta_style == "fixed" and text != canonical_cta:
                     self.error("outro CTA must exactly equal tools/video/outro_cta.py canonical text")
 
             wav = self.safe_path(row.get("wav"), f"{label}.wav")

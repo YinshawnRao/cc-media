@@ -41,7 +41,7 @@
     {
       "id": "outro-cta",
       "role": "outro_cta",
-      "text": "你最想为哪一首投票？评论区告诉我。记得点赞、收藏、关注我，下一期，可能就盘到你单曲循环过的那一首。",
+      "text": "喜欢这期内容，记得点赞、收藏、关注我。",
       "wav": "narration/outro-cta.wav",
       "sidecar": "narration/outro-cta.wav.tts.json"
     }

@@ -580,7 +580,10 @@ class VerifyProjectTests(unittest.TestCase):
     def test_custom_cta_requires_reason_and_real_matching_sidecar(self) -> None:
         with self.project() as root:
             manifest = load_json(root / "project-manifest.json")
-            manifest["editorial"] = {"cta": "custom", "reason": "用户指定本期结尾"}
+            manifest["editorial"] = {
+                "cta": "custom", "reason": "用户指定本期结尾",
+                "cta_user_request": "这期最后只说：愿这段旋律陪你度过今晚。",
+            }
             manifest["narration_sequence"][-1]["text"] = "愿这段旋律陪你度过今晚。"
             self.save_manifest(root, manifest)
             self.assert_error(self.errors(root), "does not exactly match")
@@ -590,11 +593,66 @@ class VerifyProjectTests(unittest.TestCase):
             self.save_manifest(root, manifest)
             self.assert_error(self.errors(root), "overrides require")
 
+    def test_design_reason_cannot_replace_or_omit_growth_cta(self) -> None:
+        for cta_style in ("custom", "omit"):
+            for user_request in (None, "", "   "):
+                with self.subTest(cta=cta_style, request=user_request), self.project() as root:
+                    manifest = load_json(root / "project-manifest.json")
+                    manifest["editorial"] = {
+                        "cta": cta_style,
+                        "reason": "当期以主题记忆问题收束，避免通用点赞关注话术",
+                    }
+                    if user_request is not None:
+                        manifest["editorial"]["cta_user_request"] = user_request
+                    if cta_style == "custom":
+                        manifest["narration_sequence"][-1]["text"] = "哪一段前奏响起，你会立刻想起钢炼？"
+                        self.rewrite_narration_duration(root, manifest, -1, 3.0)
+                    else:
+                        row = manifest["narration_sequence"].pop()
+                        (root / row["wav"]).unlink()
+                        (root / row["sidecar"]).unlink()
+                    self.save_manifest(root, manifest)
+                    self.assert_error(self.errors(root), "require cta_user_request")
+
+    def test_fixed_cta_cannot_be_missing_or_followed_by_narration(self) -> None:
+        for remove in (False, True):
+            with self.subTest(remove=remove), self.project() as root:
+                manifest = load_json(root / "project-manifest.json")
+                manifest["editorial"] = {"narration": "custom", "reason": "调整作品总结位置"}
+                rows = manifest["narration_sequence"]
+                if remove:
+                    row = rows.pop()
+                    (root / row["wav"]).unlink()
+                    (root / row["sidecar"]).unlink()
+                else:
+                    rows[-2:] = reversed(rows[-2:])
+                self.save_manifest(root, manifest)
+                self.assert_error(self.errors(root), "exactly once as the last narration")
+
+    def test_legacy_fixed_cta_requires_explicit_version_and_preserves_wav(self) -> None:
+        with self.project() as root:
+            manifest = load_json(root / "project-manifest.json")
+            manifest["narration_sequence"][-1]["text"] = gate.fixed_cta_text("legacy-v1")
+            self.rewrite_narration_duration(root, manifest, -1, 10.0)
+            self.save_manifest(root, manifest)
+            self.assert_error(self.errors(root), "must exactly equal")
+            manifest["editorial"] = {
+                "cta_text_version": "legacy-v1", "reason": "保留原工程长版 CTA 复现",
+            }
+            self.save_manifest(root, manifest)
+            self.assertEqual([], self.errors(root))
+            manifest["editorial"]["cta_text_version"] = "unknown"
+            self.save_manifest(root, manifest)
+            self.assert_error(self.errors(root), "cta_text_version must be")
+
     def test_explicit_custom_structure_and_silent_project_preserve_item_gates(self) -> None:
         for silent in (False, True):
             with self.subTest(silent=silent), self.project() as root:
                 manifest = load_json(root / "project-manifest.json")
-                manifest["editorial"] = {"narration": "custom", "cta": "omit", "reason": "本期采用音乐为主的结构"}
+                manifest["editorial"] = {
+                    "narration": "custom", "cta": "omit", "reason": "本期采用音乐为主的结构",
+                    "cta_user_request": "这期全片无旁白。" if silent else "这期只保留开头介绍，不要结尾引流。",
+                }
                 removed = manifest["narration_sequence"][0 if silent else 1:]
                 manifest["narration_sequence"] = [] if silent else manifest["narration_sequence"][:1]
                 for row in removed:

@@ -58,17 +58,19 @@ selection.download_receipt 只包含 schema 允许的脱敏 URL、平台、raw S
 
 ## 编辑例外与旁白绑定
 
-manifest 的可选 editorial 字段默认 narration=standard、cta=fixed；以下例子支持保留主题叙事但省略固定 CTA：
+manifest 的可选 editorial 字段默认 narration=standard、cta=fixed、cta_text_version=short-v1。新项目自动追加固定简短引流配音；普通设计理由不能授权删除。只有用户明确要求例外时才记录，例如用户确实说了“这期不要结尾引流配音”：
 
 ```json
-{"editorial":{"narration":"standard","cta":"omit","reason":"用户本期不要 CTA"}}
+{"editorial":{"narration":"standard","cta":"omit","reason":"按用户要求省略本期引流配音","cta_user_request":"这期不要结尾引流配音"}}
 ```
 
-- cta=custom：用本期最后一条 outro_cta.text 指定文字；cta=omit：不得存在 outro_cta 行。
+- cta=custom：用本期最后一条 outro_cta.text 指定用户要求的文字；cta=omit：不得存在 outro_cta 行。两者都必须填写非空 cta_user_request（真实用户原话）和 reason；包括用户明确要求全片无旁白的情况。门禁只能核验字段，代理必须对照真实会话，不能把自己的设计理由伪装成用户要求。
 - narration=custom：按设计声明实际 narration_sequence，可减少、合并或重排旁白；有 CTA 时仍最后出现一次。非默认选择必须填写 reason。转场不能靠改成 free 来绕过 8/10 秒检查。
-- 默认文字通过 `python3 tools/video/outro_cta.py` 取得。无需修改全局常量来变更单期 CTA。
+- 默认文字通过 `python3 tools/video/outro_cta.py` 取得。默认短句只念一次，作为最后一句旁白；只有主题提问不满足引流要求。用户明确指定单期文字时使用 custom，不修改全局常量。
+- 历史工程已使用原长版固定句时，重验前可显式记录 `{"editorial":{"cta":"fixed","cta_text_version":"legacy-v1","reason":"原工程已使用长版固定句，保留历史旁白复现"}}`；它只匹配中央保存的原文，不接受任意改写，不要求重新生成历史 WAV。新项目使用 short-v1；未声明版本按当前短版校验，不按文件日期猜测。
 - 每条实际旁白绑定自己的 text/wav/sidecar；序列须覆盖所有中央 sidecar。转场 item_id 指向真实 item；重复角色或特殊结构用 chapter_id 显式绑定 timeline 章节。
 - timeline 的 role 支持 intro/song/outro/cta/free；没有旁白的章节显式 requires_narration=false，实际 narration_wavs=[]。普通旁白不可漏登记，自定义结构也不能漏检。
+- 最终音轨必须包含实际 CTA，纳入 FINAL 的 authoring 文本/WAV 绑定、音轨一致性和最终 AAC ASR 覆盖；交付前核对片尾。仅有 outro_cta 字段、浮层或 publishing 文案不算完成。
 
 ## 3. 构建门禁与媒体合成
 

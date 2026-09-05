@@ -22,7 +22,7 @@ python3 tools/tts/narrate.py --batch sandbox/<slug>/narration-request.json --sel
 python3 tools/tts/verify_voice_usage.py --selection sandbox/<slug>/voice-selection.json --project-root sandbox/<slug>
 ```
 
-batch 的 blocks 每项为 id/text/output。文本与结构来自当期 manifest；默认 CTA 来源是 tools/video/outro_cta.py，用户可改写或省略。不在项目另写 VOICE 常量、直接调用引擎或调用另一套 provider。
+batch 的 blocks 每项为 id/text/output。文本与结构来自当期 manifest；默认简短 CTA 来源是 tools/video/outro_cta.py，须与本期共用声线并实际进入最终音轨。只有用户明确要求才可改写或省略，按视频 Runbook 记录 cta_user_request；模型不能因设计风格自行取消。不在项目另写 VOICE 常量、直接调用引擎或调用另一套 provider。
 
 每个 24kHz mono WAV 有 `.wav.tts.json`，绑定原文、声线、模型/reference、生成参数、fingerprint 和输出 SHA；必须 VOICE GATE: PASS。侧车证明本地工作流一致性，不独立证明参考声音来源或抵抗同 UID 主动篡改。最终可听性仍检查 mux 后 MP4。
 

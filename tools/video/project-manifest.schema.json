@@ -100,9 +100,20 @@
         "reason": {
           "type": "string",
           "minLength": 1
+        },
+        "cta_user_request": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "\\S",
+          "description": "Verbatim explicit user request to replace or omit the CTA. An agent's design rationale is not authorization."
+        },
+        "cta_text_version": {
+          "enum": ["short-v1", "legacy-v1"],
+          "default": "short-v1",
+          "description": "Fixed CTA text version. legacy-v1 only reproduces an existing project's original long CTA."
         }
       },
-      "description": "Optional brief/design decisions. Non-default choices require a reason; media evidence and transition duration gates still apply.",
+      "description": "Non-default choices require a reason. CTA custom/omit additionally require the user's explicit request; media evidence and transition duration gates still apply.",
       "allOf": [
         {
           "if": {
@@ -137,6 +148,24 @@
               "reason"
             ]
           }
+        },
+        {
+          "if": {
+            "required": ["cta"],
+            "properties": {"cta": {"enum": ["custom", "omit"]}}
+          },
+          "then": {"required": ["cta_user_request"]}
+        },
+        {
+          "if": {"required": ["cta_text_version"]},
+          "then": {"properties": {"cta": {"const": "fixed"}}}
+        },
+        {
+          "if": {
+            "required": ["cta_text_version"],
+            "properties": {"cta_text_version": {"const": "legacy-v1"}}
+          },
+          "then": {"required": ["reason"]}
         }
       ]
     }
