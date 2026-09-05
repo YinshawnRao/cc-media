@@ -160,7 +160,7 @@ class SafeEndTests(unittest.TestCase):
         segments = [[114.47, 143.92], [146.70, 162.68]]
         cut, auto_safe, _ = align._find_safe_end(segments, 118.17, 25.0)
         self.assertTrue(auto_safe)
-        self.assertAlmostEqual(162.98, cut, places=2)
+        self.assertAlmostEqual(163.68, cut, places=2)
 
         result = align.verify_song(
             segments,
@@ -180,6 +180,36 @@ class SafeEndTests(unittest.TestCase):
         self.assertEqual("REVIEW", result["status"])
         self.assertNotEqual("OK", result["status"])
         self.assertEqual("imminent_next_onset", result["metrics"]["end_reason"])
+
+    def test_long_phrase_is_not_rejected_for_exceeding_extension_budget(self):
+        cut, auto_safe, _ = align._find_safe_end([[10, 120]], 9, 60)
+        self.assertTrue(auto_safe)
+        self.assertEqual(121, cut)
+
+    def test_core_end_skips_earlier_pause_and_keeps_response_phrase(self):
+        segments = [[10, 40], [48, 70], [78, 100]]
+        cut, auto_safe, _ = align._find_safe_end(segments, 9, 25, through=99)
+        self.assertTrue(auto_safe)
+        self.assertEqual(101, cut)
+
+    def test_default_plan_preserves_first_word_and_long_core(self):
+        from contextlib import redirect_stdout
+        from io import StringIO
+        from types import SimpleNamespace
+
+        vocals = {"clip": analysis([[10, 120]], evidence="verified", safe=[[120.3, 122]])}
+        args = SimpleNamespace(vocals="unused", clip="clip", post=0.25, dig=1.45,
+                               near=10, min_show=align.MIN_SHOW, through=119)
+        output = StringIO()
+        with mock.patch.object(align, "_load_analysis", return_value=vocals), redirect_stdout(output):
+            self.assertEqual(0, align.cmd_plan(args))
+        self.assertIn("show_start_src) = 9.0", output.getvalue())
+        self.assertIn("show_end_src = 121.0", output.getvalue())
+
+    def test_short_complete_passage_can_be_planned_explicitly(self):
+        cut, auto_safe, _ = align._find_safe_end([[10, 30]], 9, 20)
+        self.assertTrue(auto_safe)
+        self.assertEqual(31, cut)
 
 
 class ApprovalGateTests(unittest.TestCase):
@@ -244,7 +274,7 @@ class ApprovalGateTests(unittest.TestCase):
                     align.gate(self.blocks, vocals, verbose=False)
                 message = str(raised.exception)
                 self.assertIn("--mode multi", message)
-                self.assertIn("换完整乐句窗", message)
+                self.assertIn("窗口问题换窗", message)
                 self.assertIn("换同版本", message)
                 self.assertIn("硬 FAIL=0", message)
                 self.assertIn("reviewer_kind=agent", message)

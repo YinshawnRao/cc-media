@@ -163,20 +163,20 @@ class VerifyPublishingTests(unittest.TestCase):
         with self.assertRaisesRegex(gate.PublishingError, "publishable prose"):
             gate.verify_publishing(self.fixture.project)
 
-    def test_final_line_requires_eight_to_ten_hashtags(self) -> None:
+    def test_hashtag_count_is_an_editorial_suggestion(self) -> None:
         for count in (7, 11):
             with self.subTest(count=count):
                 tags = " ".join(f"#标签{index}" for index in range(count))
                 self.fixture.write_copy(self.fixture.copy.rsplit("\n#", 1)[0] + "\n" + tags + "\n")
-                with self.assertRaisesRegex(gate.PublishingError, "8-10 hashtags"):
-                    gate.verify_publishing(self.fixture.project)
+                summary = gate.verify_publishing(self.fixture.project)
+                self.assertTrue(any("hashtag count" in message for message in summary.advisories))
 
     def test_final_nonempty_line_must_be_hashtags_only(self) -> None:
         self.fixture.write_copy(self.fixture.copy + "这不是 hashtag。\n")
         with self.assertRaisesRegex(gate.PublishingError, "8-10 hashtags|hashtags only"):
             gate.verify_publishing(self.fixture.project)
 
-    def test_body_prose_length_accepts_boundaries_and_rejects_outside(self) -> None:
+    def test_body_prose_length_warns_without_rejecting_publishable_text(self) -> None:
         for count in (420, 900):
             with self.subTest(valid=count):
                 prose = "郑中基" + "声" * (count - 4) + "？"
@@ -187,18 +187,17 @@ class VerifyPublishingTests(unittest.TestCase):
             with self.subTest(invalid=count):
                 prose = "郑中基" + "声" * (count - 4) + "？"
                 self.fixture.write_copy(self.fixture.copy.replace(self.fixture.prose, prose))
-                with self.assertRaisesRegex(gate.PublishingError, "420-900 non-whitespace"):
-                    gate.verify_publishing(self.fixture.project)
+                summary = gate.verify_publishing(self.fixture.project)
+                self.assertTrue(any("body length" in message for message in summary.advisories))
 
     def test_publishing_copy_rejects_emoji(self) -> None:
         self.fixture.write_copy(self.fixture.copy.replace("复杂的一面", "复杂的一面🎧"))
         with self.assertRaisesRegex(gate.PublishingError, "must not contain emoji"):
             gate.verify_publishing(self.fixture.project)
 
-    def test_body_requires_a_specific_interaction_question(self) -> None:
+    def test_body_does_not_require_a_formulaic_interaction_question(self) -> None:
         self.fixture.write_copy(self.fixture.copy.replace("？", "。"))
-        with self.assertRaisesRegex(gate.PublishingError, "interaction question"):
-            gate.verify_publishing(self.fixture.project)
+        gate.verify_publishing(self.fixture.project)
 
     def test_hashtags_must_be_unique_after_normalization(self) -> None:
         self.fixture.write_copy(self.fixture.copy.replace("#音乐故事", "#港乐"))
@@ -209,12 +208,12 @@ class VerifyPublishingTests(unittest.TestCase):
         cases = {
             "candidate": self.fixture.copy.replace(
                 "很多人只记得他的高音，却忽略了另一面",
-                "Good bye，MY loneliness 为什么被忽略",
+                "《Good bye，MY loneliness》为什么被忽略",
                 1,
             ),
             "body": self.fixture.copy.replace(
                 "但如果只停在这些印象里",
-                "但真正听到 GOOD—BYE MY LONELINESS，如果只停在这些印象里",
+                "但真正听到《GOOD—BYE MY LONELINESS》，如果只停在这些印象里",
             ),
             "hashtag": self.fixture.copy.replace(
                 "#郑中基 #粤语歌",
@@ -232,10 +231,20 @@ class VerifyPublishingTests(unittest.TestCase):
         self.fixture.write_manifest()
         self.fixture.write_copy(self.fixture.copy.replace(
             "完整面貌",
-            "abc-story 背后的完整面貌",
+            "《abc-story》背后的完整面貌",
         ))
         with self.assertRaisesRegex(gate.PublishingError, "reveals project song title"):
             gate.verify_publishing(self.fixture.project)
+
+    def test_common_words_are_advisories_but_explicit_titles_still_fail(self) -> None:
+        for title, prose in (("后来", "后来才发现还有许多作品。"), ("勇气", "从勇气到坚持。")):
+            with self.subTest(title=title):
+                advisories = gate.validate_no_song_titles(prose, [title])
+                self.assertTrue(advisories)
+                for explicit in (f"《{title}》", f"#{title}"):
+                    with self.assertRaises(gate.PublishingError):
+                        gate.validate_no_song_titles(explicit, [title])
+        self.assertEqual((), gate.validate_no_song_titles("没有提及作品。", ["后来"]))
 
     def test_one_character_title_uses_explicit_boundaries_without_plain_substring_false_positive(self) -> None:
         self.fixture.manifest["items"][0]["title"] = "爱"

@@ -39,7 +39,7 @@ SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 KEY_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 ALLOWED_VIDEO_CODECS = {"h264", "hevc"}
 MP4_FORMAT_NAMES = {"mov", "mp4", "m4a", "3gp", "3g2", "mj2"}
-NARRATION_MODES = {"structured", "free_exploration"}
+NARRATION_MODES = {"structured", "custom", "free_exploration"}
 REQUIRED_ASR_KINDS = ("final_aac_asr", "isolated_narration_asr")
 REQUIRED_HUMAN_APPROVALS = ("visual_frames", "leakage", "release_safety")
 RENDERS_DIRECTORY = "renders"
@@ -432,6 +432,15 @@ def parse_authoring_contract(
     )
     if narration_mode == "structured" and project_kind not in {"top_ranking", "narrative"}:
         fail("structured final QA requires a top_ranking or narrative authoring project")
+    editorial = manifest.get("editorial", {})
+    has_overrides = isinstance(editorial, dict) and (
+        editorial.get("narration", "standard") == "custom"
+        or editorial.get("cta", "fixed") != "fixed"
+    )
+    if narration_mode == "custom" and (
+        project_kind not in {"top_ranking", "narrative"} or not has_overrides
+    ):
+        fail("custom final QA requires explicit authoring editorial overrides")
     if narration_mode == "free_exploration" and project_kind != "free_exploration":
         fail("free_exploration final QA requires a free_exploration authoring project")
 
@@ -452,7 +461,7 @@ def parse_authoring_contract(
         text = require_string(row.get("text"), f"{label}.text")
         if not normalized_text(text):
             fail(f"{label}.text becomes empty after ASR normalization")
-        if author_role == "outro_cta" and text != FIXED_OUTRO_CTA:
+        if author_role == "outro_cta" and editorial.get("cta", "fixed") == "fixed" and text != FIXED_OUTRO_CTA:
             fail(f"{label}.text must equal the canonical fixed outro CTA")
         wav_raw = require_string(row.get("wav"), f"{label}.wav")
         wav_path = resolve_project_file(project, wav_raw, f"{label}.wav")
@@ -564,9 +573,7 @@ def parse_narration_expectations(
             f"missing={missing} extra={extra}"
         )
 
-    if narration_mode == "free_exploration" and not authoring_narration:
-        return expectations
-    if not expectations:
+    if not expectations and narration_mode == "structured":
         fail(f"{narration_mode} requires narration expectations")
     roles = {row["role"] for row in expectations.values()}
     if narration_mode == "structured":
@@ -1505,6 +1512,41 @@ def single_stream(
     return streams[0]
 
 
+def validate_output_format(
+    probes: dict[str, dict[str, Any]], authoring: dict[str, Any]
+) -> None:
+    try:
+        expected = authoring_contract.resolve_output_format(authoring)
+    except ValueError as exc:
+        fail(str(exc))
+    for key in ("render", "final"):
+        stream = single_stream(probes[key], "video", key)
+        size = (stream.get("width"), stream.get("height"))
+        if any(type(value) is not int for value in size) or size != expected:
+            fail(
+                f"{key} video dimensions must match authoring output_format "
+                f"{expected[0]}x{expected[1]} (default portrait 1080x1920); got {size}")
+        # A wide pixel aspect or display rotation can make a nominally portrait stream horizontal.
+        sar = stream.get("sample_aspect_ratio")
+        if sar not in (None, "N/A"):
+            try:
+                ratio = Fraction(str(sar).replace(":", "/"))
+            except (ValueError, ZeroDivisionError):
+                fail(f"{key} video has invalid sample_aspect_ratio")
+            if ratio != 1:
+                fail(f"{key} video must use square pixels (sample_aspect_ratio=1:1)")
+        rotations = [stream.get("tags", {}).get("rotate", 0)]
+        rotations.extend(row["rotation"] for row in stream.get("side_data_list", [])
+                         if "rotation" in row)
+        for value in rotations:
+            try:
+                rotation = float(value)
+            except (TypeError, ValueError):
+                fail(f"{key} video has invalid display rotation")
+            if not math.isfinite(rotation) or abs(rotation % 360) > 0.001:
+                fail(f"{key} video must bake orientation into pixels, without display rotation")
+
+
 def validate_media_structure(
     assets: dict[str, Asset],
     probes: dict[str, dict[str, Any]],
@@ -1817,6 +1859,7 @@ def verify_project(
                 f"{source.raw_path}"
             )
     duration_sec, video_codec = validate_media_structure(assets, probes, checks)
+    validate_output_format(probes, authoring_manifest_value)
     validate_chapter_coverage(chapters, duration_sec)
     validate_visual_sample_coverage(sample_times, chapters, duration_sec)
     for artifact in visual_artifacts:

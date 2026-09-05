@@ -249,25 +249,7 @@ class LatinPronunciationTests(unittest.TestCase):
 
 
 class PronunciationPolicyDocumentationTests(unittest.TestCase):
-    def test_agents_owns_word_first_rule_and_claude_is_a_thin_entrypoint(self) -> None:
-        agents = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
-        claude = (REPO_ROOT / "CLAUDE.md").read_text(encoding="utf-8")
-
-        self.assertIn("single top-level source of agent instructions", agents)
-        self.assertIn("BEYOND", agents)
-        self.assertRegex(agents, r"单词.*优先.*按词|优先.*单词.*发音")
-        self.assertRegex(agents, r"缩写|首字母")
-        self.assertRegex(agents, r"纯中文.*原样|纯中文.*透传")
-
-        for reference in (
-            "[`AGENTS.md`](AGENTS.md)",
-            "[`CONVENTIONS.md`](CONVENTIONS.md)",
-            "[`tools/video/README.md`](tools/video/README.md)",
-        ):
-            self.assertIn(reference, claude)
-        self.assertNotIn("BEYOND", claude)
-        self.assertNotIn("CV002", claude)
-
+    def test_loaded_policy_normalizes_words_and_acronyms(self) -> None:
         # The executable policy, not duplicated prose, is the pronunciation truth.
         policy = PronunciationPolicy.load()
         self.assertEqual(

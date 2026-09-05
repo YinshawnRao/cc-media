@@ -199,6 +199,29 @@ def parse_aware_datetime(value: Any) -> datetime | None:
     return parsed if parsed.tzinfo is not None else None
 
 
+DEFAULT_OUTPUT_SIZE = (1080, 1920)
+
+
+def resolve_output_format(manifest: dict[str, Any]) -> tuple[int, int]:
+    """The canvas comes from the user contract, never from source media dimensions."""
+    if "output_format" not in manifest:
+        return DEFAULT_OUTPUT_SIZE
+    row = manifest["output_format"]
+    if not isinstance(row, dict) or set(row) - {"width", "height", "user_request"}:
+        raise ValueError("output_format must contain width, height and optional user_request")
+    size = (row.get("width"), row.get("height"))
+    if any(type(value) is not int or value <= 0 or value % 2 for value in size):
+        raise ValueError("output_format.width/height must be positive even integers")
+    request = row.get("user_request")
+    if "user_request" in row and (not isinstance(request, str) or not request.strip()):
+        raise ValueError("output_format.user_request must be a non-empty user quote")
+    if size != DEFAULT_OUTPUT_SIZE and not request:
+        raise ValueError(
+            "output_format other than 1080x1920 requires user_request quoting an explicit "
+            "user format request; a design rationale alone is not authorization")
+    return size
+
+
 class ProjectVerifier:
     def __init__(
         self,
@@ -436,10 +459,34 @@ class ProjectVerifier:
             self.error("narration_sequence must be an array")
             return "", ""
 
-        if kind != "free_exploration":
+        policy = manifest.get("editorial", {})
+        if not isinstance(policy, dict):
+            self.error("editorial must be an object")
+            policy = {}
+        if set(policy) - {"narration", "cta", "reason"}:
+            self.error("editorial contains unknown fields")
+        narration_style = policy.get("narration", "standard")
+        cta_style = policy.get("cta", "fixed")
+        if not isinstance(narration_style, str) or narration_style not in {"standard", "custom"}:
+            self.error("editorial.narration must be standard or custom")
+        if not isinstance(cta_style, str) or cta_style not in {"fixed", "custom", "omit"}:
+            self.error("editorial.cta must be fixed, custom or omit")
+        if (narration_style != "standard" or cta_style != "fixed") and not (
+            isinstance(policy.get("reason"), str) and policy["reason"].strip()
+        ):
+            self.error("editorial overrides require a non-empty reason from the brief/design")
+        cta_rows = [row for row in sequence if isinstance(row, dict) and row.get("role") == "outro_cta"]
+        if cta_style == "omit" and cta_rows:
+            self.error("editorial.cta=omit forbids an outro_cta row")
+        if kind != "free_exploration" and cta_style != "omit":
+            if len(cta_rows) != 1 or not sequence or sequence[-1] != cta_rows[0]:
+                self.error("the selected CTA must occur exactly once as the last narration")
+        if kind != "free_exploration" and narration_style == "standard":
             expected = [("intro", None)]
             expected.extend(("transition", item_id) for item_id in item_ids)
-            expected.extend((("work_outro", None), ("outro_cta", None)))
+            expected.append(("work_outro", None))
+            if cta_style != "omit":
+                expected.append(("outro_cta", None))
             actual = []
             for row in sequence:
                 if isinstance(row, dict):
@@ -463,6 +510,8 @@ class ProjectVerifier:
                 continue
             block_id = row.get("id")
             role = row.get("role")
+            if role == "transition" and row.get("item_id") not in item_ids:
+                self.error(f"{label}.item_id must reference a project item")
             text = row.get("text")
             if not isinstance(block_id, str) or not block_id.strip() or block_id in seen_ids:
                 self.error(f"{label}.id must be a unique non-empty string")
@@ -475,11 +524,9 @@ class ProjectVerifier:
                 text = ""
             if role == "intro":
                 intro_text = text
-                if "接下来" in text:
-                    self.error("intro narration must not contain '接下来'")
             elif role == "outro_cta":
                 cta_text = text
-                if text != FIXED_OUTRO_CTA:
+                if cta_style == "fixed" and text != FIXED_OUTRO_CTA:
                     self.error("outro CTA must exactly equal tools/video/outro_cta.py canonical text")
 
             wav = self.safe_path(row.get("wav"), f"{label}.wav")
@@ -562,7 +609,7 @@ class ProjectVerifier:
             ),
             {},
         )
-        intro_disclosed = intro.get("disclosed_item_ids")
+        intro_disclosed = intro.get("disclosed_item_ids", [] if not intro else None)
         if not isinstance(intro_disclosed, list) or any(
             not isinstance(x, str) for x in intro_disclosed
         ):
@@ -734,18 +781,34 @@ class ProjectVerifier:
             if not isinstance(record, dict):
                 self.error(f"{platform_label} must be an object")
                 continue
-            if record.get("searched") is not True:
-                self.error(f"{platform_label}.searched must be true")
+            searched = record.get("searched")
+            exception = record.get("search_exception")
+            skipped = searched is False
+            if searched is not True and not skipped:
+                self.error(f"{platform_label}.searched must be boolean")
+            if skipped:
+                if not isinstance(exception, dict) or set(exception) != {"kind", "reason"}:
+                    self.error(f"{platform_label}.search_exception requires kind and reason")
+                elif not isinstance(exception.get("kind"), str) or exception.get("kind") not in {
+                    "user_specified_url", "user_excluded_platform", "platform_exclusive"
+                } or not isinstance(exception.get("reason"), str) or not exception["reason"].strip():
+                    self.error(f"{platform_label}.search_exception must explain an allowed exception")
+                if isinstance(exception, dict) and exception.get("kind") == "user_excluded_platform" and record.get("candidates"):
+                    self.error(f"{platform_label} excluded platform must not contain candidates")
+            elif exception is not None:
+                self.error(f"{platform_label}.search_exception is only valid when searched=false")
             queries = record.get("search_queries")
-            if not isinstance(queries, list) or not queries or any(
+            if not isinstance(queries, list) or (not skipped and not queries) or any(
                 not isinstance(query, str) or not query.strip() for query in queries
             ):
                 self.error(f"{platform_label}.search_queries must be a non-empty string array")
+            if skipped and queries:
+                self.error(f"{platform_label} skipped search must not claim search queries")
             candidates = record.get("candidates")
             if not isinstance(candidates, list):
                 self.error(f"{platform_label}.candidates must be an array")
                 continue
-            if not candidates and not str(record.get("no_usable_reason", "")).strip():
+            if not candidates and not skipped and not str(record.get("no_usable_reason", "")).strip():
                 self.error(f"{platform_label} needs candidates or no_usable_reason")
             for index, candidate in enumerate(candidates):
                 candidate_label = f"{platform_label}.candidates[{index}]"
@@ -1192,6 +1255,10 @@ class ProjectVerifier:
         if manifest is None:
             return self.errors
         self.manifest = manifest
+        try:
+            resolve_output_format(manifest)
+        except ValueError as exc:
+            self.error(str(exc))
         schema_version = manifest.get("schema_version")
         if type(schema_version) is not int or schema_version not in SUPPORTED_SCHEMA_VERSIONS:
             self.error(
@@ -1205,17 +1272,15 @@ class ProjectVerifier:
         if kind == "free_exploration" and not str(manifest.get("rationale", "")).strip():
             self.error("free_exploration requires a non-empty rationale")
 
-        selection_path = self.safe_path(manifest.get("voice_selection"), "voice_selection")
-        selection = (
-            self.load_json_path(selection_path, "voice_selection")
-            if selection_path is not None
-            else None
-        )
-        if selection is None:
-            selection = {}
-        if not str(selection.get("resolved_voice_id", "")).strip():
-            self.error("voice_selection.resolved_voice_id must be non-empty")
-        self.validate_voice_contract(selection_path)
+        if manifest.get("narration_sequence") or manifest.get("voice_selection") is not None:
+            selection_path = self.safe_path(manifest.get("voice_selection"), "voice_selection")
+            selection = (
+                self.load_json_path(selection_path, "voice_selection")
+                if selection_path is not None else None
+            ) or {}
+            if not str(selection.get("resolved_voice_id", "")).strip():
+                self.error("voice_selection.resolved_voice_id must be non-empty")
+            self.validate_voice_contract(selection_path)
 
         raw_items = manifest.get("items")
         if not isinstance(raw_items, list):

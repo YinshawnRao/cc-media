@@ -2,6 +2,8 @@
 name: tailwind
 description: Tailwind CSS v4.2 browser-runtime patterns for HyperFrames compositions. Use when scaffolding or editing projects created with `hyperframes init --tailwind`, writing Tailwind utility classes in composition HTML, adding CSS-first Tailwind v4 theme tokens, debugging v3 vs v4 syntax, or deciding when to compile Tailwind to CSS instead of using the browser runtime.
 ---
+> cc-media adapter: [production routing](../../../tools/video/skill-routing.md) controls pin, Qwen/ASR, resource wrappers, output paths and existing user authorization. This skill supplies only the technical capability needed for the task; generic aesthetic quotas and approval/preview defaults do not apply.
+
 
 # Tailwind CSS for HyperFrames
 
@@ -118,15 +120,15 @@ If a generated class is unavoidable, make sure the full class token appears in a
 After editing a Tailwind-enabled composition:
 
 ```bash
-npx hyperframes lint
-npx hyperframes validate
-npx hyperframes inspect
+npx --yes hyperframes@0.6.69 lint
+npx --yes hyperframes@0.6.69 validate
+npx --yes hyperframes@0.6.69 inspect
 ```
 
 For a render proof:
 
 ```bash
-npx hyperframes render . --workers 1 --quality draft --output tailwind-proof.mp4
+python3 ../../tools/video/resource_budget.py hyperframes -- npx --yes hyperframes@0.6.69 render --workers 1 --quality draft --output renders/tailwind-proof.mp4 --sdr
 ```
 
 The validation path should show no missing-style flashes on frame 0. If styles appear in preview but not render, check that `window.__tailwindReady` exists and resolves before capture.
@@ -139,7 +141,7 @@ The validation path should show no missing-style flashes on frame 0. If styles a
 4. Replace v3 `@tailwind` directives with v4 browser-runtime CSS.
 5. Move custom tokens from `tailwind.config.js` to `@theme`.
 6. Replace dynamically assembled classes with complete static tokens.
-7. Run `npx hyperframes validate` and render a short proof.
+7. Run `npx --yes hyperframes@0.6.69 validate` and render a short proof.
 
 ## Credits And References
 

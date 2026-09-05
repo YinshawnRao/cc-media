@@ -319,6 +319,27 @@ class VerifyProjectTests(unittest.TestCase):
     def save_manifest(self, root: Path, manifest: dict) -> None:
         write_json(root / "project-manifest.json", manifest)
 
+    def test_custom_output_format_requires_explicit_user_request(self) -> None:
+        with self.project() as root:
+            manifest = load_json(root / "project-manifest.json")
+            manifest["output_format"] = {"width": 1920, "height": 1080}
+            self.save_manifest(root, manifest)
+            self.assert_error(self.errors(root), "requires user_request")
+            manifest["output_format"]["user_request"] = "本期请做 1920×1080 横屏。"
+            self.save_manifest(root, manifest)
+            self.assertEqual([], self.errors(root))
+
+    def test_output_format_defaults_and_invalid_declarations(self) -> None:
+        self.assertEqual((1080, 1920), gate.resolve_output_format({}))
+        self.assertEqual((1080, 1920), gate.resolve_output_format(
+            {"output_format": {"width": 1080, "height": 1920}}))
+        for row in (None, {}, {"width": True, "height": 1920},
+                    {"width": 1081, "height": 1920},
+                    {"width": 1920, "height": 1080, "user_request": " "},
+                    {"width": 1920, "height": 1080, "reason": "保留全景"}):
+            with self.subTest(row=row), self.assertRaises(ValueError):
+                gate.resolve_output_format({"output_format": row})
+
     def update_item_evidence_hash(self, root: Path, manifest: dict, index: int) -> None:
         evidence = root / manifest["items"][index]["evidence"]["path"]
         manifest["items"][index]["evidence"]["sha256"] = gate.sha256_file(evidence)
@@ -516,11 +537,6 @@ class VerifyProjectTests(unittest.TestCase):
                 "must be exactly intro",
             ),
             (
-                "intro wording",
-                lambda rows: rows[0].update({"text": "接下来公布排名。"}),
-                "must not contain '接下来'",
-            ),
-            (
                 "cta",
                 lambda rows: rows[-1].update({"text": "点赞关注。"}),
                 "must exactly equal",
@@ -532,6 +548,65 @@ class VerifyProjectTests(unittest.TestCase):
                 mutate(manifest["narration_sequence"])
                 self.save_manifest(root, manifest)
                 self.assert_error(self.errors(root), expected)
+
+    def test_intro_wording_is_editorial_but_still_bound_to_qwen_output(self) -> None:
+        with self.project() as root:
+            manifest = load_json(root / "project-manifest.json")
+            manifest["narration_sequence"][0]["text"] = "接下来聊聊这些作品的变化。"
+            self.rewrite_narration_duration(root, manifest, 0, 1.0)
+            self.save_manifest(root, manifest)
+            self.assertEqual([], self.errors(root))
+
+    def test_search_exceptions_are_truthful_and_do_not_drop_source_evidence(self) -> None:
+        for direct in (False, True):
+            with self.subTest(direct=direct), self.project() as root:
+                manifest = load_json(root / "project-manifest.json")
+                source = manifest["items"][0]["sources"]
+                selected = source["selection"]["platform"]
+                other = "bilibili" if selected == "youtube" else "youtube"
+                record = source["platforms"][selected if direct else other]
+                record.update(searched=False, search_queries=[], search_exception={
+                    "kind": "user_specified_url" if direct else "user_excluded_platform",
+                    "reason": "用户指定该链接" if direct else "用户排除另一平台",
+                })
+                if not direct:
+                    record["candidates"] = []
+                self.save_manifest(root, manifest)
+                self.assertEqual([], self.errors(root))
+                record.pop("search_exception")
+                self.save_manifest(root, manifest)
+                self.assert_error(self.errors(root), "search_exception requires")
+
+    def test_custom_cta_requires_reason_and_real_matching_sidecar(self) -> None:
+        with self.project() as root:
+            manifest = load_json(root / "project-manifest.json")
+            manifest["editorial"] = {"cta": "custom", "reason": "用户指定本期结尾"}
+            manifest["narration_sequence"][-1]["text"] = "愿这段旋律陪你度过今晚。"
+            self.save_manifest(root, manifest)
+            self.assert_error(self.errors(root), "does not exactly match")
+            self.rewrite_narration_duration(root, manifest, -1, 1.0)
+            self.assertEqual([], self.errors(root))
+            manifest["editorial"].pop("reason")
+            self.save_manifest(root, manifest)
+            self.assert_error(self.errors(root), "overrides require")
+
+    def test_explicit_custom_structure_and_silent_project_preserve_item_gates(self) -> None:
+        for silent in (False, True):
+            with self.subTest(silent=silent), self.project() as root:
+                manifest = load_json(root / "project-manifest.json")
+                manifest["editorial"] = {"narration": "custom", "cta": "omit", "reason": "本期采用音乐为主的结构"}
+                removed = manifest["narration_sequence"][0 if silent else 1:]
+                manifest["narration_sequence"] = [] if silent else manifest["narration_sequence"][:1]
+                for row in removed:
+                    (root / row["wav"]).unlink()
+                    (root / row["sidecar"]).unlink()
+                if silent:
+                    manifest.pop("voice_selection")
+                self.save_manifest(root, manifest)
+                self.assertEqual([], self.errors(root))
+                manifest["items"][0]["clip_sha256"] = "0" * 64
+                self.save_manifest(root, manifest)
+                self.assertTrue(self.errors(root), "custom structure must retain clip hash validation")
 
     def test_schema_v2_top_transition_narration_has_eight_second_hard_limit(self) -> None:
         with self.project() as root:

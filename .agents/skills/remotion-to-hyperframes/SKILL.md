@@ -2,6 +2,8 @@
 name: remotion-to-hyperframes
 description: Translate an existing Remotion (React-based) video composition into a HyperFrames HTML composition. Use ONLY when the user explicitly asks to port, convert, migrate, translate, or rewrite a Remotion composition as HyperFrames (e.g. "port my Remotion project to HyperFrames"). Do NOT use when (a) authoring a NEW HyperFrames composition (even if A/B-testing a Remotion video); (b) Remotion is mentioned in passing; (c) Remotion code is shared as reference, not for translation; (d) the user wants "the same video as my Remotion one" without explicitly asking to migrate the source — treat as a fresh HyperFrames build. When in doubt, default to the `hyperframes` skill. Detects unsupported patterns (useState, useEffect side effects, async calculateMetadata, third-party React component libraries, `@remotion/lambda`) and recommends the runtime interop escape hatch instead of a lossy translation.
 ---
+> cc-media adapter: [production routing](../../../tools/video/skill-routing.md) controls pin, Qwen/ASR, resource wrappers, output paths and existing user authorization. This skill supplies only the technical capability needed for the task; generic aesthetic quotas and approval/preview defaults do not apply.
+
 
 # Remotion to HyperFrames
 
@@ -79,7 +81,7 @@ Run the eval harness — [`references/eval.md`](references/eval.md) for the full
 cd remotion-src && npx remotion render <CompositionId> out/baseline.mp4
 
 # Render HF translation
-cd ../hf-src && npx hyperframes render --output ../hf.mp4
+cd ../hf-src && npx --yes hyperframes@0.6.69 render --output ../hf.mp4
 
 # SSIM diff
 ../../scripts/render_diff.sh ./remotion-src/out/baseline.mp4 ./hf.mp4 ./diff

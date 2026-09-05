@@ -2,6 +2,8 @@
 name: hyperframes-registry
 description: Install and wire registry blocks and components into HyperFrames compositions. Use when running hyperframes add, installing a block or component, wiring an installed item into index.html, or working with hyperframes.json. Covers the add command, install locations, block sub-composition wiring, component snippet merging, and registry discovery.
 ---
+> cc-media adapter: [production routing](../../../tools/video/skill-routing.md) controls pin, Qwen/ASR, resource wrappers, output paths and existing user authorization. This skill supplies only the technical capability needed for the task; generic aesthetic quotas and approval/preview defaults do not apply.
+
 
 # HyperFrames Registry
 

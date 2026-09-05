@@ -89,6 +89,8 @@ class FakeMediaTools:
                     {
                         "codec_type": "video",
                         "codec_name": "h264",
+                        "width": 1080,
+                        "height": 1920,
                         "start_time": "0.0",
                         "duration": "2.0",
                     }
@@ -100,6 +102,8 @@ class FakeMediaTools:
                 {
                     "codec_type": "video",
                     "codec_name": "h264",
+                    "width": 1080,
+                    "height": 1920,
                     "start_time": "0.0",
                     "duration": "2.0",
                 },
@@ -223,7 +227,7 @@ class ProjectFixture:
     def asset(self, relative: str) -> dict[str, str]:
         return {"path": relative, "sha256": gate.sha256_file(self.files[relative])}
 
-    def write_authoring_contract(self) -> None:
+    def write_authoring_contract(self, output_format: dict | None = None) -> None:
         selection = {"resolved_voice_id": "CV002", "fixture": True}
         selection_path = self.project / "voice-selection.json"
         selection_path.write_text(json.dumps(selection), encoding="utf-8")
@@ -255,6 +259,8 @@ class ProjectFixture:
             ],
             "items": [],
         }
+        if output_format is not None:
+            authoring["output_format"] = output_format
         authoring_path = self.project / "project-manifest.json"
         authoring_path.write_text(
             json.dumps(authoring, ensure_ascii=False, indent=2) + "\n",
@@ -485,6 +491,44 @@ class ProjectFixture:
 
 
 class FinalVideoGateUnitTests(unittest.TestCase):
+    def test_output_format_checks_both_assets_pixels_and_rotation(self) -> None:
+        tools = FakeMediaTools()
+        def probes():
+            return {key: tools.probe(Path(f"{key}.mp4")) for key in ("render", "final")}
+
+        gate.validate_output_format(probes(), {})
+        for key in ("render", "final"):
+            for change in (
+                {"width": 1920, "height": 1080},
+                {"width": None},
+                {"sample_aspect_ratio": "4:1"},
+                {"tags": {"rotate": "90"}},
+                {"side_data_list": [{"rotation": -90}]},
+            ):
+                with self.subTest(key=key, change=change), self.assertRaises(gate.GateFailure):
+                    value = probes()
+                    value[key]["streams"][0].update(change)
+                    gate.validate_output_format(value, {})
+        value = probes()
+        for row in value.values():
+            row["streams"][0].update(width=1920, height=1080)
+        gate.validate_output_format(value, {"output_format": {
+            "width": 1920, "height": 1080, "user_request": "本期做横屏。"}})
+
+    def test_final_gate_rejects_landscape_even_when_render_and_final_match(self) -> None:
+        class LandscapeTools(FakeMediaTools):
+            def probe(self, path):
+                result = super().probe(path)
+                for stream in result["streams"]:
+                    if stream["codec_type"] == "video":
+                        stream.update(width=1920, height=1080)
+                return result
+
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.make_fixture(temporary)
+            with self.assertRaisesRegex(gate.GateFailure, "dimensions must match"):
+                gate.verify_project(fixture.project, tools=LandscapeTools())
+
     def make_fixture(self, temporary: str) -> ProjectFixture:
         return ProjectFixture(Path(temporary) / "project")
 
@@ -1574,7 +1618,10 @@ class FinalVideoGateFfmpegIntegrationTest(unittest.TestCase):
                 "audio/master.wav": master,
                 "audio/narration-only.wav": narration,
             }
-            fixture.write_authoring_contract()
+            fixture.write_authoring_contract({
+                "width": 320, "height": 240,
+                "user_request": "Synthetic test requests a small 320x240 canvas.",
+            })
             for relative, timestamp in (
                 ("qa/cover.png", 0.0),
                 ("qa/contact-sheet.png", 0.5),
@@ -1672,7 +1719,10 @@ class FinalVideoGateFfmpegIntegrationTest(unittest.TestCase):
                     ],
                     check=True,
                 )
-            fixture.write_authoring_contract()
+            fixture.write_authoring_contract({
+                "width": 320, "height": 240,
+                "user_request": "Synthetic test requests a small 320x240 canvas.",
+            })
             fixture.manifest = fixture._manifest()
             fixture.write_asr_evidence()  # Intentionally claims the sine says "你好".
             fixture.write_manifest()

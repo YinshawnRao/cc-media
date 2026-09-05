@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """展示段对齐机械闸门：用多证据人声数据校验「副歌入点」和「安全乐句出点」。
 
-解决两个反复翻车的问题（CONVENTIONS「展示段硬规则 (C)」的机械化执行）：
+解决旁白与歌曲展示交接、完整乐句出点两个问题：
   问题1（旁白盖副歌）：转场配音把副歌人声大片盖住，旁白一结束副歌也快唱完了，
                        展示段推满音量时反而落在间奏/前奏/outro 纯器乐 —— 观众听不到"炸点"。
                        理想：配音快结束时副歌人声正好进来，并贯穿整个展示段。
@@ -9,7 +9,7 @@
                        理想：结尾落在唱完一句之后或纯器乐 gap 上。
 
 时间基准（全部用「源时间码」，即 vocal_segments 所在的那条 vert clip 的时间轴）：
-  narr_end_src   —— 转场旁白念完那一刻对应的源时间
+  narr_end_src   —— 转场旁白收尾对应的源时间；无旁白时等于 show_start_src，作为展示入点锚点
   show_start_src —— 展示段音乐推满（full volume）起点对应的源时间
   show_end_src   —— 展示段结束对应的源时间
 对 full_build 风格：narr_end_src = ch_off-(POST+DIG)，show_start_src = ch_off，show_end_src = ch_off+show。
@@ -22,8 +22,11 @@
 
   # 2) 反推正确切点（authoring 期，避免手填 ch_off/show 拍脑袋）
   tools/tts/venv/bin/python tools/video/showcase_align.py plan \
-      --vocals probe/vocal_analysis.json --clip vert_p4_wait --voice-dur 14.0 \
-      [--lead 0.35 --post 0.25 --dig 1.45 --near 105 --min-show 25]
+      --vocals probe/vocal_analysis.json --clip vert_p4_wait \
+      [--post 0.25 --dig 1.45 --near 105 --min-show 60 --through 175]
+
+plan 只建议源内展示窗口，不根据旁白 WAV 计算章节长度；实际预滚/duck 时长由 build 绑定 WAV。
+无旁白歌曲直接填写 show_start_src = narr_end_src 的真实展示窗并运行 check。
 
 showcase_plan.json 结构（build 末尾用 dump_plan() 自动产出，无需手写）：
   {"consts": {"POST":0.25,"DIG":1.45},
@@ -37,9 +40,9 @@ build 内联用法（最强约束 —— 不对齐就不出 master）：
        plan_path=ROOT/"build"/"showcase_plan.json")
 
 旧版 ``vocal_segments.py`` 只有频带能量区间，不能证明是目标歌手本人演唱，也不能证明区间端点
-就是歌词/乐句边界。此类数据只允许得到 REVIEW；普通 goal 应先严格按 multi → 换窗 → 换源
-重跑。该路径确已穷尽且硬 FAIL=0 后，本地才可用 hash/window-bound agent observation 得到
-OBSERVED；发布 ``--require-human-review`` 仍只接受 human APPROVED。新版分析可提供
+就是歌词/乐句边界。此类数据只允许得到 REVIEW；先补 multi 分析，再按失败原因修复窗口或来源。
+Live 等检测能力限制且硬 FAIL=0 时，本地可用真实证据与 hash/window-bound agent observation 得到
+OBSERVED，无须重复必定 REVIEW 的候选；发布 ``--require-human-review`` 仍只接受 human APPROVED。新版分析可提供
 ``lead_segments``、``safe_cut_intervals`` 和 ``evidence_level`` 后再自动 OK。
 """
 from __future__ import annotations
@@ -60,17 +63,17 @@ END_ACTIVE_TOL = 0.12   # 仅容忍检测分帧误差；不再允许切掉 1.2s 
 END_RELEASE = 0.30      # 确认尾音结束后保留的释放余量
 END_LOOKAHEAD = 3.0     # 候选出点后至少这么久无新主唱 onset；覆盖慢歌句间气口
 RELIABLE_PAD = 10.0     # showcase 前后检测活动检查窗
-MIN_SHOW = 25.0         # plan 反推时展示段的最短目标（解说盘点类，见硬规则 (B)）
-MAX_AUTO_EXTEND = 24.0  # 为吞并下一小句允许自动延长的最大秒数；再长转 REVIEW
+MIN_SHOW = 60.0         # plan 初筛预留量，可按完整段落调整；不是 check 硬下限或总长限制
+PLAN_ENTRY_PAD = 1.0    # full volume 从目标首字前开始，保留入点铺垫
+PLAN_END_PAD = 1.0      # 规划比检测最低释放容差留更多余韵；仍须核对真实尾音
 APPROVAL_TIME_TOL = 0.02  # 批准绑定到具体时间窗；时间码变化即失效
 
 TRUSTED_EVIDENCE = {"multi_evidence", "manual", "verified"}
 TRUSTED_BOUNDARY_ACTIVITY = {"whisper_word_timestamps", "manual", "verified"}
 
 AUTO_RECOVERY_GUIDANCE = (
-    "普通 goal 先自动执行：vocal_segments.py --mode multi 多证据分析 "
-    "→ 换完整乐句窗/切点 → 换同版本官方或另一平台来源并重跑；"
-    "只有以上路径确已穷尽且硬 FAIL=0 时，本地模式才可使用绑定当前窗口/hash 的 "
+    "先运行 vocal_segments.py --mode multi，再按根因处理：窗口问题换窗，素材问题换同版本源；"
+    "Live 等检测能力限制且硬 FAIL=0 时，本地可直接使用真实证据与绑定当前窗口/hash 的 "
     "reviewer_kind=agent 工具辅助观察（结果仅为 OBSERVED，不是真人批准）；"
     "发布模式仍只接受 human，代理不得代签 human。")
 
@@ -655,29 +658,25 @@ def cmd_check(args):
     return 0
 
 
-def _find_safe_end(segs, show_start, min_show):
-    """从最短展示目标开始，只向后找不会截在下一次 onset 前的候选出点。"""
-    target = show_start + min_show
+def _find_safe_end(segs, show_start, min_show, through=None):
+    """完整核心段与初筛预留量之后找出点；不因乐段较长缩回早期气口。"""
+    target = max(show_start + min_show, through if through is not None else show_start)
     if not segs:
         return target, False, "没有 word/咬字边界证据，不能自动规划出点"
     candidates = [(idx, e) for idx, (_, e) in enumerate(segs) if e >= target]
     if not candidates:
-        fallback = max(target, segs[-1][1] + END_RELEASE)
+        fallback = max(target, segs[-1][1] + PLAN_END_PAD)
         return fallback, False, "最短展示后没有可用人声段终点"
 
     for idx, end in candidates:
-        cut = end + END_RELEASE
+        cut = end + PLAN_END_PAD
         next_onset = next((s for s, _ in segs[idx + 1:] if s > end), None)
         if next_onset is not None and next_onset - cut < END_LOOKAHEAD:
             continue  # 句内气口：吞并下一小句后继续找
-        extension = cut - target
-        if extension > MAX_AUTO_EXTEND:
-            return cut, False, f"安全出点需额外延长 {extension:.1f}s，超过自动上限 {MAX_AUTO_EXTEND:.1f}s"
         return cut, True, "尾音释放后且前向保护窗内无新 onset"
 
-    cut = segs[-1][1] + END_RELEASE
-    extension = cut - target
-    return cut, extension <= MAX_AUTO_EXTEND, "连续人声延伸到最后检测段"
+    cut = segs[-1][1] + PLAN_END_PAD
+    return cut, False, "未找到带前向保护窗的出点，须核对后续源音频"
 
 
 def cmd_approval_template(args):
@@ -733,6 +732,15 @@ def cmd_approval_template(args):
 
 
 def cmd_plan(args):
+    through = getattr(args, "through", None)
+    for name, value in (("min-show", args.min_show), ("post", args.post),
+                        ("dig", args.dig), ("through", through), ("near", args.near)):
+        if value is None and name in {"through", "near"}:
+            continue
+        number = _finite_number(value)
+        if number is None or number < 0 or (name == "min-show" and number == 0):
+            print(f"--{name} 必须是有效的非负秒数（min-show 须大于 0）", file=sys.stderr)
+            return 2
     vocals = _load_analysis(args.vocals)
     raw_analysis = vocals.get(args.clip)
     if raw_analysis is None:
@@ -757,22 +765,24 @@ def cmd_plan(args):
         cand = max(big, key=lambda se: se[1] - se[0])
     onset = cand[0]
 
-    # 让人声入点落在旁白收尾前 2s：show_start_src = onset + (POST+DIG) + 2
-    show_start = round(onset + narr_end_offset + 2.0, 2)
-    narr_end_src = round(show_start - narr_end_offset, 2)
+    # 先收完旁白、恢复 full volume，再进入目标首字；源首不足预滚时由 build 调整旁白位置。
+    show_start = round(max(0.0, onset - PLAN_ENTRY_PAD), 2)
+    narr_end_src = round(max(0.0, show_start - narr_end_offset), 2)
 
     # 选结尾：最短展示之后只向后找；短气口后若仍有 onset，吞并下一小句。
-    show_end_raw, auto_safe, end_note = _find_safe_end(boundary_segs, show_start, args.min_show)
+    show_end_raw, auto_safe, end_note = _find_safe_end(
+        boundary_segs, show_start, args.min_show, through=through)
     show_end = round(show_end_raw, 2)
     show = round(show_end - show_start, 2)
 
     # ch_off 即 show_start（full_build 语义）；mseek 由 build 自行算
     print(f"clip={args.clip}  候选副歌段 [{cand[0]:.1f},{cand[1]:.1f}] ({cand[1]-cand[0]:.1f}s)")
-    print(f"  人声入点 onset = {onset:.2f}s  (= 旁白收尾前 2s)")
+    print(f"  人声入点 onset = {onset:.2f}s  (full volume 从首字前开始)")
     print(f"  → 建议 ch_off (show_start_src) = {show_start}")
     print(f"  → 建议 show = {show}   (show_end_src = {show_end})")
     print(f"  → narr_end_src = {narr_end_src}   (POST+DIG={narr_end_offset})")
     print(f"  → 出点搜索：{'自动候选' if auto_safe else '需 REVIEW'}；{end_note}")
+    print("  → 仍须核对完整核心段、源前后余量和实际尾音；候选时长不是成片上限")
     print("  自检：")
     v = verify_song(raw_analysis, narr_end_src=narr_end_src,
                     show_start_src=show_start, show_end_src=show_end, clip=args.clip)
@@ -786,7 +796,7 @@ def cmd_plan(args):
 
 def main():
     ap = argparse.ArgumentParser(
-        description="展示段对齐机械闸门；未过时普通 goal 先自动 multi 分析、换窗、换同版本来源")
+        description="展示段对齐机械闸门；未过时先 multi 分析，再按根因修复或记录真实观察")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     c = sub.add_parser(
@@ -808,12 +818,15 @@ def main():
     p = sub.add_parser("plan", help="反推某首的 ch_off / show 建议值")
     p.add_argument("--vocals", required=True)
     p.add_argument("--clip", required=True, help="vocal_analysis.json 里的 clip key，如 vert_p4_wait")
-    p.add_argument("--voice-dur", type=float, required=True, help="该首转场旁白 wav 时长(s)")
-    p.add_argument("--lead", type=float, default=0.35)
+    p.add_argument("--voice-dur", type=float, help="历史兼容参数，不参与源窗口建议；WAV 时长由 build 绑定")
+    p.add_argument("--lead", type=float, default=0.35, help="历史兼容参数，不参与源窗口建议")
     p.add_argument("--post", type=float, default=0.25)
     p.add_argument("--dig", type=float, default=1.45)
     p.add_argument("--near", type=float, default=None, help="副歌大概在源里第几秒(可选，帮选段)")
-    p.add_argument("--min-show", type=float, default=MIN_SHOW)
+    p.add_argument("--min-show", type=float, default=MIN_SHOW,
+                   help="初筛展示预留秒数（默认 60，可按完整段落调整；非硬下限/上限）")
+    p.add_argument("--through", type=float,
+                   help="必须完整保留到的核心段源时间；出点在此之后寻找，不限制延长")
     p.set_defaults(func=cmd_plan)
 
     approval_help = "仅供已完成逐曲复核的用户生成批准骨架；代理不得代签"

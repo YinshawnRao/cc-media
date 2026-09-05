@@ -2,6 +2,8 @@
 name: gsap
 description: GSAP animation reference for HyperFrames. Covers gsap.to(), from(), fromTo(), easing, stagger, defaults, timelines (gsap.timeline(), position parameter, labels, nesting, playback), and performance (transforms, will-change, quickTo). Use when writing GSAP animations in HyperFrames compositions.
 ---
+> cc-media adapter: [production routing](../../../tools/video/skill-routing.md) controls pin, Qwen/ASR, resource wrappers, output paths and existing user authorization. This skill supplies only the technical capability needed for the task; generic aesthetic quotas and approval/preview defaults do not apply.
+
 
 # GSAP
 

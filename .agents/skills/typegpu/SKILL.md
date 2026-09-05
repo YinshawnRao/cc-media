@@ -2,6 +2,8 @@
 name: typegpu
 description: TypeGPU and raw WebGPU adapter patterns for HyperFrames. Use when creating GPU-rendered compositions with TypeGPU, raw WebGPU, WGSL fragment shaders, compute pipelines, liquid glass effects, particle systems, or any canvas layer driven by navigator.gpu that responds to HyperFrames hf-seek events.
 ---
+> cc-media adapter: [production routing](../../../tools/video/skill-routing.md) controls pin, Qwen/ASR, resource wrappers, output paths and existing user authorization. This skill supplies only the technical capability needed for the task; generic aesthetic quotas and approval/preview defaults do not apply.
+
 
 # TypeGPU / WebGPU for HyperFrames
 

@@ -220,7 +220,7 @@ Terminal typing effect using `tl.call()` to update text content character by cha
   <span class="cursor" style="width:11px;height:22px;background:#333;display:inline-block;"></span>
 </div>
 <script>
-  var CMD = "npx hyperframes init";
+  var CMD = "npx --yes hyperframes@0.6.69 init";
   var typed = document.getElementById("typed-text");
 
   // Cursor blinks
@@ -372,7 +372,7 @@ python3 skills/gsap/scripts/extract-audio-data.py narration.wav --fps 30 --bands
 
 Keep text/logo intensity subtle (≤5% scale, ≤30% glow) — audio-reactive motion on tiny elements reads as jitter. Bigger backgrounds can push to 10–30%.
 
-**Never do:** equalizer bars, spectrum analyzers, waveform displays, strobing, rainbow color cycling. The audio provides _timing and intensity_; the visual vocabulary still comes from the brand. See `skills/hyperframes/references/audio-reactive.md` for the full API and anti-patterns.
+Choose visual responses that clarify the topic. Waveforms, spectrum displays, particles and typography are options when they serve the brief; audio reactivity itself is optional.
 
 ---
 

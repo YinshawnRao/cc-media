@@ -48,7 +48,8 @@ class LightweightMediaTools:
     def probe(self, path: Path) -> dict:
         if path.suffix == ".wav":
             return {"streams": [{"codec_type": "audio", "codec_name": "pcm_s16le"}]}
-        return {"streams": [{"codec_type": "video", "codec_name": "h264"}]}
+        return {"streams": [{"codec_type": "video", "codec_name": "h264",
+                             "width": 1080, "height": 1920}]}
 
     def audio_sdr(self, _master: Path, _final: Path, _duration: float) -> float:
         self.calls["audio_sdr"] += 1
@@ -635,6 +636,7 @@ class PrepareFinalQaPolicyTests(unittest.TestCase):
         self,
         root: Path,
         *extra: str,
+        customize=None,
     ) -> tuple[int, Path, LightweightMediaTools]:
         project = root / "project"
         (project / "audio").mkdir(parents=True)
@@ -686,6 +688,8 @@ class PrepareFinalQaPolicyTests(unittest.TestCase):
                 },
             ],
         }
+        if customize is not None:
+            customize(authoring, timeline, narration_texts)
         (project / "timeline.json").write_text(
             json.dumps(timeline, ensure_ascii=False), encoding="utf-8"
         )
@@ -748,6 +752,55 @@ class PrepareFinalQaPolicyTests(unittest.TestCase):
                 ]
             )
         return code, project, tools
+
+    def test_editorial_variants_keep_live_final_checks(self) -> None:
+        for variant in ("custom_cta", "omit_cta", "intro_only", "no_narration"):
+            with self.subTest(variant=variant), tempfile.TemporaryDirectory() as temporary:
+                def customize(authoring, timeline, texts):
+                    authoring["editorial"] = {
+                        "narration": "standard" if variant in {"custom_cta", "omit_cta"} else "custom",
+                        "cta": "custom" if variant == "custom_cta" else "omit",
+                        "reason": "用户要求当期调整旁白结构",
+                    }
+                    if variant == "custom_cta":
+                        texts["audio/cta.wav"] = "留下你想听的下一个主题。"
+                        authoring["narration_sequence"][-1]["text"] = texts["audio/cta.wav"]
+                    else:
+                        count = {"omit_cta": 2, "intro_only": 1, "no_narration": 0}[variant]
+                        authoring["narration_sequence"] = authoring["narration_sequence"][:count]
+                        for path in list(texts)[count:]:
+                            texts.pop(path)
+                        for row in timeline["segments"][count:]:
+                            row["requires_narration"] = False
+                            row["role"] = "free"
+
+                with redirect_stdout(io.StringIO()):
+                    code, project, media = self.run_lightweight_main(
+                        Path(temporary), customize=customize,
+                    )
+                self.assertEqual(0, code)
+                manifest = prepare_final_qa.load_json(project / "qa/final-video-qa.json", "QA")
+                self.assertEqual("custom", manifest["narration_mode"])
+                self.assertEqual(2, media.calls["video_decode_receipt"])
+                for name in ("audio_sdr", "loudness", "analyze_final"):
+                    self.assertEqual(1, media.calls[name])
+                self.assertIn("final_aac_asr", media.asr_kinds)
+
+    def test_preparer_rejects_landscape_before_asr_or_frame_extraction(self) -> None:
+        original_probe = LightweightMediaTools.probe
+        def landscape_probe(tools, path):
+            result = original_probe(tools, path)
+            for stream in result["streams"]:
+                if stream["codec_type"] == "video":
+                    stream.update(width=1920, height=1080)
+            return result
+
+        with tempfile.TemporaryDirectory() as temporary, \
+                mock.patch.object(LightweightMediaTools, "probe", landscape_probe), \
+                mock.patch.object(LightweightMediaTools, "transcribe") as transcribe:
+            with self.assertRaisesRegex(gate.GateFailure, "dimensions must match"):
+                self.run_lightweight_main(Path(temporary))
+            transcribe.assert_not_called()
 
     def test_main_local_writes_pending_final_manifest_without_human_fields(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

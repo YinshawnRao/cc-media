@@ -8,7 +8,7 @@ These cause real bugs if violated.
 
 **Scene visibility:** Scene 1 visible by default (no `opacity: 0`). Scenes 2+ have `opacity: 0` on the CONTAINER div. GSAP reveals them. No visibility shim (`timedEls`).
 
-**Fonts:** Just write the `font-family` you want — the compiler embeds supported fonts automatically via `@font-face` with inline data URIs. No need for `<link>` tags or `@import`. Works in all contexts including sandboxed iframes.
+**Fonts:** Use offline project font files with relative @font-face. Do not assume font-name auto-fetch.
 
 **Element structure:** No `class="clip"` on scene divs in standalone compositions. Only the root div gets `data-composition-id`/`data-start`/`data-duration`.
 
@@ -47,7 +47,7 @@ Shader setup, WebGL init, capture, and fragment shaders are handled by `@hyperfr
         height: 1080px;
         overflow: hidden;
         background: #000;
-        font-family: "YOUR FONT", sans-serif; /* compiler embeds supported fonts automatically */
+        font-family: "YOUR FONT", sans-serif; /* load this family from project font files */
       }
       .scene {
         position: absolute;

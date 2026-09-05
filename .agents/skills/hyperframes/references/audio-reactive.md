@@ -30,7 +30,7 @@ Any GSAP-tweenable property works — `clipPath`, `filter`, SVG attributes, CSS 
 
 Audio provides **timing and intensity**. The visual vocabulary comes from the narrative.
 
-**Never add:** equalizer bars, spectrum analyzers, waveform displays, musical notes clip art, generic particle systems, rainbow color cycling, strobing white on beats, abstract pulsing orbs.
+Choose visual responses that clarify the topic. Waveforms, spectrum displays, particles and typography are options when they serve the brief; audio reactivity itself is optional.
 
 **Instead:** Let content guide the visual and audio drive its behavior. Bass makes warmth _swell_. Treble sharpens _contrast_. The visual choice comes from "what does this piece feel like?"
 

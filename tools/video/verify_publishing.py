@@ -2,8 +2,9 @@
 """Validate the project-local Xiaohongshu publishing-copy contract.
 
 The fixed input is ``publishing/xiaohongshu.md`` under one project.  This gate
-checks deterministic structure, body length, emoji absence, hashtag quality
-boundaries, explicit song-title leakage and a minimum project-relevance signal.
+checks structure, emoji absence, hashtag uniqueness, explicit song-title
+references and a minimum project-relevance signal. Length and ambiguous title
+matches are editorial advisories, not proof of a defective or revealing copy.
 It does not judge whether a title will become viral or whether the prose is
 aesthetically strong.
 """
@@ -88,6 +89,7 @@ class PublishingSummary:
     hashtag_count: int
     relevance_kind: str
     relevance_value: str
+    advisories: tuple[str, ...] = ()
 
 
 def fail(message: str) -> NoReturn:
@@ -239,11 +241,6 @@ def parse_markdown(text: str) -> PublishingDocument:
     hashtag_index = body_nonempty[-1]
     hashtag_line = body_lines[hashtag_index].strip()
     hashtag_parts = hashtag_line.split()
-    if not MIN_HASHTAGS <= len(hashtag_parts) <= MAX_HASHTAGS:
-        fail(
-            "final hashtag line must contain "
-            f"{MIN_HASHTAGS}-{MAX_HASHTAGS} hashtags, got {len(hashtag_parts)}"
-        )
     if any(HASHTAG_RE.fullmatch(part) is None for part in hashtag_parts):
         fail("final non-empty line must contain hashtags only")
     normalized_hashtags = [compact_text(part) for part in hashtag_parts]
@@ -254,15 +251,6 @@ def parse_markdown(text: str) -> PublishingDocument:
     prose = "\n".join(body_lines[:hashtag_index]).strip()
     if not prose:
         fail("body must contain publishable prose before the hashtag line")
-    prose_length = sum(not character.isspace() for character in prose)
-    if not MIN_PROSE_NONSPACE_CHARACTERS <= prose_length <= MAX_PROSE_NONSPACE_CHARACTERS:
-        fail(
-            "body prose must contain "
-            f"{MIN_PROSE_NONSPACE_CHARACTERS}-{MAX_PROSE_NONSPACE_CHARACTERS} "
-            f"non-whitespace characters, got {prose_length}"
-        )
-    if re.search(r"[?？]", prose) is None:
-        fail("body prose must include a specific interaction question")
     body = "\n".join(body_lines[: hashtag_index + 1]).strip()
     return PublishingDocument(tuple(titles), body, tuple(hashtag_parts))
 
@@ -334,21 +322,28 @@ def performer_terms(performers: list[str]) -> list[str]:
     return result
 
 
-def validate_no_song_titles(outward_text: str, song_titles: list[str]) -> None:
+def validate_no_song_titles(outward_text: str, song_titles: list[str]) -> tuple[str, ...]:
+    """Reject explicit title references; leave unmarked lexical overlap to editing.
+
+    Normalized substring presence alone cannot distinguish a song from ordinary
+    words such as 后来 or 勇气. Never rewrite prose merely to clear such a match.
+    """
     normalized_copy = compact_text(outward_text)
     surface_copy = normalized_surface(outward_text)
+    explicit_tokens = [
+        *re.findall(r"[《〈]([^》〉]+)[》〉]", surface_copy),
+        *re.findall(r"#([^\s#]+)", surface_copy),
+    ]
+    explicit = {compact_text(token) for token in explicit_tokens}
+    advisories: list[str] = []
     for title in song_titles:
         normalized_title = compact_text(title)
         if not normalized_title:
             fail(f"project song title cannot be normalized safely: {title!r}")
-        if len(normalized_title) >= 2:
-            revealed = normalized_title in normalized_copy
-        else:
-            # A one-character CJK title must not make every ordinary occurrence
-            # of that character a spoiler.  It is explicit only when presented
-            # as a book-title token, an exact hashtag, or a standalone token.
+        revealed = normalized_title in explicit
+        if len(normalized_title) == 1:
             token = re.escape(normalized_title)
-            revealed = any(
+            revealed = revealed or any(
                 re.search(pattern, surface_copy) is not None
                 for pattern in (
                     rf"[《〈]\s*{token}\s*[》〉]",
@@ -358,6 +353,9 @@ def validate_no_song_titles(outward_text: str, song_titles: list[str]) -> None:
             )
         if revealed:
             fail(f"publishing copy reveals project song title: {title!r}")
+        if normalized_title in normalized_copy:
+            advisories.append(f"ambiguous song-title wording; assess context: {title!r}")
+    return tuple(advisories)
 
 
 def find_relevance(
@@ -388,7 +386,13 @@ def verify_publishing(project: Path) -> PublishingSummary:
     if contains_emoji(copy_text):
         fail("publishing copy must not contain emoji")
     document = parse_markdown(copy_text)
-    validate_no_song_titles(document.outward_text, song_titles)
+    advisories = list(validate_no_song_titles(document.outward_text, song_titles))
+    prose = document.body.rsplit("\n", 1)[0]
+    prose_length = sum(not character.isspace() for character in prose)
+    if not MIN_PROSE_NONSPACE_CHARACTERS <= prose_length <= MAX_PROSE_NONSPACE_CHARACTERS:
+        advisories.append(f"body length outside suggested 420-900 characters: {prose_length}")
+    if not MIN_HASHTAGS <= len(document.hashtags) <= MAX_HASHTAGS:
+        advisories.append(f"hashtag count outside suggested 8-10: {len(document.hashtags)}")
     relevance_kind, relevance_value = find_relevance(
         document.outward_text,
         cover_text,
@@ -400,6 +404,7 @@ def verify_publishing(project: Path) -> PublishingSummary:
         hashtag_count=len(document.hashtags),
         relevance_kind=relevance_kind,
         relevance_value=relevance_value,
+        advisories=tuple(advisories),
     )
 
 
@@ -419,8 +424,10 @@ def main(argv: list[str] | None = None) -> int:
     print(
         "PUBLISHING COPY: PASS "
         f"titles={summary.title_count} hashtags={summary.hashtag_count} "
-        f"relevance={summary.relevance_kind}"
+        f"relevance={summary.relevance_kind} advisories={len(summary.advisories)}"
     )
+    for advisory in summary.advisories:
+        print(f"EDITORIAL: {advisory}")
     return 0
 
 

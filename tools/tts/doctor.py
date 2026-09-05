@@ -78,12 +78,12 @@ def voices_for_scope(
 ) -> tuple[list[dict], dict, str]:
     """Return the voice assets that this doctor invocation must validate."""
 
-    preflight_voice = registry.by_id(registry.preflight_id)
-    if preflight_voice is None:
-        raise ValueError(f"preflight voice is not enabled: {registry.preflight_id}")
-    if full_library:
-        return registry.voices, preflight_voice, "full-library"
-    if selector is None:
+    if selector is None or full_library:
+        preflight_voice = registry.by_id(registry.preflight_id)
+        if preflight_voice is None:
+            raise ValueError(f"preflight voice is not enabled: {registry.preflight_id}")
+        if full_library:
+            return registry.voices, preflight_voice, "full-library"
         return [preflight_voice], preflight_voice, "preflight"
 
     voice, _ = registry.exact_selector(selector)

@@ -2,6 +2,8 @@
 name: waapi
 description: Web Animations API adapter patterns for HyperFrames. Use when authoring element.animate() motion, Animation currentTime seeking, document.getAnimations(), KeyframeEffect timing, fill modes, or native browser animations that must render deterministically in HyperFrames.
 ---
+> cc-media adapter: [production routing](../../../tools/video/skill-routing.md) controls pin, Qwen/ASR, resource wrappers, output paths and existing user authorization. This skill supplies only the technical capability needed for the task; generic aesthetic quotas and approval/preview defaults do not apply.
+
 
 # Web Animations API for HyperFrames
 
@@ -83,8 +85,8 @@ document.querySelectorAll(".token").forEach((token, index) => {
 After editing a WAAPI composition:
 
 ```bash
-npx hyperframes lint
-npx hyperframes validate
+npx --yes hyperframes@0.6.69 lint
+npx --yes hyperframes@0.6.69 validate
 ```
 
 ## Credits And References

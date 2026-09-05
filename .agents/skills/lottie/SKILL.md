@@ -2,6 +2,8 @@
 name: lottie
 description: Lottie and dotLottie adapter patterns for HyperFrames. Use when embedding lottie-web JSON animations, .lottie files, @lottiefiles/dotlottie-web players, registering instances on window.__hfLottie, or making After Effects exports deterministic in HyperFrames.
 ---
+> cc-media adapter: [production routing](../../../tools/video/skill-routing.md) controls pin, Qwen/ASR, resource wrappers, output paths and existing user authorization. This skill supplies only the technical capability needed for the task; generic aesthetic quotas and approval/preview defaults do not apply.
+
 
 # Lottie for HyperFrames
 
@@ -100,8 +102,8 @@ HyperFrames seeks them all to the same composition time.
 After editing a Lottie composition:
 
 ```bash
-npx hyperframes lint
-npx hyperframes validate
+npx --yes hyperframes@0.6.69 lint
+npx --yes hyperframes@0.6.69 validate
 ```
 
 ## Credits And References

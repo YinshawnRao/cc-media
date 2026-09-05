@@ -2,6 +2,8 @@
 name: contribute-catalog
 description: Author a new HyperFrames registry block (caption style, VFX block, transition, lower third) or component (text effect, overlay, snippet) and ship it as an upstream PR to the hyperframes repo. Use ONLY when the user wants to CONTRIBUTE to the public catalog — for in-project caption/transition authoring use the `hyperframes` skill, for installing existing registry items use the `hyperframes-registry` skill.
 ---
+> cc-media adapter: [production routing](../../../tools/video/skill-routing.md) controls pin, Qwen/ASR, resource wrappers, output paths and existing user authorization. This skill supplies only the technical capability needed for the task; generic aesthetic quotas and approval/preview defaults do not apply.
+
 
 # Contribute to HyperFrames Registry
 
@@ -156,7 +158,7 @@ hyperframes render -o preview.mp4
 hyperframes snapshot --at "1.0,3.0,5.0,7.0"
 
 # Publish to hyperframes.dev for review
-npx hyperframes publish
+npx --yes hyperframes@0.6.69 publish
 ```
 
 **Catalog preview image** — The catalog card uses a PNG at `docs/images/catalog/{kind}/{name}.png` (where `{kind}` is `blocks` or `components`). Generate it from a snapshot, then:
@@ -184,7 +186,7 @@ npx oxfmt registry/{kind}/{name}/*.html
 npx tsx scripts/generate-catalog-pages.ts
 
 # 5. Publish to hyperframes.dev so reviewers can preview
-npx hyperframes publish
+npx --yes hyperframes@0.6.69 publish
 
 # 6. Stage everything
 git add registry/{kind}/{name}/ registry/registry.json docs/catalog/
@@ -206,6 +208,6 @@ gh pr create --title "feat(registry): {name}" --body "preview: {hyperframes.dev-
 - [ ] `npx oxfmt --check` passes
 - [ ] `registry/registry.json` updated with new entry
 - [ ] `scripts/generate-catalog-pages.ts` run (docs page generated)
-- [ ] `npx hyperframes publish` run (claim your project URL)
+- [ ] `npx --yes hyperframes@0.6.69 publish` run (claim your project URL)
 - [ ] Preview MP4 attached to PR (external) or catalog PNG uploaded (internal)
 - [ ] All IDs unique and prefixed

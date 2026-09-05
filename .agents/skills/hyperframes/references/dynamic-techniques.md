@@ -12,15 +12,15 @@ You are here because SKILL.md told you to read this file before writing animatio
 | Medium-low   | Karaoke (minimal scale change)        | Fade                | Single style, vary ease per group         |
 | Low          | Karaoke (warm tones, slow transition) | Collapse            | Alternate every 4 groups                  |
 
-**All energy levels use karaoke highlight as the baseline.** The difference is intensity — high energy gets accent color + glow + 15% scale pop on active words, low energy gets a gentle white shift with 3% scale.
+**For an explicitly requested karaoke treatment,** The difference is intensity — high energy gets accent color + glow + 15% scale pop on active words, low energy gets a gentle white shift with 3% scale.
 
-**Emphasis words always break the pattern.** When a word is flagged as emphasis (emotional keyword, ALL CAPS, brand name), give it a stronger animation than surrounding words (larger scale, accent color, overshoot ease). This creates contrast.
+**Emphasis can break the pattern when useful.** When a word is flagged as emphasis (emotional keyword, ALL CAPS, brand name), give it a stronger animation than surrounding words (larger scale, accent color, overshoot ease). This creates contrast.
 
 **Marker highlight modes add a visual layer on top of karaoke.** For emphasis words that need more than color/scale, add a marker-style effect — highlight sweep, circle, burst, or scribble — using the `/marker-highlight` skill. Match mode to energy: burst for hype, circle for key terms, highlight for standard, scribble for subtle.
 
-## Audio-Reactive Captions (Mandatory for Music)
+## Optional Audio-Reactive Captions
 
-**If the source audio is music (vocals over instrumentation, beats, any musical content), you MUST extract audio data and add audio-reactive animations.** This is not optional — music without audio reactivity looks disconnected. Even low-energy ballads get subtle bass pulse and treble glow.
+When requested captions benefit from responding to music, use pre-extracted audio data. Static typography and ordinary timeline animation are also valid. Do not add captions or audio reactivity simply because a music track exists.
 
 No special wiring is needed. The group loop already iterates over every caption group to build entrance, karaoke, and exit tweens. At that point, read the audio data for each group's time range and use it to modulate the group's animation intensity with regular GSAP tweens.
 

@@ -1,5 +1,7 @@
 # HyperFrames — Complete Capabilities Inventory
 
+Optional upstream API inventory, not a version guarantee or production workflow. Confirm any unfamiliar API with the project pin; repository Qwen, central ASR, offline fonts and final delivery rules apply.
+
 Everything possible in HyperFrames as of today's workspace, synthesized from direct source reads of all 7 packages, 16 skills, and the full registry.
 
 > **How to read this file.** Scan the **Table of Contents** below first. **Do NOT read this file linearly** — it is a 700+ line inventory; reading top-to-bottom every session wastes context. When the storyboard or a specific beat needs a particular capability (HTML-in-Canvas, shader transitions, audio-reactive, dynamic counters, etc.), jump straight to that section.
@@ -13,7 +15,7 @@ For implementation patterns (working code), see `techniques.md`. This file is th
 - **Deterministic:** No `Math.random()`, no `Date.now()`, no `requestAnimationFrame`, no `repeat: -1`. The render engine seeks to exact timestamps.
 - **Timeline contract:** `window.__timelines["composition-id"] = tl` must be set synchronously. The timeline length defines the composition duration.
 - **Sub-compositions:** External `.html` files loaded via `data-composition-src`. Auto-nested timelines, scoped CSS, scoped scripts.
-- **Linter:** 60+ rules. Run `npx hyperframes lint` before render. Catches missing timelines, overlapping clips, broken paths, GSAP errors.
+- **Linter:** 60+ rules. Run `npx --yes hyperframes@0.6.69 lint` before render. Catches missing timelines, overlapping clips, broken paths, GSAP errors.
 
 ## Table of Contents
 
@@ -29,7 +31,7 @@ For implementation patterns (working code), see `techniques.md`. This file is th
 | 8   | **HTML-in-canvas**                                   | Live DOM as GPU texture (drawElementImage), Three.js planes, WebGL shaders on HTML, 7 VFX blocks (iPhone/MacBook device, liquid, glass, magnetic, portal, shatter, text cursor)                                                 |
 | 9   | **Three.js / WebGL custom scenes**                   | Full 3D: AnimationMixer, custom GLSL, post-processing, GLTF models, lights, cameras, materials — all deterministic via hf-seek                                                                                                  |
 | 10  | **SVG / canvas / variable fonts**                    | SVG path drawing, Canvas 2D procedural art, CSS 3D card, per-word type, variable font axes, character typing, velocity-matched cuts, MotionPath                                                                                 |
-| 11  | **Media: video, audio, TTS**                         | Video compositing + frame injection, audio mixer (multi-track), Kokoro TTS (54 voices, 9 languages), Whisper/Groq/OpenAI transcription, background removal (u2net)                                                              |
+| 11  | **Media: video, audio, TTS**                         | Video compositing + frame injection, audio mixer (multi-track), repository Qwen narration and central offline ASR, background removal (u2net)                                                              |
 | 12  | **Registry (51 blocks + 4 components + 8 examples)** | Social overlays (8), showcases (5), data viz (2), logo branding (1), 3D/VFX (7), shader transitions (14), transition galleries (13), components (grain, shimmer, pixelate, texture-mask), 8 starter examples                    |
 | 13  | **CLI (25 commands)**                                | init, add, catalog, play, preview, publish, render (MP4/WebM/MOV/PNG, HDR, GPU, parallel), lint, validate, inspect, snapshot, capture, tts, transcribe, remove-background, doctor, and more                                     |
 | 14  | **Linter (60+ rules)**                               | Core, media, GSAP, captions, composition, adapters, textures, fonts — plus async URL checks                                                                                                                                     |
@@ -236,7 +238,7 @@ Documented in skills/hyperframes/references/transitions/ across 14 category file
 | Manually authored                          | JSON     | Word-level        |
 | SRT                                        | text     | Phrase-level only |
 | VTT                                        | text     | Phrase-level only |
-| hyperframes tts → transcribe chain         | wav→json | Word-level        |
+| central Qwen WAV → central ASR         | wav→json | Word-level        |
 
 ### Positioning helpers
 
@@ -367,22 +369,11 @@ window.addEventListener("hf-seek", (e) => {
 - Master audioGain from EngineConfig
 - Output: AAC 192kbps
 
-### TTS (Kokoro-82M, local)
+### Narration and transcription in cc-media
 
-- 54 bundled voices with prefixes: `a` American EN, `b` British EN, `e` Spanish, `f` French, `h` Hindi, `i` Italian, `j` Japanese, `p` Brazilian Portuguese, `z` Mandarin
-- Default voice: `af_heart`
-- Speed: 0.1–3.0 (default 1.0)
-- Languages: en-us, en-gb, es, fr-fr, hi, it, pt-br, ja, zh (non-EN needs system espeak-ng)
-- Output: WAV; no pitch/volume CLI flags
-- No API key required
+Current narration uses tools/tts/narrate.py with the project's voice-selection.json, fixed Qwen runtime and previously produced registered reference voices. See the repository TTS README. Built-in provider options are not production entrypoints.
 
-### Transcription
-
-- Whisper.cpp models: tiny, base, small, medium, large-v3, small.en, medium.en (default small)
-- Groq API: whisper-large-v3 with word granularities
-- OpenAI API: whisper-1 verbose_json
-- Imports: SRT, VTT, JSON formats
-- Quality gates: music-token detection, garbage cleaning, retry with medium.en
+ASR runs through tools/video/offline_asr.py, vocal_segments.py or central QA with the fixed model and resource budget. Supplied SRT/VTT/JSON may be adapted for explicitly requested captions; imported text does not replace live QA evidence.
 
 ### Background removal
 
@@ -423,7 +414,7 @@ window.addEventListener("hf-seek", (e) => {
 
 warm-grain, play-mode, swiss-grid, vignelli, decision-tree, kinetic-type, product-promo, nyt-graph
 
-Install: `npx hyperframes add <name>` for blocks/components, `hyperframes init <dir> --example <name>` for examples.
+Install: `npx --yes hyperframes@0.6.69 add <name>` for blocks/components, `hyperframes init <dir> --example <name>` for examples.
 
 ---
 
@@ -447,7 +438,7 @@ Install: `npx hyperframes add <name>` for blocks/components, `hyperframes init <
 | browser           | Manage Chrome (ensure/path/clear)                                                                                                                                                                                                                                                                                        |
 | remove-background | u2net + FFmpeg → transparent video                                                                                                                                                                                                                                                                                       |
 | transcribe        | whisper.cpp or import SRT/VTT/JSON                                                                                                                                                                                                                                                                                       |
-| tts               | Kokoro-82M (--voice, --speed, --lang, --list)                                                                                                                                                                                                                                                                            |
+| tts | Not used here; repository Qwen tools/tts/narrate.py is the production entrypoint. |
 | docs              | Print bundled markdown topics (data-attributes, examples, rendering, gsap, troubleshooting, compositions)                                                                                                                                                                                                                |
 | doctor            | Environment checklist (Node, CPU, memory, disk, FFmpeg, FFprobe, Chrome, Docker)                                                                                                                                                                                                                                         |
 | upgrade           | npm update check + optional global install                                                                                                                                                                                                                                                                               |
@@ -602,9 +593,9 @@ Compositions support typed runtime variables:
 Access via `window.__hyperframes.getVariables()`. Override at render time:
 
 ```bash
-npx hyperframes render --variables '{"brand":"Linear","primary":"#5E6AD2"}'
-npx hyperframes render --variables-file vars.json
-npx hyperframes render --strict-variables  # error if unused / mismatched
+npx --yes hyperframes@0.6.69 render --variables '{"brand":"Linear","primary":"#5E6AD2"}'
+npx --yes hyperframes@0.6.69 render --variables-file vars.json
+npx --yes hyperframes@0.6.69 render --strict-variables  # error if unused / mismatched
 ```
 
 `validateVariables()` checks values against declarations at the CLI/tooling boundary.

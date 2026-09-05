@@ -370,6 +370,33 @@ class AiVoiceTemplateTests(unittest.TestCase):
 
 
 class LongformTimelineTemplateTests(unittest.TestCase):
+    def test_song_without_narration_needs_no_voice_selection_and_keeps_media_binding(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            project = Path(temporary).resolve()
+            raw = self.config("showcase_align")
+            raw.pop("voice_selection")
+            raw["segments"][0].update(requires_narration=False, narration_wavs=[])
+            parsed = LONGFORM.parse_config(project, raw)
+            segment = parsed["segments"][0]
+            for key in ("clip", "audio_segment"):
+                segment[key].parent.mkdir(parents=True, exist_ok=True)
+                segment[key].write_bytes(b"media fixture")
+            segment["audio_segment_sha256"] = LONGFORM.sha256_file(segment["audio_segment"])
+            with (
+                mock.patch.object(LONGFORM, "media_duration", return_value=420.0),
+                mock.patch.object(LONGFORM, "probe", return_value={"streams": [{"width": 1080, "height": 1920}]}),
+                mock.patch.object(LONGFORM, "run"),
+            ):
+                LONGFORM.validate_inputs(parsed, project)
+                LONGFORM.build(parsed, project)
+                segment["audio_segment"].write_bytes(b"changed media")
+                with self.assertRaisesRegex(SystemExit, "SHA-256 mismatch"):
+                    LONGFORM.validate_inputs(parsed, project)
+            timeline = json.loads(parsed["outputs"]["timeline"].read_text(encoding="utf-8"))
+            self.assertNotIn("voice_selection", timeline)
+            self.assertFalse(timeline["segments"][0]["requires_narration"])
+            self.assertEqual([], timeline["segments"][0]["narration_wavs"])
+
     @staticmethod
     def config(acceptance: str | None) -> dict:
         song = {

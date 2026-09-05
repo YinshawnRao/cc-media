@@ -85,7 +85,7 @@ GAP_A = 1.35     # intro 旁白后到 p1 的消化位
 DIGEST_O = 1.0   # outro 升华 → 固定 CTA 的消化位（见 CONVENTIONS「固定结尾配音」）
 OUTRO_TAIL = 2.6 # 固定 CTA 念完到片尾的余量（床末 1.6s fade）
 
-# 旁白时长（outro = 作品升华；outro_cta = 固定引流 CTA，全片最后一句，禁改）
+# 旁白时长（outro = 作品升华；outro_cta = 固定引流 CTA，此模板的默认最后一句；自定义结构用 longform 骨架）
 d_intro = dur(f"{A}/intro.wav")
 d = {k: dur(f"{A}/{k}.wav") for k in ["p1_pandora","p2_nahan","p3_pojian","p4_quanmian","p5_adiao","outro","outro_cta"]}
 

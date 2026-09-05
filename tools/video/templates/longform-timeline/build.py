@@ -147,7 +147,8 @@ def media_duration(path: Path) -> float:
 def parse_config(project: Path, raw: dict[str, Any]) -> dict[str, Any]:
     if raw.get("schema_version") != 1:
         fail("unsupported schema_version; expected 1")
-    selection = resolve_inside(project, raw.get("voice_selection"), "voice_selection")
+    selection = (resolve_inside(project, raw["voice_selection"], "voice_selection")
+                 if raw.get("voice_selection") is not None else None)
     if "narration_wavs" in raw:
         fail("top-level narration_wavs is not supported; bind narration_wavs to each segment")
 
@@ -200,7 +201,10 @@ def parse_config(project: Path, raw: dict[str, Any]) -> dict[str, Any]:
         narration_raw = row.get("narration_wavs")
         if not isinstance(narration_raw, list):
             fail(f"{label}.narration_wavs must be an explicit array")
-        if role != "free" and not narration_raw:
+        requires_narration = row.get("requires_narration", role != "free")
+        if not isinstance(requires_narration, bool):
+            fail(f"{label}.requires_narration must be boolean")
+        if requires_narration and not narration_raw:
             fail(f"{label}.narration_wavs must bind at least one TTS WAV for role {role}")
         narration = [
             resolve_inside(project, value, f"{label}.narration_wavs[{voice_index}]")
@@ -223,6 +227,7 @@ def parse_config(project: Path, raw: dict[str, Any]) -> dict[str, Any]:
                 ),
                 "audio_segment_sha256": audio_segment_sha256,
                 "narration_wavs": narration,
+                "requires_narration": requires_narration,
                 "source_seek_sec": float(seek),
                 "duration_sec": float(duration),
                 "acceptance": acceptance,
@@ -240,7 +245,10 @@ def parse_config(project: Path, raw: dict[str, Any]) -> dict[str, Any]:
 def validate_inputs(config: dict[str, Any], project: Path) -> None:
     missing: list[Path] = []
     sidecars: dict[Path, Path] = {}
-    if not config["selection"].is_file():
+    has_narration = any(segment["narration_wavs"] for segment in config["segments"])
+    if has_narration and config["selection"] is None:
+        fail("voice_selection is required when segments contain narration")
+    if config["selection"] is not None and not config["selection"].is_file():
         missing.append(config["selection"])
     for segment in config["segments"]:
         for voice in segment["narration_wavs"]:
@@ -257,9 +265,9 @@ def validate_inputs(config: dict[str, Any], project: Path) -> None:
         rendered = "\n".join(f"  - {path}" for path in missing)
         fail(f"missing required project inputs:\n{rendered}")
 
-    selection = load_json(config["selection"])
+    selection = load_json(config["selection"]) if config["selection"] is not None else {}
     expected_voice = selection.get("resolved_voice_id")
-    if not isinstance(expected_voice, str) or not expected_voice.strip():
+    if has_narration and (not isinstance(expected_voice, str) or not expected_voice.strip()):
         fail("voice-selection.json resolved_voice_id must be non-empty")
 
     width = config["video"]["width"]
@@ -344,8 +352,8 @@ def build(config: dict[str, Any], project: Path) -> None:
     audio_parts: list[Path] = []
     cursor = 0.0
     video = config["video"]
-    selection = load_json(config["selection"])
-    resolved_voice_id = selection["resolved_voice_id"]
+    selection = load_json(config["selection"]) if config["selection"] is not None else {}
+    resolved_voice_id = selection.get("resolved_voice_id")
 
     for index, segment in enumerate(config["segments"]):
         key = segment["key"]
@@ -389,6 +397,7 @@ def build(config: dict[str, Any], project: Path) -> None:
             {
                 "key": key,
                 "role": segment["role"],
+                "requires_narration": segment["requires_narration"],
                 "start_sec": round(cursor, 3),
                 "end_sec": round(cursor + duration, 3),
                 "duration_sec": round(duration, 3),
@@ -438,14 +447,15 @@ def build(config: dict[str, Any], project: Path) -> None:
     timeline = {
         "schema_version": 1,
         "duration_sec": round(cursor, 3),
-        "voice_selection": {
-            "path": str(config["selection"].relative_to(project)),
-            "resolved_voice_id": resolved_voice_id,
-        },
         "footage_track": str(outputs["footage_track"].relative_to(project)),
         "master_audio": str(outputs["master_audio"].relative_to(project)),
         "segments": timeline_segments,
     }
+    if config["selection"] is not None:
+        timeline["voice_selection"] = {
+            "path": str(config["selection"].relative_to(project)),
+            "resolved_voice_id": resolved_voice_id,
+        }
     outputs["timeline"].write_text(
         json.dumps(timeline, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )

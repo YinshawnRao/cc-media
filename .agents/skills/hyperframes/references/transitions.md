@@ -2,14 +2,9 @@
 
 A transition tells the viewer how two scenes relate. A crossfade says "this continues." A push slide says "next point." A blur crossfade says "drift with me." Choose transitions that match what the content is doing emotionally, not just technically.
 
-## Animation Rules for Multi-Scene Compositions
+## Choosing the handoff
 
-These are non-negotiable for every multi-scene composition:
-
-1. **Every composition uses transitions.** No exceptions. Scenes without transitions feel like jump cuts.
-2. **Every scene uses entrance animations.** Elements animate IN via `gsap.from()` — opacity, position, scale, etc. No scene should pop fully-formed onto screen.
-3. **Exit animations are BANNED** except on the final scene. Do NOT use `gsap.to()` to animate elements out before a transition fires. The transition IS the exit. Outgoing scene content must be fully visible when the transition starts — the transition handles the visual handoff.
-4. **Final scene exception:** The last scene MAY fade elements out (e.g., fade to black at the end of the composition). This is the only scene where exit animations are allowed.
+Cuts, transitions and static holds are all valid. Cover text starts visible at frame 0. Later elements may enter or exit where useful; avoid accidental empty frames, seek artifacts and double-fading. The tables below are optional examples, not global motion or count rules.
 
 ## Energy → Primary Transition
 
@@ -19,7 +14,7 @@ These are non-negotiable for every multi-scene composition:
 | **Medium** (corporate, SaaS, explainer)  | Push slide, staggered blocks | Whip pan, cinematic zoom             | Squeeze, vertical push         | 0.3-0.5s  | `power2`, `power3`     |
 | **High** (promos, sports, music, launch) | Zoom through, overexposure   | Ridged burn, glitch, chromatic split | Staggered blocks, gravity drop | 0.15-0.3s | `power4`, `expo`       |
 
-Pick ONE primary (60-70% of scene changes) + 1-2 accents. Never use a different transition for every scene.
+Choose a coherent transition vocabulary appropriate to the edit.
 
 ## Mood → Transition Type
 

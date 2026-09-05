@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
-"""固定结尾引流 CTA —— 单一来源（硬约束，优先级高于 brief / 任务提示词）。
+"""默认结尾 CTA 的文字来源；用户可以在单期选择改写或省略。
 
-见 CONVENTIONS.md「固定结尾配音」。规则：
-- 这句逐字固定，永远是成片**最后一句**旁白，排在每期「作品自身 outro」（内容总结 + 升华）之后。
-- brief / 提示词**不得覆盖**它；唯一改法是改本文件 + CONVENTIONS。
-- 不提供项目级可换槽；改变文字必须作为一次全局规范变更，并同步文档与测试。
+project-manifest.json 的 editorial.cta 为 fixed（默认）、custom 或 omit。
+修改单期 CTA 时更新该期旁白、音轨和 QA，不修改这里的默认文本。
 
 用法（每期 narrate 脚本）：
     import sys; from pathlib import Path

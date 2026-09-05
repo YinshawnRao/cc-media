@@ -4,6 +4,8 @@
 
 所有项目仍先执行仓库根 `CONVENTIONS.md` 与 `tools/video/README.md`。模板只解决稳定的构建机械步骤，不覆盖当期的选源、封面设计、旁白、showcase / instrumental gate 和终片 QA。
 
+模板配置和 HTML 的成片画布固定使用 1080×1920（9:16），仅用户明确要求时才改画幅并记录 authoring output_format；不要继承横屏源文件的宽高。音乐章节先选完整连续段落与自然尾音，再填写真实 duration_sec，不能照抄示例时长或为总长预算压短；预切输入保留前后可回调余量。
+
 ## 1. `ai-voice-mv/`：整首 MV 换训练音轨
 
 适用于用户明确提供可直接使用的训练 WAV，并要求“如果某歌手唱某歌”或“AI 音色 MV”的任务。历史 `sandbox/angela-ai-mv-covers/` 已按实验目录生命周期删除；不要恢复其中媒体，也不要继续依赖该路径。
@@ -17,11 +19,11 @@ sandbox/<slug>/
 ├── raw/                       # 本地 MV 视频，不进 git
 ├── audio/                     # 用户明确提供并复制进本项目的训练 WAV，不进 git
 ├── voice/                     # narrate.py 生成的 intro WAV + sidecar，不进 git
-├── renders/YYYY-MM-DD/        # 一首一个 MP4，不进 git
+├── renders/        # 一首一个 MP4，不进 git
 └── publishing/xiaohongshu.md  # 与 renders 并列的最终小红书文案
 ```
 
-先生成项目级声线选择和 intro；唯一有效指定沿用指定角色，否则代理根据作品主题、整体情绪、叙事角度与节奏从十声线标准池决策，只有模型无法可靠判断时才从同一池随机兜底：
+按 [Qwen TTS 流程](../../tts/README.md)生成项目级声线选择和 intro：
 
 ```bash
 python3 tools/tts/resolve_voice.py --task-prompt-file sandbox/<slug>/brief.txt \
@@ -53,13 +55,13 @@ python3 tools/video/templates/ai-voice-mv/build.py \
 
 模板会：精确裁切可选的全宽污染带、补足略短视频尾帧、修剪 intro 首尾静音、intro 期间 duck 训练音轨、叠加 `AI训练，仅供娱乐`，最后输出 H.264/AAC MP4。配置必须提供项目内透明角标 PNG；随模板保留的 `watermark.swift` 只负责离线生成这张当期输入图，不含媒体或人物信息。模板不会下载素材、读取仓库外目录或生成 TTS。
 
-构建完成后仍要按全局结构写 `publishing/xiaohongshu.md`：1–5 个标题候选、可直接使用的正文、末行 hashtags，全部对外文字禁止直接出现本期歌曲名称。AI config 当前没有标准项目门禁所需的 performer/cover-theme 上下文，因此继续用 durable `--check` 与人工逐项核对，不得为调用 `verify_publishing.py` 伪造 `project-manifest.json`。
+构建完成后仍要按全局结构写 `publishing/xiaohongshu.md`：1–5 个标题候选、可直接使用的正文、末行 hashtags，避免明确曝光本期歌曲名称，普通词语歧义按语境判断。AI config 当前没有标准项目门禁所需的 performer/cover-theme 上下文，因此继续用 durable `--check` 与实际音画核对，不得为调用 `verify_publishing.py` 伪造 `project-manifest.json`。
 
 硬前置：`video` 必须已经与训练音频从同一歌曲起点对齐；视频允许比训练 WAV 短不超过 0.5 秒，模板仅用尾帧补足这种编码级差异，不能修复剧情片头或错误歌曲偏移。intro 修剪后还必须比训练音频至少短 1 秒，给正歌留下有效展示。`--check` 会验证这些时长关系，并确认每条 intro sidecar 内嵌的 selection 与项目 `voice-selection.json` 完全一致、记录的输出 SHA-256 与当前 WAV 一致。
 
 ## 2. `longform-timeline/`：长篇叙事时间线媒体骨架
 
-适用于多章节、整体叙事信息较多、每首保留长连续高光的视频；“长解说”只能集中在 intro 与作品 outro，不代表逐首转场可以展开。新项目仍使用 authoring manifest schema v2，非排名叙事转场实际 WAV ≤10s。历史 `sandbox/lirh-yangcl-timeline/` 曾验证此结构，但其人物、文案、旧 Kokoro 脚本、静态双头像封面和强制 ambient 底床都不是通用模板，已刻意剔除。
+适用于多章节、整体叙事信息较多、每首保留长连续高光的视频；旁白按当期 editorial 组织，歌曲转场保持简短。新项目仍使用 authoring manifest schema v2，非排名叙事转场实际 WAV ≤10s。历史 `sandbox/lirh-yangcl-timeline/` 曾验证此结构，但其人物、文案、旧 Kokoro 脚本、静态双头像封面和强制 ambient 底床都不是通用模板，已刻意剔除。
 
 模板只冻结稳定、可验证的媒体主轴：
 
@@ -68,7 +70,7 @@ python3 tools/video/templates/ai-voice-mv/build.py \
 - 将项目已经按当期 ducking/响度方案预混好的章节 WAV 统一到 48kHz stereo，并串成 `master.wav`；
 - 生成含逐段旁白路径、声线 ID 与音频 SHA-256 的 `timeline.json`，供当期 HyperFrames composition 读取时间锚点和 provenance。
 
-它**不生成通用封面或视觉 HTML**。封面必须按当期 brief/design 与现行安全区规范设计；TOP 仍须 N→1 且不能提前泄榜，非 TOP 时间线才能按叙事顺序。
+它**不生成通用封面或视觉 HTML**。封面按当期 brief/design 与安全区验收目标设计；TOP 仍须 N→1 且不能提前泄榜，非 TOP 时间线才能按叙事顺序。
 
 ```bash
 cp tools/video/templates/longform-timeline/project.example.json \
@@ -80,7 +82,7 @@ python3 tools/video/templates/longform-timeline/build.py \
   --project sandbox/<slug> --config build/timeline-config.json
 ```
 
-每个 segment 都必须显式声明自己的 `narration_wavs`。intro、song、outro、cta 等结构角色至少绑定一个由 `tools/tts/narrate.py` 生成并带 `.wav.tts.json` sidecar 的 WAV；只有 `role: "free"` 可明确写空数组 `[]`。模板逐条核对 sidecar 内嵌 selection、非空 resolved voice ID 和当前 WAV 的输出 SHA-256，因而不会再由无绑定的顶层清单冒充实际章节旁白。
+每个 segment 都必须显式声明自己的 `narration_wavs`。有旁白的章节绑定中央 Qwen `tools/tts/narrate.py` 生成的 WAV 与 sidecar。无旁白章节显式写 `requires_narration: false` 与 `narration_wavs: []`；整片无旁白时可省略 voice_selection。模板逐条核对 sidecar 内嵌 selection、非空 resolved voice ID 和当前 WAV 的输出 SHA-256，因而不会再由无绑定的顶层清单冒充实际章节旁白。
 
 `audio_segment` 是该章旁白与音乐最终预混 WAV。完成预混后运行下面的命令，把输出第一列写入同一 segment 的 `audio_segment_sha256`；示例配置中的 64 个 `0` 只是必须替换的占位值，任何重混或编辑后都要重新计算：
 
@@ -89,7 +91,7 @@ shasum -a 256 sandbox/<slug>/audio/segments/intro.wav
 shasum -a 256 sandbox/<slug>/audio/segments/song-01.wav
 ```
 
-`--check` 会核对声明 SHA 与当前文件，并要求每个 `audio_segment` 覆盖 `duration_sec`；只容忍最多约 0.05 秒的容器/编码误差，1 秒音频不能再被静默补成数分钟。普通叙事项目应显式包含 intro、各章节转场、作品 outro 和固定 CTA；完全自由探索类例外必须先写进 brief/design。每个歌曲章节还必须把 `acceptance` 写成 `showcase_align` 或 `instrumental_plan`，但该字段只是可审计声明，不能代替实际 gate 证据。
+`--check` 会核对声明 SHA 与当前文件，并要求每个 `audio_segment` 覆盖 `duration_sec`；只容忍最多约 0.05 秒的容器/编码误差，1 秒音频不能再被静默补成数分钟。默认结构包含 intro、短转场、作品 outro 与 CTA；其他结构通过 authoring editorial 声明，详见上级 Runbook。每个歌曲章节还必须把 `acceptance` 写成 `showcase_align` 或 `instrumental_plan`，但该字段只是可审计声明，不能代替实际 gate 证据。
 
 这些 selection、mapping 与 SHA 校验建立的是 **provenance 绑定**：证明旁白被声明绑定到该段、指定的预混文件被用于构建；不能证明旁白波形确实已经混入预混文件，也不能证明成片里一定可听、咬字正确或没有被音乐遮蔽。实际可听性仍必须以 mux 后终片的 isolated narration ASR、final AAC ASR、响度/静音检测和抽检 QA 为准。
 

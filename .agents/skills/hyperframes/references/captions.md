@@ -1,50 +1,6 @@
 # Captions
 
-## Language Rule (Non-Negotiable)
-
-**Never use `.en` models unless the user explicitly states the audio is English.** `.en` models TRANSLATE non-English audio into English instead of transcribing it.
-
-1. User says the language → `--model small --language <code>` (no `.en`)
-2. User says English → `--model small.en`
-3. Language unknown → `--model small` (no `.en`, no `--language`) — auto-detects
-
----
-
-Analyze spoken content to determine caption style. If user specifies a style, use that. Otherwise, detect tone from the transcript.
-
-## Transcript Source
-
-```json
-[
-  { "text": "Hello", "start": 0.0, "end": 0.5 },
-  { "text": "world.", "start": 0.6, "end": 1.2 }
-]
-```
-
-For transcription commands, whisper models, external APIs, see [transcript-guide.md](transcript-guide.md).
-
-## Style Detection (When No Style Specified)
-
-Read the full transcript before choosing. Four dimensions:
-
-**1. Visual feel** — corporate→clean; energetic→bold; storytelling→elegant; technical→precise; social→playful.
-
-**2. Color palette** — dark+bright for energy; muted for professional; high contrast for clarity; one accent color.
-
-**3. Font mood** — heavy/condensed for impact; clean sans for modern; rounded for friendly; serif for elegance.
-
-**4. Animation character** — scale-pop for punchy; gentle fade for calm; word-by-word for emphasis; typewriter for technical.
-
-## Per-Word Styling
-
-Scan for words deserving distinct treatment:
-
-- **Brand/product names** — larger size, unique color
-- **ALL CAPS** — scale boost, flash, accent color
-- **Numbers/statistics** — bold weight, accent color
-- **Emotional keywords** — exaggerated animation (overshoot, bounce)
-- **Call-to-action** — highlight, underline, color pop
-- **Marker highlight** — for beyond-color emphasis, see [css-patterns.md](css-patterns.md)
+Only for an explicit caption request. Use [central transcript guidance](transcript-guide.md), the project pin and offline fonts. Style, position and group-size examples below are starting points.
 
 ## Script-to-Style Mapping
 
@@ -69,7 +25,7 @@ Break on sentence boundaries, 150ms+ pauses, or max word count.
 - **Landscape (1920x1080):** Bottom 80-120px, centered
 - **Portrait (1080x1920):** Lower middle ~600-700px from bottom, centered
 - Never cover the subject's face
-- `position: absolute` — never relative
+- Choose positioning that preserves the intended caption region; absolute positioning is one option.
 - One caption group visible at a time
 
 ## Text Overflow Prevention
@@ -119,11 +75,11 @@ tl.seek(0);
 
 ## Pre-Built Caption Components
 
-Before building caption styles from scratch, check the registry — 15 ready-to-use caption components cover the most common styles. Install with `npx hyperframes add <name>` and use as a sub-composition via `data-composition-src`.
+Before building caption styles from scratch, check the registry — 15 ready-to-use caption components cover the most common styles. Install with `npx --yes hyperframes@0.6.69 add <name>` and use as a sub-composition via `data-composition-src`.
 
 ```bash
-npx hyperframes catalog --tag caption-style   # list all caption components
-npx hyperframes add caption-highlight         # install a specific one
+npx --yes hyperframes@0.6.69 catalog --tag caption-style   # list all caption components
+npx --yes hyperframes@0.6.69 add caption-highlight         # install a specific one
 ```
 
 | Style                     | Component                    | Best for                     |

@@ -37,7 +37,7 @@ Specific motion verbs per element — not "it animates in" but HOW:
 | Medium energy | CASCADE, SLIDES, DROPS, FILLS, DRAWS          | Three cards CASCADE in staggered 0.3s |
 | Low energy    | types on, FLOATS, morphs, COUNTS UP, fades in | Counter COUNTS UP from 0 to 135K      |
 
-Every element gets a verb. If you can't name the verb, the element is not yet designed.
+Describe motion where it matters; static elements and holds can be intentional.
 
 ### Transition
 

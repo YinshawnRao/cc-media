@@ -2,6 +2,8 @@
 name: css-animations
 description: CSS animation adapter patterns for HyperFrames. Use when authoring CSS keyframes, animation-delay based timing, animation-fill-mode, animation-play-state, or CSS-only motion that HyperFrames must seek deterministically during preview and rendering.
 ---
+> cc-media adapter: [production routing](../../../tools/video/skill-routing.md) controls pin, Qwen/ASR, resource wrappers, output paths and existing user authorization. This skill supplies only the technical capability needed for the task; generic aesthetic quotas and approval/preview defaults do not apply.
+
 
 # CSS Animations for HyperFrames
 
@@ -113,8 +115,8 @@ Use CSS custom properties to avoid duplicating keyframes:
 After editing CSS animation compositions:
 
 ```bash
-npx hyperframes lint
-npx hyperframes validate
+npx --yes hyperframes@0.6.69 lint
+npx --yes hyperframes@0.6.69 validate
 ```
 
 ## Credits And References

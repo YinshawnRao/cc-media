@@ -2,6 +2,8 @@
 name: three
 description: Three.js and WebGL adapter patterns for HyperFrames. Use when creating deterministic Three.js scenes, WebGL canvas layers, AnimationMixer timelines, camera motion, shader-driven visuals, or canvas renders that respond to HyperFrames hf-seek events.
 ---
+> cc-media adapter: [production routing](../../../tools/video/skill-routing.md) controls pin, Qwen/ASR, resource wrappers, output paths and existing user authorization. This skill supplies only the technical capability needed for the task; generic aesthetic quotas and approval/preview defaults do not apply.
+
 
 # Three.js for HyperFrames
 
@@ -95,8 +97,8 @@ If several mixers exist, seek all of them from the same `time`.
 After editing a Three.js composition:
 
 ```bash
-npx hyperframes lint
-npx hyperframes validate
+npx --yes hyperframes@0.6.69 lint
+npx --yes hyperframes@0.6.69 validate
 ```
 
 ## Credits And References

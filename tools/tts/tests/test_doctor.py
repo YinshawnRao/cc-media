@@ -18,6 +18,14 @@ from voice_registry import VoiceRegistry, file_sha256
 
 
 class DoctorScopeTests(unittest.TestCase):
+    def test_explicit_voice_does_not_require_unused_preflight_voice(self) -> None:
+        self.registry.registry["voices"] = [
+            row for row in self.registry.registry["voices"] if row["id"] != "CV002"
+        ]
+        code, output, _ = self.run_doctor(["--voice", "CV004"])
+        self.assertEqual(0, code, output)
+        self.assertIn("selected=CV004", output)
+
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name) / "tts"

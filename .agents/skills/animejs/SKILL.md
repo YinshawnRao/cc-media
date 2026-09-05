@@ -2,6 +2,8 @@
 name: animejs
 description: Anime.js adapter patterns for HyperFrames. Use when writing Anime.js animations or timelines inside HyperFrames compositions, registering animations on window.__hfAnime, making Anime.js seek-driven and deterministic, or translating Anime.js examples into render-safe HyperFrames HTML.
 ---
+> cc-media adapter: [production routing](../../../tools/video/skill-routing.md) controls pin, Qwen/ASR, resource wrappers, output paths and existing user authorization. This skill supplies only the technical capability needed for the task; generic aesthetic quotas and approval/preview defaults do not apply.
+
 
 # Anime.js for HyperFrames
 
@@ -104,8 +106,8 @@ Use GSAP for complex scene sequencing unless the user specifically asks for Anim
 After editing a composition that uses Anime.js:
 
 ```bash
-npx hyperframes lint
-npx hyperframes validate
+npx --yes hyperframes@0.6.69 lint
+npx --yes hyperframes@0.6.69 validate
 ```
 
 ## Credits And References

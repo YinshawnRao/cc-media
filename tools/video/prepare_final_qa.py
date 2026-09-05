@@ -20,9 +20,8 @@ mechanical check without producing an unsolicited follow-up footer.  Explicit
 only the strict run writes a template.  This helper never promotes a machine
 result or an empty template into approval.
 
-Capability boundary: this helper currently prepares only structured
-``top_ranking`` and ``narrative`` projects whose timeline roles are intro, song,
-outro and CTA.  It does not claim to prepare ``free_exploration`` final QA.
+Capability boundary: top_ranking and narrative projects, including explicit
+editorial overrides and unvoiced chapters. Free-exploration QA remains separate.
 """
 
 from __future__ import annotations
@@ -62,6 +61,7 @@ ROLE_MAP = {
     "song": "transition",
     "outro": "outro",
     "cta": "cta",
+    "free": "free",
 }
 
 
@@ -316,7 +316,7 @@ def build_chapters(
                 "role": ROLE_MAP[role],
                 "start_sec": round(start, 6),
                 "end_sec": round(end, 6),
-                "requires_narration": True,
+                "requires_narration": raw_row.get("requires_narration", True),
             }
         )
     return chapters
@@ -326,7 +326,10 @@ def chapter_for_author(
     author: dict[str, Any], chapters: list[dict[str, Any]]
 ) -> dict[str, Any]:
     role = author.get("role")
-    if role == "transition":
+    if author.get("chapter_id"):
+        qa_role = gate.AUTHOR_ROLE_TO_QA_ROLE.get(role)
+        matches = [row for row in chapters if row["id"] == author["chapter_id"] and row["role"] == qa_role]
+    elif role == "transition":
         item_id = author.get("item_id")
         matches = [row for row in chapters if row["id"] == item_id and row["role"] == "transition"]
     else:
@@ -346,8 +349,8 @@ def build_expectations(
     chapters: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     rows = authoring.get("narration_sequence")
-    if not isinstance(rows, list) or not rows:
-        fail("authoring narration_sequence must be a non-empty array")
+    if not isinstance(rows, list):
+        fail("authoring narration_sequence must be an array")
     expectations: list[dict[str, Any]] = []
     for index, raw in enumerate(rows):
         if not isinstance(raw, dict):
@@ -378,8 +381,9 @@ def build_expectations(
                 "acceptable_variants": [],
             }
         )
-    if {row["chapter_id"] for row in expectations} != {row["id"] for row in chapters}:
-        fail("each chapter must map to exactly one authoring narration")
+    required = {row["id"] for row in chapters if row["requires_narration"]}
+    if not required <= {row["chapter_id"] for row in expectations}:
+        fail("each narrated chapter must map to authoring narration")
     return expectations
 
 
@@ -1005,6 +1009,11 @@ def main(argv: list[str] | None = None) -> int:
             "prepare_final_qa currently supports only structured "
             "top_ranking or narrative projects"
         )
+    editorial = authoring.get("editorial", {})
+    narration_mode = "custom" if (
+        editorial.get("narration", "standard") == "custom"
+        or editorial.get("cta", "fixed") != "fixed"
+    ) else "structured"
 
     assets = {
         "final": asset(project, final_path, "assets.final"),
@@ -1032,6 +1041,7 @@ def main(argv: list[str] | None = None) -> int:
         "master": tools.probe(master_path),
     }
     final_duration, _codec = gate.validate_media_structure(assets, probes, parsed_checks)
+    gate.validate_output_format(probes, authoring)
     chapters = build_chapters(timeline, final_duration)
     parsed_chapters = gate.parse_chapters(chapters)
     gate.validate_chapter_coverage(parsed_chapters, final_duration)
@@ -1044,7 +1054,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     gate.parse_narration_expectations(
         expectations,
-        "structured",
+        narration_mode,
         parsed_chapters,
         {
             key: {
@@ -1230,7 +1240,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     staging_manifest = {
         "schema_version": 1,
-        "narration_mode": "structured",
+        "narration_mode": narration_mode,
         "authoring_manifest": asset_ref(author_ref),
         "assets": {key: asset_ref(value) for key, value in assets.items()},
         "chapters": chapters,

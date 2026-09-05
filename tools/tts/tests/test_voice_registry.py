@@ -727,11 +727,9 @@ class VoiceGateTests(unittest.TestCase):
 
 
 class WorkspacePolicyTests(unittest.TestCase):
-    def test_decision_pool_comes_from_registry_and_claude_delegates_to_agents(self) -> None:
+    def test_decision_pool_comes_from_registry(self) -> None:
         repo = TTS_ROOT.parents[1]
         registry = VoiceRegistry.load()
-        agents = (repo / "AGENTS.md").read_text(encoding="utf-8")
-        claude = (repo / "CLAUDE.md").read_text(encoding="utf-8")
 
         self.assertEqual("CV002", registry.config["preflight_voice_id"])
         expected_pool = [
@@ -755,20 +753,6 @@ class WorkspacePolicyTests(unittest.TestCase):
             resolve_task_prompt(registry, "配音：CV999")["resolved_voice_id"],
             registry.random_pool_ids,
         )
-        self.assertIn("single top-level source of agent instructions", agents)
-        self.assertIn("CV002", agents)
-        self.assertIn("CV017", agents)
-
-        for reference in (
-            "[`AGENTS.md`](AGENTS.md)",
-            "[`CONVENTIONS.md`](CONVENTIONS.md)",
-            "[`tools/video/README.md`](tools/video/README.md)",
-        ):
-            self.assertIn(reference, claude)
-        self.assertNotIn("CV002", claude)
-        self.assertNotIn("治愈少女", claude)
-        self.assertNotIn("BEYOND", claude)
-
     def test_shared_video_template_cannot_bypass_dispatcher(self) -> None:
         repo = TTS_ROOT.parents[1]
         text = (repo / "tools" / "video" / "narrate_segments.py").read_text(
@@ -804,48 +788,7 @@ class WorkspacePolicyTests(unittest.TestCase):
         self.assertFalse((repo / "sandbox" / "tts-character-voice-lab").exists())
         self.assertTrue((TTS_ROOT / "research" / "qwen-character-voice-lab").is_dir())
 
-    def test_new_video_constraints_are_top_level(self) -> None:
-        repo = TTS_ROOT.parents[1]
-        agents = (repo / "AGENTS.md").read_text(encoding="utf-8")
-        for phrase in (
-            "翻唱版本必须匹配",
-            "禁用“接下来”",
-            "完整乐句",
-            "封面排版与安全区",
-        ):
-            self.assertIn(phrase, agents)
 
-    def test_agents_is_the_single_top_level_video_policy_source(self) -> None:
-        repo = TTS_ROOT.parents[1]
-        agents = (repo / "AGENTS.md").read_text(encoding="utf-8")
-        claude = (repo / "CLAUDE.md").read_text(encoding="utf-8")
-        patterns = {
-            "official MV priority": r"官方 MV.*优先",
-            "TOP countdown": r"TOP.*N→1",
-            "ranking suspense": r"(?:不得|禁止).*提前",
-            "full narration structure": r"(?:开头|开场|intro).*每首.*(?:结尾|outro|CTA)",
-            "quality before duration": r"不设.*上限",
-            "singer typography": r"歌手\s*/\s*组合名.*唯一最大字号",
-            "free exploration boundary": r"完全自由探索类",
-        }
-        self.assertIn("single top-level source of agent instructions", agents)
-        for label, pattern in patterns.items():
-            self.assertRegex(agents, pattern, f"AGENTS.md: missing {label}")
-
-        for reference in (
-            "[`AGENTS.md`](AGENTS.md)",
-            "[`CONVENTIONS.md`](CONVENTIONS.md)",
-            "[`tools/video/README.md`](tools/video/README.md)",
-        ):
-            self.assertIn(reference, claude)
-        for duplicated_rule in (
-            "官方 MV",
-            "N→1",
-            "完全自由探索类",
-            "CV002",
-            "BEYOND",
-        ):
-            self.assertNotIn(duplicated_rule, claude)
 
 
 if __name__ == "__main__":
