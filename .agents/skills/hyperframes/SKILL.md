@@ -40,7 +40,7 @@ Load the project's local/pinned GSAP dependency before this script. This minimal
 
 First frame must work as a cover: readable immediately. Entrances, exits, hard cuts, fades and static holds are choices, not universal requirements. Build or inspect key layout states before expensive render; flex, grid, absolute positioning and deliberate semantic line breaks are all valid.
 
-Choose colors, fonts, size hierarchy and decoration for the topic. No element count, easing quota, banned-font list or mandatory ambient motion. Preserve clear identity, legibility, framing, natural line breaks and subject visibility. See optional [typography](references/typography.md), [composition](references/video-composition.md) and [style ideas](house-style.md) only when useful.
+Follow [visual choices for each piece](../../../CONVENTIONS.md#字幕与视觉) for content-based styling, reuse boundaries and a lightweight comparison with recent covers. No element count, easing quota, banned-font list or mandatory ambient motion. Preserve clear identity, legibility, framing, natural line breaks and subject visibility. See optional [typography](references/typography.md), [composition](references/video-composition.md) and [style ideas](house-style.md) only when useful.
 
 ## Media and verification
 

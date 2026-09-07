@@ -196,6 +196,18 @@ class BilibiliCookieJarTests(unittest.TestCase):
         )
         self.assertEqual("/tmp/second.txt", args.cookies)
 
+    def test_page_cli_defaults_to_first_part_and_rejects_nonpositive_values(self):
+        self.assertEqual(1, bili_dl.parse_args(["BVsynthetic", "out.mp4"]).page)
+        self.assertEqual(
+            7,
+            bili_dl.parse_args(
+                ["BVsynthetic", "out.mp4", "--page", "7"]
+            ).page,
+        )
+        with contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit):
+                bili_dl.parse_args(["BVsynthetic", "out.mp4", "--page", "0"])
+
     def test_missing_cookie_option_value_is_rejected_without_sensitive_output(self):
         stderr = io.StringIO()
         with contextlib.redirect_stderr(stderr):

@@ -6,7 +6,7 @@ yt-dlp 的 BiliBili extractor 会被 B站对其请求签名做 412 风控，但*
 (DASH m4s 直链)。本脚本据此取直链、curl 下载视频/音频流、ffmpeg mux 成 mp4。
 
 用法：
-    python tools/video/bili_dl.py <bvid> <out.mp4> [--max-h 1080] [--cookies path]
+    python tools/video/bili_dl.py <bvid> <out.mp4> [--page 1] [--max-h 1080] [--cookies path]
 默认只读取仓库根目录 all_cookies.txt（含 B站登录态），不回退旧
 www.bilibili.com_cookies.txt。cookie jar 必须为 0600；其安装、覆盖与权限只由
 用户本人维护。脚本只把文件路径交给 curl，不会把 cookie value 拼进
@@ -95,16 +95,22 @@ def parse_args(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("bvid")
     ap.add_argument("out")
+    ap.add_argument("--page", type=int, default=1)
     ap.add_argument("--max-h", type=int, default=1080)
     ap.add_argument("--cookies", default=str(DEF_CK))
-    return ap.parse_args(argv)
+    args = ap.parse_args(argv)
+    if args.page < 1:
+        ap.error("--page must be >= 1")
+    return args
 
 
 def main(argv=None):
     a = parse_args(argv)
 
     cookie_jar = validate_cookie_jar(a.cookies)
-    html = curl(f"https://www.bilibili.com/video/{a.bvid}/", cookie_jar).decode("utf-8", "replace")
+    html = curl(
+        f"https://www.bilibili.com/video/{a.bvid}/?p={a.page}", cookie_jar
+    ).decode("utf-8", "replace")
     m = re.search(r"window\.__playinfo__=(\{.*?\})</script>", html)
     if not m:
         sys.exit(f"!! no playinfo for {a.bvid} (可能风控页/需登录/番剧)")
@@ -116,7 +122,7 @@ def main(argv=None):
             v = pick(dash["video"], a.max_h)
             au = pick(dash["audio"], 99999)
             vh = v.get("height"); vc = v.get("codecs"); ac = au.get("codecs")
-            print(f"[{a.bvid}] video {v.get('width')}x{vh} {vc} {v.get('bandwidth')//1000}kbps ; audio {ac} {au.get('bandwidth')//1000}kbps")
+            print(f"[{a.bvid} p={a.page}] video {v.get('width')}x{vh} {vc} {v.get('bandwidth')//1000}kbps ; audio {ac} {au.get('bandwidth')//1000}kbps")
             vf = os.path.join(tmp, "v.m4s"); af = os.path.join(tmp, "a.m4s")
             for url, dst in [(v["baseUrl"], vf), (au["baseUrl"], af)]:
                 code = curl(url, cookie_jar, dst)
@@ -134,7 +140,7 @@ def main(argv=None):
             u = durl[0]["url"]
             mf = os.path.join(tmp, "m.mp4")
             code = curl(u, cookie_jar, mf)
-            print(f"[{a.bvid}] durl(mp4) HTTP {code} size {os.path.getsize(mf)//1024}KB")
+            print(f"[{a.bvid} p={a.page}] durl(mp4) HTTP {code} size {os.path.getsize(mf)//1024}KB")
             subprocess.run(["ffmpeg", "-v", "error", "-i", mf, "-c", "copy",
                             "-movflags", "+faststart", a.out, "-y"], check=True)
     r = subprocess.check_output(["ffprobe", "-v", "error", "-select_streams", "v:0",
@@ -142,7 +148,7 @@ def main(argv=None):
                                  "-of", "csv=p=0:s=x", a.out]).decode().strip()
     dur = subprocess.check_output(["ffprobe", "-v", "error", "-show_entries",
                                    "format=duration", "-of", "csv=p=0", a.out]).decode().strip()
-    print(f"[{a.bvid}] OK -> {a.out}  {r}  dur={dur}s")
+    print(f"[{a.bvid} p={a.page}] OK -> {a.out}  {r}  dur={dur}s")
 
 
 if __name__ == "__main__":

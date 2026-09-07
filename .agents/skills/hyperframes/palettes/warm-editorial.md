@@ -1,6 +1,6 @@
 # Warm / Editorial
 
-Storytelling, documentaries, case studies, narrative content.
+Optional warm palettes when warmth serves the specific subject and footage. Storytelling, documentaries and nostalgia can use any palette; this category does not set their default.
 
 ```
 #264653 #2A9D8F #E9C46A #F4A261 #E76F51
