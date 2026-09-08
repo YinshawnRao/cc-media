@@ -4,7 +4,9 @@
 
 ## 1. Brief 与准备
 
-记录主题、画幅、歌单/版本、是否排名、用户硬时长和明确偏好。新项目放 sandbox/<slug>/；设计简述写 design.md。新项目使用 schema v2，历史 v1 仅供复现。
+记录主题、画幅、歌单/版本、是否排名、用户硬时长和明确偏好。新测试项目放 sandbox/<slug>/，正式产物放 production/<slug>/；设计简述写 design.md。新项目使用 schema v2，历史 v1 仅供复现。
+
+先按 [测试产物与生产产物](../../CONVENTIONS.md#测试产物与生产产物)确定用途。sandbox 全部按内部测试执行，不要求发布版权授权，不把配套文案或完整 MP4 当成公开发布请求；production 记录授权范围与目标发布用途。用户要求将测试片公开发布或按可发布成品交付时，先转入 production 发布流程。沿用既有 SOURCES.md/design.md 记录即可，不为目录区分添加未受支持的 manifest 字段。
 
 新建、重做或优化封面必须执行 [封面图像生成流程](../../CONVENTIONS.md#封面图像生成流程)：
 
@@ -62,6 +64,8 @@ REVIEW 根据根因恢复。Live 能力限制可直接进入有证据的 agent o
 kind 可为 user_specified_url、user_excluded_platform、platform_exclusive。直接指定 URL 的平台可在 skipped 记录中保留该 URL 的真实候选；排除的平台不得含候选。searched=false 表示没有执行搜索，不能填虚构搜索词。指定 URL 仍需核验身份、可用性和真实下载 receipt。
 
 selection.download_receipt 只包含 schema 允许的脱敏 URL、平台、raw SHA、时长和派生链字段，不能保存 info_json/Cookie/header。它证明当前本地文件与声明的一致性，不单独证明网络上的官方身份。SOURCES.md 保存可核对的搜索、选源和事实来源，避免重复抄写全部机器字段。
+
+sandbox 的 MV 候选按身份、版本、实际画面和可下载性评估，不因推测发布版权风险而改用音源封面。没有合适 MV、选择了其他版本、素材仅含封面、网络失败与平台明确版权限制是不同原因，必须分别记录；只有实际平台返回了版权限制证据，才可报告“被版权拦截”。`release_safety` 是发布复核字段，不是自动版权识别或过滤器。
 
 ## 编辑例外与旁白绑定
 
@@ -138,7 +142,7 @@ PUBLISHING 不属于 build 前 manifest 门禁，必须在 FINAL 前完成。pre
 
 自由探索不强套 preparer，按当前 project/final contract 准备 QA。AI 音色 MV 使用 [durable builder](templates/README.md) 与 --check，不伪造标准 manifest。两类同样交付 renders/<slug>.mp4 和 publishing/xiaohongshu.md，报告各自适用检查。
 
-只有用户明确要求发布级终验才运行 --require-human-review；无 input 时工具生成当前 SHA 模板并返回 REVIEW_REQUIRED，真人完成后用 --human-review-input 合并。agent 不代签 human，本地 pending 不阻断普通制作交付。
+内部 sandbox 测试使用以上本地命令，不运行 --require-human-review；已有 release_safety/pending_human_review 字段不表示发现版权问题，也不阻断测试交付。production 的版权与授权核对按已记录的用途执行；只有用户明确要求公开发布、发布级终验或可发布交付时才运行 --require-human-review。该开关需要显式传入，CLI 不按目录名自动切换。无 input 时工具生成当前 SHA 模板并返回 REVIEW_REQUIRED，真人完成后用 --human-review-input 合并；agent 不代签 human。
 
 ## 开发回归
 

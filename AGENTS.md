@@ -12,6 +12,12 @@
 - 开始先看 branch、HEAD、dirty worktree。保留无关改动；不重复 git init，暂存时只包含明确范围。
 - 代码/文档任务按相关文件工作；视频制作读 [CONVENTIONS.md](CONVENTIONS.md) 和 [Runbook](tools/video/README.md)。已有项目遵循自身精确 pin 与已解析声线，不因新默认自动迁移。
 
+## 测试与生产边界
+
+- `sandbox/` 下全部是内部测试产物，完整 MP4 和配套 `publishing/` 文案也属于测试交付，不代表公开发布。不纳入发布版权审核，不因预设版权风险阻断制作、索要发布授权或将可用 MV 降级为音源封面、静图。
+- `production/` 是正式产物与可复现工程的留存位置，进入版权、授权范围和公开发布风险核对流程。测试片需要公开发布时，先转入 production 发布流程；不能仅凭 sandbox 路径沿用测试免审规则。
+- 上述区分规定项目用途与验收范围，不声明素材已获授权。两类项目都保留真实来源、版本、凭据边界与技术 QA；具体执行见 [测试产物与生产产物](CONVENTIONS.md#测试产物与生产产物)。
+
 ## 生产入口
 
 - 定位为竖屏短视频，成片固定 **1080×1920（9:16）**；只有用户明确要求其他画幅才可变更，须在 manifest 的 output_format 记录尺寸和用户原话。横屏素材、全景保留或模型审美判断都不是改横屏的授权。
@@ -25,7 +31,7 @@
 
 ## 文件与凭据边界
 
-- 单期放 `sandbox/<slug>/`；需长期保留的可复现工程放 `production/<slug>/`；复用源码、schema、模板放 `tools/`。
+- 测试单期放 `sandbox/<slug>/`；正式产物及其可复现工程放 `production/<slug>/`，按上述用途区分；复用源码、schema、模板放 `tools/`。
 - raw render 和最终 MP4 均放项目 `renders/`，最终文件为 `renders/<slug>.mp4`；配套文案为 `publishing/xiaohongshu.md`。
 - `all_cookies.txt` 只由用户维护。代理只通过 `check_yt_cookie.py`、`yt_dlp_readonly.py`、`bili_search.py`、`bili_dl.py` 既定只读路径消费；禁止直接写入、chmod、touch、mv、cp、删除、过滤替换或安装。`filter_cookie_jar.py` 仅生成仓库外 candidate，由用户自行安装为 canonical。需要 Cookie 的 yt-dlp 一律经只读 wrapper，临时副本只由 wrapper 在仓库外管理。
 - 不输出 Cookie、header、原始 info JSON；不把凭据复制进项目或 Git。Cookie 不可用先尝试公开下载与备选源。

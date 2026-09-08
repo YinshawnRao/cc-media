@@ -12,7 +12,11 @@
 
 ## 目录与提交
 
-sandbox/<slug>/ 是单期可丢弃工程；production/<slug>/ 保存需长期留存的可复现输入；tools/ 保存跨项目源码、schema 和模板。
+- `sandbox/<slug>/`：内部测试工程与产物，包括完整 MP4、封面和配套文案；不纳入发布版权审核，不因预设版权顾虑降级可用 MV。
+- `production/<slug>/`：正式产物及需长期留存的可复现工程；在此处理授权范围与公开发布风险。
+- `tools/`：跨项目源码、schema 和模板。
+
+测试与生产的验收边界、测试片转正式发布的处理见 [测试产物与生产产物](CONVENTIONS.md#测试产物与生产产物)。目录划分不代表素材已经获得授权，两类项目均执行真实来源与技术 QA。
 
 raw render 与最终 MP4 位于项目 renders/，最终文件名为 renders/<slug>.mp4；发布文案为并列 publishing/xiaohongshu.md。Git 保存源码、文档、配置和轻量证据，不提交 Cookie、下载媒体、模型、普通 WAV/MP4 或缓存。已有项目不自动迁移版本、声线或视觉。
 
