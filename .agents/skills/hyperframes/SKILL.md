@@ -40,7 +40,11 @@ Load the project's local/pinned GSAP dependency before this script. This minimal
 
 First frame must work as a cover: readable immediately. Entrances, exits, hard cuts, fades and static holds are choices, not universal requirements. Build or inspect key layout states before expensive render; flex, grid, absolute positioning and deliberate semantic line breaks are all valid.
 
-Follow [visual choices for each piece](../../../CONVENTIONS.md#字幕与视觉) for content-based styling, reuse boundaries and a lightweight comparison with recent covers. No element count, easing quota, banned-font list or mandatory ambient motion. Preserve clear identity, legibility, framing, natural line breaks and subject visibility. See optional [typography](references/typography.md), [composition](references/video-composition.md) and [style ideas](house-style.md) only when useful.
+Follow [visual choices for each piece](../../../CONVENTIONS.md#字幕与视觉) for content-based styling and reuse boundaries. No element count, easing quota, banned-font list or mandatory ambient motion. Preserve clear identity, legibility, framing, natural line breaks and subject visibility. See optional [typography](references/typography.md), [composition](references/video-composition.md) and [style ideas](house-style.md) only when useful.
+
+For covers, default to text-free AIGC artwork and separate HTML/CSS text layers using project-local fonts. Ask the image model for no text and space for later typography; render titles, artist names, years and other cover copy in HTML. Use the same composition for the exported cover and frame 0. Follow the repository [cover workflow](../../../CONVENTIONS.md#封面图像生成流程) for unintended generated lettering and explicit user-requested exceptions. The ban on code-drawn replacement artwork permits HTML/CSS text layout.
+
+Run the separate [cover aesthetic review](../../../tools/video/cover-aesthetic-review.md) on the actual composite, mobile preview and target crop before the full render; confirm the delivered cover and final frame 0 afterward. Record concrete observations and reviewer identity in qa/cover-aesthetic-review.md. A clear mismatch with this brief returns only the cover for rework: scope CSS to cover nodes, preserve the rest of the content, audio and timing, and refresh affected technical QA after replacing an in-video cover. Mechanical PASS does not establish aesthetic acceptance.
 
 ## Media and verification
 

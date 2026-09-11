@@ -6,9 +6,9 @@
 
 - 当期用户明确要求优先于仓库制作默认值。审美、文案、CTA、画幅与结构可以按 brief 调整；将影响构建的例外记入项目 manifest/design，不必为单期偏好修改全局规范。
 - 视频任务在用户已指定内容的基础上，自主完成其余选材、文案、叙事与视觉设计，执行 [长期创作偏好](CONVENTIONS.md#长期创作偏好)：可信考证、创意适度、文字通俗纯净、按本期内容独立创作。用户无需在每期启动提示词中重申。
-- 每期视觉按作品表达独立选择，复用工程时重新判断封面、配色与字体；设计依据及近期封面对照见 [字幕与视觉](CONVENTIONS.md#字幕与视觉)。
-- 凡涉及封面设计（新建、重做、优化或复用工程），先读 [封面案例库](references/covers/README.md)，再按本期表达选择相关案例参考。案例只辅助设计判断，不是固定模板，不要求复刻构图、配色、字体或提示词；本期作品的表达优先。具体用法见 [封面案例参考](CONVENTIONS.md#封面案例参考)。
+- 每期视觉按作品表达独立选择，复用工程时重新判断封面、配色与字体；设计依据见 [字幕与视觉](CONVENTIONS.md#字幕与视觉)。
 - 新建、重做或优化封面必须使用 AIGC 图像模型生成或编辑：优先 imagegen；该入口不可用时可调用当前 agent 的其他 AIGC 生图工具，不限定工具名称。严禁以 SVG、HTML/CSS、Canvas、Python 等代码绘图替代封面生图。只有确认当前环境所有可用 AIGC 生图入口均不可调用时才可记录环境例外，见 [封面图像生成流程](CONVENTIONS.md#封面图像生成流程)。
+- 封面默认采用无字 AIGC 视觉素材，标题、歌手名、年份等信息文字用 HTML/CSS 与项目离线字体独立排版，不建议交给图像模型生成。生图或编辑提示词明确要求不生成文字、为后期排版留出空间；具体流程与例外见 [封面图像生成流程](CONVENTIONS.md#封面图像生成流程)。
 - 不伪造来源、检测结果或真人批准，不以偏好覆盖绕过媒体真实性、安全或技术验收。
 - 开始先看 branch、HEAD、dirty worktree。保留无关改动；不重复 git init，暂存时只包含明确范围。
 - 代码/文档任务按相关文件工作；视频制作读 [CONVENTIONS.md](CONVENTIONS.md) 和 [Runbook](tools/video/README.md)。已有项目遵循自身精确 pin 与已解析声线，不因新默认自动迁移。
@@ -34,7 +34,6 @@
 ## 文件与凭据边界
 
 - 测试单期放 `sandbox/<slug>/`；正式产物及其可复现工程放 `production/<slug>/`，按上述用途区分；复用源码、schema、模板放 `tools/`。
-- 精选封面案例放 `references/covers/`，保存定稿图片、实际采用的提示词、设计简述与来源记录；按案例库 README 留存必要图像快照，避免仅链接可清理的 sandbox 资产。
 - raw render 和最终 MP4 均放项目 `renders/`，最终文件为 `renders/<slug>.mp4`；配套文案为 `publishing/xiaohongshu.md`。
 - `all_cookies.txt` 只由用户维护。代理只通过 `check_yt_cookie.py`、`yt_dlp_readonly.py`、`bili_search.py`、`bili_dl.py` 既定只读路径消费；禁止直接写入、chmod、touch、mv、cp、删除、过滤替换或安装。`filter_cookie_jar.py` 仅生成仓库外 candidate，由用户自行安装为 canonical。需要 Cookie 的 yt-dlp 一律经只读 wrapper，临时副本只由 wrapper 在仓库外管理。
 - 不输出 Cookie、header、原始 info JSON；不把凭据复制进项目或 Git。`check_source_access.py` 通过上述既定读者和 wrapper 编排只读检测。Cookie 不可用时先按来源启动检测暂停确认，用户明确同意后才用公开下载或备选平台继续制作。
@@ -43,7 +42,8 @@
 
 - 制作 brief 默认授权完成整片及发布文案。设计、试渲和 prompt expansion 是内部步骤；只有用户要求小样/阶段确认才停在预览。
 - 标准项目：构建前 PROJECT（有旁白时含 VOICE），mux 后 PUBLISHING 与中央 `prepare_final_qa.py` 的本地 FINAL。编辑例外也必须通过实际媒体、哈希、旁白绑定和展示边界检查。
+- 封面另走独立 [封面审美评估](tools/video/cover-aesthetic-review.md)：实际查看图文合成、手机预览与最终首帧，按本期 brief 评估并单独记录；明显不符合预期时仅退回封面重做，保持其他内容，刷新受影响的技术 QA。审美结论与机械门禁分开报告，不以技术 PASS 代替审美通过。
 - 自由探索和 AI 音色 MV 使用各自受支持的 QA 路径；不伪造项目类型来套门禁。无旁白时 VOICE 标为不适用。
 - 抽帧实际查看，检查最终音频。检测覆盖范围与 agent/human 身份如实标注；只有用户明确要求公开发布/发布验收/可发布交付才启用 `--require-human-review`。
 - 失败先诊断、修复、重跑受影响步骤。来源启动检测要求暂停确认时，以及缺用户独占输入、必要权限/凭据或继续须改变核心 brief 时询问。REVIEW 按原因处理，已知检测能力限制不做无效换窗/换源循环。
-- 交付报告 MP4、文案、当前 SHA、适用门禁结果和实际影响成片的问题；不附加未经询问的发布建议或套话。
+- 交付报告 MP4、文案、当前 SHA、适用门禁结果、独立封面审美结论及审阅者身份，以及实际影响成片的问题；不附加未经询问的发布建议或套话。

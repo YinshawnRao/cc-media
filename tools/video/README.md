@@ -10,14 +10,13 @@
 
 先按 [测试产物与生产产物](../../CONVENTIONS.md#测试产物与生产产物)确定用途。sandbox 全部按内部测试执行，不要求发布版权授权，不把配套文案或完整 MP4 当成公开发布请求；production 记录授权范围与目标发布用途。用户要求将测试片公开发布或按可发布成品交付时，先转入 production 发布流程。沿用既有 SOURCES.md/design.md 记录即可，不为目录区分添加未受支持的 manifest 字段。
 
-涉及封面设计时（包括复用旧工程），先读 [封面案例库](../../references/covers/README.md)，按 [封面案例参考](../../CONVENTIONS.md#封面案例参考) 使用：先明确本期主题和情绪，再查看相关案例的图片、提示词与设计简述。在 `design.md` 简记借鉴点和本期调整；无合适案例则按作品自身表达设计。案例只作辅助，不要求复刻或套用相同构图、配色、字体与提示词。
-
 新建、重做或优化封面必须执行 [封面图像生成流程](../../CONVENTIONS.md#封面图像生成流程)：
 
 1. 检查当前 agent 实际提供的 AIGC 图像生成/编辑能力，优先 imagegen；该入口不可用时可使用其他名称的工具，须确认其实际调用图像模型。只有检查所有相关入口后均确认环境不可用，才按规范记录例外；写明已检查入口、实际错误及本轮未执行 AIGC 生图，可用现有真实图像和必要文字排版继续完成封面，严禁代码绘图补位。
-2. 查看参考原图，按本期表达选择生成或编辑用途，实际调用选定的 AIGC 图像模型，将经检查的结果融入封面；结合排版与手机尺寸预览继续优化。不得以 SVG、HTML/CSS、Canvas、Python 绘图、网页截图或矢量转 PNG 替代模型生图；裁剪、缩放、合成及标题排版按规范允许的范围执行。输入错误或生成效果不佳应修正、迭代，不作为工具不可用的依据。
+2. 查看参考原图，按本期表达选择生成或编辑用途，实际调用选定的 AIGC 图像模型。默认生成无字视觉素材，提示词明确要求无文字、字母、数字、Logo 和水印，并按本期构图预留文字空间；不要求模型绘制标题、歌手名等最终文案。意外生成字形或伪文字时，先编辑清除或重新生成。不得以 SVG、HTML/CSS、Canvas、Python 绘图、网页截图或矢量转 PNG 替代模型生图；裁剪、缩放、合成及文字排版按规范允许的范围执行。输入错误或生成效果不佳应修正、迭代，不作为工具不可用的依据。
 3. 将最终选用的生成图和采用版本的提示词保存在项目 `assets/`（如 `assets/cover-generation-prompt.txt`）；有参考图时保留原图。在 `design.md` 或已有素材记录中简记用途、实际工具、可取得的模型标识、参考图来源及输入/输出文件的对应关系，不虚构工具或模型名称。工具生成到项目外的图片须复制到项目内再引用，避免依赖宿主应用的缓存路径。
-4. 检查实际封面、首帧和目标平台裁剪下的主体、文字与色彩融合。若替换已入片的首帧，重渲受影响内容并刷新最终成片 QA；仅导出新封面图不能代替更新已入片的封面。
+4. 在 HyperFrames HTML 中叠加独立文字层，用项目离线字体排版标题、歌手名、年份等信息，调整字号、字距、换行与层级。封面图与视频首帧使用同一套图文合成，首帧文字完整可见；不把无字生成图直接作为最终封面。用户明确要求生成艺术字等特殊表达时，按规范记录例外。
+5. 检查实际封面、首帧和目标平台裁剪下的主体、文字与色彩融合，逐字核对文案，检查重复文字、伪文字残留、缺字和裁剪；随后执行独立 [封面审美评估](cover-aesthetic-review.md)。若替换已入片的首帧，重渲受影响内容并刷新最终成片 QA；仅导出新封面图不能代替更新已入片的封面。
 
 没有明确画幅要求时固定 1080×1920（9:16），manifest 可省略 output_format 或写 `{"output_format":{"width":1080,"height":1920}}`。只有用户明确要求其他尺寸时才填写对应 width/height 和非空 user_request（用户原话）；设计理由不能代替用户要求。PROJECT 检查声明，FINAL 以同一 authoring manifest 核对 raw render 与最终 MP4 的真实宽高、方形像素和旋转信息；遗漏字段不会自动接受横屏。HTML 画布、构建配置与素材填充也须使用相同尺寸。
 
@@ -124,6 +123,12 @@ python3 tools/video/verify_project.py --project sandbox/<slug>
 
 多片段长片优先拼成单一 footage_track，减少浏览器同时解码负担；短片/特殊构图可用经验证的多 video。所有时间锚点来自 timeline，使用可 seek 的动画，离线字体。音频预混 master.wav 后期覆盖 raw render 音轨。
 
+## 封面审美评估
+
+整片渲染前按 [独立封面审美评估](cover-aesthetic-review.md) 实际查看图文合成后的完整封面、手机预览和目标裁剪，在项目 `qa/cover-aesthetic-review.md` 记录本期期望、逐项观察、图像路径/哈希、审阅者身份与结论。此环节由 agent 视觉审阅完成，独立于机械门禁，不增加默认用户审批。
+
+`PASS` 后继续渲染；`REWORK` 写清可见问题并仅退回封面图像、文字及封面区间，复用原音轨、时间轴和正文内容，修复后复评；`REVIEW_REQUIRED` 先补齐证据再审阅。具体范围保护、复评与记录格式见上述流程。初评通过不代替交付前的实际版本确认。
+
 ## 4. 渲染与 mux
 
 新项目在项目目录运行（已有项目用自己的精确 pin）：
@@ -166,6 +171,8 @@ python3 tools/video/prepare_final_qa.py --project sandbox/<slug> --final renders
 PUBLISHING 不属于 build 前 manifest 门禁，必须在 FINAL 前完成。preparer 支持 top_ranking/narrative 的标准或显式自定义结构，将 authoring 与 timeline 绑定，生成当前 SHA 的实时 ASR、逐章 PNG、诊断并在同一进程执行 FINAL。每条实际旁白都必须映射并检查，无旁白不会生成虚构 WAV。
 
 只有输出 FINAL VIDEO QA: PASS 才算本地机械终验；不手写 QA manifest 冒充 preparer，也不在 PASS 后默认再次运行全量 standalone verifier。独立复核/诊断才使用 `verify_final_video.py`。
+
+交付前完成封面审美的最终版本确认：查看最终封面、真实第 0 帧及手机裁剪，将当前 MP4 SHA 和实际图像证据补入 `qa/cover-aesthetic-review.md`。现有 preparer 不自动评判审美，交付分别报告 `COVER AESTHETIC REVIEW: PASS（agent/human 按实际填写）` 与适用技术门禁；未审或需重做时不能只凭 FINAL PASS 宣称全部完成。封面返工改变 MP4 后，刷新适用的技术 QA 并复核非封面部分的保护范围。
 
 自由探索不强套 preparer，按当前 project/final contract 准备 QA。AI 音色 MV 使用 [durable builder](templates/README.md) 与 --check，不伪造标准 manifest。两类同样交付 renders/<slug>.mp4 和 publishing/xiaohongshu.md，报告各自适用检查。
 

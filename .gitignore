@@ -2,7 +2,6 @@
 #  cc-media .gitignore
 #  原则：只入库「源」（脚本 / HTML 合成 / brief / 规范 / 字幕）。
 #  所有可重下的素材、可重渲的产物、本地环境一律不入库。
-#  精选封面案例的必要图片快照按下方窄范围例外留存。
 #  跨机器同步重素材请走外置盘 / 网盘，git 扛不动 54G。
 # =========================================================
 
@@ -56,7 +55,7 @@ cookies.txt
 *.avi
 *.flv
 
-# ---- 普通图片（封面 / QA 抽帧 / probe，默认不入库）----
+# ---- 图片（封面 / QA 抽帧 / probe，默认不入库）----
 *.jpg
 *.jpeg
 *.png
@@ -64,12 +63,6 @@ cookies.txt
 *.gif
 *.bmp
 *.tiff
-
-# 精选封面案例：只保留定稿、采用底图、移动端预览和必要输入参考。
-!/references/covers/*/cover.png
-!/references/covers/*/artwork.png
-!/references/covers/*/mobile-preview.png
-!/references/covers/*/inputs/*.png
 
 # ---- 渲染 / 下载 / 素材 整目录（体积大，不入库）----
 renders/
