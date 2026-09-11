@@ -406,7 +406,8 @@ class BilibiliSearchCookieTests(unittest.TestCase):
         self.assertNotIn("API_ERROR", output)
         self.assertNotIn("RESPONSE_INVALID", output)
         self.assertNotIn(SYNTHETIC_VALUE, output)
-        self.assert_recovery_hint(output)
+        self.assertIn("搜索请求成功但无结果", output)
+        self.assertNotIn("等待用户确认", output)
 
     def test_successful_nonempty_search_is_the_only_remote_exit_zero(self):
         result, output = self.run_search_main(
@@ -430,10 +431,9 @@ class BilibiliSearchCookieTests(unittest.TestCase):
         self.assertNotIn("RECOVERY:", output)
 
     def assert_recovery_hint(self, output: str) -> None:
-        self.assertIn("自动换关键词", output)
-        self.assertIn("直接按 BV", output)
-        self.assertIn("另一平台（YouTube）", output)
-        self.assertIn("不因单次 B站搜索失败停止整个 goal", output)
+        self.assertIn("check_source_access.py", output)
+        self.assertIn("等待用户确认", output)
+        self.assertIn("代理授权/沙箱限制", output)
 
 
 class FilterCookieJarTests(unittest.TestCase):

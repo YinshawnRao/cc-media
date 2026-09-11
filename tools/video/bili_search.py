@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
 import http.client
 import http.cookiejar
@@ -63,9 +64,12 @@ class ResponseParseError(BiliSearchError):
 
 
 class SearchRequestError(BiliSearchError):
-    def __init__(self, stage: str):
+    def __init__(self, stage: str, *, http_status: int | None = None,
+                 permission_denied: bool = False):
         super().__init__(stage)
         self.stage = stage
+        self.http_status = http_status
+        self.permission_denied = permission_denied
 
 
 def default_cookie_path(repo_root: Path | None = None) -> Path:
@@ -119,13 +123,19 @@ def get_json(url: str, opener, *, stage: str = "response"):
         # tokens, so classify that as malformed remote data instead of
         # leaking a traceback and stopping the surrounding goal.
         raise ResponseParseError(stage) from None
+    except urllib.error.HTTPError as error:
+        status = error.code
+        error.close()
+        raise SearchRequestError(stage, http_status=status) from None
     except (
         urllib.error.URLError,
         TimeoutError,
         OSError,
         http.client.HTTPException,
-    ):
-        raise SearchRequestError(stage) from None
+    ) as error:
+        reason = error.reason if isinstance(error, urllib.error.URLError) else error
+        denied = isinstance(reason, OSError) and reason.errno in (errno.EACCES, errno.EPERM)
+        raise SearchRequestError(stage, permission_denied=denied) from None
 
 
 def api_data(payload, *, stage: str) -> dict:
@@ -267,8 +277,10 @@ def parse_args(argv: list[str] | None = None):
 
 def print_recovery_hint() -> None:
     print(
-        "RECOVERY: goal 应自动换关键词重试；已有 BV/URL 时直接按 BV 验证或下载；"
-        "同时继续另一平台（YouTube）检索，不因单次 B站搜索失败停止整个 goal。"
+        "RECOVERY: 执行 tools/video/check_source_access.py 并按 Runbook 来源启动检测处理；"
+        "Cookie 失效或明确平台拦截须暂停制作，等待用户确认；"
+        "代理授权/沙箱限制先恢复执行环境，不能据此判定平台不通。"
+        "仅搜索无结果或单个视频问题可换关键词/同版本候选。"
     )
 
 
@@ -305,12 +317,13 @@ def main(argv: list[str] | None = None) -> int:
         print_recovery_hint()
         return EXIT_RESPONSE_INVALID
     except SearchRequestError as error:
-        print(f"BILI SEARCH: REQUEST_FAILED stage={error.stage}")
+        print(f"BILI SEARCH: REQUEST_FAILED stage={error.stage}"
+              f" http_status={error.http_status} permission_denied={error.permission_denied}")
         print_recovery_hint()
         return EXIT_REQUEST_FAILED
     if not results:
         print("BILI SEARCH: EMPTY")
-        print_recovery_hint()
+        print("RECOVERY: 搜索请求成功但无结果；可换关键词，或直接按 BV/URL 验证同版本候选。")
         return EXIT_EMPTY
     print(f"BILI SEARCH: PASS results={len(results)}")
     return 0

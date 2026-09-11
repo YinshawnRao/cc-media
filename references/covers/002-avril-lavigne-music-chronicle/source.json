@@ -1,0 +1,152 @@
+{
+  "case_id": "002-avril-lavigne-music-chronicle",
+  "title": "艾薇儿｜唱出自己的路",
+  "archived_on": "2026-09-11",
+  "selection_basis": "用户评价此作品封面非常不错，并要求在S.H.E之后收录。",
+  "source_project": {
+    "path": "sandbox/avril-lavigne-music-chronicle",
+    "purpose": "内部测试",
+    "adopted_cover_revision": "2026-09-09 cover-clean 精简版"
+  },
+  "path_conventions": {
+    "files.path": "相对此案例目录",
+    "files.original_project_path": "相对 source_project.path；派生预览为null",
+    "original_records": "保留原项目文本记录，path相对 source_project.path"
+  },
+  "files": [
+    {
+      "path": "cover.png",
+      "original_project_path": "assets/cover.png",
+      "role": "当前精简版的含字定稿",
+      "sha256": "a17b261fe2b796d04ccd1cfc3125e5fa716e281852d77d356274feba9e0ad5dd",
+      "bytes": 2783365,
+      "width": 1080,
+      "height": 1920
+    },
+    {
+      "path": "artwork.png",
+      "original_project_path": "assets/cover-art.png",
+      "role": "采用的AIGC无字底图",
+      "sha256": "47db8ad6a3944b0cdddd136a8eed72f19460b26a47785dbcc37d0534a30d2861",
+      "bytes": 2723908,
+      "width": 941,
+      "height": 1672
+    },
+    {
+      "path": "prompt.txt",
+      "original_project_path": "assets/cover-generation-prompt.txt",
+      "role": "采用版本的原始提示词",
+      "sha256": "fcba7244aa36b4bbe7597d1a5a06324a92cb66771a9acb258fb752d109b3f028",
+      "bytes": 1645
+    },
+    {
+      "path": "inputs/avril.png",
+      "original_project_path": "assets/cover-reference.png",
+      "role": "Complicated演唱画面身份参考",
+      "sha256": "9c8f48dc22b29dae78b662605d7557cd98ba35350ff86006b383d9b8d89e8c8b",
+      "bytes": 1062579,
+      "width": 1424,
+      "height": 1080
+    },
+    {
+      "path": "mobile-preview.png",
+      "original_project_path": null,
+      "role": "由本次归档定稿机械裁剪缩放的中央3:4手机预览",
+      "sha256": "5c9ef1eda7924a29f98be11969a033f1b3ffd469c06c0f8620c9399007480f28",
+      "bytes": 304708,
+      "width": 360,
+      "height": 480,
+      "derived_from": "cover.png",
+      "transformation": {
+        "tool": "macOS sips",
+        "crop_xywh": [
+          0,
+          240,
+          1080,
+          1440
+        ],
+        "resize_width_height": [
+          360,
+          480
+        ],
+        "note": "仅用于查看当前定稿的裁剪与可读性；未进行创意图像编辑或生成新封面。"
+      }
+    }
+  ],
+  "generation": {
+    "tool": "image_gen.imagegen",
+    "model": "原记录注明工具未返回可核实的模型版本标识",
+    "recorded_revision_date": "2026-09-09",
+    "exact_generation_timestamp": null,
+    "prompt_path": "prompt.txt",
+    "reference_paths": [
+      "inputs/avril.png"
+    ],
+    "adopted_artwork": "artwork.png",
+    "reference_source": {
+      "source_video": "raw/complicated-yt-5NPBIwQyPWE.mp4",
+      "source_url": "https://www.youtube.com/watch?v=5NPBIwQyPWE",
+      "source_time_sec": 35.0,
+      "evidence": "原项目 design.md 封面段及 SOURCES.md 2002章节；本次未联网复核。"
+    },
+    "note": "AIGC照片衍生设计，中文标题在原项目独立排版；后续cover-clean只移除小窗及相关切换，保留生成图与提示词。"
+  },
+  "typography": {
+    "source": "index.html",
+    "fonts": [
+      "SmileySans-Oblique",
+      "NotoSerifSC-Regular",
+      "Space Mono"
+    ],
+    "text": "1999—2022 · 音乐编年史｜艾薇儿｜唱出自己的路",
+    "note": "归档只保留排版说明与定稿，不复制原片工程和字体。"
+  },
+  "original_records": [
+    {
+      "path": "design.md",
+      "sha256": "67602881eca4348a8a19b9a536784a98bf9c5333e5be8e0b5a1624b96c90a7d4",
+      "excerpt": "## 封面\n\n2026-09-09 按当前视觉规范优化。用户范围：\"使用最新的规范，优化这2个作品的封面设计，文字排版。注意只修改封面，其他不要动。\"\n\n- 第一层为居中的大字 `艾薇儿`；第二层为 `唱出自己的路`；年份 `1999—2022 · 音乐编年史` 合并为一个辅助信息组。移除封面重复英文和解释段落。\n- 用本地《Complicated》MV 第 35.000 秒的真实演唱画面作肖像参考，保留长发、眼妆、领带、麦克风和面部识别；黑白人物与热粉纸面对应其早期流行朋克形象。生成图为照片衍生封面设计，不是新的历史照片。\n- 采用 imagegen 内置图像编辑工具 `image_gen.imagegen`；工具未返回可核实的模型版本标识。输入 `assets/cover-reference.png`，输出 `assets/cover-art.png`；采用提示词为 `assets/cover-generation-prompt.txt`。输入取自 `raw/complicated-yt-5NPBIwQyPWE.mp4`，原始来源沿用 SOURCES.md。\n- 按用户后续要求移除早期公开镜头小窗、附带说明及小窗入退场动画，同时删除肖像背景的淡出和恢复。整段开场连续保持已采用的 imagegen 人像与标题，进入第一章前不再额外切换画面；其余内容、音轨及时间轴保持不变。用户原话：\"直接去掉吧，让封面更纯粹，现在还为这个额外切换了一次画面，观感很差。\"\n- 导出封面 `assets/cover.png` 为最终 MP4 的第 0 帧；检查 1080×1920、360×640 手机缩图和 3:4 中心裁剪。",
+      "note": "原项目记录快照；内部相对路径相对原项目或该原记录文件，本次未重新执行其中的历史QA。"
+    },
+    {
+      "path": "SOURCES.md",
+      "sha256": "f58a09e9c1f5f5a1188fa670c54ac0a1bce2c9db39f415e0aa861334bf3d8586",
+      "excerpt": "## 2002｜Complicated\n\n- YouTube：选用 Avril Lavigne 官方频道 MV：<https://www.youtube.com/watch?v=5NPBIwQyPWE>。\n- B站：官方 Sony Music China 备选：<https://www.bilibili.com/video/BV1fJ411j7gr>。\n- 决策：两边均有官方 MV；选 YouTube 官方源，画面完整、无第三方角标。",
+      "note": "原项目记录快照；内部相对路径相对原项目或该原记录文件，本次未重新执行其中的历史QA。"
+    },
+    {
+      "path": "qa/cover-clean/README.md",
+      "sha256": "a1d1ad76e1184978ef85fff1378d34ef6282e89346f0ae9c3109665154d77fb6",
+      "excerpt": "# 艾薇儿封面精简\n\n用户要求：\"中间这一段早期公开镜头，和你的设计不太搭，直接去掉吧，让封面更纯粹，现在还为这个额外切换了一次画面，观感很差。\"\n\n本轮删除 `archive-proof` 小窗及附带文字、样式和入退场动画，同时删除 `cover-art` 在 2.4 秒淡出、15.32 秒恢复的动画。开场连续保持上一轮已采用的 imagegen 人像和标题，直到原定的第一章入点；主视觉、标题及配色均不重新设计。本轮没有重新调用生图模型，采用的生成图与原提示词保持不变。\n\n原始素材 `assets/archive-1999-clean.mp4` 留作来源记录，不再被 index.html 使用。其余章节 DOM 与修改前逐项一致。原旁白、整条音轨、素材、时间轴、项目清单、发布文案均保持不变。JOJO 项目没有修改。\n\n仅重新渲染前 721 帧（24.033333333 秒），于原视频关键帧接回正文，复制原 AAC 音轨。帧数、全片视频时间戳、AAC 包完全相同；封面后的完整 H264 图像数据及边界/正文/尾帧解码结果完全一致。详见 `stream-preservation.json` 和 `source-preservation.json`。\n\n前版 SHA-256：`c53e228ff13ba99e4c93e36cac3f6f18fbc7b8e34481e029db876856065a7216`。\n当前 SHA-256：`e9e6064c798108df5bf9e1fb17567e40e63967eb6f0f1f15f01990b7fc01d8c0`。\n\n视觉检查：已实际查看 3.7、8、15.5、23.8 秒的最终成片抽帧，均为连续人像封面；拼图见 `continuity.png`。HyperFrames 0.6.69 lint 0 errors；validate 0 errors，保留既有隐藏章节对比度提示；inspect 在 0、3.7、10、15.5、23.9、24.033 秒均无布局问题。未把 agent 观察记为 human 批准。\n\nPROJECT 继续使用原 CTA 历史版本 pin 的 `qa/cover-authoring-manifest.json`，原 project-manifest.json 不变。PROJECT 与 PUBLISHING 已通过。中央 FINAL 结果见 `final-qa.log`，当前 hash 绑定结果为 `../final-video-qa.json`。\n\n## 最终验收\n\nPROJECT PASS；PUBLISHING PASS；中央 FINAL PASS。\n\nFINAL VIDEO QA: PASS final=renders/avril-lavigne-music-chronicle.mp4 sha256=e9e6064c798108df5bf9e1fb17567e40e63967eb6f0f1f15f01990b7fc01d8c0 duration=328.000s codec=h264 I=-15.06LUFS TP=-2.43dBTP audio_sdr=27.66dB advisories=23",
+      "note": "原项目记录快照；内部相对路径相对原项目或该原记录文件，本次未重新执行其中的历史QA。"
+    }
+  ],
+  "archive_check": {
+    "reviewer_kind": "agent",
+    "reviewer": "Codex",
+    "reviewed_on": "2026-09-11",
+    "files_copied_byte_for_byte": [
+      "cover.png",
+      "artwork.png",
+      "prompt.txt",
+      "inputs/avril.png"
+    ],
+    "cover_equal_to_original_project_files": [
+      "qa/cover-clean/cover.png",
+      "qa/cover-clean/at-0s.png",
+      "qa/final-frames/00-cover.png"
+    ],
+    "visually_inspected": [
+      "cover.png",
+      "artwork.png",
+      "mobile-preview.png"
+    ],
+    "scope": "本地归档、定稿版本对应、文件尺寸与哈希核对；未重新生图、重渲视频或执行整片QA。",
+    "limitations": [
+      "来源与历史QA来自原项目记录，本次未重新核验在线来源或视频。",
+      "未留存精确生成时刻与可核实模型版本，不作推测。",
+      "用户指定入选不代表播放表现、真人听审或发布验收。"
+    ],
+    "observation": "姓名、主题句与演唱主体清楚，面部和麦克风可见，文字未压脸；中央3:4裁剪后顶部年代行余量较小、字号小，仅作辅助信息。"
+  }
+}

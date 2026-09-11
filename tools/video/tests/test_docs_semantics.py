@@ -53,6 +53,7 @@ REQUIRED_CLIS = (
     VIDEO_ROOT / "verify_final_video.py",
     VIDEO_ROOT / "showcase_align.py",
     VIDEO_ROOT / "yt_dlp_readonly.py",
+    VIDEO_ROOT / "check_source_access.py",
 )
 
 SHARED_PYTHON_TEMPLATES = (
