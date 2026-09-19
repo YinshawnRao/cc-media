@@ -80,7 +80,10 @@ def _media_duration(path: Path) -> float | None:
     return duration if math.isfinite(duration) and duration > 0 else None
 
 
-def _transcribe_long_source(model: Any, path: Path, language: str) -> dict[str, Any]:
+def _transcribe_long_source(
+    model: Any, path: Path, language: str,
+    chapter_windows: list[dict[str, float]] | None = None,
+) -> dict[str, Any]:
     """Transcribe long musical programs in overlapping fixed windows.
 
     Whisper's free-running timestamp seek can jump across speech after long sung
@@ -96,8 +99,18 @@ def _transcribe_long_source(model: Any, path: Path, language: str) -> dict[str, 
     step_samples = int(WINDOW_STEP_SECONDS * SAMPLE_RATE)
     window_samples = int(WINDOW_SECONDS * SAMPLE_RATE)
     raw_segments: list[dict[str, Any]] = []
-    for start_sample in range(0, len(audio), step_samples):
-        end_sample = min(len(audio), start_sample + window_samples)
+    windows = [
+        (start, min(len(audio), start + window_samples), False)
+        for start in range(0, len(audio), step_samples)
+    ]
+    for row in chapter_windows or []:
+        if row["end_sec"] > total_seconds + 0.001:
+            raise ValueError("chapter window extends beyond decoded source")
+        windows.append((
+            round(row["start_sec"] * SAMPLE_RATE),
+            min(len(audio), round(row["end_sec"] * SAMPLE_RATE)), True,
+        ))
+    for start_sample, end_sample, supplemental in windows:
         start_sec = start_sample / SAMPLE_RATE
         transcript = model.transcribe(
             audio[start_sample:end_sample],
@@ -116,7 +129,11 @@ def _transcribe_long_source(model: Any, path: Path, language: str) -> dict[str, 
                 {
                     **raw,
                     "start": start_sec + local_start,
-                    "end": min(total_seconds, start_sec + local_end),
+                    "end": min(
+                        end_sample / SAMPLE_RATE if supplemental else total_seconds,
+                        start_sec + local_end,
+                    ),
+                    "_chapter_window": supplemental,
                 }
             )
     raw_segments.sort(key=lambda row: (float(row["start"]), float(row["end"]), str(row.get("text", ""))))
@@ -130,6 +147,10 @@ def _transcribe_long_source(model: Any, path: Path, language: str) -> dict[str, 
             existing_end = float(existing["end"])
             if existing_end < candidate_start - WINDOW_SECONDS:
                 break
+            # Do not discard a chapter-bounded decode in favor of an equal
+            # string whose music-window timestamps cross the chapter edge.
+            if candidate.get("_chapter_window") or existing.get("_chapter_window"):
+                continue
             if str(existing.get("text", "")).strip() != candidate_text:
                 continue
             overlap = min(existing_end, candidate_end) - max(float(existing["start"]), candidate_start)
@@ -269,8 +290,28 @@ def run(
         if not path.is_file():
             raise ValueError(f"jobs[{job_index}].path is not a file")
         seen_ids.add(job_id)
+        chapter_windows = raw.get("chapter_windows")
+        if chapter_windows is not None:
+            if not isinstance(chapter_windows, list) or not chapter_windows:
+                raise ValueError("chapter_windows must be a non-empty array")
+            previous_end = -1.0
+            for row in chapter_windows:
+                if not isinstance(row, dict) or set(row) != {"start_sec", "end_sec"}:
+                    raise ValueError("chapter window must contain only start_sec/end_sec")
+                start = _finite_number(row["start_sec"], "chapter_window.start_sec")
+                end = _finite_number(row["end_sec"], "chapter_window.end_sec")
+                duration = end - start
+                # Decimal chapter bounds can subtract to just over 20 seconds.
+                too_long = duration > WINDOW_SECONDS and not math.isclose(
+                    duration, WINDOW_SECONDS, rel_tol=0.0, abs_tol=1e-9,
+                )
+                if start < 0 or start < previous_end or duration <= 0 or too_long:
+                    raise ValueError("chapter windows must be ordered, non-overlapping and at most 20 seconds")
+                previous_end = end
         source_duration = _media_duration(path)
-        if source_duration is not None and source_duration > LONG_AUDIO_THRESHOLD_SECONDS:
+        if chapter_windows is not None:
+            transcript = _transcribe_long_source(model, path, language, chapter_windows)
+        elif source_duration is not None and source_duration > LONG_AUDIO_THRESHOLD_SECONDS:
             transcript = _transcribe_long_source(model, path, language)
         else:
             transcript = model.transcribe(str(path), **_transcribe_options(language))

@@ -998,6 +998,22 @@ def validate_live_asr_identity(receipt: Any, label: str) -> dict[str, Any]:
     return row
 
 
+def narration_chapter_windows(expectations: dict[str, dict[str, Any]]) -> list[dict[str, float]]:
+    """Derive text-free supplemental decoding windows from verified chapters.
+
+    Keep the whole-final pass; these bounded views prevent a short narration
+    after music from being swallowed by an overlapping music-heavy window.
+    """
+    bounds = sorted({
+        (float(row["chapter_start_sec"]), float(row["chapter_end_sec"]))
+        for row in expectations.values()
+    })
+    return [
+        {"start_sec": start, "end_sec": min(end, start + 20.0)}
+        for start, end in bounds
+    ]
+
+
 def validate_asr_evidence(
     project: Path,
     value: Any,
@@ -1026,6 +1042,10 @@ def validate_asr_evidence(
         }
         if kind == "final_aac_asr":
             expected_parameters["audio_stream"] = "0:a:0"
+            # Legacy receipts retain their original fixed-window contract.
+            # New receipts may add only these independently derived windows.
+            if "chapter_windows" in parameters:
+                expected_parameters["chapter_windows"] = narration_chapter_windows(expectations)
         if parameters != expected_parameters:
             fail(f"{label}.parameters must equal the fixed offline ASR contract")
         sources_raw = require_list(row.get("sources"), f"{label}.sources")
@@ -1354,6 +1374,9 @@ class MediaTools:
                 for declared, source in zip(declared_sources, sources)
             ],
         }
+        if kind == "final_aac_asr" and "chapter_windows" in parameters:
+            for job in request["jobs"]:
+                job["chapter_windows"] = parameters["chapter_windows"]
         timeout_seconds = min(
             OFFLINE_ASR_TIMEOUT_MAX_SECONDS,
             max(OFFLINE_ASR_TIMEOUT_PER_JOB_SECONDS, len(sources) * OFFLINE_ASR_TIMEOUT_PER_JOB_SECONDS),

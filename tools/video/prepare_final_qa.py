@@ -1142,6 +1142,7 @@ def main(argv: list[str] | None = None) -> int:
         "model": "small",
         "language": "zh",
         "audio_stream": "0:a:0",
+        "chapter_windows": gate.narration_chapter_windows(runtime_expectations),
     }
     isolated_parameters = {
         "engine": "openai-whisper",

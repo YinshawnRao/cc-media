@@ -906,6 +906,110 @@ class FinalVideoGateUnitTests(unittest.TestCase):
         self.assertEqual(9, model.calls)
         self.assertEqual([], result["segments"])
 
+    def test_chapter_decode_recovers_narration_at_music_window_boundary(self) -> None:
+        from tools.video import prepare_final_qa
+
+        class SyntheticModel:
+            def transcribe(self, audio, **options):
+                # No expected text or changed model options enter the decoder.
+                self_test.assertEqual(options, offline_asr._transcribe_options("zh"))
+                if audio[0] == 53500:
+                    return {"segments": [{"start": 0.0, "end": 5.96, "text": "结尾旁白"}]}
+                if audio[0] == 53410:
+                    self_test.assertEqual(680, len(audio))
+                    return {"segments": [{"start": 0.36, "end": 6.30, "text": "结尾旁白"}]}
+                return {"segments": []}
+
+        self_test = self
+        fake_audio = types.ModuleType("whisper.audio")
+        fake_audio.SAMPLE_RATE = 100
+        fake_audio.load_audio = lambda _path: list(range(54600))
+        with mock.patch.dict(sys.modules, {"whisper.audio": fake_audio}):
+            result = offline_asr._transcribe_long_source(
+                SyntheticModel(), Path("final.mp4"), "zh",
+                [{"start_sec": 534.1, "end_sec": 540.9}],
+            )
+        # The ordinary whole-final evidence remains, including its bad edge.
+        self.assertEqual(2, len(result["segments"]))
+        bounded = [r for r in result["segments"] if r["start"] >= 534.05 and r["end"] <= 540.95]
+        self.assertEqual(1, len(bounded))
+        self.assertAlmostEqual(534.46, bounded[0]["start"])
+        self.assertAlmostEqual(540.4, bounded[0]["end"])
+        assertion, report = prepare_final_qa.assertion_for(
+            {"id": "outro", "chapter_id": "outro", "expected_text": "结尾旁白"},
+            [{**bounded[0], "id": "final:000000"}],
+        )
+        self.assertEqual("exact", assertion["disposition"])
+        self.assertFalse(report["needs_human_review"])
+
+    def test_chapter_windows_cannot_extend_past_decoded_media(self) -> None:
+        fake_audio = types.ModuleType("whisper.audio")
+        fake_audio.SAMPLE_RATE = 1
+        fake_audio.load_audio = lambda _path: [0] * 5
+        with mock.patch.dict(sys.modules, {"whisper.audio": fake_audio}):
+            with self.assertRaisesRegex(ValueError, "beyond decoded source"):
+                offline_asr._transcribe_long_source(
+                    object(), Path("final.mp4"), "zh", [{"start_sec": 1.0, "end_sec": 6.0}],
+                )
+
+    def test_offline_asr_chapter_window_limit_tolerates_only_float_roundoff(self) -> None:
+        windows = gate.narration_chapter_windows({
+            "narration": {"chapter_start_sec": 124.3, "chapter_end_sec": 160.0},
+        })
+        self.assertGreater(windows[0]["end_sec"] - windows[0]["start_sec"], 20.0)
+        with tempfile.TemporaryDirectory() as temporary:
+            source = Path(temporary) / "final.mp4"
+            source.write_bytes(b"synthetic media")
+            model = object()
+
+            def run(chapters):
+                return offline_asr.run(
+                    {"model": "small", "language": "zh", "jobs": [{
+                        "id": "final", "path": str(source), "chapter_windows": chapters,
+                    }]},
+                    identity_loader=lambda _: {},
+                    model_loader=lambda _: model,
+                )
+
+            with (
+                mock.patch.object(offline_asr, "_media_duration", return_value=200.0),
+                mock.patch.object(offline_asr, "_transcribe_long_source",
+                                  return_value={"text": "", "segments": []}) as transcribe,
+            ):
+                run(windows)
+                transcribe.assert_called_once_with(model, source, "zh", windows)
+                for invalid in (
+                    [{"start_sec": 124.3, "end_sec": 144.300001}],
+                    [{"start_sec": 124.3, "end_sec": 124.3}],
+                    [{"start_sec": 124.3, "end_sec": 124.2}],
+                    [{"start_sec": -0.1, "end_sec": 1.0}],
+                    [{"start_sec": 124.3, "end_sec": 144.3},
+                     {"start_sec": 144.299999, "end_sec": 150.0}],
+                ):
+                    with self.subTest(invalid=invalid):
+                        transcribe.reset_mock()
+                        with self.assertRaisesRegex(ValueError, "ordered, non-overlapping"):
+                            run(invalid)
+                        transcribe.assert_not_called()
+
+    def test_chapter_windows_are_derived_from_verified_chapters(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            fixture = self.make_fixture(temporary)
+            parameters = fixture.manifest["asr_evidence"]["final_aac_asr"]["parameters"]
+            parameters["chapter_windows"] = [{"start_sec": 0.0, "end_sec": 2.0}]
+            fixture.write_manifest()
+            gate.verify_project(fixture.project, tools=FakeMediaTools())
+            for invalid in (
+                [{"start_sec": 0.1, "end_sec": 2.0}], [],
+                [{"start_sec": 0.0, "end_sec": 2.1}],
+                [{"start_sec": 0.0, "end_sec": 2.0, "text": "你好"}],
+            ):
+                with self.subTest(invalid=invalid):
+                    parameters["chapter_windows"] = invalid
+                    fixture.write_manifest()
+                    with self.assertRaisesRegex(gate.GateFailure, "fixed offline ASR contract"):
+                        gate.verify_project(fixture.project, tools=FakeMediaTools())
+
     def test_live_asr_receipt_rejects_replaced_checkpoint_or_distribution(self) -> None:
         receipt = fake_live_receipt([], {"language": "zh"}, "isolated_narration_asr")
         for field, replacement in (
