@@ -40,12 +40,14 @@
 
 ## 运行
 
-从仓库根目录执行：
+从仓库根目录执行；模型和 Python 环境均位于本仓 `tools/tts/`，安装与校验见 [中央 TTS 环境说明](../../README.md#环境与恢复)。
+
+先执行 `python3 tools/tts/metal_preflight.py`，通过后运行：
 
 ```bash
 python3 tools/tts/research/qwen-standard-refresh-20-lab/src/isolation_guard.py capture
 
-../local-anime-avatar-workflow/work/venvs/poc-a-mlx-audio/bin/python \
+tools/tts/qwen.venv/bin/python \
   tools/tts/research/qwen-standard-refresh-20-lab/src/generate_samples.py --sample all
 
 python3 tools/tts/research/qwen-standard-refresh-20-lab/src/build_listen_page.py

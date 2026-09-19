@@ -22,7 +22,7 @@
 - VoiceDesign 可以用自然语言直接描述“元气萌妹、傲娇吐槽、清冷学姐、热血少年”等原创声线。
 - 官方推荐的“VoiceDesign 先做短母带，再交给 Base 克隆”能避免逐句重新设计造成音色漂移。
 - Qwen3-TTS 支持中文、英文、日文、韩文等 10 种语言；首轮另有混合文字样音。
-- 当前 Apple Silicon 机器已有参考项目固定的 MLX 8-bit 权重和隔离环境，本实验只读复用，不重复占用约 5GB 模型空间。
+- 当前 Apple Silicon 机器使用本仓 `tools/tts/models/` 下固定的 MLX 8-bit 权重和 `tools/tts/qwen.venv/` 隔离环境，各实验共用本仓模型。
 - 生成过程强制使用本地模型路径和 Hugging Face/Transformers 离线开关，不会静默回退云服务。
 
 ## 目录
@@ -52,11 +52,11 @@ qa/
 
 ## 本机首轮命令
 
-以下命令从仓库根目录执行。模型和 venv 默认从同级参考项目 `../local-anime-avatar-workflow` 只读复用，也可用环境变量覆盖。
+以下命令从仓库根目录执行。模型固定存放在 `tools/tts/models/qwen3-tts/`，Python 使用 `tools/tts/qwen.venv/bin/python`。本实验不依赖其他仓库；安装与校验见 [中央 TTS 环境说明](../../README.md#环境与恢复)。
 
 ```bash
 # 1. Qwen VoiceDesign + Base（需要本机 Metal；沙箱环境要在获批的本地进程中运行）
-../local-anime-avatar-workflow/work/venvs/poc-a-mlx-audio/bin/python \
+tools/tts/qwen.venv/bin/python \
   tools/tts/research/qwen-character-voice-lab/src/generate_qwen_samples.py
 
 # 2. 当前项目 Kokoro 的 8 音色公平基线

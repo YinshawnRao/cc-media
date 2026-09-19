@@ -111,6 +111,12 @@ class VoiceResolverTests(unittest.TestCase):
             "CV015",
             "CV016",
             "CV017",
+            "CV018",
+            "CV019",
+            "CV020",
+            "CV021",
+            "CV022",
+            "CV023",
         ):
             with self.subTest(voice_id=voice_id):
                 voice = self.registry.by_id(voice_id)
@@ -334,20 +340,20 @@ class VoiceAssetTests(unittest.TestCase):
     def test_ids_are_stable_and_random_pool_exists(self) -> None:
         self.assertEqual(
             [voice["id"] for voice in self.registry.voices],
-            [f"CV{i:03d}" for i in range(1, 18)],
+            [f"CV{i:03d}" for i in range(1, 24)],
         )
         self.assertEqual(self.registry.preflight_id, "CV002")
         expected_pool = [
             "CV012",
             "CV013",
-            "CV014",
             "CV015",
-            "CV016",
+            "CV022",
+            "CV023",
             "CV002",
-            "CV003",
-            "CV008",
-            "CV009",
-            "CV017",
+            "CV018",
+            "CV019",
+            "CV020",
+            "CV021",
         ]
         self.assertEqual(self.registry.decision_pool_ids, expected_pool)
         self.assertEqual(self.registry.random_pool_ids, expected_pool)
@@ -735,14 +741,14 @@ class WorkspacePolicyTests(unittest.TestCase):
         expected_pool = [
             "CV012",
             "CV013",
-            "CV014",
             "CV015",
-            "CV016",
+            "CV022",
+            "CV023",
             "CV002",
-            "CV003",
-            "CV008",
-            "CV009",
-            "CV017",
+            "CV018",
+            "CV019",
+            "CV020",
+            "CV021",
         ]
         self.assertEqual(expected_pool, registry.config["decision_voice_pool"])
         self.assertEqual(expected_pool, registry.config["random_voice_pool"])

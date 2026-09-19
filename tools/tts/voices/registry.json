@@ -371,6 +371,144 @@
         "ranking": "CV017-storybook-lilt/examples/ranking.wav",
         "mixed_language": "CV017-storybook-lilt/examples/mixed-language.wav"
       }
+    },
+    {
+      "id": "CV018",
+      "slug": "amber-pulse",
+      "legacy_persona_id": "gx_f01_amber_pulse",
+      "name": "琥珀脉冲",
+      "group": "female",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["琥珀脉冲女声", "琥珀女声", "GX-F01", "amber-pulse", "amber_pulse", "gx_f01_amber_pulse"],
+      "description": "明亮有弹性、语速偏快，关键词带短促喜悦脉冲的成年女声。",
+      "decision_profile": {
+        "emotion_tags": ["明亮", "弹性", "喜悦", "轻快", "推动"],
+        "best_for": ["高能盘点", "明快开场", "流行活力", "欢乐回忆", "轻快短评"],
+        "avoid_for": ["沉重纪实", "阴郁悬疑", "庄重悼念"]
+      },
+      "reference_audio": "CV018-amber-pulse/reference.wav",
+      "reference_sha256": "951022810373bbe63ac04edc80626cd36f89dae27adb653b0967a3ba237f9988",
+      "reference_text": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
+      "examples": {
+        "ranking": "CV018-amber-pulse/examples/ranking.wav",
+        "mixed_language": "CV018-amber-pulse/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV019",
+      "slug": "sugar-riot",
+      "legacy_persona_id": "gx_f03_sugar_riot",
+      "name": "糖核暴动",
+      "group": "female",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["糖核暴动女声", "糖核女声", "GX-F03", "sugar-riot", "sugar_riot", "gx_f03_sugar_riot"],
+      "description": "中高音偏亮、节奏密集，带电子流行颗粒跳动的年轻成年女声。",
+      "decision_profile": {
+        "emotion_tags": ["超快", "甜感", "电子感", "年轻", "高能"],
+        "best_for": ["电子流行", "高能热榜", "年轻潮流", "节奏型盘点", "明快短评"],
+        "avoid_for": ["庄重历史", "沉痛人物", "缓慢纪实"]
+      },
+      "reference_audio": "CV019-sugar-riot/reference.wav",
+      "reference_sha256": "606890bc55a647057ae305a34be35b49b9013a1f264dd512f4d423e55a6686e6",
+      "reference_text": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
+      "examples": {
+        "ranking": "CV019-sugar-riot/examples/ranking.wav",
+        "mixed_language": "CV019-sugar-riot/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV020",
+      "slug": "war-correspondent",
+      "legacy_persona_id": "gx_f21_war_correspondent",
+      "name": "战地通讯",
+      "group": "female",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["战地通讯女声", "现场通讯女声", "GX-F21", "war-correspondent", "war_correspondent", "gx_f21_war_correspondent"],
+      "description": "中音结实、节奏紧迫克制，带极轻砂感的现场通讯女声。",
+      "decision_profile": {
+        "emotion_tags": ["紧迫", "克制", "现场", "砂感", "纪实"],
+        "best_for": ["调查叙事", "现场纪实", "社会事件", "紧张推进", "人物命运"],
+        "avoid_for": ["甜美偶像", "童话绘本", "轻松卖萌"]
+      },
+      "reference_audio": "CV020-war-correspondent/reference.wav",
+      "reference_sha256": "2e031e9568583f1d8fdbd739eb129253a98a1970f237871fcb0d81425018e7e1",
+      "reference_text": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
+      "examples": {
+        "ranking": "CV020-war-correspondent/examples/ranking.wav",
+        "mixed_language": "CV020-war-correspondent/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV021",
+      "slug": "bored-genius",
+      "legacy_persona_id": "gx_f47_bored_genius",
+      "name": "无聊天才",
+      "group": "female",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["无聊天才女声", "冷面天才女声", "GX-F47", "bored-genius", "bored_genius", "gx_f47_bored_genius"],
+      "description": "中音平直、情绪低抬，靠反差落下笑点的冷面智性女声。",
+      "decision_profile": {
+        "emotion_tags": ["冷面", "智性", "平直", "反差", "克制"],
+        "best_for": ["冷面吐槽", "智性盘点", "反差短评", "怪趣知识", "克制幽默"],
+        "avoid_for": ["热血动员", "纯治愈", "煽情回忆"]
+      },
+      "reference_audio": "CV021-bored-genius/reference.wav",
+      "reference_sha256": "6b9ecd73eb67701e0f56d3d05186a3b72de26042146043810a9f86cc69335d07",
+      "reference_text": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
+      "examples": {
+        "ranking": "CV021-bored-genius/examples/ranking.wav",
+        "mixed_language": "CV021-bored-genius/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV022",
+      "slug": "sunrise-dj",
+      "legacy_persona_id": "gx_m05_sunrise_dj",
+      "name": "日出电台",
+      "group": "male",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["日出电台男声", "晨间电台男声", "GX-M05", "sunrise-dj", "sunrise_dj", "gx_m05_sunrise_dj"],
+      "description": "中音偏暖偏亮、稳中带推，适合轻松盘点的晨间电台男声。",
+      "decision_profile": {
+        "emotion_tags": ["温暖", "明亮", "推动", "轻松", "亲和"],
+        "best_for": ["轻松盘点", "晨间活力", "流行回顾", "明快短评", "日常陪伴"],
+        "avoid_for": ["沉重沧桑", "阴暗悬疑", "庄重悼念"]
+      },
+      "reference_audio": "CV022-sunrise-dj/reference.wav",
+      "reference_sha256": "038f5f1cc064de31b04319020e0977eb76061d21722e49b15c6173a475232052",
+      "reference_text": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
+      "examples": {
+        "ranking": "CV022-sunrise-dj/examples/ranking.wav",
+        "mixed_language": "CV022-sunrise-dj/examples/mixed-language.wav"
+      }
+    },
+    {
+      "id": "CV023",
+      "slug": "glass-tenor",
+      "legacy_persona_id": "gx_m38_glass_tenor",
+      "name": "玻璃男高",
+      "group": "male",
+      "engine": "qwen3-tts-base-mlx",
+      "enabled": true,
+      "aliases": ["玻璃男高音", "清透男高", "GX-M38", "glass-tenor", "glass_tenor", "gx_m38_glass_tenor"],
+      "description": "音区偏高而清、薄而稳定，带玻璃质感的成年男声。",
+      "decision_profile": {
+        "emotion_tags": ["清透", "偏高", "薄", "现代", "稳定"],
+        "best_for": ["清透现代", "先锋审美", "轻盈流行", "未来感作品", "细腻短评"],
+        "avoid_for": ["厚重历史", "粗粝摇滚", "沧桑纪实"]
+      },
+      "reference_audio": "CV023-glass-tenor/reference.wav",
+      "reference_sha256": "0a6a07446adfc5d266c9eed8d6223f302de6ae4cb290e3c2c42d768cba267467",
+      "reference_text": "你好，这是一个全新的原创声音。请听听它是否自然、清楚，也适合长时间讲故事。",
+      "examples": {
+        "ranking": "CV023-glass-tenor/examples/ranking.wav",
+        "mixed_language": "CV023-glass-tenor/examples/mixed-language.wav"
+      }
     }
   ]
 }

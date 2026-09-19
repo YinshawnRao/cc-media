@@ -16,13 +16,13 @@
     "voice_design": {
       "id": "mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit",
       "revision": "f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
-      "default_path": "../local-anime-avatar-workflow/models/qwen3-tts/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit@f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
+      "default_path": "tools/tts/models/qwen3-tts/Qwen3-TTS-12Hz-1.7B-VoiceDesign-8bit@f90d617701d9f7f4ca499291e0b57f2b3c2fd2ee",
       "path_env": "QWEN_VOICE_DESIGN_MODEL"
     },
     "base_clone": {
       "id": "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-8bit",
       "revision": "50f45ef0047cde7e84c2ef04326acb8ada2436a7",
-      "default_path": "../local-anime-avatar-workflow/models/qwen3-tts/Qwen3-TTS-12Hz-0.6B-Base-8bit@50f45ef0047cde7e84c2ef04326acb8ada2436a7",
+      "default_path": "tools/tts/models/qwen3-tts/Qwen3-TTS-12Hz-0.6B-Base-8bit@50f45ef0047cde7e84c2ef04326acb8ada2436a7",
       "path_env": "QWEN_BASE_MODEL"
     }
   },

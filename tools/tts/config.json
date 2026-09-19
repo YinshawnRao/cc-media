@@ -1,10 +1,20 @@
 {
   "schema_version": "1.3.0",
   "preflight_voice_id": "CV002",
-  "decision_voice_pool": ["CV012", "CV013", "CV014", "CV015", "CV016", "CV002", "CV003", "CV008", "CV009", "CV017"],
-  "random_voice_pool": ["CV012", "CV013", "CV014", "CV015", "CV016", "CV002", "CV003", "CV008", "CV009", "CV017"],
+  "decision_voice_pool": ["CV012", "CV013", "CV015", "CV022", "CV023", "CV002", "CV018", "CV019", "CV020", "CV021"],
+  "random_voice_pool": ["CV012", "CV013", "CV015", "CV022", "CV023", "CV002", "CV018", "CV019", "CV020", "CV021"],
   "decision_pool_expected_groups": {"male": 5, "female": 5},
   "compatible_selection_hashes": [
+    {
+      "config_sha256": "622894c58ed352faf9bac8212dc78ac47ddebb63e360232c79b08bed3eec86eb",
+      "registry_sha256": "d560ad3ef3ab3f27b216894e16f4c305994ed7db879c132c5b861e28bee2eecd",
+      "schema_versions": ["1.0.0", "1.1.0", "1.2.0"]
+    },
+    {
+      "config_sha256": "8f413ee49a90ccb133832ab79ab828f9908e86537484b574816011e874031962",
+      "registry_sha256": "d560ad3ef3ab3f27b216894e16f4c305994ed7db879c132c5b861e28bee2eecd",
+      "schema_versions": ["1.0.0", "1.1.0", "1.2.0"]
+    },
     {
       "config_sha256": "dc36fdd8696b3f629ebd889891fdcc26dae534d7c5b70c57682d2270a1cddd42",
       "registry_sha256": "40869930590f37bcf0e6ab2852557a569f0c817ce9a2f06ad6303302b0356454",
@@ -37,8 +47,7 @@
     "offline_required": true,
     "qwen_python_env": "CC_MEDIA_QWEN_PYTHON",
     "qwen_python_candidates": [
-      "qwen.venv/bin/python",
-      "../../../local-anime-avatar-workflow/work/venvs/poc-a-mlx-audio/bin/python"
+      "qwen.venv/bin/python"
     ],
     "kokoro_python_env": "CC_MEDIA_KOKORO_PYTHON",
     "kokoro_python_candidates": [
@@ -49,8 +58,7 @@
       "QWEN_BASE_MODEL"
     ],
     "qwen_base_model_candidates": [
-      "models/qwen3-tts/Qwen3-TTS-12Hz-0.6B-Base-8bit@50f45ef0047cde7e84c2ef04326acb8ada2436a7",
-      "../../../local-anime-avatar-workflow/models/qwen3-tts/Qwen3-TTS-12Hz-0.6B-Base-8bit@50f45ef0047cde7e84c2ef04326acb8ada2436a7"
+      "models/qwen3-tts/Qwen3-TTS-12Hz-0.6B-Base-8bit@50f45ef0047cde7e84c2ef04326acb8ada2436a7"
     ]
   },
   "qwen_base": {

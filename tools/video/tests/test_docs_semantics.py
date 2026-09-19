@@ -85,14 +85,14 @@ class WorkflowIntegrationTests(unittest.TestCase):
         pool = [
             "CV012",
             "CV013",
-            "CV014",
             "CV015",
-            "CV016",
+            "CV022",
+            "CV023",
             "CV002",
-            "CV003",
-            "CV008",
-            "CV009",
-            "CV017",
+            "CV018",
+            "CV019",
+            "CV020",
+            "CV021",
         ]
         self.assertEqual("CV002", config["preflight_voice_id"])
         self.assertEqual(pool, config["decision_voice_pool"])

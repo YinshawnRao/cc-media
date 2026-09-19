@@ -23,12 +23,12 @@
 
 ## 生成
 
-从仓库根目录执行。必须先得到 `QWEN METAL PREFLIGHT: PASS`；失败时不要 import MLX，应换到有 Metal 权限的本地终端重跑。
+从仓库根目录执行。模型和 Python 环境均位于本仓 `tools/tts/`，安装与校验见 [中央 TTS 环境说明](../../README.md#环境与恢复)。必须先得到 `QWEN METAL PREFLIGHT: PASS`；失败时不要 import MLX，应换到有 Metal 权限的本地终端重跑。
 
 ```bash
 python3 tools/tts/metal_preflight.py
 
-../local-anime-avatar-workflow/work/venvs/poc-a-mlx-audio/bin/python \
+tools/tts/qwen.venv/bin/python \
   tools/tts/research/qwen-voice-expansion-lab/src/generate_samples.py
 
 python3 tools/tts/research/qwen-voice-expansion-lab/src/build_listen_page.py
@@ -39,7 +39,7 @@ python3 tools/tts/research/qwen-voice-expansion-lab/src/build_listen_page.py
 只生成指定候选时，使用 persona ID：
 
 ```bash
-../local-anime-avatar-workflow/work/venvs/poc-a-mlx-audio/bin/python \
+tools/tts/qwen.venv/bin/python \
   tools/tts/research/qwen-voice-expansion-lab/src/generate_samples.py \
   --only film_fast_direct documentary_weathered
 ```
