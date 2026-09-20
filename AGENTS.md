@@ -30,6 +30,7 @@
 - 当前旁白使用 **Qwen3-TTS**：中央 `tools/tts/narrate.py` 调用固定 Qwen runtime、模型和预先制作的参考声音。需要新生成旁白时才解析一次 `voice-selection.json`、对已选声音运行 doctor；同一期共用选择。详见 [TTS](tools/tts/README.md)。不默认使用或自动降级到 Kokoro，不走 HyperFrames 内置 TTS。
 - 视频技能选择仓库内 [.agents/skills/hyperframes/SKILL.md](.agents/skills/hyperframes/SKILL.md)；CLI 与媒体能力也选其同目录版本。全局同名技能仅作可选技术参考，不引入另一套 TTS、画幅、审批或交付流程。技能路由见 [技能适配](tools/video/skill-routing.md)。
 - 新项目固定 `hyperframes@0.6.69`，已有项目使用自身 package scripts/lockfile 的精确版本。升级是独立兼容性工作。渲染字体离线可用。
+- yt-dlp 升级必须由用户主动明确发起；版本过旧提示、取材阻塞或一般制作/排障授权均不构成升级授权。具体边界见 [下载与 Cookie](tools/video/operations.md#下载与-cookie)。
 - 重 FFmpeg、ASR、HyperFrames 使用中央资源入口；多个 goal 持续推进，不添加跨项目等待锁。实现与故障处理见 [运行与恢复](tools/video/operations.md)。
 
 ## 文件与凭据边界

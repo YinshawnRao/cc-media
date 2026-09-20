@@ -241,6 +241,11 @@ def run_yt_dlp(
         temp_parent=temp_parent,
         expected_uid=expected_uid,
     ) as snapshot:
+        # 版本维护：来源检测、搜索和实际下载正常时沿用当前版本；
+        # “older than 90 days” 仅是版本年龄提醒，不据此升级或判定来源失败。
+        # 升级必须由用户主动明确发起；提醒、阻塞或一般制作/排障授权均不算。
+        # 未获该明确指令时，只诊断并报告，不自行升级，也不安装或试跑新版。
+        # 用户发起升级后，按 operations.md 检查依赖、隔离验证并保留回退条件。
         command = [
             executable,
             "--ignore-config",
