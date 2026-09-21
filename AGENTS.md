@@ -27,7 +27,7 @@
 - 有旁白的盘点、解说与主题叙事成片，结尾必须保留一句简短的点赞、收藏、关注引流配音，作为最后一句旁白；默认使用中央固定短句。只有用户明确要求才可替换或省略，并记录用户原话；“非排名”“去模板化”或主题问句不能作为自行取消的理由。文字浮层不替代真实配音，须纳入最终音轨 QA，详见 [结尾引流配音](CONVENTIONS.md#结尾引流配音)。
 - 素材默认双平台查找，先匹配歌手/表演版本，再优先可用官方 MV；两平台整体质量接近时优先 YouTube，按 [素材与画幅](CONVENTIONS.md#素材与画幅) 灵活比较实际音画与内容质量。用户指定 URL、排除平台或确认独占时使用 [来源例外](tools/video/README.md#来源记录与例外)，如实记录，禁止伪造“已搜索”。
 - 需要在线取材时，制作开始前必须执行 [来源启动检测](tools/video/README.md#来源启动检测)，默认检查 YouTube 和 B站的实际登录态与搜索访问。任一平台 Cookie 失效、明确风控/拦截或排除执行权限问题后仍不通，暂停本期制作并等待用户确认；不能自行降级成单平台继续。代理授权、沙箱或本机权限不足先恢复执行环境，不据此判定平台不通；制作中出现同类故障也执行此规则。
-- 当前旁白使用 **Qwen3-TTS**：中央 `tools/tts/narrate.py` 调用固定 Qwen runtime、模型和预先制作的参考声音。需要新生成旁白时才解析一次 `voice-selection.json`、对已选声音运行 doctor；同一期共用选择。详见 [TTS](tools/tts/README.md)。不默认使用或自动降级到 Kokoro，不走 HyperFrames 内置 TTS。
+- 当前旁白使用 **Qwen3-TTS**：中央 `tools/tts/narrate.py` 调用固定 Qwen runtime、模型和预先制作的参考声音。本次明确指定声线优先；任务明确是某个前作的第二期或续集，且前一期作品仍在本地、声线可核实时，沿用前一期声线；未明确续集关系或前一期已删除时按默认逻辑选声。需要新生成旁白时才解析一次 `voice-selection.json`、对已选声音运行 doctor；同一期共用选择。详见 [TTS](tools/tts/README.md)。不默认使用或自动降级到 Kokoro，不走 HyperFrames 内置 TTS。
 - 视频技能选择仓库内 [.agents/skills/hyperframes/SKILL.md](.agents/skills/hyperframes/SKILL.md)；CLI 与媒体能力也选其同目录版本。全局同名技能仅作可选技术参考，不引入另一套 TTS、画幅、审批或交付流程。技能路由见 [技能适配](tools/video/skill-routing.md)。
 - 新项目固定 `hyperframes@0.6.69`，已有项目使用自身 package scripts/lockfile 的精确版本。升级是独立兼容性工作。渲染字体离线可用。
 - yt-dlp 升级必须由用户主动明确发起；版本过旧提示、取材阻塞或一般制作/排障授权均不构成升级授权。具体边界见 [下载与 Cookie](tools/video/operations.md#下载与-cookie)。

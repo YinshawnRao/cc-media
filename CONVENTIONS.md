@@ -30,7 +30,7 @@
 
 ## 配音
 
-当前新旁白统一使用中央 `tools/tts/narrate.py` 的 **Qwen3-TTS** 能力，消费预先制作的参考声音。声音池、编号与决策画像分别以 `tools/tts/config.json`、`tools/tts/voices/registry.json` 为真源，不在规范重复列举。唯一精确指定优先；未唯一指定时由模型按作品情绪、叙事和节奏选择，低置信度才一次随机兜底。同一期选择固定，生成、检查和恢复见 [TTS README](tools/tts/README.md)。
+当前新旁白统一使用中央 `tools/tts/narrate.py` 的 **Qwen3-TTS** 能力，消费预先制作的参考声音。声音池、编号与决策画像分别以 `tools/tts/config.json`、`tools/tts/voices/registry.json` 为真源，不在规范重复列举。本次唯一精确指定优先；未指定时，任务明确是某个前作的第二期或续集，且前一期作品仍在本地、声线可核实，则沿用前一期声线。未明确续集关系、前一期已删除或声线无法核实时，仍由模型按作品情绪、叙事和节奏选择，低置信度才一次随机兜底；不能仅因歌手或主题相同就继承。同一期选择固定，生成、检查和恢复见 [TTS README](tools/tts/README.md)。
 
 只在生成新旁白时检查 TTS；复用历史 WAV 不自动换声。Kokoro 仅属显式历史复现路径，不是当前默认或故障降级方案。
 
