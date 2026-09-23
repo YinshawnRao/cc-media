@@ -58,11 +58,10 @@ tl.fromTo(
 );
 ```
 
-### 4. Lint and preview
+### 4. Lint
 
 ```bash
 hyperframes lint
-hyperframes preview
 ```
 
 ### 5. Customize

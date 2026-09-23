@@ -39,11 +39,10 @@ hyperframes add data-chart
 </div>
 ```
 
-### 3. Lint and preview
+### 3. Lint
 
 ```bash
 hyperframes lint
-hyperframes preview
 ```
 
 ### 4. Customize (optional)

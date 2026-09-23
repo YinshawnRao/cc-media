@@ -2,6 +2,8 @@
 
 编辑目标见 [CONVENTIONS](../../CONVENTIONS.md)，代理边界见 [AGENTS](../../AGENTS.md)。按实际任务执行；修代码或文档不启动 TTS/渲染。
 
+所有检测禁止启动浏览器或播放器，包括 `hyperframes preview`。
+
 ## 1. Brief 与准备
 
 记录主题、画幅、歌单/版本、是否排名、用户硬时长和明确偏好。新测试项目放 sandbox/<slug>/，正式产物放 production/<slug>/；设计简述写 design.md。新项目使用 schema v2，历史 v1 仅供复现。

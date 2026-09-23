@@ -5,7 +5,7 @@
 | 任务 | 仓库技能/工具 |
 | --- | --- |
 | HTML、时间线、素材布局 | [.agents/skills/hyperframes/SKILL.md](../../.agents/skills/hyperframes/SKILL.md) |
-| lint、预览、render | [hyperframes-cli](../../.agents/skills/hyperframes-cli/SKILL.md) |
+| lint、render | [hyperframes-cli](../../.agents/skills/hyperframes-cli/SKILL.md) |
 | 配音、ASR、其他媒体处理 | [hyperframes-media](../../.agents/skills/hyperframes-media/SKILL.md)，旁白固定 tools/tts/narrate.py 的 Qwen 能力 |
 | 特定动画 runtime | .agents/skills/ 下对应 gsap/animejs/waapi 等，只读取实际使用的一种 |
 | 用户明确要网站捕获或迁移 | 对应 website-to-hyperframes/remotion-to-hyperframes 技能 |
