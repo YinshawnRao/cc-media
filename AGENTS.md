@@ -16,7 +16,7 @@
 
 ## 测试与生产边界
 
-- `sandbox/` 下全部是内部测试产物，完整 MP4 和配套 `publishing/` 文案也属于测试交付，不代表公开发布。不纳入发布版权审核，不因预设版权风险阻断制作、索要发布授权或将可用 MV 降级为音源封面、静图。
+- `sandbox/` 下全部是内部测试产物，完整 MP4 以及按需生成的 `publishing/` 文案都属于测试交付，不代表公开发布。不纳入发布版权审核，不因预设版权风险阻断制作、索要发布授权或将可用 MV 降级为音源封面、静图。
 - `production/` 是正式产物与可复现工程的留存位置，进入版权、授权范围和公开发布风险核对流程。测试片需要公开发布时，先转入 production 发布流程；不能仅凭 sandbox 路径沿用测试免审规则。
 - 上述区分规定项目用途与验收范围，不声明素材已获授权。两类项目都保留真实来源、版本、凭据边界与技术 QA；具体执行见 [测试产物与生产产物](CONVENTIONS.md#测试产物与生产产物)。
 
@@ -37,16 +37,16 @@
 ## 文件与凭据边界
 
 - 测试单期放 `sandbox/<slug>/`；正式产物及其可复现工程放 `production/<slug>/`，按上述用途区分；复用源码、schema、模板放 `tools/`。
-- raw render 和最终 MP4 均放项目 `renders/`，最终文件为 `renders/<slug>.mp4`；配套文案为 `publishing/xiaohongshu.md`。
+- raw render 和最终 MP4 均放项目 `renders/`，最终文件为 `renders/<slug>.mp4`。新项目默认不创建 `publishing/`；用户明确要求小红书文案和标签时，才生成 `publishing/xiaohongshu.md`，成片后补充要求也按此处理。
 - `all_cookies.txt` 只由用户维护。代理只通过 `check_yt_cookie.py`、`yt_dlp_readonly.py`、`bili_search.py`、`bili_dl.py` 既定只读路径消费；禁止直接写入、chmod、touch、mv、cp、删除、过滤替换或安装。`filter_cookie_jar.py` 仅生成仓库外 candidate，由用户自行安装为 canonical。需要 Cookie 的 yt-dlp 一律经只读 wrapper，临时副本只由 wrapper 在仓库外管理。
 - 不输出 Cookie、header、原始 info JSON；不把凭据复制进项目或 Git。`check_source_access.py` 通过上述既定读者和 wrapper 编排只读检测。Cookie 不可用时先按来源启动检测暂停确认，用户明确同意后才用公开下载或备选平台继续制作。
 
 ## 完成与验收
 
-- 制作 brief 默认授权完成整片及发布文案。设计、试渲和 prompt expansion 是内部步骤；只有用户要求小样/阶段确认才停在预览。
-- 标准项目：构建前 PROJECT（有旁白时含 VOICE），mux 后 PUBLISHING 与中央 `prepare_final_qa.py` 的本地 FINAL。编辑例外也必须通过实际媒体、哈希、旁白绑定和展示边界检查。
+- 制作 brief 默认授权完成整片；发布文案和标签仅在用户明确要求时生成。设计、试渲和 prompt expansion 是内部步骤；只有用户要求小样/阶段确认才停在预览。
+- 标准项目：构建前 PROJECT（有旁白时含 VOICE），mux 后运行中央 `prepare_final_qa.py` 的本地 FINAL；仅生成发布文案时运行 PUBLISHING。编辑例外也必须通过实际媒体、哈希、旁白绑定和展示边界检查。
 - 封面另走独立 [封面审美评估](tools/video/cover-aesthetic-review.md)：实际查看图文合成、手机预览与最终首帧，按本期 brief 评估并单独记录；明显不符合预期时仅退回封面重做，保持其他内容，刷新受影响的技术 QA。审美结论与机械门禁分开报告，不以技术 PASS 代替审美通过。
 - 自由探索和 AI 音色 MV 使用各自受支持的 QA 路径；不伪造项目类型来套门禁。无旁白时 VOICE 标为不适用。
 - 抽帧实际查看，检查最终音频。检测覆盖范围与 agent/human 身份如实标注；只有用户明确要求公开发布/发布验收/可发布交付才启用 `--require-human-review`。
 - 失败先诊断、修复、重跑受影响步骤。来源启动检测要求暂停确认时，以及缺用户独占输入、必要权限/凭据或继续须改变核心 brief 时询问。REVIEW 按原因处理，已知检测能力限制不做无效换窗/换源循环。
-- 交付报告 MP4、文案、当前 SHA、适用门禁结果、独立封面审美结论及审阅者身份，以及实际影响成片的问题；不附加未经询问的发布建议或套话。
+- 交付报告 MP4、当前 SHA、适用门禁结果、独立封面审美结论及审阅者身份，以及实际影响成片的问题；仅生成发布文案时报告文案。不附加未经询问的发布建议或套话。

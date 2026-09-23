@@ -52,7 +52,7 @@ Run the separate [cover aesthetic review](../../../tools/video/cover-aesthetic-r
 
 Narration uses repository Qwen through tools/tts/narrate.py with the project selection. ASR uses central offline_asr/vocal_segments/QA. Do not call built-in TTS or choose another provider. Add narration captions only on explicit request.
 
-Use [hyperframes-cli](../hyperframes-cli/SKILL.md) for lint/render. Do not open a browser for checks. Render raw and final under renders/, post-mux master.wav, then run the applicable project/publishing/final gates.
+Use [hyperframes-cli](../hyperframes-cli/SKILL.md) for lint/render. Do not open a browser for checks. Render raw and final under renders/, post-mux master.wav, then run the applicable project/final gates. Generate publishing copy and run its gate only when the user explicitly requests it, including after video delivery.
 
 ## Technical references, on demand
 

@@ -19,8 +19,8 @@ sandbox/<slug>/
 ├── raw/                       # 本地 MV 视频，不进 git
 ├── audio/                     # 用户明确提供并复制进本项目的训练 WAV，不进 git
 ├── voice/                     # narrate.py 生成的 intro WAV + sidecar，不进 git
-├── renders/        # 一首一个 MP4，不进 git
-└── publishing/xiaohongshu.md  # 与 renders 并列的最终小红书文案
+├── renders/                   # 一首一个 MP4，不进 git
+└── publishing/xiaohongshu.md  # 仅用户要求时生成，可在成片后补充
 ```
 
 按 [Qwen TTS 流程](../../tts/README.md)生成项目级声线选择和 intro：
@@ -55,7 +55,7 @@ python3 tools/video/templates/ai-voice-mv/build.py \
 
 模板会：精确裁切可选的全宽污染带、补足略短视频尾帧、修剪 intro 首尾静音、intro 期间 duck 训练音轨、叠加 `AI训练，仅供娱乐`，最后输出 H.264/AAC MP4。配置必须提供项目内透明角标 PNG；随模板保留的 `watermark.swift` 只负责离线生成这张当期输入图，不含媒体或人物信息。模板不会下载素材、读取仓库外目录或生成 TTS。
 
-构建完成后仍要按全局结构写 `publishing/xiaohongshu.md`：1–5 个标题候选、可直接使用的正文、末行 hashtags，避免明确曝光本期歌曲名称，普通词语歧义按语境判断。AI config 当前没有标准项目门禁所需的 performer/cover-theme 上下文，因此继续用 durable `--check` 与实际音画核对，不得为调用 `verify_publishing.py` 伪造 `project-manifest.json`。
+默认不创建 `publishing/`。用户明确要求小红书文案和标签时，可在构建完成后或成片交付后生成 `publishing/xiaohongshu.md`：1–5 个标题候选、可直接使用的正文、末行 hashtags，避免明确曝光本期歌曲名称，普通词语歧义按语境判断。AI config 当前没有标准项目门禁所需的 performer/cover-theme 上下文，因此继续用 durable `--check` 与实际音画核对，不得为调用 `verify_publishing.py` 伪造 `project-manifest.json`。
 
 硬前置：`video` 必须已经与训练音频从同一歌曲起点对齐；视频允许比训练 WAV 短不超过 0.5 秒，模板仅用尾帧补足这种编码级差异，不能修复剧情片头或错误歌曲偏移。intro 修剪后还必须比训练音频至少短 1 秒，给正歌留下有效展示。`--check` 会验证这些时长关系，并确认每条 intro sidecar 内嵌的 selection 与项目 `voice-selection.json` 完全一致、记录的输出 SHA-256 与当前 WAV 一致。
 

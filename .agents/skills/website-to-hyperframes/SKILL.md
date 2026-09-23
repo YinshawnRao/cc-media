@@ -13,4 +13,4 @@ Write a concise design/script if useful, then build with [hyperframes](../hyperf
 
 Capture implementation examples are in [step-0-capture](references/step-0-capture.md); composition techniques in [beat builder](references/beat-builder-guide.md). These are optional upstream references, not a second workflow or version-support guarantee. Confirm availability against the project pin.
 
-Verify key visuals and audio, render and mux as requested, then complete the applicable repository gates. A completed-video brief ends with MP4 and publishing copy; preview-only handoff requires a sample/preview request. Report real limitations that affect delivery, without mandatory boilerplate sections.
+Verify key visuals and audio, render and mux as requested, then complete the applicable repository gates. A completed-video brief ends with MP4; generate publishing copy only on explicit user request, including a later request for an existing video. Preview-only handoff requires a sample/preview request. Report real limitations that affect delivery, without mandatory boilerplate sections.

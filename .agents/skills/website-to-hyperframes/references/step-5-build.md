@@ -10,4 +10,4 @@ Freeze actual fonts into the project and load them with relative @font-face decl
 
 If SFX are useful, choose local assets, synchronize their timing with the actual timeline and include them in the final mix. Do not copy an entire asset directory or add a fixed SFX quota. User-requested captions need real aligned text; otherwise omit them. Narration generation and transcription use the central repository tools.
 
-Inspect cover and scene boundaries, lint and render with the pinned CLI/resource wrapper, mux master.wav, and complete the applicable repository QA and publishing copy. See [Runbook](../../../../tools/video/README.md).
+Inspect cover and scene boundaries, lint and render with the pinned CLI/resource wrapper, mux master.wav, and complete the applicable repository QA. Generate publishing copy only when the user explicitly requests it. See [Runbook](../../../../tools/video/README.md).

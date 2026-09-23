@@ -147,9 +147,9 @@ python3 ../../tools/video/resource_budget.py ffmpeg -- ffmpeg -threads __CC_MEDI
 
 逐首回听 mux 后的展示入点、出点及转场，确认没有首字被旁白遮盖、半句切断或淡出吃掉尾音；同时检查开头、主题切换和结尾连续配音处，确认音乐没有无意的硬切或前奏重启。若延长/换窗，更新源窗口、timeline、预混与画面，再重新生成当前 SHA 的 QA。时长够长或边界检测 PASS 都不能替代这项实际听感核对。
 
-## 5. 发布文案与 FINAL
+## 5. FINAL 与按需发布文案
 
-完成 build/render/post-mux 后编写 publishing/xiaohongshu.md，按 [编辑规范](../../CONVENTIONS.md#发布文案)写作。文件结构：
+完成 build/render/post-mux 后运行本地 FINAL。新项目默认不创建 `publishing/`，也不生成小红书文案和标签；用户明确要求时，按 [编辑规范](../../CONVENTIONS.md#发布文案)生成 `publishing/xiaohongshu.md`，可以随片交付，也可以在成片后单独补充。文件结构：
 
 ```markdown
 # 小红书发布文案
@@ -167,18 +167,25 @@ python3 ../../tools/video/resource_budget.py ffmpeg -- ffmpeg -threads __CC_MEDI
 
 1–5 个标题，默认 3 个；字数和标签数是建议。明确歌名引用会失败；普通词语歧义会提示 EDITORIAL，由代理核对语境，不能把提示当成已经确认剧透。
 
+成片的本地终验：
+
 ```bash
-python3 tools/video/verify_publishing.py --project sandbox/<slug>
 python3 tools/video/prepare_final_qa.py --project sandbox/<slug> --final renders/<slug>.mp4 --render renders/full_raw.mp4
 ```
 
-PUBLISHING 不属于 build 前 manifest 门禁，必须在 FINAL 前完成。preparer 支持 top_ranking/narrative 的标准或显式自定义结构，将 authoring 与 timeline 绑定，生成当前 SHA 的实时 ASR、逐章 PNG、诊断并在同一进程执行 FINAL。每条实际旁白都必须映射并检查，无旁白不会生成虚构 WAV。
+仅生成文案时运行独立的 PUBLISHING 门禁：
+
+```bash
+python3 tools/video/verify_publishing.py --project sandbox/<slug>
+```
+
+PUBLISHING 不属于 build 前 manifest 门禁，也不是 FINAL 的前置条件。成片后补文案时，只需生成文案并运行适用的 PUBLISHING 检查；MP4 未改变就无需重跑 FINAL。preparer 支持 top_ranking/narrative 的标准或显式自定义结构，将 authoring 与 timeline 绑定，生成当前 SHA 的实时 ASR、逐章 PNG、诊断并在同一进程执行 FINAL。每条实际旁白都必须映射并检查，无旁白不会生成虚构 WAV。
 
 只有输出 FINAL VIDEO QA: PASS 才算本地机械终验；不手写 QA manifest 冒充 preparer，也不在 PASS 后默认再次运行全量 standalone verifier。独立复核/诊断才使用 `verify_final_video.py`。
 
 交付前完成封面审美的最终版本确认：查看最终封面、真实第 0 帧及手机裁剪，动态方案另查最终片中的封面区间，将当前 MP4 SHA 和实际查看证据补入 `qa/cover-aesthetic-review.md`。现有 preparer 不自动评判审美，交付分别报告 `COVER AESTHETIC REVIEW: PASS（agent/human 按实际填写）` 与适用技术门禁；未审或需重做时不能只凭 FINAL PASS 宣称全部完成。封面返工改变 MP4 后，刷新适用的技术 QA 并复核非封面部分的保护范围。
 
-自由探索不强套 preparer，按当前 project/final contract 准备 QA。AI 音色 MV 使用 [durable builder](templates/README.md) 与 --check，不伪造标准 manifest。两类同样交付 renders/<slug>.mp4 和 publishing/xiaohongshu.md，报告各自适用检查。
+自由探索不强套 preparer，按当前 project/final contract 准备 QA。AI 音色 MV 使用 [durable builder](templates/README.md) 与 --check，不伪造标准 manifest。两类均交付 `renders/<slug>.mp4`；仅用户要求时附带或后补 `publishing/xiaohongshu.md`，报告各自适用检查。
 
 内部 sandbox 测试使用以上本地命令，不运行 --require-human-review；已有 release_safety/pending_human_review 字段不表示发现版权问题，也不阻断测试交付。production 的版权与授权核对按已记录的用途执行；只有用户明确要求公开发布、发布级终验或可发布交付时才运行 --require-human-review。该开关需要显式传入，CLI 不按目录名自动切换。无 input 时工具生成当前 SHA 模板并返回 REVIEW_REQUIRED，真人完成后用 --human-review-input 合并；agent 不代签 human。
 
