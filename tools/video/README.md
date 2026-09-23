@@ -2,7 +2,7 @@
 
 编辑目标见 [CONVENTIONS](../../CONVENTIONS.md)，代理边界见 [AGENTS](../../AGENTS.md)。按实际任务执行；修代码或文档不启动 TTS/渲染。
 
-所有检测禁止启动浏览器或播放器，包括 `hyperframes preview`。
+所有检测禁止启动浏览器，包括 `hyperframes preview`。
 
 ## 1. Brief 与准备
 

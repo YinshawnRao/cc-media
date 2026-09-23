@@ -26,6 +26,6 @@ The resource wrapper injects the worker budget; explicit supported worker settin
 
 Use --help from the pinned version before relying on unfamiliar flags, validate/layout behavior, quality presets or newer registry features. Run relevant lint/layout checks, inspect actual keyframes and fix material problems; do not silently suppress errors. Resolve warnings according to the actual issue and project.
 
-Fonts must be available offline, not merely named in CSS. Use design.md and local files to verify fonts. Keep preview URLs distinct from source links; don't start a preview just to satisfy a reporting template. User-requested samples may stop at preview; ordinary completed-video tasks do not. Do not run `hyperframes preview` or launch a browser or media player for checks.
+Fonts must be available offline, not merely named in CSS. Use design.md and local files to verify fonts. Keep preview URLs distinct from source links; don't start a preview just to satisfy a reporting template. User-requested samples may stop at preview; ordinary completed-video tasks do not. Do not run `hyperframes preview` or launch a browser for checks.
 
 TTS/ASR: [media adapter](../hyperframes-media/SKILL.md). Troubleshooting and resource mechanics: [operations](../../../tools/video/operations.md). Never initiate a skills/renderer update as automatic repair.
